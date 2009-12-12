@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+<title>Tim Vieira</title>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Tim Vieira, Timothy Vieira"/>
+<meta name="description" content="Personal homepage of Tim Vieira." />
+<meta name="robots" content="index, follow" />
+
+<script type="text/javascript" src="js/prototype-1.5.1.1.js"></script>
+<script type="text/javascript" src="js/effects.js"></script>
+<script type="text/javascript" src="js/accordion.js"></script>
+<script type="text/javascript" src="js/lightwindow.js"></script>
+<script type="text/javascript" src="js/Hyphenator.js"></script>
+
+<link rel="stylesheet" type="text/css" href="css/default.css"/>
+<link rel="stylesheet" type="text/css" href="css/lightwindow.css"/>
+
+<script type="text/javascript">
+var topAccordion;
+function loadAccordions() {
+	topAccordion = new accordion('vertical_container', {
+		resizeSpeed: 8,
+		classNames: {
+			toggle:       'accordion_toggle',
+			toggleActive: 'accordion_toggle_active',
+			content:      'accordion_content'
+		},
+		direction: 'vertical'
+	});
+
+	// pause and open the first one.
+	setTimeout("topAccordion.activate($$('#vertical_container .accordion_toggle')[0])", 400);
+}
+
+Event.observe(window, 'load', loadAccordions, false);
+
+</script>	
+
+<!--[if IE]>
+<style type="text/css">
+  .clearfix {
+    zoom: 1;     /* triggers hasLayout */
+    }  /* Only IE can see inside the conditional comment
+    and read this CSS rule. Don't ever use a normal HTML
+    comment inside the CC or it will close prematurely. */
+</style>
+<![endif]-->
+
+</head>
+<body>
+
+<div id="container">
+	<h1>Tim Vieira</h1>	
+	<p class="description">Research Programmer</p>
+
+  	<div id="vertical_container">
+		<h1 class="accordion_toggle">About</h1>
+		<div class="accordion_content">
+			<div class="clearfix">
+				<div class="left" style="width: 369px;">
+					<h2>About Me</h2>
+					<p>
+						I recently completed my Bachelors of Science at 
+						<a href="http://illinois.edu">University of Illinois Urbana-Champaign</a> (UIUC) in 
+						<a href="http://www.cs.uiuc.edu/">Computer Science</a>. 
+						Currently, I am a Research Programmer for the 
+						<a href="http://iesl.cs.umass.edu">Information Extraction and Synthesis Laboratory</a> (IESL) 
+						at the the <a href="http://cs.umass.edu">University of Massachusetts at Amherst</a> 
+						where I am working on <a href="http://rexa.info">REXA</a>, a research paper search engine.
+						
+						Before that, I was a Research Programmer for the 
+						<a href="http://l2r.cs.uiuc.edu/~cogcomp/">Cognitive Computation Group</a> (CCG) at UIUC where my 
+						research was primarily focused to Textual Entailment.
+						<p>
+<a id="gmail" href="http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE=" 
+   onclick="window.open('http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE=', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" 
+   title="Sorry, you gotta do an ReCAPTCHA">Email</a>
+							<a id="facebook" href="http://www.facebook.com/tim.vieira">Facebook</a>
+							<a id="delicious" href="http://delicious.com/timvieira">Delicious</a>
+						</p>
+						<p>
+							<a href="doc/CV.pdf" style="font-size:13px">Resume/CV</a>
+						</p>
+					</p>
+				</div>
+				<div class="right">
+					<img style="width:300px; height:200px;" src="img/pic.jpg">
+				</div>
+			</div>
+		</div>
+
+		<h1 class="accordion_toggle">Interests</h1>
+		<div class="accordion_content">
+
+<h2>Keywords</h2>
+<p>
+Machine Learning, Reinforcement Learning, Robotics, Natural Language Processing, Physical Computing, and Web Development.
+</p>
+
+<h2>Textual Entailment</h2>
+<p>
+Textual Entailment is the NLP task of determining whether the meaning of a given text passage entails that of another. Textual Entailment is a fundamental problem in natural language understanding which requires the ability to abstract over the inherent syntactic and semantic variability in natural language. 
+</p>
+<p>
+My work for CCG is based on the Textual Entailment Task in Natural Language Processing (NLP); I am investigating aspects of numeric and temporal reasoning in regard to this task.
+</p>
+
+<h2>Statistical Relational Learning</h2>
+<p>
+Statistical Relational Learning (SRL) is an emerging subdiscipline of Machine Learning concerned with building statistical models of domains with <i>relational structure</i>, meaning the domains of interest are composed of both statistically dependent and independent objects, i.e. the typical independent and identically distributed (i.i.d.) assumption made in statistics and machine learning is no longer present in relational domains.
+</p>
+<p>
+The motivations of SRL are many, but boil down to a few pillars:
+
+<ul>
+<li><p>Real-world problems violate the i.i.d. assumption typically made in statistical methods because objects in the world are related.</p></li>
+<li><p>When we don't model the dependence between data instances, we often throw out valuable information. Hence, exploiting relationships amongst objects can lead to greater predictive accuracy in computational models and better understanding of the domain, at the costs of greater modeling, computational, and sample complexity.</p></li>
+<li><p>SRL offers a growth plan for machine learning, allowing researchers to model bigger problems.</p></li>
+</ul>
+
+</p>
+<p>
+The most enticing of these three is definitely the later, there appears to be a heavy shift in the direction of learning structured output: learning is no longer classify single feature vectors, but entire structures. Examples of such domains include hyper-linked document classification, medical diagnosis, semantic role labeling, and social network analysis.
+</p>
+
+<h2>Reinforcement Learning</h2>
+<p>
+Reinforcement learning (RL) is a protocol for learning to make decisions within an environment based on rewards and punishment. The objective of these interactions is to learn a policy (i.e., a mapping from states to actions), which maximizes the expected accumulated reward over time. RL distinguishes itself from Supervised Learning in that agents must learn from the consequences of their actions, rather than being explicitly taught. This gives rise to the problem of assigning credit or blame to a single action for the performance of the entire policy.
+</p>
+<p>
+Although RL techniques have elegant theoretical / mathematical foundations, applying these techniques to problems with large state spaces such as robot control has proven to be quite difficult. Generally, I am interested in taking RL to big domains where the agent cannot, in any reasonable amount of time, explore the entire state space (or even a reasonable fraction of it). An example of such a domain is <a href="http://en.wikipedia.org/wiki/Tetris">Tetris</a> (roughly 10^60 states), which was the subject of my undergraduate thesis. What I find interesting about Tetris is that despite it's enormous state space, humans can play the game very well. I believe this is because they can establish important high-level concepts, such as, a line or a hole, from only playing the game for a few minutes. Thus, in order to create an effective Tetris agent it is necessary to inform the agent of these concepts rather than have the agent learn to play Tetris from a blank slate.
+</p>
+<p>
+I am also interested in applications of reinforcement learning which require agents to generalize what they have learned from one task to a new one which is very similar. In most applications of reinforcement learning, policies learned are very specific to a single task and cannot be applied to a new task no matter how similar it may be. Currently, I am working on having a simulated aircraft do skywriting. Skywriting poses an interesting challenge: the airplane controller/planner clearly cannot train on all possibly phrases which it will eventually see -- How can we break the problem up into smaller pieces and then combine them in a fashion which will allow the the airplane to write anything? Simply learning each letter independently is one option, but is inefficient and does not in anyway aid us in learning to write in Chinese.
+</p>
+
+<h2>Robotics and Physical Computing</h2>
+<p>
+I have recently resurrected a childhood dream of building robots and embedded devices. As far as I can remember, I have always taken apart my toys and tried to stick them together. Now that I am 23 years old, I finally have money, knowledge, and patience to build such systems. I have been following the <a href="http://www.makezine.com">Make Magazine</a>, <a href="http://www.hackaday.com">Hack-a-Day</a>, etc. communities pretty closely and have picked up a few projects; including: <em>RouterBot</em> a wirelessly controlled robot which is essentially a wireless router which can control servos; Wii Nunchuck controlled servo; and <a href="http://arduino.cc">Arduino</a> programming. I am currently working on controlling the robot with the Nunchuck and adding some autonomous behavior and sensing abilities (hopefully vision). Back in high school, I was very interested in custom cars. I have some experience with hydraulic suspension, auto repair, and car audio (check out the Miscellaneous section for more details) maybe I can find a place for this knowledge in a robot (Big Dog has hydraulic-powered legs).
+</p>
+
+		</div>	
+
+		<h1 class="accordion_toggle">Projects</h1>
+		<div class="accordion_content">
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/wrt54gl.jpg"/>
+				<div class="right project-blurb">
+					<h3>Routerbot</h3>
+					A Routerbot is a robot which uses a Wifi router (Linksys WRT54GL) as both an communication 
+					means and an onboard computer. Many people do not know that a router is actually a simple computer 
+					capable of running an operating system, executing  programs, and serial port communication. 
+					Thanks to <a href="http://andrey.mikhalchuk.com">Andrey Mikhalchuk</a>'s 
+					<a href="http://robostuff.com/diy-projects/routerbot">tutorial</a>, the project is well 
+					under way. Those interested in Routerbots should check out 
+					<a href="http://www.jbprojects.net/projects/wifirobot/">JBProjects</a>'s take on the idea.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" style="height:125px;" src="img/quantities.png"/>
+				<div class="right project-blurb">
+					<h3>
+						<a href="http://l2r.cs.uiuc.edu/~cogcomp/unified-demo/demo.php">Reasoning About Quantities in Natural Language</a>
+					</h3>
+					On a daily basis, we communicate the notions of money, time, distance, temperature, severity, 
+					reliability, etc. via written expressions of quantitative information. However, little work from 
+					the Natural Language Processing community has targeted the role of quantities in Natural Language 
+					Understanding. In this project, we formulate and analyze a new task of Quantity Entailment and 
+					describe our system, which we show to successfully recognize textual expressions of quantity, 
+					represent them in a way that supports reasoning, and perform limited types of reasoning.
+					Check out the <a href="http://l2r.cs.uiuc.edu/~cogcomp/unified-demo/demo.php">web demo</a>.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/flightgear.gif"/>
+				<div class="right project-blurb">
+					<h3>Learning to Fly</h3>
+					I'm currently auditing Gerald DeJong's <a href="http://www.cs.uiuc.edu/class/sp09/cs548/">CS548</a>, 
+					where our computers are learning to sky write in a flight simulator. In my opinion, the most 
+					interesting aspect of skywriting is that a skywriting agent clearly cannot train on all possibly 
+					phrases which it will eventually see. Thus, a skywriting agent must be have the ability to break 
+					the problem up into smaller pieces and combine these piece in a fashion which will allow the the 
+					airplane to write anything. Simply learning each letter independently is one option, but is 
+					inefficient and does not aid us in anyway to learning to write in Chinese.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/tetris.png"/>
+				<div class="right project-blurb">
+					<h3>Relational Reinforcement Learning for Tetris</h3>
+					More information soon.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/event-search.gif"/>
+				<div class="right project-blurb">
+					<h3>Event Search Engine</h3>
+					Event (vertical) search engine built in 4 weeks for the 
+					<a href="http://www.mias.uiuc.edu/">Multimodal Information Access and Synthesis</a> (MIAS) Summer Institute 
+					research projects. This system aggregates, de-duplicates, indexes, and provides a novel search interface to events 
+					(things to do) in the Champaign-Urbana, IL area. The search interface allows users to ask natural-language-like 
+					queries, such as "free concerts near green & lincoln" or "anything for all ages next week".
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<div class="thumbnail left" style="height:110px;background:white;"></div>
+				<div class="right project-blurb">
+					<h3>Online Scientific Library</h3>
+					A web interface for tagging / organizing scientific literature.
+				</div>
+			</div>
+
+		</div>
+
+		<h1 class="accordion_toggle">Resources</h1>
+		<div class="accordion_content">
+			<p>
+				Feel free to contact me about any errors or difficulties using any of the following resources. 
+				<span style="color:red;">Use at your own risk.</span>
+			</p>			
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/cheat-sheet-thumb.gif"/>
+				<div class="right project-blurb">
+					<h3>Cheat Sheets</h3>
+					<ul>
+						<li><a href="doc/cheat-sheets/statistics.pdf">Statistics</a> - a collection of useful theorems, 
+						definitions, and inequalities relating to statistics and probability theory, which I have found useful.
+						</p></li>
+						<li>
+						  <p><a href="doc/cheat-sheets/RL.pdf">Reinforcement Learning</a> - a collection of useful theorems and 	
+						definitions relating to reinforcement learning, which I have found useful.</p>
+						</li>
+						<li><p><a href="doc/cheat-sheets/tricks.pdf">Useful Tricks</a> - a collection of practical purpose tricks.
+						</p></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" style="height:125px;" src="img/python-hackin.gif"/>
+				<div class="right project-blurb">
+					<h3>Python Utilities</h3>
+					<ul>
+						<li><a href="doc/python-utils/timeout_xmlrpclib.py">timeout_xmlrpclib.py</a> - wrapper for the python 
+						standard library xmlrpclib, which allows you to easily set timeouts</li>
+						<li><a href="doc/python-utils/misc.py">misc.py</a> - useful functions and decorators I have collected.</li>
+						<li><a href="doc/python-utils/pyclean">pyclean</a> - Ever get annoyed with *.pyc files cluttering  your workspace? 
+						Add this script to you $PATH or alias the command in the file and it will recursively delete *.pyc files.</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" style="height:125px;" src="img/quantities.png"/>
+				<div class="right project-blurb">
+					<h3><a href="doc/annotation-interface.zip">Textual Entailment Annotation and Visualization</a></h3>
+					An annotation interface for textual entailment. The current version is only tested on Mozilla Firefox 3.0+. 
+					I have an IE7+ fix in a <span style="color:red">new release coming soon</span> as well as some new
+					features, such as edge selection.
+					I am interested in ways I can improve it; feel free to send me comments or hack around with it.
+					<div style="margin-top: 12px;">
+						See the demo in action <a href="http://l2r.cs.uiuc.edu/~cogcomp/unified-demo/demo.php">here</a>.
+					</div>
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<div class="thumbnail left" style="height:110px;background:white url(img/nn.jpg) no-repeat scroll center center;"></div>
+				<div class="right project-blurb">
+					<h3><a href="doc/neural-network.zip">Neural Network in Python</a></h3>
+					Neural Network (a.k.a. Multi-layer perception) implemented in Python. Please note: this module 
+					is coded for simplicity not efficiency. It adheres to the pseudocode found in Russel and 
+					Norvig's textbook, <a href="http://aima.cs.berkeley.edu/">Artificial Intelligence: A Modern 
+					Approach</a>; the relevant chapter is available in <a href="http://aima.cs.berkeley.edu/newchap20.pdf">PDF</a>.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<div class="thumbnail left" 
+					style="height:110px;background:white url(img/p_implies_q.png) no-repeat scroll center center;"></div>
+				<div class="right project-blurb">
+					<h3><a href="Javascript:alert('Coming Soon')">Forward-Chaining Theorem Prover</a></h3>
+					Forward-chaining theorem prover for Datalog with stratified negation implemented in Python.
+				</div>
+			</div>
+
+		</div>
+
+		<h1 class="accordion_toggle">Teaching</h1>
+		<div class="accordion_content">
+
+<p>
+Throughout my undergraduate years, I spent much of my time as a teaching assistant. Here is a breakdown of the courses that I have been involved with:
+</p>
+<p>
+<em>Foundations of Data Science</em>: I was the assistant for a course on the fundamentals of Information Science for the Multimodal Information Access and Synthesis Summer Institute where both graduate and undergraduates are exposed to the a variety of topics including Statistical Inference, Information Theory, and Machine Learning. I was very involved in the development of the curriculum and the course content. I gave a few lectures and I was in charge of a hands-on lab session where students recreated several projects which I made up when I took the class.
+</p>
+<p>
+<em>Discrete Structures</em>: I was an undergraduate teaching assistant for a discrete math course for three semesters. In this course, students are introduced to the fundamental discrete mathematical structures encountered in the study of Computer Science. Topics include: sets, propositions, boolean algebra, induction, recursion, relations, functions, and graphs. Since this is one of the first computer science courses a student at the U of I take, I tried my best to make the mathematical side of computer science less intimidating.
+</p>
+<p>
+<em>Introduction to Programming: A Multimedia Approach</em>: I was the course assistant for an introduction to programming course (in <a href="http://python.org">Python</a>), where students learn the elementary principles of object-oriented programming. The goal of the class is to teach programming with non-technical focus, hence we focus on fun applications of programming such as games and image processing.
+</p>
+</div>		
+
+		<h1 class="accordion_toggle">Miscellaneous</h1>
+		<div class="accordion_content">
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" style="background-image: url(img/rims.gif); height:125px;"/>
+				<div class="right project-blurb">
+					<h3>Cars</h3>
+					I often find myself in a situation where people do not believe me when I tell them about my old cars. 
+					So, I found to video sitting on an old external hard drive to prove my point. Also, I received the Senior 
+					Superlative of "Best Car of the Senior Class" at American Heritage School in 2004 (maybe I should scan 
+					the yearbook page). I'm not sure which car got me the award. I wish I documented my adventures in customizing 
+					these two cars, but I'm sorry to say that this is the extent of the documentation I have.
+
+					<ul>
+						<li>
+						  <p>My first car (<a title="My bouncing '84 Fifth Ave." 
+												params="lightwindow_width=425,lightwindow_height=340,lightwindow_loading_animation=false" 
+												class="lightwindow page-options" 
+												href="http://www.youtube.com/v/iIXSJnfQK68&hl=en&fs=1&" 
+												rel="">video</a>) - a gorgeous 1984 
+							Chrysler Fifth Avenue with red velvet interior, purchased for a mere $900. I installed the hydraulics 
+							myself, a non-trivial task -- the fifth ave has torsion bar suspension and short A-Arms.</p>
+						</li>
+	
+						<li><p>My Second car (<a title="The Big Bad Baby Blue Buick" 
+												params="lightwindow_width=425,lightwindow_height=340,lightwindow_loading_animation=false" 
+												class="lightwindow page-options" 
+												href="http://www.youtube.com/v/HDZezucXcZg&hl=en&fs=1&"
+												rel="">video</a>) - "The Big Bad Baby  Blue Buick" the hydraulics are on the 
+							back of this one, you can't tell in this video, but the car was scrapping the ground a bit.</p></li>
+					</ul>
+
+					The videos don't show any of the great stuff on the interior, such as train air-horn, fog machine, 
+					the 1466 Watts of stereo power, television and Playstation 2, various neon lights, or the custom dashboard. 
+					It definitely does not show the cracked chassis that I had to welded back together or the water pump, 
+					alternator, starter motor, and carburetor my dad and I fixed. Working on these cars was an invaluable 
+					learning experience and a load of fun.
+				</div>
+			</div>
+
+			<div class="clearfix bubble">
+				<img class="thumbnail left" src="img/TIM_rail.jpg"/>
+				<div class="right project-blurb">
+					<h3>Snakeboarding</h3>
+					I used to be quite the snakeboarder (<a href="http://www.youtube.com/watch?v=ULyX9X0HoUE">video 1</a>; 
+					<a href="http://www.youtube.com/watch?v=N1zkGr85um4">video 2</a>). This is how I spent all of my free 
+					time for about 3 years. I guess you could say that I learned programming because of it! I started off 
+					making webpages and flash applications to host my pictures, video, and bio; eventually leading me to 
+					take an extra-curricular <a href="http://www.eimacs.com/">computer science course</a> (Scheme <3).
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+
+<script type="text/javascript" >
+// hide the accordions on page load
+$$('.accordion_toggle').each(function(accordion) {$(accordion.next(0)).setStyle({height: '0px'});});
+
+$$('p, .project-blurb').each(function(e){e.addClassName('hyphenate');});
+
+Hyphenator.setMinWordLength(3);
+Hyphenator.run();
+
+</script>
+
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-8781169-1");
+pageTracker._trackPageview();
+} catch(err) {}
+</script>
+
+</body>
+</html>
+
+
