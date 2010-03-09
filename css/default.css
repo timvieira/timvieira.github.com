@@ -198,3 +198,10 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
 	font-size: 14px;
 }
 
+.code-snippet {
+  margin: 4px 0px 4px 0px;
+  border: 1px solid silver;
+  padding-left: 4px;
+  background-color: white;
+  border-left: 2px solid blue;
+}
