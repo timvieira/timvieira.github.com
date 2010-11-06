@@ -11,7 +11,6 @@
 
 <script type="text/javascript" src="js/prototype-1.5.1.1.js"></script>
 <script type="text/javascript" src="js/effects.js"></script>
-<script type="text/javascript" src="js/accordion.js"></script>
 <script type="text/javascript" src="js/lightwindow.js"></script>
 
 <!--
@@ -19,27 +18,6 @@
 -->
 <link rel="stylesheet" type="text/css" href="css/default.css"/>
 <link rel="stylesheet" type="text/css" href="css/lightwindow.css"/>
-
-<script type="text/javascript">
-var topAccordion;
-function loadAccordions() {
-	topAccordion = new accordion('vertical_container', {
-		resizeSpeed: 8,
-		classNames: {
-			toggle:       'accordion_toggle',
-			toggleActive: 'accordion_toggle_active',
-			content:      'accordion_content'
-		},
-		direction: 'vertical'
-	});
-
-	// pause and open the first one.
-	setTimeout("topAccordion.activate($$('#vertical_container .accordion_toggle')[0])", 400);
-}
-
-Event.observe(window, 'load', loadAccordions, false);
-
-</script>	
 
 <!--[if IE]>
 <style type="text/css">
@@ -395,17 +373,6 @@ I have recently resurrected a childhood dream of building robots and embedded de
 	</div>
 
 </div>
-
-
-<script type="text/javascript" >
-// hide the accordions on page load
-$$('.accordion_toggle').each(function(accordion) {$(accordion.next(0)).setStyle({height: '0px'});});
-
-//$$('p, .project-blurb').each(function(e){e.addClassName('hyphenate');});
-//Hyphenator.setMinWordLength(3);
-//Hyphenator.run();
-
-</script>
 
 
 <script type="text/javascript">
