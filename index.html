@@ -13,8 +13,10 @@
 <script type="text/javascript" src="js/effects.js"></script>
 <script type="text/javascript" src="js/accordion.js"></script>
 <script type="text/javascript" src="js/lightwindow.js"></script>
-<script type="text/javascript" src="js/Hyphenator.js"></script>
 
+<!--
+<script type="text/javascript" src="js/Hyphenator.js"></script>
+-->
 <link rel="stylesheet" type="text/css" href="css/default.css"/>
 <link rel="stylesheet" type="text/css" href="css/lightwindow.css"/>
 
@@ -143,6 +145,15 @@ I have recently resurrected a childhood dream of building robots and embedded de
 </p>
 
 		</div>	
+
+		<h1 class="accordion_toggle">Publications</h1>
+		<div class="accordion_content">
+
+		  <ul>
+		    <li>M. Sammons, V. Vydiswaran, T. Vieira, N. Johri, M. Chang, D. Goldwasser, V. Srikumar, G. Kundu, Y. Tu, K. Small, J. Rule, Q. Do and D. Roth, <a href="doc/UI_ccg.proceedings.pdf">Relation Alignment for Textual Entailment Recognition</a>. Text Analysis Conference (TAC)  (2009)</li>
+                  </ul>
+
+                </div>
 
 		<h1 class="accordion_toggle">Projects</h1>
 		<div class="accordion_content">
@@ -390,10 +401,9 @@ I have recently resurrected a childhood dream of building robots and embedded de
 // hide the accordions on page load
 $$('.accordion_toggle').each(function(accordion) {$(accordion.next(0)).setStyle({height: '0px'});});
 
-$$('p, .project-blurb').each(function(e){e.addClassName('hyphenate');});
-
-Hyphenator.setMinWordLength(3);
-Hyphenator.run();
+//$$('p, .project-blurb').each(function(e){e.addClassName('hyphenate');});
+//Hyphenator.setMinWordLength(3);
+//Hyphenator.run();
 
 </script>
 
@@ -411,5 +421,4 @@ pageTracker._trackPageview();
 
 </body>
 </html>
-
 
