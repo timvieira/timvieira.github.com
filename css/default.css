@@ -1,66 +1,62 @@
-/*
-        Yes this layout was inspired by lightbox v2.0's page
-*/
-
 
 *, html, body {
-        margin: 0 0 0 0;
-        padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
 }
 
 html {
-        height: 100%;
+    height: 100%;
 }
 
 body {
-        background-color: #171b20;
-        color: #ffffff;
-        font-family: 'Lucida Grande', Verdana, Arial;
-        font-size: 11px;
-        height: 100%;
+    //background-color: #171b20;
+    //color: #ffffff;
+    color: #000;
+    font-family: 'Lucida Grande', Verdana, Arial;
+    font-size: 11px;
+    height: 100%;
 }
 
 p {
-        text-align: justify;
-        margin-bottom: 10px;
-        line-height: 150%;
+    //text-align: justify;
+    margin-bottom: 10px;
+    line-height: 150%;
 }
 
 li {
-        margin-left: 15px;
-        margin-bottom: 0px;
+    margin-left: 15px;
+    margin-bottom: 0px;
 }
 
 li p {
-        margin: 0px;
+    margin: 0px;
 }
 
 ul {
-        margin: 0px 0px 8px 4px;
+    margin: 0px 0px 8px 4px;
 }
 
 h1 {
-        color: #ffffff;
-        font-size: 20px;
-        font-weight: normal;
-        margin: 0px 0px 0px 0;
-        text-align: left;
+    color: #000;
+    font-size: 20px;
+    font-weight: normal;
+    margin: 0px 0px 0px 0;
+    text-align: left;
 }
 
 h2 {
-        text-align: left;
-        font-weight: normal;
-        font-size: 150%;
-        color: #09f;
-        margin: 5px 0 15px 0;
+    text-align: left;
+    font-weight: normal;
+    font-size: 150%;
+    color: #09f;
+    margin: 5px 0 15px 0;
 }
 
 .description {
-        font-size: 12px;
-        line-height: 18px;
-        color: #ffffbe;
-        padding: 2px 0 10px 0;
-        color:#FFFF99;
+    font-size: 12px;
+    line-height: 18px;
+    padding: 2px 0 10px 0;
+    color:#333;
 }
 
 #container {
@@ -71,83 +67,85 @@ h2 {
 a,
 a:link,
 a:visited {
-        color: #09f;
+    color: #09f;
 }
 
 .hidden {
-        display : none;
+    display : none;
 }
 
 .accordion_toggle {
-        display: block;
-        height: 30px;
-        width: 680px;
-        background-color: #a9d06a;
-        padding: 0 10px 0 10px;
-        line-height: 30px;
-        color: #ffffff;
-        font-weight: normal;
-        text-decoration: none;
-        outline: none;
-        font-size: 12px;
-        color: #000000;
-        border-bottom: 1px solid #cde99f;
-        cursor: pointer;
-        margin: 0;
+    display: block;
+    height: 30px;
+    width: 680px;
+    //background-color: #a9d06a;
+    padding: 0 10px 0 10px;
+    line-height: 30px;
+    color: #000;
+    font-weight: normal;
+    text-decoration: none;
+    outline: none;
+    font-size: 12px;
+    color: #000000;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    margin: 0;
 }
 
 .accordion_toggle_active {
-        background-color: #e0542f;
-        color: #ffffff;
-        border-bottom: 1px solid #f68263;
+    //background-color: #e0542f;
+    color: #ffffff;
+    border-bottom: 1px solid #f68263;
 }
 
 
 .accordion_content {
-        background-color: #ffffff;
-        color: #444444;
-        overflow: hidden;
-        padding: 10px;
+    //background-color: #ffffff;
+    color: #444444;
+    overflow: hidden;
+    padding: 10px;
 }
 
 
 #facebook {
-        background:transparent url(../img/facebook-16x16.png) no-repeat scroll left center;
-        padding-left: 18px
+    background:transparent url(../img/facebook-16x16.png) no-repeat scroll left center;
+    padding-left: 18px
 }
 
 #delicious {
-        background:transparent url(../img/delicious-16x16.png) no-repeat scroll left center;
-        padding-left: 18px
+    background:transparent url(../img/delicious-16x16.png) no-repeat scroll left center;
+    padding-left: 18px
 }
 
 #gmail {
-        background:transparent url(../img/gmail-icon16.gif) no-repeat scroll left center;
-/*
-        background:transparent url(../img/email-2.gif) no-repeat scroll left center;
-*/
-        padding-left: 18px
+    background:transparent url(../img/gmail-icon16.gif) no-repeat scroll left center;
+    padding-left: 18px
+}
+
+#bitbucket {
+    background:transparent url(../img/bitbucket.png) no-repeat scroll left center;
+    padding-left: 18px
 }
 
 a[href $=".py"], a[href $=".PY"],
 a[href *=".py#"], a[href *=".PY#"],
 a[href *=".py?"], a[href *=".PY?"] {
-        background:transparent url(../img/python.png) no-repeat scroll right center;
-        padding-right:18px;
+    background:transparent url(../img/python.png) no-repeat scroll right center;
+    padding-right:18px;
 }
 
 a[href $=".pde"], a[href $=".PDE"],
 a[href *=".pde#"], a[href *=".PDE#"],
 a[href *=".pde?"], a[href *=".PDE?"] {
-        background:transparent url(../img/arduino.png) no-repeat scroll right center;
-        padding-right:18px;
+    background:transparent url(../img/arduino.png) no-repeat scroll right center;
+    padding-right:18px;
 }
 
 a[href $=".pdf"], a[href $=".PDF"],
 a[href *=".pdf#"], a[href *=".PDF#"],
 a[href *=".pdf?"], a[href *=".PDF?"] {
-        background:transparent url(../img/pdf.gif) no-repeat scroll right center;
-        padding-right:17px;
+    background:transparent url(../img/pdf.gif) no-repeat scroll right center;
+    padding-right:17px;
 }
 
 .clearfix:after {
@@ -159,53 +157,53 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
 }
 
 #vertical_container {
-    -moz-box-shadow: 0.375em 0.375em 1.125em rgba(0, 0, 0, 0.75);
+    //-moz-box-shadow: 0.375em 0.375em 1.125em rgba(0, 0, 0, 0.75);
 }
 
 .bubble {
-        margin: 8px 0px 0px 0px;
-        padding: 8px;
-
-        border: 1px solid silver;
-        background-color: #EEE;
-
-        display: block;
-
-        /* Give the container rounded edges */
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
-        border-radius: 6px;
+    margin: 8px 0px 0px 0px;
+    padding: 8px;
+    
+    border: 1px solid silver;
+    //background-color: #EEE;
+    
+    display: block;
+    
+    /* Give the container rounded edges */
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
 }
 
 .left {
-        float: left;
+    float: left;
 }
 
 .right {
-        float: right;
+    float: right;
 }
 
 .thumbnail {
-        display: block;
-        width: 125px;
-        border: 1px solid silver;
+    display: block;
+    width: 125px;
+    border: 1px solid silver;
 }
 
 .project-blurb {
-        width: 527px;
-        text-align:justify;
-        line-height: 125%;
+    width: 527px;
+    text-align:justify;
+    line-height: 125%;
 }
 
 .project-blurb h3 {
-        margin: 0px 0px 4px 0px;
-        font-size: 14px;
+    margin: 0px 0px 4px 0px;
+    font-size: 14px;
 }
 
 .code-snippet {
-  margin: 4px 0px 4px 0px;
-  border: 1px solid silver;
-  padding-left: 4px;
-  background-color: white;
-  border-left: 2px solid blue;
+    margin: 10px 0px 4px 0px;
+    border: 1px solid silver;
+    padding-left: 5px;
+    background-color: white;
+    border-left: 4px solid blue;
 }
