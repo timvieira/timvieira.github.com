@@ -6,18 +6,19 @@ syntax: glob
 *.class
 *.log
 programming/**/.coverage
-
 *.PID
 *.ACCESSLOG
 *.ERRORLOG
+*.aux
 log/*
 tmp/*
 junk/*
 crap/*
-\#*
-
+potential/*
 *~
 semantic.cache
+
+
 
 # regex:
 syntax: regexp
