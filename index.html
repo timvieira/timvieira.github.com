@@ -9,12 +9,7 @@
 <meta name="description" content="Personal homepage of Tim Vieira." />
 <meta name="robots" content="index, follow" />
 
-<script type="text/javascript" src="js/prototype-1.5.1.1.js"></script>
-<script type="text/javascript" src="js/effects.js"></script>
-<script type="text/javascript" src="js/lightwindow.js"></script>
-
 <link rel="stylesheet" type="text/css" href="css/default.css"/>
-<link rel="stylesheet" type="text/css" href="css/lightwindow.css"/>
 
 <!--[if IE]>
 <style type="text/css">
@@ -34,22 +29,18 @@
   <p class="description">Research Programmer, Prospective Graduate Student, Accordionista</p>
 
   <div id="vertical_container">
-    <h1 class="accordion_toggle">About</h1>
+    <h1 id="first_accordion_toggle" class="accordion_toggle">About</h1>
     <div class="accordion_content">
       <div class="clearfix">
         <div class="left" style="width: 369px;">
           <p>
-            I recently completed my Undergraduate Degree at
-            <a href="http://illinois.edu">University of Illinois Urbana-Champaign</a> (UIUC) in
-            <a href="http://www.cs.uiuc.edu/">Computer Science</a>.
-            Currently, I am a Research Programmer for
+            I'm Currently a Research Programmer for
             <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a>'s
-            <a href="http://iesl.cs.umass.edu">Information Extraction and Synthesis Laboratory</a> (IESL)
-            at the the <a href="http://cs.umass.edu">University of Massachusetts at Amherst</a>
+            <a href="http://iesl.cs.umass.edu">Information Extraction and Synthesis Laboratory</a>
             where I am working on <a href="http://rexa.info">REXA</a> (scientific literature search engine)
             and <a href="http://factorie.googlecode.com">FACTORIE</a> (probabilistic programming framework).
             Before that, I was a Research Programmer for <a href="http://l2r.cs.uiuc.edu/">Dan Roth</a>'s
-            <a href="http://l2r.cs.uiuc.edu/~cogcomp/">Cognitive Computation Group</a> (CCG) at UIUC where
+            <a href="http://l2r.cs.uiuc.edu/~cogcomp/">Cognitive Computation Group</a> where
             my research was primarily focused on Textual Entailment.
           </p>
           <p>
@@ -101,7 +92,7 @@
           <div class="right project-blurb">
             <h3><a href="http://factorie.googlecode.com/">Factorie</a></h3>
             <p>
-              FACTORIE is a toolkit for deployable probabilistic modeling, implemented as
+              FACTORIE is a probabilistic programming framework implemented as
               a software library in <a href="http://www.scala-lang.org/">Scala</a>. Providing
               users with a succinct framework for creating <em>abritrary</em> factor graphs with
               tied parameters, estimating parameters, and performing inference.
@@ -125,8 +116,7 @@
           <img class="thumbnail left" style="height:125px;" src="img/quantities.png" alt="" />
           <div class="right project-blurb">
             <h3>
-              <a href="doc/annotation-interface.zip">
-                Textual Entailment Annotation and Visualization</a>
+              <a href="">Textual Entailment Annotation and Visualization</a>
             </h3>
             An annotation interface for textual entailment. The current version is only tested on
             Mozilla Firefox 3.0+.
@@ -200,7 +190,6 @@
             <img class="thumbnail left" src="img/fifth-avenue.jpg" alt="" />
             <div class="right project-blurb">
               My first car (<a title="My bouncing '84 Fifth Ave."
-                               class="lightwindow page-options"
                                href="http://www.youtube.com/v/iIXSJnfQK68">video</a>) 
               - a gorgeous 1984 Chrysler Fifth Avenue with red velvet interior, purchased for a mere
               $900. I installed the <em>hydraulics</em> myself, a non-trivial task.
@@ -211,7 +200,6 @@
             <div class="thumbnail left" style="background: white url(img/rims.gif) no-repeat scroll center center; height:93px; display:block;"></div>
             <div class="right project-blurb">
               My Second car (<a title="The Big Bad Baby Blue Buick"
-                                class="lightwindow page-options"
                                 href="http://www.youtube.com/v/HDZezucXcZg">video</a>) 
               - "The Big Bad Baby Blue Buick" the <em>hydraulics</em> are on the
               back of this one, you can't tell in this video, but the car was scrapping the ground a              
@@ -233,7 +221,7 @@
         <div class="right project-blurb">
           <h3>Snakeboarding</h3>
           I used to be quite the <a href="http://streetboarding.com/">snakeboarder</a>
-          (<a href="http://www.youtube.com/watch?v=ULyX9X0HoUE">video 1</a>;
+          (<a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">video 1</a>,
           <a href="http://www.youtube.com/watch?v=N1zkGr85um4">video 2</a>). This is how I spent all
           of my free time for about 3 years. I guess you could say that I learned programming
           because of it! I started off making webpages and flash applications to host my pictures,
@@ -247,7 +235,6 @@
 
 </div>
 
-<!---
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
   document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -258,7 +245,6 @@
   pageTracker._trackPageview();
   } catch(err) {}
 </script>
--->
 
 <div id="footer">
   <div style="margin: 0 auto 0 auto; width: 88px">

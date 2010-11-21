@@ -89,7 +89,11 @@ a:visited {
     color: #000000;
     border-bottom: 1px solid #333;
     cursor: pointer;
-    margin: 0;
+    margin: 20px 0 0 0;
+}
+
+#first_accordion_toggle {
+    margin-top: 0px;
 }
 
 .accordion_toggle_active {
