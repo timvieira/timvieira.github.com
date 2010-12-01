@@ -9,8 +9,6 @@ html {
 }
 
 body {
-    //background-color: #171b20;
-    //color: #ffffff;
     color: #000;
     font-family: 'Lucida Grande', Verdana, Arial;
     font-size: 11px;
@@ -18,7 +16,6 @@ body {
 }
 
 p {
-    //text-align: justify;
     margin-bottom: 10px;
     line-height: 150%;
 }
@@ -78,7 +75,6 @@ a:visited {
     display: block;
     height: 30px;
     width: 680px;
-    //background-color: #a9d06a;
     padding: 0 10px 0 10px;
     line-height: 30px;
     color: #000;
@@ -97,14 +93,12 @@ a:visited {
 }
 
 .accordion_toggle_active {
-    //background-color: #e0542f;
     color: #ffffff;
     border-bottom: 1px solid #f68263;
 }
 
 
 .accordion_content {
-    //background-color: #ffffff;
     color: #444444;
     overflow: hidden;
     padding: 10px;
@@ -161,7 +155,7 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
 }
 
 #vertical_container {
-    //-moz-box-shadow: 0.375em 0.375em 1.125em rgba(0, 0, 0, 0.75);
+
 }
 
 .bubble {
@@ -169,7 +163,6 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
     padding: 8px;
     
     border: 1px solid silver;
-    //background-color: #EEE;
     
     display: block;
     
@@ -204,10 +197,3 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
     font-size: 14px;
 }
 
-.code-snippet {
-    margin: 10px 0px 4px 0px;
-    border: 1px solid silver;
-    padding-left: 5px;
-    background-color: white;
-    border-left: 4px solid blue;
-}
