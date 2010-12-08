@@ -24,128 +24,213 @@
 </head>
 <body>
 
-<div id="container">
-  <h1>Tim Vieira</h1>
-  <p class="description">Research Programmer, Prospective Graduate Student, Accordionista</p>
+<div id="container" class="clearfix">
 
-  <div id="vertical_container">
-    <h1 id="first_accordion_toggle" class="accordion_toggle">About</h1>
-    <div class="accordion_content">
-      <div class="clearfix">
-        <div class="left" style="width: 369px;">
-          <p>
-            I'm currently a Research Programmer for
-            <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a>'s
-            <a href="http://iesl.cs.umass.edu">Information Extraction and Synthesis Laboratory</a>
-            where I am working on <a href="http://rexa.info">REXA</a> (scientific literature search engine)
-            and <a href="http://factorie.googlecode.com">FACTORIE</a> (probabilistic programming framework).
-            Before that, I was a Research Programmer for <a href="http://l2r.cs.uiuc.edu/">Dan Roth</a>'s
-            <a href="http://l2r.cs.uiuc.edu/~cogcomp/">Cognitive Computation Group</a> where
-            my research was primarily focused on Textual Entailment.
-          </p>
-          <p>
-            <a id="gmail" href="http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE="
-               onclick="window.open('http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE=', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;"
-               title="Sorry, you gotta do an ReCAPTCHA">Email</a>
-            <a id="facebook" href="http://www.facebook.com/tim.vieira">Facebook</a>
-            <a id="delicious" href="http://delicious.com/timvieira">Delicious</a>
-            <a id="bitbucket" href="https://bitbucket.org/timv/">bitbucket</a>
-          </p>
-          <p>
-            <a href="CV/CV.pdf" style="font-size:13px">Resume/CV</a>
-          </p>
-          
-          <!--
+  <div id="leftcolumn">
+
+    <div id="name-container" class="accordion_content">
+      <h1 id="name">Tim Vieira</h1>
+      <p id="tagline">Research Programmer, Prospective Graduate Student</p>
+    </div>
+        
+    <div id="about" class="clearfix accordion_content">
+      <h2>About</h2>
+      
+      <p>
+        I'm currently a Research Programmer for the
+        <a href="http://iesl.cs.umass.edu">Information Extraction and Synthesis Laboratory</a>
+        (<a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a>) at 
+        <a href="http://cs.umass.edu">UMass</a> where I am working on 
+        <a href="http://rexa.info">REXA</a>, a scientific literature search engine, and 
+        <a href="http://factorie.googlecode.com">FACTORIE</a>, a probabilistic programming framework.
+        Before that, I was a Research Programmer for the 
+        <a href="http://l2r.cs.uiuc.edu/~cogcomp/">Cognitive Computation Group</a> 
+        (<a href="http://l2r.cs.uiuc.edu/">Dan Roth</a>) at <a href="http://cs.uiuc.edu">UIUC</a>
+        where my research was primarily focused on Textual Entailment.
+      </p>
+      
+      <div id="bunchoflinks">
+        <a id="gmail" href="http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE="
+           onclick="window.open('http://mailhide.recaptcha.net/d?k=01y9EGQwRVC22Op8H45UDEGA==&amp;c=FD-9uGr7no9xtZnHxR0OIUP1xHCy3JyfN0dQNjpyCnE=', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;"
+           title="Sorry, you gotta do an ReCAPTCHA">Email</a>
+        <a id="facebook" href="http://www.facebook.com/tim.vieira">Facebook</a>
+        <a id="delicious" href="http://delicious.com/timvieira">Delicious</a>
+        <a id="bitbucket" href="https://bitbucket.org/timv/">bitbucket</a>
+      </div>
+      
+      <div id="cv">
+        <a href="CV/CV.pdf" style="font-size:13px">Resume/CV</a>
+      </div>
+      
+      <!--
           <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fcs.umass.edu%2F%7Etimv&amp;layout=standard&amp;show_faces=true&amp;width=450&amp;action=like&amp;font=verdana&amp;colorscheme=light&amp;height=80"
                   scrolling="no"
                   frameborder="0"
                   style="border:none; overflow:hidden; width:450px; height:80px;"
                   allowTransparency="true"></iframe>
           -->
-
-        </div>
-        <div class="right">
-          <img style="width:300px; height:200px;" src="img/pic.jpg" alt="" />
-        </div>
-      </div>
     </div>
 
-      <h1 class="accordion_toggle">Publications</h1>
-      <div class="accordion_content">
-        <ul>
-          <li>M. Sammons, V. Vydiswaran, T. Vieira, N. Johri, M. Chang, D. Goldwasser, V. Srikumar, G. Kundu, Y. Tu, K. Small, J. Rule, Q. Do and D. Roth, <a href="doc/UI_ccg.proceedings.pdf">Relation Alignment for Textual Entailment Recognition</a>. Text Analysis Conference (TAC)  (2009)</li>
-        </ul>
-      </div>
+    <div id="interests" class="clearfix accordion_content">
+      <h2>Research Interests</h2>
+      <p>
+        <b>keywords</b>: machine learning, natural language processing, information extraction,
+        learning and inference in complex factor graphs, distantly supervised learning.
+      </p>
 
-      <h1 class="accordion_toggle">Code</h1>
-      <div class="accordion_content">
-        <p>
-          Feel free to contact me about any errors or difficulties using any of the following resources.
-          <em>Use at your own risk.</em>
-        </p>
+      <p>
+        I am interested in applying Machine Learning to tough problems. 
+      </p>
+      
+    </div>
+    
+    <div id="fun" class="accordion_content">
+      <h2>Fun</h2>
 
-
-        <div class="clearfix bubble">
-          <a href="http://factorie.googlecode.com/">
-            <img class="thumbnail left" style="height:125px;" src="img/factorie.png" alt="" />
-          </a>
-          <div class="right project-blurb">
-            <h3><a href="http://factorie.googlecode.com/">Factorie</a></h3>
-            <p>
-              FACTORIE is a probabilistic programming framework implemented as
-              a software library in <a href="http://www.scala-lang.org/">Scala</a>. Providing
-              users with a succinct framework for creating <em>abritrary</em> factor graphs with
-              tied parameters, estimating parameters, and performing inference.
-            </p>
-          </div>
+      <div class="clearfix project">
+        <h3>Snakeboarding</h3>
+        <img class="thumbnail" src="img/TIM_rail.jpg" alt="" />
+        <div class="blurb">
+          I used to be quite the <a href="http://streetboarding.com/">snakeboarder</a>
+          (<a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">video 1</a>,
+          <a href="http://www.youtube.com/watch?v=N1zkGr85um4">video 2</a>). I guess you could say
+          that I learned programming because of it! I started off making webpages to host my
+          pictures, video, and bio.
         </div>
-
-        <div class="clearfix bubble">
-          <a href="https://bitbucket.org/timv/python-extras/src">
-            <img class="thumbnail left" style="height:125px;" src="img/python-hackin.gif" alt="" />
-          </a>
-          <div class="right project-blurb">
-            <h3><a href="https://bitbucket.org/timv/python-extras/src">Python Utilities</a></h3>
-            <p>
-              Collection of various utilities, recipes, and "gutted" components of other projects.
-            </p>
-          </div>
-        </div>
-        
-        <div class="clearfix bubble">
-          <img class="thumbnail left" style="height:125px;" src="img/quantities.png" alt="" />
-          <div class="right project-blurb">
-            <h3>
-              <a href="">Textual Entailment Annotation and Visualization</a>
-            </h3>
-            An annotation interface for textual entailment. The current version is only tested on
-            Mozilla Firefox 3.0+.
-            I have an IE7+ fix in a <span style="color:red">new release coming soon</span> as well
-            as some new features, such as edge selection. I am interested in ways I can improve it;
-            feel free to send me comments or hack around with it.
-            <div style="margin-top: 12px;">
-              Be sure to check out the                           
-              <a href="http://l2r.cs.uiuc.edu/~cogcomp/unified-demo/demo.php">demo</a>.
-            </div>
-          </div>
-        </div>
-
       </div>
       
-
-    <h1 class="accordion_toggle">Notes</h1>
-
-    <div class="accordion_content">
-      <div class="bubble clearfix">
+      <div class="clearfix project">
+        <h3>Cars</h3>
+        <p>
+          I often find myself in a situation where people do not believe me when I tell them about
+          my old cars. So, I found a few videos sitting on an old external hard drive to prove my
+          point. Also, I received the Senior Superlative of "Best Car of the Senior Class" at
+          American Heritage School in 2004 (maybe I should scan the yearbook page). I'm not sure
+          which car got me the award. I wish I documented my adventures in car customization better.
+        </p>
         
-        <img style="top: 0; width: 125px; border: 1px solid silver; margin: 0 10px 4px 0;"
-             src="img/cheat-sheet-thumb.gif" class="left" alt="" />
+        <div class="clearfix project">
+          <img class="thumbnail" src="img/fifth-avenue.jpg" alt="" />
+          <div class="blurb">
+            My first car (<a title="My bouncing '84 Fifth Ave."
+                             href="http://www.youtube.com/v/iIXSJnfQK68">video</a>)
+            - a gorgeous 1984 Chrysler Fifth Avenue with red velvet interior, purchased for a mere
+            $900. I installed the <em>hydraulics</em> myself!
+          </div>
+        </div>
+          
+        <div class="clearfix project">
+            <img class="thumbnail" src="img/rimz0rz-thumbnail.png" alt="" />
+            <div class="blurb">
+              My Second car (<a title="The Big Bad Baby Blue Buick"
+                                href="http://www.youtube.com/v/HDZezucXcZg">video</a>)
+              - "The Big Bad Baby Blue Buick" the <em>hydraulics</em> are on the
+              back of this one, you can't tell in this video, but the car was scrapping the ground a
+              bit.
+            </div>
+        </div>
+
+        <p>
+          The videos don't show any of the great stuff on the interior, such as train air-horn, fog
+          machine, the 1400 Watts of stereo power, television and Playstation 2, various neon
+          lights, or the custom dashboard. It definitely does not show the cracked chassis that I
+          had to welded back together or the water pump, alternator, starter motor, and carburetor
+          my dad and I fixed. Working on these cars was an invaluable learning experience and a load
+          of fun.
+        </p>
+
+      </div>
+    </div>
+            
+  </div>
+  
+  <div id="rightcolumn">
+
+    <div id="mugshot" class="accordion_content">
+      <img src="img/mugshot.png" alt="" />
+    </div>
+
+  
+    <div id="publications" class="accordion_content">
+      <h2>Publications</h2>
+      <ul>
+        <li>
+          M. Sammons, V. Vydiswaran, T. Vieira, N. Johri, M. Chang, D. Goldwasser,
+          V. Srikumar, G. Kundu, Y. Tu, K. Small, J. Rule, Q. Do and D. Roth,
+          <a href="doc/UI_ccg.proceedings.pdf">Relation Alignment for Textual Entailment Recognition.</a>
+          Text Analysis Conference (TAC)  (2009)
+        </li>
+      </ul>
+    </div>
+    
+    <div id="code" class="accordion_content">
+      <h2>Code</h2>
+      
+      <p>
+        Feel free to contact me about any errors or difficulties using any of the following resources.
+        <em>Use at your own risk.</em>
+      </p>
+      
+      <div class="clearfix project">
+        <a href="http://factorie.googlecode.com/">
+          <img class="thumbnail" src="img/factorie.png" alt="" />
+        </a>
+        <div class="blurb">
+          <h3><a href="http://factorie.googlecode.com/">Factorie</a></h3>
+          <p>
+            FACTORIE is a probabilistic programming framework implemented as
+            a software library in <a href="http://www.scala-lang.org/">Scala</a>. Providing
+            users with a succinct framework for creating <em>abritrary</em> factor graphs with
+            tied parameters, estimating parameters, and performing inference.
+          </p>
+        </div>
+      </div>
+      
+      <div class="clearfix project">
+        <a href="https://bitbucket.org/timv/python-extras/src">
+          <img class="thumbnail" src="img/python-hackin.gif" alt="" />
+        </a>
+        <div class="blurb">
+          <h3><a href="https://bitbucket.org/timv/python-extras/src">Python Utilities</a></h3>
+          <p>
+            Collection of various utilities, recipes, and "gutted" components of other projects.
+          </p>
+        </div>
+      </div>
+      
+      <div class="clearfix project">
+        <img class="thumbnail" src="img/quantities.png" alt="" />
+        <div class="blurb">
+          <h3>
+            <a href="">Textual Entailment Annotation and Visualization</a>
+          </h3>
+          An annotation interface for textual entailment. The current version is only tested on
+          Mozilla Firefox 3.0+.
+          I have an IE7+ fix in a <span style="color:red">new release coming soon</span> as well
+          as some new features, such as edge selection. I am interested in ways I can improve it;
+          feel free to send me comments or hack around with it.
+          <div style="margin-top: 12px;">
+            Be sure to check out the
+            <a href="http://l2r.cs.uiuc.edu/~cogcomp/unified-demo/demo.php">demo</a>.
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div id="notes" class="accordion_content">
+      <h2>Notes</h2>
+      
+      <div class="project clearfix">
+        <!--
+        style="top: 0; width: 125px; border: 1px solid silver; margin: 0 10px 4px 0;"-->
+        <img class="thumbnail" src="img/cheat-sheet-thumb.gif" alt="" />
         
-        These notes or "cheat sheets" exists primarily for myself, but I see no reason why I 
-        should not make them publicly available.  Use at your own risk and 
+        These notes or "cheat sheets" exists primarily for myself, but I see no reason why I
+        should not make them publicly available.  Use at your own risk and
         alert me of any mistakes. The LaTeX source for all of these cheat-sheets can be found
         in my <a href="https://bitbucket.org/timv/cheat-sheets/src">bitbucket</a>
-
+        
         <p style="margin-top: 8px">
           
           <a href="https://bitbucket.org/timv/cheat-sheets/raw/tip/statistics.pdf">Statistics</a> -
@@ -171,69 +256,20 @@
       </div>
     </div>
     
-    <h1 class="accordion_toggle">Fun</h1>
-    <div class="accordion_content">
-
-      <div class="clearfix bubble">
-        <div class="">
-          <h3>Lowrider</h3>
-          <p>
-            I often find myself in a situation where people do not believe me when I tell them about
-            my old cars. So, I found a few videos sitting on an old external hard drive to prove my
-            point. Also, I received the Senior Superlative of "Best Car of the Senior Class" at
-            American Heritage School in 2004 (maybe I should scan the yearbook page). I'm not sure
-            which car got me the award. I wish I documented my adventures in customizing these two
-            cars better, but unfortunately this is the extent of the documentation I have.
-          </p>
-
-          <div class="clearfix">
-            <img class="thumbnail left" src="img/fifth-avenue.jpg" alt="" />
-            <div class="right project-blurb">
-              My first car (<a title="My bouncing '84 Fifth Ave."
-                               href="http://www.youtube.com/v/iIXSJnfQK68">video</a>) 
-              - a gorgeous 1984 Chrysler Fifth Avenue with red velvet interior, purchased for a mere
-              $900. I installed the <em>hydraulics</em> myself, a non-trivial task.
-          </div>
-        </div>
-          
-          <div class="clearfix" style="margin-top:5px">
-            <div class="thumbnail left" style="background: white url(img/rims.gif) no-repeat scroll center center; height:93px; display:block;"></div>
-            <div class="right project-blurb">
-              My Second car (<a title="The Big Bad Baby Blue Buick"
-                                href="http://www.youtube.com/v/HDZezucXcZg">video</a>) 
-              - "The Big Bad Baby Blue Buick" the <em>hydraulics</em> are on the
-              back of this one, you can't tell in this video, but the car was scrapping the ground a              
-              bit.
-            </div>
-          </div>
-
-          The videos don't show any of the great stuff on the interior, such as train air-horn, fog
-          machine, the 1400 Watts of stereo power, television and Playstation 2, various neon
-          lights, or the custom dashboard. It definitely does not show the cracked chassis that I
-          had to welded back together or the water pump, alternator, starter motor, and carburetor
-          my dad and I fixed. Working on these cars was an invaluable learning experience and a load
-          of fun.
-        </div>
-      </div>
-
-      <div class="clearfix bubble">
-        <img class="thumbnail left" src="img/TIM_rail.jpg" alt="" />
-        <div class="right project-blurb">
-          <h3>Snakeboarding</h3>
-          I used to be quite the <a href="http://streetboarding.com/">snakeboarder</a>
-          (<a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">video 1</a>,
-          <a href="http://www.youtube.com/watch?v=N1zkGr85um4">video 2</a>). This is how I spent all
-          of my free time for about 3 years. I guess you could say that I learned programming
-          because of it! I started off making webpages and flash applications to host my pictures,
-          video, and bio.
-        </div>
-      </div>
-
-    </div>
-
   </div>
+      
+</div>  
 
+
+<div id="footer">
+  <div style="margin: 0 auto 0 auto; width: 88px">
+    <a href="http://validator.w3.org/check?uri=referer"
+       style="color:#fff;">
+      <img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Strict" height="31" width="88" />
+      </a>
+  </div>
 </div>
+  
 
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -241,20 +277,10 @@
 </script>
 <script type="text/javascript">
   try {
-  var pageTracker = _gat._getTracker("UA-8781169-1");
-  pageTracker._trackPageview();
+    var pageTracker = _gat._getTracker("UA-8781169-1");
+    pageTracker._trackPageview();
   } catch(err) {}
 </script>
-
-<div id="footer">
-  <div style="margin: 0 auto 0 auto; width: 88px">
-    <a href="http://validator.w3.org/check?uri=referer" 
-       style="color:#fff;">
-      <img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Strict" height="31" width="88" />
-    </a>
-  </div>
-</div>
-
-
+  
 </body>
 </html>
