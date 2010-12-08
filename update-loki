@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+hg push ssh://loki.cs.umass.edu/public_html
+ssh loki.cs.umass.edu "cd public_html && hg up"
