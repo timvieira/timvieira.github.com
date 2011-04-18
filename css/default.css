@@ -152,6 +152,12 @@ h2 {
       padding-left: 18px
     }
 
+    #github {
+      background:transparent url(../img/github.png) no-repeat scroll left center;
+      padding: 2px 0px 0px 18px;
+    }
+
+
   #cv {
     padding: 2px 0 4px 0;
   }
