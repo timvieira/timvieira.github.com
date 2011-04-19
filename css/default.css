@@ -109,7 +109,7 @@ h2 {
   padding: 0;
 }
 
-.accordion_content {
+.box {
   color: #444;
   border: 1px solid #eee;
   overflow: hidden;
