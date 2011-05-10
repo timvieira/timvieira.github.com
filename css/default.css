@@ -159,6 +159,7 @@ h2 {
 
 
   #cv {
+    font-size: 13px;
     padding: 2px 0 4px 0;
   }
 
@@ -184,12 +185,12 @@ h2 {
       font-size: 14px;
     }
 
-#leftcolumn .project .blurb {
+#rightcolumn .project .blurb {
   width: 195px;
   float: right;
 }
 
-#rightcolumn .project .blurb {
+#leftcolumn .project .blurb {
   display: block;
   width: 335px;
   float: right;
@@ -203,13 +204,15 @@ h2 {
 
 
 #leftcolumn {
-  width: 325px;
+  width: 465px;
+
   float: left;
   margin-left: 5px;
 }
 
 #rightcolumn {
-  width: 465px;
+  width: 325px;
+
   float: right;
 }
 
