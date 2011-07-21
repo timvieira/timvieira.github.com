@@ -1,6 +1,8 @@
+/* ------------- GENERAL ------------- */
+
 *, html, body {
-  margin: 0 0 0 0;
-  padding: 0 0 0 0;
+  margin: 0;
+  padding: 0;
 }
 
 html {
@@ -10,7 +12,7 @@ html {
 }
 
 body {
-  color: #000;
+  color: #777;
   font-family: Helvetica, 'trebuchet ms';
   /*font-family: 'Lucida Grande', Verdana, Arial;*/
   font-size: 11px;
@@ -65,52 +67,39 @@ a[href *=".pdf?"], a[href *=".PDF?"] {
   visibility: hidden;
 }
 
+/* ------- */
+
+
+#column-1 {
+  width: 325px;
+  float: right;
+}
+
+#column-2 {
+  width: 465px;
+  float: left;
+  margin-left: 5px;
+}
+
+h1, h2, h3, h4 {
+  font-weight: normal;
+  text-decoration: none;
+}
 
 h1 {
-  color: #000;
-  font-size: 20px;
-  font-weight: normal;
-  margin: 0 0 0 0;
+  font-size: 18px;
 }
 
 h2 {
-  font-weight: normal;
   margin: 5px 0 10px 0;
 }
-
-#name-container {
-
-}
-
-  #name {
-    background-color: transparent;
-    color: #444;
-    display: inline;
-    font-family: helvetica, 'trebuchet ms';
-    font-size: 30px;
-    font-weight: 300;
-    outline-color: #444;
-    outline-style: none;
-    outline-width: 0px;
-    text-decoration: none;
-  }
-
-  #tagline {
-    font-size: 12px;
-    font-weight: 200;
-    padding: 0;
-    margin: 0 0 0 0;
-    color: #666;
-  }
 
 #container {
   margin: 0 auto 0 auto;
   width: 800px;
-  padding: 0;
 }
 
 .box {
-  color: #444;
   border: 1px solid #eee;
   overflow: hidden;
   padding: 10px;
@@ -118,13 +107,28 @@ h2 {
   margin-bottom: 5px;
 }
 
+#name-container {}
+
+  #name {
+    font-family: helvetica, 'trebuchet ms';
+    font-size: 30px;
+    font-weight: 300;
+  }
+
+  #tagline {
+    font-size: 12px;
+    font-weight: 200;
+    padding: 0;
+    margin: 0 0 0 6px;
+  }
+
 #interests {}
-#mugshot {}
-#mugshot img { width: 100%; }
 #publications {}
 #code {}
 #fun {}
 #notes {}
+#mugshot {}
+  #mugshot img { width: 100%; }
 
 #about {}
 
@@ -157,11 +161,11 @@ h2 {
       padding: 2px 0px 0px 18px;
     }
 
-
   #cv {
     font-size: 13px;
     padding: 2px 0 4px 0;
   }
+
 
 .project {
   margin: 6px 0px 2px 0px;
@@ -178,46 +182,25 @@ h2 {
     width: 100px;
     border: 1px solid silver;
     float: left;
-  }  
+  }
+
+  .project .blurb {
+    float: right;
+  }
 
     .project .blurb h3 {
       margin: 0px 0px 4px 0px;
       font-size: 14px;
     }
 
-#rightcolumn .project .blurb {
+#column-1 .project .blurb {
   width: 195px;
-  float: right;
 }
 
-#leftcolumn .project .blurb {
-  display: block;
+#column-2 .project .blurb {
   width: 335px;
-  float: right;
 }
-  
-    
 
 #footer {
   clear: both;
-}
-
-
-#leftcolumn {
-  width: 465px;
-
-  float: left;
-  margin-left: 5px;
-}
-
-#rightcolumn {
-  width: 325px;
-
-  float: right;
-}
-
-
-
-img[src *="img/quantities.png"] {
-  height: 100px;
 }
