@@ -28,6 +28,10 @@ li {
   display: block;  /* no bullets on my line-items */
 }
 
+#publications li {
+  margin-bottom: 10px;
+}
+
 ul {
   margin: 0px 0px 8px 4px;
 }
