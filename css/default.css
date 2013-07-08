@@ -12,12 +12,11 @@ html {
 }
 
 body {
-  color: #444; /*#777;*/
-
+  color: #444;
   font-family: 'Lucida Grande', Verdana, Arial;
   font-size: 11px;
   height: 100%;
-  background-color: #023baf; /*#eee;*/
+  background-color: #023baf;
 }
 
 p {
@@ -43,29 +42,6 @@ a:link,
 a:visited {
     color: #09f;
 }
-
-/*
-a[href $=".py"], a[href $=".PY"],
-a[href *=".py#"], a[href *=".PY#"],
-a[href *=".py?"], a[href *=".PY?"] {
-    background:transparent url(../img/python.png) no-repeat scroll right center;
-    padding-right:18px;
-}
-
-a[href $=".pde"], a[href $=".PDE"],
-a[href *=".pde#"], a[href *=".PDE#"],
-a[href *=".pde?"], a[href *=".PDE?"] {
-    background:transparent url(../img/arduino.png) no-repeat scroll right center;
-    padding-right:18px;
-}
-
-a[href $=".pdf"], a[href $=".PDF"],
-a[href *=".pdf#"], a[href *=".PDF#"],
-a[href *=".pdf?"], a[href *=".PDF?"] {
-    background:transparent url(../img/pdf.gif) no-repeat scroll right center;
-    padding-right:17px;
-}
-*/
 
 .clearfix:after {
   content: ".";
