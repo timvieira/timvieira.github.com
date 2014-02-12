@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2014-02-10T00:00:00-05:00</updated><entry><title>Gradient-vector product</title><link href="/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2014-02-10T00:00:00-05:00</updated><entry><title>Gradient-vector product</title><link href="/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;We've all written the following test for our gradient code (known as the finite-difference approximation).&lt;/p&gt;
 &lt;p&gt;&lt;span class="math"&gt;\[
@@ -40,17 +40,4 @@ H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \Big)
 \]&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on &lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell vbox"&gt;
-&lt;div class="input hbox"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[]:
-&lt;/div&gt;
-&lt;div class="input_area box-flex1"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
 &lt;/div&gt;&lt;/p&gt;</summary><category term="math"></category></entry></feed>
