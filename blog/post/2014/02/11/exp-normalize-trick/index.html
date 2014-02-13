@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent</title>
+  <title>Exp-normalize trick</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1751,15 +1751,67 @@ init_mathjax();
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<ul>
-    <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
-</ul>
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Exp-normalize trick</h1>
+      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
+(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
+<p>Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
+parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:</p>
+<p>$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$</p>
+<p>The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any $b \in \mathbb{R}$,</p>
+<p>$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$</p>
+<p>In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
+is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
+impossible$-$the largest number exponentiated after shifting is $0$.</p>
+<p><strong>Exp-normalize v. log-sum-exp</strong></p>
+<p>If what you want to remain in log-space, that is, compute
+$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
+$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to $\exp$, which would be required if using log-sum-exp.</p>
+<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$</p>
+<p>where
+$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$</p>
+<p>Typically with the same choice for $b$ as above.</p></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -1825,6 +1877,9 @@ init_mathjax();
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2014/02/11/exp-normalize-trick/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/';
+          var disqus_title = 'Exp-normalize trick';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';

@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/category/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-10T00:00:00-05:00</updated><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/category/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-11T00:00:00-05:00</updated><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
+&lt;p&gt;Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
+parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:&lt;/p&gt;
+&lt;p&gt;$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$&lt;/p&gt;
+&lt;p&gt;The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any $b \in \mathbb{R}$,&lt;/p&gt;
+&lt;p&gt;$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$&lt;/p&gt;
+&lt;p&gt;In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
+is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
+impossible$-$the largest number exponentiated after shifting is $0$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If what you want to remain in log-space, that is, compute
+$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
+$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to $\exp$, which would be required if using log-sum-exp.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$&lt;/p&gt;
+&lt;p&gt;where
+$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$&lt;/p&gt;
+&lt;p&gt;Typically with the same choice for $b$ as above.&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;We've all written the following test for our gradient code (known as the finite-difference approximation).&lt;/p&gt;
 &lt;p&gt;&lt;span class="math"&gt;\[

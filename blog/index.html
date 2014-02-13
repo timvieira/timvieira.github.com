@@ -1761,6 +1761,49 @@ init_mathjax();
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+      </h1>
+      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
+(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
+<p>Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
+parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:</p>
+<p>$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$</p>
+<p>The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any $b \in \mathbb{R}$,</p>
+<p>$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$</p>
+<p>In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
+is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
+impossible$-$the largest number exponentiated after shifting is $0$.</p>
+<p><strong>Exp-normalize v. log-sum-exp</strong></p>
+<p>If what you want to remain in log-space, that is, compute
+$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
+$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to $\exp$, which would be required if using log-sum-exp.</p>
+<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$</p>
+<p>where
+$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$</p>
+<p>Typically with the same choice for $b$ as above.</p></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
       <p class="meta"><time datetime="2014-02-10T00:00:00" pubdate>Feb 10, 2014</time></p>
@@ -1820,6 +1863,9 @@ H(\boldsymbol{x})\, \boldsymbol{d} \approx
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </li>
