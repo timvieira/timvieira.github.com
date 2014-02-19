@@ -1768,25 +1768,19 @@ init_mathjax();
 
   <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
-optimizing. The plots were not only great for illustrating the interesting
-properties of the objective to my audience, but they also helped <em>me</em> understand
-my objective. A month later, at least three other people told me that my plots
-had inspired them to make similar plots. This trick is really simple and not
+optimizing. A month later, at least three other people told me that my plots had
+inspired them to make similar plots. The plotting trick is really simple and not
 original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>The goal</strong>: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
-function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
+<p>Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional function ($d
+\gg 2$), which you'd like to visualize. Unfortunately, you are like me and can't
+see in high-dimensions what do you do?</p>
 <p>One simple thing to do is take a nonzero vector $\boldsymbol{d} \in \mathbb{R}$,
 take a point of interest $\boldsymbol{x}$, and build a local picture of $f$ by
-evaluating it at various intervals along the chosen direction
-$\boldsymbol{d}$. Evaluate at a variety of points as follows,</p>
-<p>for $\alpha_i \in [\alpha_\min, \alpha_\max]$:</p>
-<p>$$
-\ \ \ \ f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d})
-$$</p>
-<p>For course, you'll have to discretize the range of $\alpha$ and pick a
-reasonable range. Note, $\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all
-$\alpha_i$. Now, you can plot $(f_i, \alpha_i)$.</p>
+evaluating it at various intervals along the chosen direction as follows,</p>
+<p>$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$</p>
+<p>For course, you'll have to pick a reasonable range and discretize it. Note,
+$\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
+plot $(\alpha_i,f_i)$.</p>
 <p><strong>Picking directions</strong>: There are many alternatives for picking
 $\boldsymbol{d}$, my favorites are:</p>
 <ol>
@@ -1798,19 +1792,23 @@ $\boldsymbol{d}$, my favorites are:</p>
 <p>Coordinate vectors. Varying one dimension per plot.</p>
 </li>
 <li>
-<p>Random. I recommend a direction draw from a spherical
+<p>Random. I recommend directions drawn from a spherical
     Gaussian.<sup id="fnref:sphericalgaussian"><a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote">1</a></sup> The reason being that such a vector is
     uniformly distributed across all unit-length directions (i.e., the angle of
     the vector, not it's length). We will vary the length ourselves via
-    $\alpha$. It's probably best that our plots don't randomly vary in scale. In
-    other words, $\alpha$'s units are more similar across different random
-    directions.</p>
+    $\alpha$. It's probably best that our plots don't randomly vary in scale.</p>
 </li>
 </ol>
 <p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
 using 2 vectors, $\boldsymbol{d_1}$ and $\boldsymbol{d_2}$, and varying two
 parameters $\alpha$ and $\beta$,</p>
-<p>$f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})$</p>
+<p>$$
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+$$</p>
+<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.</p>
 <h2>Notes</h2>
 <div class="footnote">
 <hr />

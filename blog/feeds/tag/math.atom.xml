@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/math.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-12T00:00:00-05:00</updated><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
-optimizing. The plots were not only great for illustrating the interesting
-properties of the objective to my audience, but they also helped &lt;em&gt;me&lt;/em&gt; understand
-my objective. A month later, at least three other people told me that my plots
-had inspired them to make similar plots. This trick is really simple and not
+optimizing. A month later, at least three other people told me that my plots had
+inspired them to make similar plots. The plotting trick is really simple and not
 original, but nonetheless I'll still write it up for all to enjoy.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The goal&lt;/strong&gt;: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
-function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?&lt;/p&gt;
+&lt;p&gt;Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional function ($d
+\gg 2$), which you'd like to visualize. Unfortunately, you are like me and can't
+see in high-dimensions what do you do?&lt;/p&gt;
 &lt;p&gt;One simple thing to do is take a nonzero vector $\boldsymbol{d} \in \mathbb{R}$,
 take a point of interest $\boldsymbol{x}$, and build a local picture of $f$ by
-evaluating it at various intervals along the chosen direction
-$\boldsymbol{d}$. Evaluate at a variety of points as follows,&lt;/p&gt;
-&lt;p&gt;for $\alpha_i \in [\alpha_\min, \alpha_\max]$:&lt;/p&gt;
-&lt;p&gt;$$
-\ \ \ \ f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d})
-$$&lt;/p&gt;
-&lt;p&gt;For course, you'll have to discretize the range of $\alpha$ and pick a
-reasonable range. Note, $\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all
-$\alpha_i$. Now, you can plot $(f_i, \alpha_i)$.&lt;/p&gt;
+evaluating it at various intervals along the chosen direction as follows,&lt;/p&gt;
+&lt;p&gt;$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$&lt;/p&gt;
+&lt;p&gt;For course, you'll have to pick a reasonable range and discretize it. Note,
+$\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
+plot $(\alpha_i,f_i)$.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Picking directions&lt;/strong&gt;: There are many alternatives for picking
 $\boldsymbol{d}$, my favorites are:&lt;/p&gt;
 &lt;ol&gt;
@@ -31,19 +25,23 @@ $\boldsymbol{d}$, my favorites are:&lt;/p&gt;
 &lt;p&gt;Coordinate vectors. Varying one dimension per plot.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Random. I recommend a direction draw from a spherical
+&lt;p&gt;Random. I recommend directions drawn from a spherical
     Gaussian.&lt;sup id="fnref:sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a vector is
     uniformly distributed across all unit-length directions (i.e., the angle of
     the vector, not it's length). We will vary the length ourselves via
-    $\alpha$. It's probably best that our plots don't randomly vary in scale. In
-    other words, $\alpha$'s units are more similar across different random
-    directions.&lt;/p&gt;
+    $\alpha$. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
 using 2 vectors, $\boldsymbol{d_1}$ and $\boldsymbol{d_2}$, and varying two
 parameters $\alpha$ and $\beta$,&lt;/p&gt;
-&lt;p&gt;$f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})$&lt;/p&gt;
+&lt;p&gt;$$
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+$$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Closing remarks&lt;/strong&gt;: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.&lt;/p&gt;
 &lt;h2&gt;Notes&lt;/h2&gt;
 &lt;div class="footnote"&gt;
 &lt;hr /&gt;
