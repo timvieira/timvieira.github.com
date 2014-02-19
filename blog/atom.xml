@@ -11,7 +11,7 @@ see in high-dimensions what do you do?&lt;/p&gt;
 take a point of interest $\boldsymbol{x}$, and build a local picture of $f$ by
 evaluating it at various intervals along the chosen direction as follows,&lt;/p&gt;
 &lt;p&gt;$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$&lt;/p&gt;
-&lt;p&gt;For course, you'll have to pick a reasonable range and discretize it. Note,
+&lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
 $\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
 plot $(\alpha_i,f_i)$.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Picking directions&lt;/strong&gt;: There are many alternatives for picking
