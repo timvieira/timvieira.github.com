@@ -1768,12 +1768,18 @@ init_mathjax();
 
   <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three other people told me that my plots had
-inspired them to make similar plots. The plotting trick is really simple and not
-original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p>Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional function ($d
-\gg 2$), which you'd like to visualize. Unfortunately, you are like me and can't
-see in high-dimensions what do you do?</p>
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.</p>
+<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.</p>
+<p><img alt="Alt text" src="/images/cross-section.png" /></p>
+<p><strong>Details</strong>: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
+function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?</p>
 <p>One simple thing to do is take a nonzero vector $\boldsymbol{d} \in
 \mathbb{R}^d$, take a point of interest $\boldsymbol{x}$, and build a local
 picture of $f$ by evaluating it at various intervals along the chosen direction
@@ -1878,48 +1884,7 @@ $$</p>
       <p class="meta"><time datetime="2014-02-10T00:00:00" pubdate>Feb 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We've all written the following test for our gradient code (known as the finite-difference approximation).</p>
-<p><span class="math">\[
-\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
- \frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon\! \cdot\! \boldsymbol{e_i}) 
- - f(\boldsymbol{x} - \varepsilon\! \cdot\! \boldsymbol{e_i}) 
- \Big)
-\]</span></p>
-<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at <span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to <span class="math">\(o(\varepsilon^2)\)</span> additive error.</p>
-<p>This is a specific instance of a more general approximation! The dot product of the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated with the following formula,</p>
-<p><span class="math">\[
-\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon\! \cdot\! \boldsymbol{d}) 
- - f(\boldsymbol{x} - \varepsilon\! \cdot\! \boldsymbol{d}) 
- \Big)
-\]</span></p>
-<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also exact in the limit and just as accurate.</p>
-<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for approximating a high-dimensional gradient because the number of function evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However, if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span> function evaluations is probably faster than specialized code for computing the gradient.</p>
-<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance is available. Andrei (2009) reccommends</p>
-<p><span class="math">\[
-\varepsilon = \sqrt{ \epsilon_{\text{mach}} } (1 + \| \boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
-\]</span></p>
-<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is <a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users: <code>numpy.finfo(x.dtype).eps</code>).</p>
-<h2 id="why-do-i-care">Why do I care?</h2>
-<ol style="list-style-type: decimal">
-<li><p>Well, I tend to work on sparse, but high-dimensional problems where finite-difference would be too slow. Thus, my usual solution is to only test several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions which should be nonzero. With the new trick, I can effectively test more dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on the angle of the vector.</p></li>
-<li><p>Sometimes the gradient-vector dot product is the end goal. This is the case with Hessian-vector products, which arises in many optimization algorithms, such as stochastic meta descent. Hessian-vector products are an instance of the gradient-vector dot product because the Hessian is just the gradient of the gradient.</p></li>
-</ol>
-<h2 id="hessian-vector-product">Hessian-vector product</h2>
-<p>Hessian-vector products are an instance of the gradient-vector dot product because since the Hessian is just the gradient of the gradient! Now you only need to remember one formula!</p>
-<p><span class="math">\[
-H(\boldsymbol{x})\, \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-  \nabla f(\boldsymbol{x} + \varepsilon\! \cdot\! \boldsymbol{d}) 
-- \nabla f(\boldsymbol{x} - \varepsilon\! \cdot\! \boldsymbol{d}) 
-\Big)
-\]</span></p>
-<p>With this trick you never have to actually compute the gnarly Hessian! More on <a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
-</div></p></div>
+  <div class="entry-content"><p>{% notebook gradient-vector-product.ipynb cells[1:] %}</p></div>
   <footer>
     <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Read On &crarr;</a>
   </footer>

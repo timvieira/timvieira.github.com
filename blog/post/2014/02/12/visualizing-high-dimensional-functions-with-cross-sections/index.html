@@ -1766,12 +1766,18 @@ init_mathjax();
 
   <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three other people told me that my plots had
-inspired them to make similar plots. The plotting trick is really simple and not
-original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p>Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional function ($d
-\gg 2$), which you'd like to visualize. Unfortunately, you are like me and can't
-see in high-dimensions what do you do?</p>
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.</p>
+<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.</p>
+<p><img alt="Alt text" src="/images/cross-section.png" /></p>
+<p><strong>Details</strong>: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
+function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?</p>
 <p>One simple thing to do is take a nonzero vector $\boldsymbol{d} \in
 \mathbb{R}^d$, take a point of interest $\boldsymbol{x}$, and build a local
 picture of $f$ by evaluating it at various intervals along the chosen direction
