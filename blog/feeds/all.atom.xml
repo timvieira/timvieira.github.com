@@ -9,7 +9,7 @@ non-smooth (black) and a smooth approximating function (blue). The plot shows
 that the approximation is faithful to the overall shape, but sometimes
 over-smooths. In this case, we miss the maximum, which happens near the middle
 of the figure.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Alt text" src="/images/cross-section.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Alt text" src="/blog/images/cross-section.png" /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Details&lt;/strong&gt;: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
 function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
 me and can't see in high-dimensions what do you do?&lt;/p&gt;
