@@ -16,7 +16,7 @@ $\mathbb{E}\left[ f(x) \right]$. The Delta method approximates this expection by
 replacing $f$ by it's second-order Talylor approximation $\hat{f_{a}}$ taken at
 some point $a$&lt;/p&gt;
 &lt;p&gt;$$
-\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a) (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
+\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
 $$&lt;/p&gt;
 &lt;p&gt;The expectation of this Talyor approximation is a quadratic function! Let's try
 to apply our new equation for the expected value of quadratic. We can use the
@@ -132,7 +132,31 @@ $$&lt;/p&gt;
 $$
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$&lt;/p&gt;
-&lt;p&gt;Typically with the same choice for $b$ as above.&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;p&gt;Typically with the same choice for $b$ as above.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
+avoid numerical overflow. In the case of $\text{sigmoid}(x)$, we have a
+distribution with unnormalized log probabilities $[x,0]$, where we are only
+interested in the probability of the first event. From the exp-normalize
+identity, we know that the distributions $[x,0]$ and $[0,-x]$ are equivalent (to
+see why, plug in $b=\max(0,x)$). This is why sigmoid is often expressed in one
+of two equivalent ways:&lt;/p&gt;
+&lt;p&gt;$$
+\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+$$&lt;/p&gt;
+&lt;p&gt;Interestingly, each version covers an extreme case: $x=\infty$ and $x=-\infty$,
+respectively. Below is some python code which implements the trick:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;Numerically-stable sigmoid function.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c"&gt;# if x is less than zero then z will be small, denom can&amp;#39;t be&lt;/span&gt;
+        &lt;span class="c"&gt;# zero because it&amp;#39;s 1+z.&lt;/span&gt;
+        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="math"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
 &lt;p&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx

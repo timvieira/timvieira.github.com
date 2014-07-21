@@ -1783,7 +1783,7 @@ $\mathbb{E}\left[ f(x) \right]$. The Delta method approximates this expection by
 replacing $f$ by it's second-order Talylor approximation $\hat{f_{a}}$ taken at
 some point $a$</p>
 <p>$$
-\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a) (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
+\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
 $$</p>
 <p>The expectation of this Talyor approximation is a quadratic function! Let's try
 to apply our new equation for the expected value of quadratic. We can use the
@@ -1925,7 +1925,31 @@ $$</p>
 $$
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$</p>
-<p>Typically with the same choice for $b$ as above.</p></div>
+<p>Typically with the same choice for $b$ as above.</p>
+<p><strong>Numerically-stable sigmoid function</strong></p>
+<p>The sigmoid function can be computed with the exp-normalize trick in order to
+avoid numerical overflow. In the case of $\text{sigmoid}(x)$, we have a
+distribution with unnormalized log probabilities $[x,0]$, where we are only
+interested in the probability of the first event. From the exp-normalize
+identity, we know that the distributions $[x,0]$ and $[0,-x]$ are equivalent (to
+see why, plug in $b=\max(0,x)$). This is why sigmoid is often expressed in one
+of two equivalent ways:</p>
+<p>$$
+\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+$$</p>
+<p>Interestingly, each version covers an extreme case: $x=\infty$ and $x=-\infty$,
+respectively. Below is some python code which implements the trick:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
+        <span class="c"># zero because it&#39;s 1+z.</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
+</pre></div></div>
   <footer>
     <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Read On &crarr;</a>
   </footer>
