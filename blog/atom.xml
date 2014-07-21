@@ -126,7 +126,7 @@ exact in the limit and just as accurate.&lt;/p&gt;
   $\boldsymbol{e_i}$, which is a simple unit-norm vector. Luckily some guidance
   is available. Andrei (2009) reccommends&lt;/p&gt;
 &lt;p&gt;$$
-\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|&lt;em _infty="\infty"&gt;{\infty}) / \|\boldsymbol{d}\|&lt;/em&gt;
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
 $$&lt;/p&gt;
 &lt;p&gt;where $\epsilon_{\text{mach}}$ is
 &lt;a href="http://en.wikipedia.org/wiki/Machine_epsilon"&gt;machine epsilon&lt;/a&gt;. (Numpy users:
@@ -151,7 +151,9 @@ $$&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2&gt;Hessian-vector product&lt;/h2&gt;
-&lt;p&gt;Hessian-vector products are an instance of the gradient-vector dot product because since the Hessian is just the gradient of the gradient! Now you only need to remember one formula!&lt;/p&gt;
+&lt;p&gt;Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!&lt;/p&gt;
 &lt;p&gt;$$
 H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
@@ -159,4 +161,5 @@ H(\boldsymbol{x})\, \boldsymbol{d} \approx
 - \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}) 
 \Big)
 $$&lt;/p&gt;
-&lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on &lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;</summary><category term="math"></category></entry></feed>
+&lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on
+&lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;</summary><category term="math"></category></entry></feed>
