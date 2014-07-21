@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-07-21T00:00:00-04:00</updated><entry><title>Expected value of a quadratic function and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-07-22T00:00:00-04:00</updated><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given it's rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.&lt;/p&gt;
+&lt;p&gt;This is a very simple point, but nonetheless I'll illustrate with a simple
+example.&lt;/p&gt;
+&lt;p&gt;Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.&lt;/p&gt;
+&lt;p&gt;Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the $x$-dimension, which is only $10$ samples! On
+the other hand, randomly sampling points over the same space results in $100$
+samples in every dimension.&lt;/p&gt;
+&lt;p&gt;In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.&lt;/p&gt;
+&lt;p&gt;This type of problem is common on hyperparameter optimizations. For futher
+reading see
+&lt;a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf"&gt;Bergstra &amp;amp; Bengio (2012)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Other thoughts&lt;/strong&gt;:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Grid search tends to produce nicer-looking plots.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;What about variance in the results? Two thing: (a) This is a concern for
+   replicability, but can easily put to bed by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;</summary><category term="math"></category></entry><entry><title>Expected value of a quadratic function and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
 $\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]$ , where $x$ is
 a random vector and $A$ is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let $\mu$ and

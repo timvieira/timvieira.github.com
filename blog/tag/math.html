@@ -1761,6 +1761,54 @@ init_mathjax();
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+      </h1>
+      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given it's rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.</p>
+<p>This is a very simple point, but nonetheless I'll illustrate with a simple
+example.</p>
+<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
+<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the $x$-dimension, which is only $10$ samples! On
+the other hand, randomly sampling points over the same space results in $100$
+samples in every dimension.</p>
+<p>In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.</p>
+<p>This type of problem is common on hyperparameter optimizations. For futher
+reading see
+<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
+<p><strong>Other thoughts</strong>:</p>
+<ol>
+<li>
+<p>Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+</li>
+<li>
+<p>Grid search tends to produce nicer-looking plots.</p>
+</li>
+<li>
+<p>What about variance in the results? Two thing: (a) This is a concern for
+   replicability, but can easily put to bed by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.</p>
+</li>
+</ol></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/">Expected value of a quadratic function and the Delta method</a>
       </h1>
       <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
@@ -2046,6 +2094,9 @@ $$</p>
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/">Expected value of a quadratic function and the Delta method</a>
       </li>
