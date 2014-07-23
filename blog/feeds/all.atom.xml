@@ -28,8 +28,8 @@ reading see
 &lt;p&gt;Grid search tends to produce nicer-looking plots.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;What about variance in the results? Two thing: (a) This is a concern for
-   replicability, but can easily put to bed by making sampled parameters
+&lt;p&gt;What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
    available. (b) There is always some probability that the sampling gives you a
    terrible set of points. This shouldn't be a problem if you use enough
    samples.&lt;/p&gt;

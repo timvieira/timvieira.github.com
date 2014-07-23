@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Rant against grid search</title>
+  <title>Another look at the Gumbel max trick</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1760,62 +1760,88 @@ init_mathjax();
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Rant against grid search</h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
+      <h1 class="entry-title">Another look at the Gumbel max trick</h1>
+      <p class="meta"><time datetime="2014-07-24T00:00:00" pubdate>Jul 24, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given it's rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
-<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
-<ol>
-<li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
-</li>
-<li>
-<p>Grid search tends to produce nicer-looking plots.</p>
-</li>
-<li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
-</li>
-</ol></div>
+  <div class="entry-content"><p>A while back I stumbled upon the following blog post:
+<a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
+which got me thinking, I've gotten uniform reservior sampling as an interview
+question, so I'll probably get this one some day. So, I better figure out how to
+do it!</p>
+<p>Luckily, I had recently attended an awesome talk by
+<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his recent work on
+perturb-and-MAP
+<a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
+which is inspired by the
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
+which is a way to sample by maximizing a perturbed distribution.</p>
+<p>We're given a stream of unnormalized probabilities, $x_1, x_2, \cdots$. At any
+point in time $t$ we'd like to have a sample an index $i$, where the probability
+of $i$ is given by $\pi_t(i) = \frac{x_i}{ \sum_{j=1}^t x_j}$.</p>
+<p>Assume, without loss of generality, that $x_i &gt; 0$ for all $i$. This is ok
+becuse if any element has a zero weight we can safely toss it out since it
+should never be sampled.</p>
+<p>So, I came up with the following algorithm, which is a simple (hard to call it)
+modification of the Gumbel-max-trick for handling streaming data:</p>
+<dl>
+<dt>for $i=1,2,\cdots;$ do:</dt>
+<dd># Compute log-unnormalized probabilities</dd>
+<dd>$w_i = \log(x_i)$</dd>
+<dd># Additively perturb each weight by a Gumbel random variate,</dd>
+<dd>$z_i \sim \text{Gumbel}(0,1)$</dd>
+<dd>$k_i = w_i + z_i$</dd>
+<dd># Keep around the largest $k_i$ (i.e. the argmax)</dd>
+</dl>
+<p>If we interrupt this algorithm at any point, we have a sample (just like
+reservior sampling).</p>
+<p>After convincing myself this algorithm was correct, I sat down to try to
+understand the algorithm in the blog post, which is due to Efraimidis and
+Spirakis (2005) (<a href="http://dl.acm.org/citation.cfm?id=1138834">paywall</a>,
+<a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf">free summary</a>). They
+looked similar in many ways but used different sorting keys / perturbations.</p>
+<p>Here is the ES algorithm for weighted reservior sampling</p>
+<dl>
+<dt>for $i=1,2,\cdots;$ do:</dt>
+<dd># Additively perturb each weight by a Gumbel random variate,</dd>
+<dd>$u_i \sim \text{Uniform}(0,1)$</dd>
+<dd>$e_i = u_i^{(\frac{1}{x_i})}$</dd>
+<dd># Keep around the largest $e_i$ (i.e. the argmax)</dd>
+</dl>
+<p>Let's try to relate these algorithms. Both compute a randomized key and take a
+max. What's the relationship between the keys?</p>
+<p>First, I'll point out that a $\text{Gumbel}(0,1) =
+-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of the
+<a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
+method for random number generation.</p>
+<p>This means that if we use the same sequence of uniform random variates then
+$z_i = -\log(-\log(u_i))$.</p>
+<p>However, this does not give use equality between $k_i$ and $e_i$, but it does
+turn out that $k_i = -\log(-\log(e_i))$, which is useful because this is a
+monotonic transformation on the interval $(0,1)$. Since monotonic
+transformations preserve ordering, the sequences $k$ and $e$ result in the same
+comparison decisions, as well as, the same argmax. In summary, the algorithms
+are the same!</p>
+<p>Now, reading a little further along in the ES paper, we see that the same
+algorithm can be used to perform sampling without replacement by sorting and
+taking the elements with the highest keys. This same modification is applicable
+to the Gumbel-max-trick because the keys have exactly the same ordering as ES.</p>
+<p>To the best of my knowledge, the connection between the Gumbel-max-trick and ES
+is undocumented. Furthermore, the Gumbel-max-trick is not known as a streaming
+algorithm, which is even capable of sampling without replacement with a simple
+modification!</p></div>
     <footer>
 <p class="meta">
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time>  <span class="categories">
+<time datetime="2014-07-24T00:00:00" pubdate>Jul 24, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
   </span>
 </p><div class="sharing">
 </div>    </footer>
   </article>
 
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
-  </section>
 </div>
 <aside class="sidebar">
   <section>
@@ -1891,9 +1917,9 @@ reading see
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/07/22/rant-against-grid-search/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/';
-          var disqus_title = 'Rant against grid search';
+          var disqus_identifier = '/post/2014/07/24/another-look-at-the-gumbel-max-trick/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/07/24/another-look-at-the-gumbel-max-trick/';
+          var disqus_title = 'Another look at the Gumbel max trick';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
