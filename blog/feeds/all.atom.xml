@@ -51,6 +51,7 @@ reservior sampling&lt;/p&gt;
 &lt;dd&gt;$\ \ \ \ a = k_i$&lt;/dd&gt;
 &lt;dd&gt;$\ \ \ \ b = i$&lt;/dd&gt;
 &lt;/dl&gt;
+&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample $b$.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
 algorithms take compute a randomized key and take an argmax. What's the
 relationship between the keys?&lt;/p&gt;
