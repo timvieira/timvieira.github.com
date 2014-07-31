@@ -9,7 +9,7 @@ perturb-and-MAP
 &lt;a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf"&gt;(Hazan &amp;amp; Jaakkola, 2012)&lt;/a&gt;,
 which is inspired by the
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;,
-see &lt;a href="blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, $x_1,
 x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
 available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
