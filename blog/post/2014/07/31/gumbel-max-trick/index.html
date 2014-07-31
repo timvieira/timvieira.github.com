@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Rant against grid search</title>
+  <title>Gumbel max trick</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1760,44 +1760,63 @@ init_mathjax();
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Rant against grid search</h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
+      <h1 class="entry-title">Gumbel max trick</h1>
+      <p class="meta"><time datetime="2014-07-31T00:00:00" pubdate>Jul 31, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given it's rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
-<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
+  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
+log-probabilities:</p>
+<p>$$
+\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
+$$</p>
+<p><strong>The usual way</strong>: Exponentiate and normalize (using the
+<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
+an algorithm for sampling from a discrete distribution (aka categorical):</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">usual</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="p">.</span><span class="n">max</span><span class="p">()).</span><span class="n">cumsum</span><span class="p">()</span>     <span class="err">#</span> <span class="n">the</span> <span class="n">exp</span><span class="o">-</span><span class="n">normalize</span> <span class="n">trick</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="p">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>The Gumbel max trick</strong>:</p>
+<p>$$
+y = \text{argmax}_{i \in \{1,\cdots,K\}} x_i + z_i
+$$</p>
+<p>where $z_1 \cdots z_K$ are i.i.d. $\text{Gumbel}(0,1)$ random variates. It
+turns out that $y$ is distributed according to $\pi$. (See the short derivations
+in this
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
+<p>Implementing the Gumbel max trick is remarkable easy:</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">).</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If you don't have access to a Gumbel random variate generator, you can use
+$-\log(-\log(\text{Uniform}(0,1))$</p>
+<p><strong>Comparison</strong>:</p>
 <ol>
 <li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+<p>Gumbel max requires $K$ samples from a uniform. Usual requires only $1$.</p>
 </li>
 <li>
-<p>Grid search tends to produce nicer-looking plots.</p>
+<p>Gumbel is one-pass because it does not require normalization (or a pass to
+     compute the max for use in the exp-normalize trick). More on this in a
+     later post!</p>
 </li>
 <li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
+<p>The Gumbel max trick requires $2K$ calls to $\log$, whereas ordinary
+     requires $K$ calls to $\exp$. Since $\exp$ and $\log$ are expensive
+     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
+     to $\log$ do not depend on the data so they can be precomputed; this is
+     handy for implementations which rely on vectorization for efficiency,
+     e.g. python+numpy. By the way, an interesting alternative approach to
+     avoiding $\exp$ is described on Justin Domke's blog post on
+     <a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">speeding up sampling from a sigmoid</a>,
+     which discusses a trick for $K=2$. (Make sure you read the comments!)</p>
 </li>
 </ol></div>
     <footer>
@@ -1805,7 +1824,7 @@ reading see
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time>  <span class="categories">
+<time datetime="2014-07-31T00:00:00" pubdate>Jul 31, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
   </span>
 </p><div class="sharing">
@@ -1891,9 +1910,9 @@ reading see
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/07/22/rant-against-grid-search/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/';
-          var disqus_title = 'Rant against grid search';
+          var disqus_identifier = '/post/2014/07/31/gumbel-max-trick/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/';
+          var disqus_title = 'Gumbel max trick';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
