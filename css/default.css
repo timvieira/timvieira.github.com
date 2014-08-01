@@ -7,23 +7,16 @@
 
 html {
   height: 100%;
-  line-height: 1.3
+  line-height: 1.3;
+  background: #252525 url('blog/theme/images/line-tile.png?1352591720') top left;
+  font-family:"PT Sans","Helvetica Neue",Arial,sans-serif;
+  color:#888;
 }
 
 body {
   color: #444;
   font-size: 11px;
   height: 100%;
-//  background-color: #023baf;
-}
-
-
-html{background:#252525 }
-
-
-html {
-    font-family:"PT Sans","Helvetica Neue",Arial,sans-serif;
-    color:#888;
 }
 
 p {
@@ -102,7 +95,6 @@ h2 {
 }
 
 .box {
-  border: 1px solid #eee;
   overflow: hidden;
   padding: 10px;
   background-color:#f7f7f7;
@@ -111,7 +103,17 @@ h2 {
   box-shadow: 5px 5px 5px rgba(34,25,25,0.25);
 }
 
-#name-container { padding-top: 15px; }
+#name-container {
+  padding-top: 15px;
+  background-color: #333;
+  color: #f2f2f2;
+}
+
+  #name-container a {
+      color: #f2f2f2;
+      font-size: 12px;
+      text-decoration: none;
+  }
 
   #name {
   }
