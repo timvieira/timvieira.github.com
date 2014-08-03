@@ -1764,26 +1764,27 @@ init_mathjax();
       <p class="meta"><time datetime="2014-08-01T00:00:00" pubdate>Aug 01, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>A while back I stumbled upon the following blog post:
+  <div class="entry-content"><p>A while back <a href="http://people.cs.umass.edu/~wallach/">Hanna</a> and I stumbled upon
+the following blog post:
 <a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
-which got me thinking: I've gotten uniform reservior sampling as an interview
-question, so I'll probably get this one some day.</p>
-<p>Luckily, I had recently attended an awesome talk by
-<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his recent work on
+which got us excited about reservior sampling.</p>
+<p>Around the same time, I attended an talk by
+<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his work on
 perturb-and-MAP
 <a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
 which is inspired by the
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>,
-see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>.</p>
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
+(see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent
+similarity between weighted reservior sampling and the Gumbel max trick lead us
+to make some cute connections, which I'll describe in this post.</p>
 <p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, $x_1,
 x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
 available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
 \sum_{j=1}^t x_j}$.</p>
 <p>Assume, without loss of generality, that $x_i &gt; 0$ for all $i$. (If any element
 has a zero weight we can safely ignore it since it should never be sampled.)</p>
-<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which is a
-simple (hard to call it) modification of the Gumbel-max-trick for handling
-streaming data:</p>
+<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which
+is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
 <dl>
 <dt>$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$</dt>
 <dt>for $i=1,2,\cdots;$ do:</dt>
@@ -1820,7 +1821,7 @@ reservior sampling</p>
 <p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
 algorithms take compute a randomized key and take an argmax. What's the
 relationship between the keys?</p>
-<p>First, I'll point out that a $\text{Gumbel}(0,1)$ variate can be generated via
+<p>First, note that a $\text{Gumbel}(0,1)$ variate can be generated via
 $-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of
 the
 <a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
@@ -1841,8 +1842,9 @@ priority queue.</p>
 <p><strong>Closing</strong>: To the best of my knowledge, the connection between the
 Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
 not known as a streaming algorithm, much less known to perform sampling without
-replacement! If you know of a reference let me know. Perhaps, I'll turn this
-blog post into a short tech report.</p></div>
+replacement! If you know of a reference let me know. Perhaps, we'll finish
+turning these connections into a
+<a href="https://github.com/timvieira/gumbel">short tech report</a>.</p></div>
     <footer>
 <p class="meta">
   <span class="byline author vcard">

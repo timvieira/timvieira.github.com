@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/category/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-01T00:00:00-04:00</updated><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back I stumbled upon the following blog post:
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/category/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-01T00:00:00-04:00</updated><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
-which got me thinking: I've gotten uniform reservior sampling as an interview
-question, so I'll probably get this one some day.&lt;/p&gt;
-&lt;p&gt;Luckily, I had recently attended an awesome talk by
-&lt;a href="http://cs.haifa.ac.il/~tamir/"&gt;Tamir Hazan&lt;/a&gt; about some of his recent work on
+which got us excited about reservior sampling.&lt;/p&gt;
+&lt;p&gt;Around the same time, I attended an talk by
+&lt;a href="http://cs.haifa.ac.il/~tamir/"&gt;Tamir Hazan&lt;/a&gt; about some of his work on
 perturb-and-MAP
 &lt;a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf"&gt;(Hazan &amp;amp; Jaakkola, 2012)&lt;/a&gt;,
 which is inspired by the
-&lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;,
-see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+&lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;
+(see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent
+similarity between weighted reservior sampling and the Gumbel max trick lead us
+to make some cute connections, which I'll describe in this post.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, $x_1,
 x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
 available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
 \sum_{j=1}^t x_j}$.&lt;/p&gt;
 &lt;p&gt;Assume, without loss of generality, that $x_i &amp;gt; 0$ for all $i$. (If any element
 has a zero weight we can safely ignore it since it should never be sampled.)&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Streaming Gumbel-max sampler&lt;/strong&gt;: I came up with the following algorithm, which is a
-simple (hard to call it) modification of the Gumbel-max-trick for handling
-streaming data:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Streaming Gumbel-max sampler&lt;/strong&gt;: I came up with the following algorithm, which
+is a simple "modification" of the Gumbel-max-trick for handling streaming data:&lt;/p&gt;
 &lt;dl&gt;
 &lt;dt&gt;$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$&lt;/dt&gt;
 &lt;dt&gt;for $i=1,2,\cdots;$ do:&lt;/dt&gt;
@@ -55,7 +56,7 @@ reservior sampling&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
 algorithms take compute a randomized key and take an argmax. What's the
 relationship between the keys?&lt;/p&gt;
-&lt;p&gt;First, I'll point out that a $\text{Gumbel}(0,1)$ variate can be generated via
+&lt;p&gt;First, note that a $\text{Gumbel}(0,1)$ variate can be generated via
 $-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of
 the
 &lt;a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling"&gt;inverse transform sampling&lt;/a&gt;
@@ -76,8 +77,9 @@ priority queue.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Closing&lt;/strong&gt;: To the best of my knowledge, the connection between the
 Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
 not known as a streaming algorithm, much less known to perform sampling without
-replacement! If you know of a reference let me know. Perhaps, I'll turn this
-blog post into a short tech report.&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+replacement! If you know of a reference let me know. Perhaps, we'll finish
+turning these connections into a
+&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;p&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -132,7 +134,7 @@ $-\log(-\log(\text{Uniform}(0,1))$&lt;/p&gt;
      which discusses a trick for $K=2$. (Make sure you read the comments!)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;</summary><category term="math"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given it's rigid definition
+the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
 (potentially expensive) function evaluations being wasted.&lt;/p&gt;
