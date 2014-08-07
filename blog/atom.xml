@@ -14,7 +14,7 @@ or matlab, this often requires no modification to source code).&lt;/p&gt;
 &lt;a href="http://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation/links/0912f50c7474bb861d000000"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
 &lt;p&gt;$$
-\lim_{\varepsilon \rightarrow 0} f(x + i \cdot \varepsilon) =
+f(x + i \cdot \varepsilon) =
   \frac{i^0 \varepsilon^0}{0!} f(x)
 + \frac{i^1 \varepsilon^1}{1!} f'(x)
 + \frac{i^2 \varepsilon^2}{2!} f''(x)
