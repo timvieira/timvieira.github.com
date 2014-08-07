@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/visualization.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-12T00:00:00-05:00</updated><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+a high-dimensional objective I was developing specialized algorithms for
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Example plot&lt;/strong&gt;: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Alt text" src="/blog/images/cross-section.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Details&lt;/strong&gt;: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
+function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?&lt;/p&gt;
+&lt;p&gt;One simple thing to do is take a nonzero vector $\boldsymbol{d} \in
+\mathbb{R}^d$, take a point of interest $\boldsymbol{x}$, and build a local
+picture of $f$ by evaluating it at various intervals along the chosen direction
+as follows,&lt;/p&gt;
+&lt;p&gt;$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$&lt;/p&gt;
+&lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
+$\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
+plot $(\alpha_i,f_i)$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Picking directions&lt;/strong&gt;: There are many alternatives for picking
+$\boldsymbol{d}$, my favorites are:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Gradient (if it exists), this direction is guaranteed to show a local
+    increase/decrease in the objective, unless it's zero.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Coordinate vectors. Varying one dimension per plot.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Random. I recommend directions drawn from a spherical
+    Gaussian.&lt;sup id="fnref:sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a vector is
+    uniformly distributed across all unit-length directions (i.e., the angle of
+    the vector, not it's length). We will vary the length ourselves via
+    $\alpha$. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
+using 2 vectors, $\boldsymbol{d_1}$ and $\boldsymbol{d_2}$, and varying two
+parameters $\alpha$ and $\beta$,&lt;/p&gt;
+&lt;p&gt;$$
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+$$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Closing remarks&lt;/strong&gt;: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.&lt;/p&gt;
+&lt;h2&gt;Notes&lt;/h2&gt;
+&lt;div class="footnote"&gt;
+&lt;hr /&gt;
+&lt;ol&gt;
+&lt;li id="fn:sphericalgaussian"&gt;
+&lt;p&gt;More formally, vectors drawn from a spherical Gaussian are
+points uniformly distributed on the surface of a $d$-dimensional unit sphere,
+$\mathbb{S}^d$. Sampling a vector from a spherical Gaussian is straightforward:
+sample $\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$,
+$\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&amp;#160;&lt;a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math"></category><category term="visualization"></category></entry></feed>

@@ -52,45 +52,364 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+        <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
+      <p class="meta"><time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given its rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
-<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
+  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
+<p>$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function $f$, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: $f$ must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).</p>
+<p>This post is based on
+<a href="http://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation/links/0912f50c7474bb861d000000">Martins+'03</a></p>
+<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
+<p>$$
+\lim_{\varepsilon \rightarrow 0} f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
+$$</p>
+<p>Take the imaginary part of both sides and solve for $f'(x)$. Note: the $f$ and
+$f''$ term disappear because $i^0$ and $i^2$ are real-valued.</p>
+<p>$$
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
+$$</p>
+<p>As usual, using a small $\varepsilon$ let's us throw out higher-order
+terms. And, we arrive at the following approximation:</p>
+<p>$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>If instead, we take the real part and solve for $f(x)$, we get an approximation
+to the function's value at $x$:</p>
+<p>$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.</p>
+<p><strong>Code</strong>:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
+<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c"># convert input to complex number</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c"># return function value and gradient</span>
+    <span class="k">return</span> <span class="n">f1</span>
+</pre></div>
+
+
+<p>A simple test:</p>
+<div class="highlight"><pre><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c"># function</span>
+<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c"># gradient</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Other comments</strong></p>
+<ul>
+<li>
+<p>Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.</p>
+</li>
+<li>
+<p>Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.</p>
+</li>
+</ul><script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+<script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+</div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
+      </h1>
+      <p class="meta"><time datetime="2014-08-01T00:00:00" pubdate>Aug 01, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>A while back, <a href="http://people.cs.umass.edu/~wallach/">Hanna</a> and I stumbled upon
+the following blog post:
+<a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
+which got us excited about reservior sampling.</p>
+<p>Around the same time, I attended an talk by
+<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his work on
+perturb-and-MAP
+<a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
+which is inspired by the
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
+(see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent
+similarity between weighted reservior sampling and the Gumbel max trick lead us
+to make some cute connections, which I'll describe in this post.</p>
+<p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, $x_1,
+x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
+available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
+\sum_{j=1}^t x_j}$.</p>
+<p>Assume, without loss of generality, that $x_i &gt; 0$ for all $i$. (If any element
+has a zero weight we can safely ignore it since it should never be sampled.)</p>
+<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which
+is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
+<dl>
+<dt>$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$</dt>
+<dt>for $i=1,2,\cdots;$ do:</dt>
+<dd># Compute log-unnormalized probabilities</dd>
+<dd>$w_i = \log(x_i)$</dd>
+<dd># Additively perturb each weight by a Gumbel random variate</dd>
+<dd>$z_i \sim \text{Gumbel}(0,1)$</dd>
+<dd>$k_i = w_i + z_i$</dd>
+<dd># Keep around the largest $k_i$ (i.e. the argmax)</dd>
+<dd>if $k_i &gt; a$:</dd>
+<dd>$\ \ \ \ a = k_i$</dd>
+<dd>$\ \ \ \ b = i$</dd>
+</dl>
+<p>If we interrupt this algorithm at any point, we have a sample $b$.</p>
+<p>After convincing myself this algorithm was correct, I sat down to try to
+understand the algorithm in the blog post, which is due to Efraimidis and
+Spirakis (2005) (<a href="http://dl.acm.org/citation.cfm?id=1138834">paywall</a>,
+<a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf">free summary</a>). They
+looked similar in many ways but used different sorting keys / perturbations.</p>
+<p><strong>Efraimidis and Spirakis (2005)</strong>: Here is the ES algorithm for weighted
+reservior sampling</p>
+<dl>
+<dt>$a = -\infty; b = \text{null}$</dt>
+<dt>for $i=1,2,\cdots;$ do:</dt>
+<dd># Additively perturb each weight by a Gumbel random variate,</dd>
+<dd>$u_i \sim \text{Uniform}(0,1)$</dd>
+<dd>$e_i = u_i^{(\frac{1}{x_i})}$</dd>
+<dd># Keep around the largest $e_i$</dd>
+<dd>if $k_i &gt; a$:</dd>
+<dd>$\ \ \ \ a = k_i$</dd>
+<dd>$\ \ \ \ b = i$</dd>
+</dl>
+<p>Again, if interrupt this algorithm at any point, we have our sample $b$.</p>
+<p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
+algorithms take compute a randomized key and take an argmax. What's the
+relationship between the keys?</p>
+<p>First, note that a $\text{Gumbel}(0,1)$ variate can be generated via
+$-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of
+the
+<a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
+method for random number generation. This means that if we use the same sequence
+of uniform random variates then, $z_i = -\log(-\log(u_i))$.</p>
+<p>However, this does not give use equality between $k_i$ and $e_i$, but it does
+turn out that $k_i = -\log(-\log(e_i))$, which is useful because this is a
+monotonic transformation on the interval $(0,1)$. Since monotonic
+transformations preserve ordering, the sequences $k$ and $e$ result in the same
+comparison decisions, as well as, the same argmax. In summary, the algorithms
+are the same!</p>
+<p><strong>Extensions</strong>: After reading a little further along in the ES paper, we see
+that the same algorithm can be used to perform <em>sampling without replacement</em> by
+sorting and taking the elements with the highest keys. This same modification is
+applicable to the Gumbel-max-trick because the keys have exactly the same
+ordering as ES.In practice we don't sort the key, but instead use a bounded
+priority queue.</p>
+<p><strong>Closing</strong>: To the best of my knowledge, the connection between the
+Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
+not known as a streaming algorithm, much less known to perform sampling without
+replacement! If you know of a reference let me know. Perhaps, we'll finish
+turning these connections into a
+<a href="https://github.com/timvieira/gumbel">short tech report</a>.</p><script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+<script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+</div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
+      </h1>
+      <p class="meta"><time datetime="2014-07-31T00:00:00" pubdate>Jul 31, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
+log-probabilities:</p>
+<p>$$
+\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
+$$</p>
+<p><strong>The usual way</strong>: Exponentiate and normalize (using the
+<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
+an algorithm for sampling from a discrete distribution (aka categorical):</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">usual</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="p">.</span><span class="n">max</span><span class="p">()).</span><span class="n">cumsum</span><span class="p">()</span>     <span class="err">#</span> <span class="n">the</span> <span class="n">exp</span><span class="o">-</span><span class="n">normalize</span> <span class="n">trick</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="p">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>The Gumbel max trick</strong>:</p>
+<p>$$
+y = \text{argmax}_{i \in \{1,\cdots,K\}} x_i + z_i
+$$</p>
+<p>where $z_1 \cdots z_K$ are i.i.d. $\text{Gumbel}(0,1)$ random variates. It
+turns out that $y$ is distributed according to $\pi$. (See the short derivations
+in this
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
+<p>Implementing the Gumbel max trick is remarkable easy:</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">).</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If you don't have access to a Gumbel random variate generator, you can use
+$-\log(-\log(\text{Uniform}(0,1))$</p>
+<p><strong>Comparison</strong>:</p>
 <ol>
 <li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+<p>Gumbel max requires $K$ samples from a uniform. Usual requires only $1$.</p>
 </li>
 <li>
-<p>Grid search tends to produce nicer-looking plots.</p>
+<p>Gumbel is one-pass because it does not require normalization (or a pass to
+     compute the max for use in the exp-normalize trick). More on this in a
+     later post!</p>
 </li>
 <li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
+<p>The Gumbel max trick requires $2K$ calls to $\log$, whereas ordinary
+     requires $K$ calls to $\exp$. Since $\exp$ and $\log$ are expensive
+     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
+     to $\log$ do not depend on the data so they can be precomputed; this is
+     handy for implementations which rely on vectorization for efficiency,
+     e.g. python+numpy. By the way, an interesting alternative approach to
+     avoiding $\exp$ is described on Justin Domke's blog post on
+     <a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">speeding up sampling from a sigmoid</a>,
+     which discusses a trick for $K=2$. (Make sure you read the comments!)</p>
 </li>
 </ol><script type= "text/javascript">
     if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
@@ -154,124 +473,11 @@ reading see
 </script>
 </div>
   <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-$\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]$ , where $x$ is
-a random vector and $A$ is deterministic <em>symmetric</em> matrix. Let $\mu$ and
-$\Sigma$ be the mean and variance of $x$. It turns out the expected value of a
-quadratic has the following simple form:</p>
-<p>$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
-$$</p>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function $f$ applied our random variable $x$,
-$\mathbb{E}\left[ f(x) \right]$. The Delta method approximates this expection by
-replacing $f$ by it's second-order Talylor approximation $\hat{f_{a}}$ taken at
-some point $a$</p>
-<p>$$
-\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
-$$</p>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with $A=H(a)$ and $x = (x-a)$. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
-<p>$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
-$$</p>
-<p>It's common to take the Taylor expansion around $\mu$. This simplifies the equation</p>
-<p>\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</p>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-<script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-</div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Read On &crarr;</a>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
+    <a class="prev" href="http://timvieira.github.io/blog/tag/math2.html">&larr; Older</a>
 
   <br />
 </div></div>
@@ -280,10 +486,19 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
       </li>
     </ul>
   </section>
@@ -296,11 +511,11 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
     </ul>
   </section>
  
+-->
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/math-calculus.html">math calculus</a>,    <a href="http://timvieira.github.io/blog/tag/math-visualization.html">math visualization</a>,    <a href="http://timvieira.github.io/blog/tag/math-numerical.html">math numerical</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>,    <a href="http://timvieira.github.io/blog/tag/math-sampling-gumbel.html">math sampling Gumbel</a>  </section>
--->
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 

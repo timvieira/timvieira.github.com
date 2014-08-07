@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Visualizing high-dimensional functions with cross-sections</title>
+  <title>Graduate Descent - misc</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -42,82 +42,87 @@
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li class="active">
+    <li >
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div>
-  <article class="hentry" role="article">
+<div class="blog-index">
+  		<article>
 <header>
-      <h1 class="entry-title">Visualizing high-dimensional functions with cross-sections</h1>
-      <p class="meta"><time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time></p>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+      </h1>
+      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
-a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three of my colleagues told me that my plots
-had inspired them to make similar plots. The plotting trick is really simple and
-not original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
-non-smooth (black) and a smooth approximating function (blue). The plot shows
-that the approximation is faithful to the overall shape, but sometimes
-over-smooths. In this case, we miss the maximum, which happens near the middle
-of the figure.</p>
-<p><img alt="Alt text" src="/blog/images/cross-section.png" /></p>
-<p><strong>Details</strong>: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
-function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
-<p>One simple thing to do is take a nonzero vector $\boldsymbol{d} \in
-\mathbb{R}^d$, take a point of interest $\boldsymbol{x}$, and build a local
-picture of $f$ by evaluating it at various intervals along the chosen direction
-as follows,</p>
-<p>$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$</p>
-<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
-$\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
-plot $(\alpha_i,f_i)$.</p>
-<p><strong>Picking directions</strong>: There are many alternatives for picking
-$\boldsymbol{d}$, my favorites are:</p>
+  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.</p>
+<p>This is a very simple point, but nonetheless I'll illustrate with a simple
+example.</p>
+<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
+<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the $x$-dimension, which is only $10$ samples! On
+the other hand, randomly sampling points over the same space results in $100$
+samples in every dimension.</p>
+<p>In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.</p>
+<p>This type of problem is common on hyperparameter optimizations. For futher
+reading see
+<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
+<p><strong>Other thoughts</strong>:</p>
 <ol>
 <li>
-<p>Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.</p>
+<p>Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
 </li>
 <li>
-<p>Coordinate vectors. Varying one dimension per plot.</p>
+<p>Grid search tends to produce nicer-looking plots.</p>
 </li>
 <li>
-<p>Random. I recommend directions drawn from a spherical
-    Gaussian.<sup id="fnref:sphericalgaussian"><a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote">1</a></sup> The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    $\alpha$. It's probably best that our plots don't randomly vary in scale.</p>
+<p>What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.</p>
 </li>
-</ol>
-<p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, $\boldsymbol{d_1}$ and $\boldsymbol{d_2}$, and varying two
-parameters $\alpha$ and $\beta$,</p>
-<p>$$
-f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
-$$</p>
-<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
-verify/explore properties of an objective function, compare approximations, test
-sensitivity to certain parameters/hyperparameters, visually debug optimization
-algorithms.</p>
-<h2>Notes</h2>
-<div class="footnote">
-<hr />
-<ol>
-<li id="fn:sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a $d$-dimensional unit sphere,
-$\mathbb{S}^d$. Sampling a vector from a spherical Gaussian is straightforward:
-sample $\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$,
-$\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&#160;<a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div><script type= "text/javascript">
+</ol><script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+<script type= "text/javascript">
     if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
         var mathjaxscript = document.createElement('script');
         mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -148,42 +153,20 @@ $\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&#160;<a class="foot
     }
 </script>
 </div>
-    <footer>
-<p class="meta">
-  <span class="byline author vcard">
-    Posted by <span class="fn">Tim Vieira</span>
-  </span>
-<time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>
-  </span>
-</p><div class="sharing">
-</div>    </footer>
-  </article>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Read On &crarr;</a>
+  </footer>
+  		</article>
+<div class="pagination">
 
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
-  </section>
-</div>
+  <br />
+</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
-      </li>
-      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
       </li>
     </ul>
   </section>
@@ -240,9 +223,6 @@ $\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&#160;<a class="foot
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/';
-          var disqus_title = 'Visualizing high-dimensional functions with cross-sections';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

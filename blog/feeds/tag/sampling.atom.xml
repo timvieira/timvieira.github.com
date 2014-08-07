@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/sampling.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-01T00:00:00-04:00</updated><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+the following blog post:
+&lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
+which got us excited about reservior sampling.&lt;/p&gt;
+&lt;p&gt;Around the same time, I attended an talk by
+&lt;a href="http://cs.haifa.ac.il/~tamir/"&gt;Tamir Hazan&lt;/a&gt; about some of his work on
+perturb-and-MAP
+&lt;a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf"&gt;(Hazan &amp;amp; Jaakkola, 2012)&lt;/a&gt;,
+which is inspired by the
+&lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;
+(see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent
+similarity between weighted reservior sampling and the Gumbel max trick lead us
+to make some cute connections, which I'll describe in this post.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, $x_1,
+x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
+available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
+\sum_{j=1}^t x_j}$.&lt;/p&gt;
+&lt;p&gt;Assume, without loss of generality, that $x_i &amp;gt; 0$ for all $i$. (If any element
+has a zero weight we can safely ignore it since it should never be sampled.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Streaming Gumbel-max sampler&lt;/strong&gt;: I came up with the following algorithm, which
+is a simple "modification" of the Gumbel-max-trick for handling streaming data:&lt;/p&gt;
+&lt;dl&gt;
+&lt;dt&gt;$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$&lt;/dt&gt;
+&lt;dt&gt;for $i=1,2,\cdots;$ do:&lt;/dt&gt;
+&lt;dd&gt;# Compute log-unnormalized probabilities&lt;/dd&gt;
+&lt;dd&gt;$w_i = \log(x_i)$&lt;/dd&gt;
+&lt;dd&gt;# Additively perturb each weight by a Gumbel random variate&lt;/dd&gt;
+&lt;dd&gt;$z_i \sim \text{Gumbel}(0,1)$&lt;/dd&gt;
+&lt;dd&gt;$k_i = w_i + z_i$&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest $k_i$ (i.e. the argmax)&lt;/dd&gt;
+&lt;dd&gt;if $k_i &amp;gt; a$:&lt;/dd&gt;
+&lt;dd&gt;$\ \ \ \ a = k_i$&lt;/dd&gt;
+&lt;dd&gt;$\ \ \ \ b = i$&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;If we interrupt this algorithm at any point, we have a sample $b$.&lt;/p&gt;
+&lt;p&gt;After convincing myself this algorithm was correct, I sat down to try to
+understand the algorithm in the blog post, which is due to Efraimidis and
+Spirakis (2005) (&lt;a href="http://dl.acm.org/citation.cfm?id=1138834"&gt;paywall&lt;/a&gt;,
+&lt;a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf"&gt;free summary&lt;/a&gt;). They
+looked similar in many ways but used different sorting keys / perturbations.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Efraimidis and Spirakis (2005)&lt;/strong&gt;: Here is the ES algorithm for weighted
+reservior sampling&lt;/p&gt;
+&lt;dl&gt;
+&lt;dt&gt;$a = -\infty; b = \text{null}$&lt;/dt&gt;
+&lt;dt&gt;for $i=1,2,\cdots;$ do:&lt;/dt&gt;
+&lt;dd&gt;# Additively perturb each weight by a Gumbel random variate,&lt;/dd&gt;
+&lt;dd&gt;$u_i \sim \text{Uniform}(0,1)$&lt;/dd&gt;
+&lt;dd&gt;$e_i = u_i^{(\frac{1}{x_i})}$&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest $e_i$&lt;/dd&gt;
+&lt;dd&gt;if $k_i &amp;gt; a$:&lt;/dd&gt;
+&lt;dd&gt;$\ \ \ \ a = k_i$&lt;/dd&gt;
+&lt;dd&gt;$\ \ \ \ b = i$&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample $b$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
+algorithms take compute a randomized key and take an argmax. What's the
+relationship between the keys?&lt;/p&gt;
+&lt;p&gt;First, note that a $\text{Gumbel}(0,1)$ variate can be generated via
+$-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of
+the
+&lt;a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling"&gt;inverse transform sampling&lt;/a&gt;
+method for random number generation. This means that if we use the same sequence
+of uniform random variates then, $z_i = -\log(-\log(u_i))$.&lt;/p&gt;
+&lt;p&gt;However, this does not give use equality between $k_i$ and $e_i$, but it does
+turn out that $k_i = -\log(-\log(e_i))$, which is useful because this is a
+monotonic transformation on the interval $(0,1)$. Since monotonic
+transformations preserve ordering, the sequences $k$ and $e$ result in the same
+comparison decisions, as well as, the same argmax. In summary, the algorithms
+are the same!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Extensions&lt;/strong&gt;: After reading a little further along in the ES paper, we see
+that the same algorithm can be used to perform &lt;em&gt;sampling without replacement&lt;/em&gt; by
+sorting and taking the elements with the highest keys. This same modification is
+applicable to the Gumbel-max-trick because the keys have exactly the same
+ordering as ES.In practice we don't sort the key, but instead use a bounded
+priority queue.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Closing&lt;/strong&gt;: To the best of my knowledge, the connection between the
+Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
+not known as a streaming algorithm, much less known to perform sampling without
+replacement! If you know of a reference let me know. Perhaps, we'll finish
+turning these connections into a
+&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+log-probabilities:&lt;/p&gt;
+&lt;p&gt;$$
+\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
+$$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The usual way&lt;/strong&gt;: Exponentiate and normalize (using the
+&lt;a href="/blog/post/2014/02/11/exp-normalize-trick/"&gt;exp-normalize trick&lt;/a&gt;), then use the
+an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;usual&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;cdf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()).&lt;/span&gt;&lt;span class="n"&gt;cumsum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;     &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;normalize&lt;/span&gt; &lt;span class="n"&gt;trick&lt;/span&gt;
+    &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;u&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;searchsorted&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;The Gumbel max trick&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;$$
+y = \text{argmax}_{i \in \{1,\cdots,K\}} x_i + z_i
+$$&lt;/p&gt;
+&lt;p&gt;where $z_1 \cdots z_K$ are i.i.d. $\text{Gumbel}(0,1)$ random variates. It
+turns out that $y$ is distributed according to $\pi$. (See the short derivations
+in this
+&lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;blog post&lt;/a&gt;.)&lt;/p&gt;
+&lt;p&gt;Implementing the Gumbel max trick is remarkable easy:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;gumbel_max_sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gumbel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;loc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scale&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="n"&gt;argmax&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If you don't have access to a Gumbel random variate generator, you can use
+$-\log(-\log(\text{Uniform}(0,1))$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Gumbel max requires $K$ samples from a uniform. Usual requires only $1$.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
+     compute the max for use in the exp-normalize trick). More on this in a
+     later post!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The Gumbel max trick requires $2K$ calls to $\log$, whereas ordinary
+     requires $K$ calls to $\exp$. Since $\exp$ and $\log$ are expensive
+     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
+     to $\log$ do not depend on the data so they can be precomputed; this is
+     handy for implementations which rely on vectorization for efficiency,
+     e.g. python+numpy. By the way, an interesting alternative approach to
+     avoiding $\exp$ is described on Justin Domke's blog post on
+     &lt;a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;speeding up sampling from a sigmoid&lt;/a&gt;,
+     which discusses a trick for $K=2$. (Make sure you read the comments!)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry></feed>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-07-22T00:00:00-04:00</updated><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.&lt;/p&gt;
+&lt;p&gt;This is a very simple point, but nonetheless I'll illustrate with a simple
+example.&lt;/p&gt;
+&lt;p&gt;Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.&lt;/p&gt;
+&lt;p&gt;Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the $x$-dimension, which is only $10$ samples! On
+the other hand, randomly sampling points over the same space results in $100$
+samples in every dimension.&lt;/p&gt;
+&lt;p&gt;In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.&lt;/p&gt;
+&lt;p&gt;This type of problem is common on hyperparameter optimizations. For futher
+reading see
+&lt;a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf"&gt;Bergstra &amp;amp; Bengio (2012)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Other thoughts&lt;/strong&gt;:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Grid search tends to produce nicer-looking plots.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="misc"></category></entry></feed>
