@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - math</title>
+  <title>Expected value of a quadratic and the Delta method</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -42,126 +42,16 @@
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
+<div>
+  <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given its rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
-<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
-<ol>
-<li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
-</li>
-<li>
-<p>Grid search tends to produce nicer-looking plots.</p>
-</li>
-<li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
-</li>
-</ol><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-<script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-</div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
-      </h1>
+      <h1 class="entry-title">Expected value of a quadratic and the Delta method</h1>
       <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
 </header>
 
@@ -236,49 +126,37 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
         (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
     }
 </script>
-<script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
 </div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Read On &crarr;</a>
-  </footer>
-  		</article>
-<div class="pagination">
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
 
-  <br />
-</div></div>
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
       </li>
@@ -340,6 +218,9 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/';
+          var disqus_title = 'Expected value of a quadratic and the Delta method';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

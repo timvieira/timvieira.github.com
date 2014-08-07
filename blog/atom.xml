@@ -1,5 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-01T00:00:00-04:00</updated><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-07T00:00:00-04:00</updated><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;p&gt;$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/p&gt;
+&lt;p&gt;Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function $f$, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: $f$ must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).&lt;/p&gt;
+&lt;p&gt;This post is based on
+&lt;a href="http://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation/links/0912f50c7474bb861d000000"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
+&lt;p&gt;$$
+\lim_{\varepsilon \rightarrow 0} f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
+$$&lt;/p&gt;
+&lt;p&gt;Take the imaginary part of both sides and solve for $f'(x)$. Note: the $f$ and
+$f''$ term disappear because $i^0$ and $i^2$ are real-valued.&lt;/p&gt;
+&lt;p&gt;$$
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
+$$&lt;/p&gt;
+&lt;p&gt;As usual, using a small $\varepsilon$ let's us throw out higher-order
+terms. And, we arrive at the following approximation:&lt;/p&gt;
+&lt;p&gt;$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/p&gt;
+&lt;p&gt;If instead, we take the real part and solve for $f(x)$, we get an approximation
+to the function's value at $x$:&lt;/p&gt;
+&lt;p&gt;$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/p&gt;
+&lt;p&gt;In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;complex_step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;1e-10&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;    Higher-order function takes univariate function which computes a value and&lt;/span&gt;
+&lt;span class="sd"&gt;    returns a function which returns value-derivative pair approximation.&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;f1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;complex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;         &lt;span class="c"&gt;# convert input to complex number&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;real&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;imag&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c"&gt;# return function value and gradient&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;f1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A simple test:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;cos&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;  &lt;span class="c"&gt;# function&lt;/span&gt;
+&lt;span class="n"&gt;g&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;     &lt;span class="c"&gt;# gradient&lt;/span&gt;
+&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1.0&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;complex_step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Other comments&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -79,7 +183,37 @@ Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
 not known as a streaming algorithm, much less known to perform sampling without
 replacement! If you know of a reference let me know. Perhaps, we'll finish
 turning these connections into a
-&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math sampling Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;p&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -133,7 +267,37 @@ $-\log(-\log(\text{Uniform}(0,1))$&lt;/p&gt;
      &lt;a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;speeding up sampling from a sigmoid&lt;/a&gt;,
      which discusses a trick for $K=2$. (Make sure you read the comments!)&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;</summary><category term="math"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math sampling Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
@@ -168,7 +332,37 @@ reading see
    terrible set of points. This shouldn't be a problem if you use enough
    samples.&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;</summary><category term="math"></category></entry><entry><title>Expected value of a quadratic function and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-function-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
 $\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]$ , where $x$ is
 a random vector and $A$ is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let $\mu$ and
@@ -209,7 +403,37 @@ $$&lt;/p&gt;
 &lt;p&gt;That looks much more tractable! Error bounds are possible to derive, but outside
 to scope of this post. For a nice use of the delta method in machine learning
 see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; and
-&lt;a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf"&gt;(Smith &amp;amp; Eisner,'06)&lt;/a&gt;&lt;/p&gt;</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf"&gt;(Smith &amp;amp; Eisner,'06)&lt;/a&gt;&lt;/p&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -271,7 +495,37 @@ sample $\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$,
 $\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&amp;#160;&lt;a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;/div&gt;</summary><category term="math"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/div&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
 parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:&lt;/p&gt;
@@ -325,13 +579,43 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         &lt;span class="c"&gt;# zero because it&amp;#39;s 1+z.&lt;/span&gt;
         &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="math"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/pre&gt;&lt;/div&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
 &lt;p&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
  \frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i}) 
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i}) 
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
  \Big)
 $$&lt;/p&gt;
 &lt;p&gt;where $\varepsilon &amp;gt; 0$ and $\boldsymbol{e_i}$ is a vector of zeros except at
@@ -343,8 +627,8 @@ with the following formula,&lt;/p&gt;
 &lt;p&gt;$$
 \nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) 
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}) 
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
  \Big)
 $$&lt;/p&gt;
 &lt;p&gt;We get the special case above when $\boldsymbol{d}=\boldsymbol{e_i}$. This also
@@ -391,9 +675,39 @@ need to remember one formula!&lt;/p&gt;
 &lt;p&gt;$$
 H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
-  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) 
-- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}) 
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
 \Big)
 $$&lt;/p&gt;
 &lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on
-&lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;</summary><category term="math"></category></entry></feed>
+&lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="math calculus"></category></entry></feed>

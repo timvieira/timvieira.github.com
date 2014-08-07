@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - math</title>
+  <title>Graduate Descent - math calculus</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -52,47 +52,86 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+        <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
+      <p class="meta"><time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given its rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.</p>
-<p>Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
-<ol>
+  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
+<p>$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function $f$, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: $f$ must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).</p>
+<p>This post is based on
+<a href="http://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation/links/0912f50c7474bb861d000000">Martins+'03</a></p>
+<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
+<p>$$
+\lim_{\varepsilon \rightarrow 0} f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
+$$</p>
+<p>Take the imaginary part of both sides and solve for $f'(x)$. Note: the $f$ and
+$f''$ term disappear because $i^0$ and $i^2$ are real-valued.</p>
+<p>$$
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
+$$</p>
+<p>As usual, using a small $\varepsilon$ let's us throw out higher-order
+terms. And, we arrive at the following approximation:</p>
+<p>$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>If instead, we take the real part and solve for $f(x)$, we get an approximation
+to the function's value at $x$:</p>
+<p>$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.</p>
+<p><strong>Code</strong>:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
+<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c"># convert input to complex number</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c"># return function value and gradient</span>
+    <span class="k">return</span> <span class="n">f1</span>
+</pre></div>
+
+
+<p>A simple test:</p>
+<div class="highlight"><pre><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c"># function</span>
+<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c"># gradient</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Other comments</strong></p>
+<ul>
 <li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+<p>Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.</p>
 </li>
 <li>
-<p>Grid search tends to produce nicer-looking plots.</p>
+<p>Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.</p>
 </li>
-<li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
-</li>
-</ol><script type= "text/javascript">
+</ul><script type= "text/javascript">
     if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
         var mathjaxscript = document.createElement('script');
         mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -154,59 +193,89 @@ reading see
 </script>
 </div>
   <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Read On &crarr;</a>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Read On &crarr;</a>
   </footer>
   		</article>
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
+        <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
-      <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-02-10T00:00:00" pubdate>Feb 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-$\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]$ , where $x$ is
-a random vector and $A$ is deterministic <em>symmetric</em> matrix. Let $\mu$ and
-$\Sigma$ be the mean and variance of $x$. It turns out the expected value of a
-quadratic has the following simple form:</p>
+  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
+finite-difference approximation).</p>
 <p>$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
+\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
+ \frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
+ \Big)
 $$</p>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function $f$ applied our random variable $x$,
-$\mathbb{E}\left[ f(x) \right]$. The Delta method approximates this expection by
-replacing $f$ by it's second-order Talylor approximation $\hat{f_{a}}$ taken at
-some point $a$</p>
+<p>where $\varepsilon &gt; 0$ and $\boldsymbol{e_i}$ is a vector of zeros except at
+$i$ where it is $1$. This approximation is exact in the limit, and accurate to
+$o(\varepsilon^2)$ additive error.</p>
+<p>This is a specific instance of a more general approximation! The dot product of
+the gradient and any (conformable) vector $\boldsymbol{d}$ can be approximated
+with the following formula,</p>
 <p>$$
-\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
+\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+ \Big)
 $$</p>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with $A=H(a)$ and $x = (x-a)$. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
+<p>We get the special case above when $\boldsymbol{d}=\boldsymbol{e_i}$. This also
+exact in the limit and just as accurate.</p>
+<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
+  approximating a high-dimensional gradient because the number of function
+  evaluations required is $2 n$ where $n$ is the dimensionality of $x$. However,
+  if the end goal is to approximate a gradient-vector product, a mere $2$
+  function evaluations is probably faster than specialized code for computing
+  the gradient.</p>
+<p><strong>How to set $\varepsilon$?</strong> The second approach is more sensitive to
+  $\varepsilon$ because $\boldsymbol{d}$ is arbitrary, unlike
+  $\boldsymbol{e_i}$, which is a simple unit-norm vector. Luckily some guidance
+  is available. Andrei (2009) reccommends</p>
 <p>$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
 $$</p>
-<p>It's common to take the Taylor expansion around $\mu$. This simplifies the equation</p>
-<p>\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</p>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p><script type= "text/javascript">
+<p>where $\epsilon_{\text{mach}}$ is
+<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
+<code>numpy.finfo(x.dtype).eps</code>).</p>
+<h2>Why do I care?</h2>
+<ol>
+<li>
+<p>Well, I tend to work on sparse, but high-dimensional problems where
+   finite-difference would be too slow. Thus, my usual solution is to only test
+   several randomly selected dimensions$-$biasing samples toward dimensions
+   which should be nonzero. With the new trick, I can effectively test more
+   dimensions at once by taking random vectors $\boldsymbol{d}$. I recommend
+   sampling $\boldsymbol{d}$ from a spherical Gaussian so that we're uniform on
+   the angle of the vector.</p>
+</li>
+<li>
+<p>Sometimes the gradient-vector dot product is the end goal. This is the case
+   with Hessian-vector products, which arises in many optimization algorithms,
+   such as stochastic meta descent. Hessian-vector products are an instance of
+   the gradient-vector dot product because the Hessian is just the gradient of
+   the gradient.</p>
+</li>
+</ol>
+<h2>Hessian-vector product</h2>
+<p>Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!</p>
+<p>$$
+H(\boldsymbol{x})\, \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+\Big)
+$$</p>
+<p>With this trick you never have to actually compute the gnarly Hessian! More on
+<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p><script type= "text/javascript">
     if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
         var mathjaxscript = document.createElement('script');
         mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -268,7 +337,7 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
 </script>
 </div>
   <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Read On &crarr;</a>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
@@ -280,10 +349,10 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </li>
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
+          <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </li>
     </ul>
   </section>

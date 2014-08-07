@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Exp-normalize trick</title>
+  <title>Complex-step derivative</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -51,65 +51,85 @@
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Exp-normalize trick</h1>
-      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+      <h1 class="entry-title">Complex-step derivative</h1>
+      <p class="meta"><time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
-<p>Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
-parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:</p>
+  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
 <p>$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$</p>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any $b \in \mathbb{R}$,</p>
+<p>Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function $f$, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: $f$ must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).</p>
+<p>This post is based on
+<a href="http://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation/links/0912f50c7474bb861d000000">Martins+'03</a></p>
+<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
 <p>$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+\lim_{\varepsilon \rightarrow 0} f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
 $$</p>
-<p>In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
-is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
-impossible$-$the largest number exponentiated after shifting is $0$.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>If what you want to remain in log-space, that is, compute
-$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
-$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to $\exp$, which would be required if using log-sum-exp.</p>
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>Take the imaginary part of both sides and solve for $f'(x)$. Note: the $f$ and
+$f''$ term disappear because $i^0$ and $i^2$ are real-valued.</p>
 <p>$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
 $$</p>
-<p>where
-$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</p>
-<p>Typically with the same choice for $b$ as above.</p>
-<p><strong>Numerically-stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of $\text{sigmoid}(x)$, we have a
-distribution with unnormalized log probabilities $[x,0]$, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions $[x,0]$ and $[0,-x]$ are equivalent (to
-see why, plug in $b=\max(0,x)$). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
+<p>As usual, using a small $\varepsilon$ let's us throw out higher-order
+terms. And, we arrive at the following approximation:</p>
 <p>$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$</p>
-<p>Interestingly, each version covers an extreme case: $x=\infty$ and $x=-\infty$,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div><script type= "text/javascript">
+<p>If instead, we take the real part and solve for $f(x)$, we get an approximation
+to the function's value at $x$:</p>
+<p>$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</p>
+<p>In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.</p>
+<p><strong>Code</strong>:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
+<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c"># convert input to complex number</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c"># return function value and gradient</span>
+    <span class="k">return</span> <span class="n">f1</span>
+</pre></div>
+
+
+<p>A simple test:</p>
+<div class="highlight"><pre><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c"># function</span>
+<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c"># gradient</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Other comments</strong></p>
+<ul>
+<li>
+<p>Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.</p>
+</li>
+<li>
+<p>Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.</p>
+</li>
+</ul><script type= "text/javascript">
     if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
         var mathjaxscript = document.createElement('script');
         mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -145,8 +165,8 @@ respectively. Below is some python code which implements the trick:</p>
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/math-numerical.html">math numerical</a>
+<time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math-calculus.html">math calculus</a>
   </span>
 </p><div class="sharing">
 </div>    </footer>
@@ -231,9 +251,9 @@ respectively. Below is some python code which implements the trick:</p>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/02/11/exp-normalize-trick/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/';
-          var disqus_title = 'Exp-normalize trick';
+          var disqus_identifier = '/post/2014/08/07/complex-step-derivative/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/';
+          var disqus_title = 'Complex-step derivative';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
