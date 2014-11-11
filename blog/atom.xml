@@ -635,7 +635,7 @@ replacing &lt;span class="math"&gt;\(f\)&lt;/span&gt; by it's second-order Talyl
 some point &lt;span class="math"&gt;\(a\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;
 &lt;div class="math"&gt;$$
-\hat{f_{a}}(x) = f(a) + \nabla f(a)^\{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
+\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
 $$&lt;/div&gt;
 &lt;/p&gt;
 &lt;p&gt;The expectation of this Talyor approximation is a quadratic function! Let's try
