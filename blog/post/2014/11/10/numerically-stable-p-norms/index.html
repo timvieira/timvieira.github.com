@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - visualization</title>
+  <title>Numerically-stable p-norms</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,124 +1742,303 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
+<div>
+  <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
-      </h1>
-      <p class="meta"><time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time></p>
+      <h1 class="entry-title">Numerically-stable p-norms</h1>
+      <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
-a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three of my colleagues told me that my plots
-had inspired them to make similar plots. The plotting trick is really simple and
-not original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
-non-smooth (black) and a smooth approximating function (blue). The plot shows
-that the approximation is faithful to the overall shape, but sometimes
-over-smooths. In this case, we miss the maximum, which happens near the middle
-of the figure.</p>
-<p><img alt="Alt text" src="/blog/images/cross-section.png" /></p>
-<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
-function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
-<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
-\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
-picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
-as follows,</p>
-<p><span class="math">\(f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]\)</span></p>
-<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
-<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
-plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
-<p><strong>Picking directions</strong>: There are many alternatives for picking
-<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
-<ol>
-<li>
-<p>Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.</p>
-</li>
-<li>
-<p>Coordinate vectors. Varying one dimension per plot.</p>
-</li>
-<li>
-<p>Random. I recommend directions drawn from a spherical
-    Gaussian.<sup id="fnref:sphericalgaussian"><a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote">1</a></sup> The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    <span class="math">\(\alpha\)</span>. It's probably best that our plots don't randomly vary in scale.</p>
-</li>
-</ol>
-<p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and <span class="math">\(\boldsymbol{d_2}\)</span>, and varying two
-parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
-<p>
-<div class="math">$$
-f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
-$$</div>
-</p>
-<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
-verify/explore properties of an objective function, compare approximations, test
-sensitivity to certain parameters/hyperparameters, visually debug optimization
-algorithms.</p>
-<h2>Notes</h2>
-<div class="footnote">
-<hr />
-<ol>
-<li id="fn:sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
-<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
-sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
-<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-</ol>
+  <div class="entry-content"><p>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
 </div>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Consider the p-norm <span class="math">\[
+|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
+\]</span></p>
+<p>In python this translates to:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[4]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
 
-  <br />
-</div></div>
+<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="s">&quot;First-pass implementation of p-norm.&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
+<p>For example:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[5]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
+
+<span class="k">print</span> <span class="s">&#39;got: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;expected: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">big</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+got: inf
+expected: 1e+300
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This fails because we can't square big</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[6]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+[ inf]
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="A-little-math">A little math<a class="anchor-link" href="#A-little-math">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
+<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span> <span class="math">\[
+|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
+\]</span></p>
+<p>We'll use the following version (harder to remember) <span class="math">\[
+|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\]</span></p>
+<p>Don't believe it? Here's some algebra: <span class="math">\[
+\begin{eqnarray*}
+|| \boldsymbol{x} ||_p
+&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\end{eqnarray*}
+\]</span></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Back-to-numerical-stability">Back to numerical stability<a class="anchor-link" href="#Back-to-numerical-stability">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow to the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[7]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, our example from before works :-)</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[8]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+1e+300
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Remarks">Remarks<a class="anchor-link" href="#Remarks">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li><p>A special case of this trick is available for <span class="math">\(p=2\)</span> (Euclidean norm), c.f <code>numpy.hypot</code>.</p></li>
+<li><p>It appears as if <code>scipy.linalg.norm</code> is stable while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
+<li><p><code>logsumexp</code> an nearly identical trick, but operates in the log-domain, i.e., <span class="math">\(\log(|| \log(|x|) ||_p)\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
+</ul>
+</div>
+</div>
+</div></p></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
+          <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
       </li>
     </ul>
   </section>
@@ -1916,6 +2095,9 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2014/11/10/numerically-stable-p-norms/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/';
+          var disqus_title = 'Numerically-stable p-norms';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

@@ -1,41 +1,302 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-07T00:00:00-04:00</updated><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
-&lt;p&gt;$$
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-11-10T00:00:00-05:00</updated><entry><title>Numerically-stable p-norms</title><link href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/" rel="alternate"></link><updated>2014-11-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-11-10:post/2014/11/10/numerically-stable-p-norms/</id><summary type="html">&lt;p&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Consider the p-norm &lt;span class="math"&gt;\[
+|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
+\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;In python this translates to:&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;
+In&amp;nbsp;[4]:
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;First-pass implementation of p-norm.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;---even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;
+In&amp;nbsp;[5]:
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
+&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;got: &lt;/span&gt;&lt;span class="si"&gt;%g&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;expected: &lt;/span&gt;&lt;span class="si"&gt;%g&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;
+got: inf
+expected: 1e+300
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This fails because we can't square big&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;
+In&amp;nbsp;[6]:
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;
+[ inf]
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="A-little-math"&gt;A little math&lt;a class="anchor-link" href="#A-little-math"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;There is a way to avoid overflow on the account of a few large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Here's a little fact about p-norms: for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; &lt;span class="math"&gt;\[
+|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
+\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We'll use the following version (harder to remember) &lt;span class="math"&gt;\[
+|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Don't believe it? Here's some algebra: &lt;span class="math"&gt;\[
+\begin{eqnarray*}
+|| \boldsymbol{x} ||_p
+&amp;amp;=&amp;amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\end{eqnarray*}
+\]&lt;/span&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Back-to-numerical-stability"&gt;Back to numerical stability&lt;a class="anchor-link" href="#Back-to-numerical-stability"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take the power of is one --- making it very difficult to overflow to the account of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;
+In&amp;nbsp;[7]:
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now, our example from before works :-)&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;
+In&amp;nbsp;[8]:
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;
+1e+300
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Remarks"&gt;Remarks&lt;a class="anchor-link" href="#Remarks"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;A special case of this trick is available for &lt;span class="math"&gt;\(p=2\)&lt;/span&gt; (Euclidean norm), c.f &lt;code&gt;numpy.hypot&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is stable while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;logsumexp&lt;/code&gt; an nearly identical trick, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\log(|| \log(|x|) ||_p)\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/p&gt;</summary></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;Recall, the centered-difference approximation is a fairly accurate method for
-approximating derivatives of a univariate function $f$, which only requires two
+approximating derivatives of a univariate function &lt;span class="math"&gt;\(f\)&lt;/span&gt;, which only requires two
 function evaluations. A similar derivation, based on the Taylor series expansion
 with a complex perturbation, gives us a similarly-accurate approximation with a
 single (complex) function evaluation instead of two (real-valued) function
-evaluations. Note: $f$ must support complex inputs (in frameworks, such as numpy
+evaluations. Note: &lt;span class="math"&gt;\(f\)&lt;/span&gt; must support complex inputs (in frameworks, such as numpy
 or matlab, this often requires no modification to source code).&lt;/p&gt;
 &lt;p&gt;This post is based on
 &lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f(x + i \cdot \varepsilon) =
   \frac{i^0 \varepsilon^0}{0!} f(x)
 + \frac{i^1 \varepsilon^1}{1!} f'(x)
 + \frac{i^2 \varepsilon^2}{2!} f''(x)
 + \frac{i^3 \varepsilon^3}{3!} f'''(x)
 + \cdots
-$$&lt;/p&gt;
-&lt;p&gt;Take the imaginary part of both sides and solve for $f'(x)$. Note: the $f$ and
-$f''$ term disappear because $i^0$ and $i^2$ are real-valued.&lt;/p&gt;
-&lt;p&gt;$$
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(f''\)&lt;/span&gt; term disappear because &lt;span class="math"&gt;\(i^0\)&lt;/span&gt; and &lt;span class="math"&gt;\(i^2\)&lt;/span&gt; are real-valued.&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
-$$&lt;/p&gt;
-&lt;p&gt;As usual, using a small $\varepsilon$ let's us throw out higher-order
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
 terms. And, we arrive at the following approximation:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$&lt;/p&gt;
-&lt;p&gt;If instead, we take the real part and solve for $f(x)$, we get an approximation
-to the function's value at $x$:&lt;/p&gt;
-&lt;p&gt;$$
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
+to the function's value at &lt;span class="math"&gt;\(x\)&lt;/span&gt;:&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;In other words, a single (complex) function evaluations computes both the
 function's value and the derivative.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
@@ -73,37 +334,34 @@ function's value and the derivative.&lt;/p&gt;
   because operations on complex numbers are generally much slower than on floats
   or doubles.&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -116,28 +374,28 @@ which is inspired by the
 (see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent
 similarity between weighted reservior sampling and the Gumbel max trick lead us
 to make some cute connections, which I'll describe in this post.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, $x_1,
-x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$
-available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
-\sum_{j=1}^t x_j}$.&lt;/p&gt;
-&lt;p&gt;Assume, without loss of generality, that $x_i &amp;gt; 0$ for all $i$. (If any element
+&lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, &lt;span class="math"&gt;\(x_1,
+x_2, \cdots\)&lt;/span&gt;. At any point in time &lt;span class="math"&gt;\(t\)&lt;/span&gt; we'd like to have a sampled index &lt;span class="math"&gt;\(i\)&lt;/span&gt;
+available, where the probability of &lt;span class="math"&gt;\(i\)&lt;/span&gt; is given by &lt;span class="math"&gt;\(\pi_t(i) = \frac{x_i}{
+\sum_{j=1}^t x_j}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Assume, without loss of generality, that &lt;span class="math"&gt;\(x_i &amp;gt; 0\)&lt;/span&gt; for all &lt;span class="math"&gt;\(i\)&lt;/span&gt;. (If any element
 has a zero weight we can safely ignore it since it should never be sampled.)&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Streaming Gumbel-max sampler&lt;/strong&gt;: I came up with the following algorithm, which
 is a simple "modification" of the Gumbel-max-trick for handling streaming data:&lt;/p&gt;
 &lt;dl&gt;
-&lt;dt&gt;$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$&lt;/dt&gt;
-&lt;dt&gt;for $i=1,2,\cdots;$ do:&lt;/dt&gt;
+&lt;dt&gt;&lt;span class="math"&gt;\(a = -\infty; b = \text{null}  \ \ \text{\# maximum value and index}\)&lt;/span&gt;&lt;/dt&gt;
+&lt;dt&gt;for &lt;span class="math"&gt;\(i=1,2,\cdots;\)&lt;/span&gt; do:&lt;/dt&gt;
 &lt;dd&gt;# Compute log-unnormalized probabilities&lt;/dd&gt;
-&lt;dd&gt;$w_i = \log(x_i)$&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(w_i = \log(x_i)\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;# Additively perturb each weight by a Gumbel random variate&lt;/dd&gt;
-&lt;dd&gt;$z_i \sim \text{Gumbel}(0,1)$&lt;/dd&gt;
-&lt;dd&gt;$k_i = w_i + z_i$&lt;/dd&gt;
-&lt;dd&gt;# Keep around the largest $k_i$ (i.e. the argmax)&lt;/dd&gt;
-&lt;dd&gt;if $k_i &amp;gt; a$:&lt;/dd&gt;
-&lt;dd&gt;$\ \ \ \ a = k_i$&lt;/dd&gt;
-&lt;dd&gt;$\ \ \ \ b = i$&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(z_i \sim \text{Gumbel}(0,1)\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(k_i = w_i + z_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest &lt;span class="math"&gt;\(k_i\)&lt;/span&gt; (i.e. the argmax)&lt;/dd&gt;
+&lt;dd&gt;if &lt;span class="math"&gt;\(k_i &amp;gt; a\)&lt;/span&gt;:&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;/dl&gt;
-&lt;p&gt;If we interrupt this algorithm at any point, we have a sample $b$.&lt;/p&gt;
+&lt;p&gt;If we interrupt this algorithm at any point, we have a sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;After convincing myself this algorithm was correct, I sat down to try to
 understand the algorithm in the blog post, which is due to Efraimidis and
 Spirakis (2005) (&lt;a href="http://dl.acm.org/citation.cfm?id=1138834"&gt;paywall&lt;/a&gt;,
@@ -146,30 +404,30 @@ looked similar in many ways but used different sorting keys / perturbations.&lt;
 &lt;p&gt;&lt;strong&gt;Efraimidis and Spirakis (2005)&lt;/strong&gt;: Here is the ES algorithm for weighted
 reservior sampling&lt;/p&gt;
 &lt;dl&gt;
-&lt;dt&gt;$a = -\infty; b = \text{null}$&lt;/dt&gt;
-&lt;dt&gt;for $i=1,2,\cdots;$ do:&lt;/dt&gt;
+&lt;dt&gt;&lt;span class="math"&gt;\(a = -\infty; b = \text{null}\)&lt;/span&gt;&lt;/dt&gt;
+&lt;dt&gt;for &lt;span class="math"&gt;\(i=1,2,\cdots;\)&lt;/span&gt; do:&lt;/dt&gt;
 &lt;dd&gt;# Additively perturb each weight by a Gumbel random variate,&lt;/dd&gt;
-&lt;dd&gt;$u_i \sim \text{Uniform}(0,1)$&lt;/dd&gt;
-&lt;dd&gt;$e_i = u_i^{(\frac{1}{x_i})}$&lt;/dd&gt;
-&lt;dd&gt;# Keep around the largest $e_i$&lt;/dd&gt;
-&lt;dd&gt;if $k_i &amp;gt; a$:&lt;/dd&gt;
-&lt;dd&gt;$\ \ \ \ a = k_i$&lt;/dd&gt;
-&lt;dd&gt;$\ \ \ \ b = i$&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(u_i \sim \text{Uniform}(0,1)\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(e_i = u_i^{(\frac{1}{x_i})}\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest &lt;span class="math"&gt;\(e_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;if &lt;span class="math"&gt;\(k_i &amp;gt; a\)&lt;/span&gt;:&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;/dl&gt;
-&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample $b$.&lt;/p&gt;
+&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
 algorithms take compute a randomized key and take an argmax. What's the
 relationship between the keys?&lt;/p&gt;
-&lt;p&gt;First, note that a $\text{Gumbel}(0,1)$ variate can be generated via
-$-\log(-\log(\text{Uniform}(0,1)))$. This is a straightforward application of
+&lt;p&gt;First, note that a &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; variate can be generated via
+&lt;span class="math"&gt;\(-\log(-\log(\text{Uniform}(0,1)))\)&lt;/span&gt;. This is a straightforward application of
 the
 &lt;a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling"&gt;inverse transform sampling&lt;/a&gt;
 method for random number generation. This means that if we use the same sequence
-of uniform random variates then, $z_i = -\log(-\log(u_i))$.&lt;/p&gt;
-&lt;p&gt;However, this does not give use equality between $k_i$ and $e_i$, but it does
-turn out that $k_i = -\log(-\log(e_i))$, which is useful because this is a
-monotonic transformation on the interval $(0,1)$. Since monotonic
-transformations preserve ordering, the sequences $k$ and $e$ result in the same
+of uniform random variates then, &lt;span class="math"&gt;\(z_i = -\log(-\log(u_i))\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;However, this does not give use equality between &lt;span class="math"&gt;\(k_i\)&lt;/span&gt; and &lt;span class="math"&gt;\(e_i\)&lt;/span&gt;, but it does
+turn out that &lt;span class="math"&gt;\(k_i = -\log(-\log(e_i))\)&lt;/span&gt;, which is useful because this is a
+monotonic transformation on the interval &lt;span class="math"&gt;\((0,1)\)&lt;/span&gt;. Since monotonic
+transformations preserve ordering, the sequences &lt;span class="math"&gt;\(k\)&lt;/span&gt; and &lt;span class="math"&gt;\(e\)&lt;/span&gt; result in the same
 comparison decisions, as well as, the same argmax. In summary, the algorithms
 are the same!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Extensions&lt;/strong&gt;: After reading a little further along in the ES paper, we see
@@ -183,41 +441,40 @@ Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
 not known as a streaming algorithm, much less known to perform sampling without
 replacement! If you know of a reference let me know. Perhaps, we'll finish
 turning these connections into a
-&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The usual way&lt;/strong&gt;: Exponentiate and normalize (using the
 &lt;a href="/blog/post/2014/02/11/exp-normalize-trick/"&gt;exp-normalize trick&lt;/a&gt;), then use the
 an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&gt;
@@ -230,11 +487,13 @@ an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&
 
 
 &lt;p&gt;&lt;strong&gt;The Gumbel max trick&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;$$
-y = \text{argmax}_{i \in \{1,\cdots,K\}} x_i + z_i
-$$&lt;/p&gt;
-&lt;p&gt;where $z_1 \cdots z_K$ are i.i.d. $\text{Gumbel}(0,1)$ random variates. It
-turns out that $y$ is distributed according to $\pi$. (See the short derivations
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+y = \text{argmax}_{i \in \\{1,\cdots,K\\}} x_i + z_i
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(z_1 \cdots z_K\)&lt;/span&gt; are i.i.d. &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; random variates. It
+turns out that &lt;span class="math"&gt;\(y\)&lt;/span&gt; is distributed according to &lt;span class="math"&gt;\(\pi\)&lt;/span&gt;. (See the short derivations
 in this
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;blog post&lt;/a&gt;.)&lt;/p&gt;
 &lt;p&gt;Implementing the Gumbel max trick is remarkable easy:&lt;/p&gt;
@@ -245,11 +504,11 @@ in this
 
 
 &lt;p&gt;If you don't have access to a Gumbel random variate generator, you can use
-$-\log(-\log(\text{Uniform}(0,1))$&lt;/p&gt;
+&lt;span class="math"&gt;\(-\log(-\log(\text{Uniform}(0,1))\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel max requires $K$ samples from a uniform. Usual requires only $1$.&lt;/p&gt;
+&lt;p&gt;Gumbel max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
@@ -257,58 +516,55 @@ $-\log(-\log(\text{Uniform}(0,1))$&lt;/p&gt;
      later post!&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The Gumbel max trick requires $2K$ calls to $\log$, whereas ordinary
-     requires $K$ calls to $\exp$. Since $\exp$ and $\log$ are expensive
+&lt;p&gt;The Gumbel max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
+     requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are expensive
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to $\log$ do not depend on the data so they can be precomputed; this is
+     to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
      handy for implementations which rely on vectorization for efficiency,
      e.g. python+numpy. By the way, an interesting alternative approach to
-     avoiding $\exp$ is described on Justin Domke's blog post on
+     avoiding &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is described on Justin Domke's blog post on
      &lt;a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;speeding up sampling from a sigmoid&lt;/a&gt;,
-     which discusses a trick for $K=2$. (Make sure you read the comments!)&lt;/p&gt;
+     which discusses a trick for &lt;span class="math"&gt;\(K=2\)&lt;/span&gt;. (Make sure you read the comments!)&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/ol&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
 (potentially expensive) function evaluations being wasted.&lt;/p&gt;
 &lt;p&gt;This is a very simple point, but nonetheless I'll illustrate with a simple
 example.&lt;/p&gt;
-&lt;p&gt;Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.&lt;/p&gt;
-&lt;p&gt;Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+&lt;p&gt;Consider the following simple example, let's find the argmax of &lt;span class="math"&gt;\(f(x,y) = -x^2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Suppose we search over a &lt;span class="math"&gt;\(10\)&lt;/span&gt;-by-&lt;span class="math"&gt;\(10\)&lt;/span&gt; grid, resulting in a total of &lt;span class="math"&gt;\(100\)&lt;/span&gt;
 function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
+of the number of samples in the &lt;span class="math"&gt;\(x\)&lt;/span&gt;-dimension, which is only &lt;span class="math"&gt;\(10\)&lt;/span&gt; samples! On
+the other hand, randomly sampling points over the same space results in &lt;span class="math"&gt;\(100\)&lt;/span&gt;
 samples in every dimension.&lt;/p&gt;
 &lt;p&gt;In other words, randomly sample instead of using a rigid grid. If you have
 points, which are not uniformly spaced, I'm willing to bet that an appropriate
@@ -332,108 +588,110 @@ reading see
    terrible set of points. This shouldn't be a problem if you use enough
    samples.&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="misc"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+&lt;/ol&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="misc"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
-$\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]$ , where $x$ is
-a random vector and $A$ is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let $\mu$ and
-$\Sigma$ be the mean and variance of $x$. It turns out the expected value of a
+&lt;span class="math"&gt;\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)&lt;/span&gt; , where &lt;span class="math"&gt;\(x\)&lt;/span&gt; is
+a random vector and &lt;span class="math"&gt;\(A\)&lt;/span&gt; is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(\Sigma\)&lt;/span&gt; be the mean and variance of &lt;span class="math"&gt;\(x\)&lt;/span&gt;. It turns out the expected value of a
 quadratic has the following simple form:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
 =
 \text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Delta Method&lt;/strong&gt;: Suppose we'd like to compute expected value of a nonlinear
-function $f$ applied our random variable $x$,
-$\mathbb{E}\left[ f(x) \right]$. The Delta method approximates this expection by
-replacing $f$ by it's second-order Talylor approximation $\hat{f_{a}}$ taken at
-some point $a$&lt;/p&gt;
-&lt;p&gt;$$
-\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
-$$&lt;/p&gt;
+function &lt;span class="math"&gt;\(f\)&lt;/span&gt; applied our random variable &lt;span class="math"&gt;\(x\)&lt;/span&gt;,
+&lt;span class="math"&gt;\(\mathbb{E}\left[ f(x) \right]\)&lt;/span&gt;. The Delta method approximates this expection by
+replacing &lt;span class="math"&gt;\(f\)&lt;/span&gt; by it's second-order Talylor approximation &lt;span class="math"&gt;\(\hat{f_{a}}\)&lt;/span&gt; taken at
+some point &lt;span class="math"&gt;\(a\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+\hat{f_{a}}(x) = f(a) + \nabla\negthinspace f(a)^\{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a)\, (x - a)
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;The expectation of this Talyor approximation is a quadratic function! Let's try
 to apply our new equation for the expected value of quadratic. We can use the
-trick from above with $A=H(a)$ and $x = (x-a)$. Note, covariance matrix is shift
+trick from above with &lt;span class="math"&gt;\(A=H(a)\)&lt;/span&gt; and &lt;span class="math"&gt;\(x = (x-a)\)&lt;/span&gt;. Note, covariance matrix is shift
 invariant and the Hessian is a symmetric matrix!&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \begin{aligned}
 \mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp;amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\
- &amp;amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\
+ &amp;amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
+ &amp;amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
  &amp;amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
    \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
 \end{aligned}
-$$&lt;/p&gt;
-&lt;p&gt;It's common to take the Taylor expansion around $\mu$. This simplifies the equation&lt;/p&gt;
-&lt;p&gt;\begin{aligned}
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;It's common to take the Taylor expansion around &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;. This simplifies the equation&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;\begin{aligned}
 \mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\
+&amp;amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
 &amp;amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}&lt;/p&gt;
+\end{aligned}&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;That looks much more tractable! Error bounds are possible to derive, but outside
 to scope of this post. For a nice use of the delta method in machine learning
 see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; and
-&lt;a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf"&gt;(Smith &amp;amp; Eisner,'06)&lt;/a&gt;&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf"&gt;(Smith &amp;amp; Eisner,'06)&lt;/a&gt;&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -444,19 +702,19 @@ that the approximation is faithful to the overall shape, but sometimes
 over-smooths. In this case, we miss the maximum, which happens near the middle
 of the figure.&lt;/p&gt;
 &lt;p&gt;&lt;img alt="Alt text" src="/blog/images/cross-section.png" /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Details&lt;/strong&gt;: Let $f: \mathbb{R}^d \rightarrow \mathbb{R}$ be a high-dimensional
-function ($d \gg 2$), which you'd like to visualize. Unfortunately, you are like
+&lt;p&gt;&lt;strong&gt;Details&lt;/strong&gt;: Let &lt;span class="math"&gt;\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)&lt;/span&gt; be a high-dimensional
+function (&lt;span class="math"&gt;\(d \gg 2\)&lt;/span&gt;), which you'd like to visualize. Unfortunately, you are like
 me and can't see in high-dimensions what do you do?&lt;/p&gt;
-&lt;p&gt;One simple thing to do is take a nonzero vector $\boldsymbol{d} \in
-\mathbb{R}^d$, take a point of interest $\boldsymbol{x}$, and build a local
-picture of $f$ by evaluating it at various intervals along the chosen direction
+&lt;p&gt;One simple thing to do is take a nonzero vector &lt;span class="math"&gt;\(\boldsymbol{d} \in
+\mathbb{R}^d\)&lt;/span&gt;, take a point of interest &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;, and build a local
+picture of &lt;span class="math"&gt;\(f\)&lt;/span&gt; by evaluating it at various intervals along the chosen direction
 as follows,&lt;/p&gt;
-&lt;p&gt;$f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]$&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
-$\boldsymbol{x}$ and $\boldsymbol{d}$ are fixed for all $\alpha_i$. Now, you can
-plot $(\alpha_i,f_i)$.&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; are fixed for all &lt;span class="math"&gt;\(\alpha_i\)&lt;/span&gt;. Now, you can
+plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Picking directions&lt;/strong&gt;: There are many alternatives for picking
-$\boldsymbol{d}$, my favorites are:&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;, my favorites are:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;Gradient (if it exists), this direction is guaranteed to show a local
@@ -470,15 +728,17 @@ $\boldsymbol{d}$, my favorites are:&lt;/p&gt;
     Gaussian.&lt;sup id="fnref:sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a vector is
     uniformly distributed across all unit-length directions (i.e., the angle of
     the vector, not it's length). We will vary the length ourselves via
-    $\alpha$. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
+    &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, $\boldsymbol{d_1}$ and $\boldsymbol{d_2}$, and varying two
-parameters $\alpha$ and $\beta$,&lt;/p&gt;
-&lt;p&gt;$$
+using 2 vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d_2}\)&lt;/span&gt;, and varying two
+parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Closing remarks&lt;/strong&gt;: These types of plots are probably best used to: empirically
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
@@ -489,85 +749,92 @@ algorithms.&lt;/p&gt;
 &lt;ol&gt;
 &lt;li id="fn:sphericalgaussian"&gt;
 &lt;p&gt;More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a $d$-dimensional unit sphere,
-$\mathbb{S}^d$. Sampling a vector from a spherical Gaussian is straightforward:
-sample $\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$,
-$\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2$&amp;#160;&lt;a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+points uniformly distributed on the surface of a &lt;span class="math"&gt;\(d\)&lt;/span&gt;-dimensional unit sphere,
+&lt;span class="math"&gt;\(\mathbb{S}^d\)&lt;/span&gt;. Sampling a vector from a spherical Gaussian is straightforward:
+sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)&lt;/span&gt;,
+&lt;span class="math"&gt;\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)&lt;/span&gt;&amp;#160;&lt;a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;/div&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/div&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
-&lt;p&gt;Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
-parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
+parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any $b \in \mathbb{R}$,&lt;/p&gt;
-&lt;p&gt;$$
+overflow. For any &lt;span class="math"&gt;\(b \in \mathbb{R}\)&lt;/span&gt;,&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \pi_i
 = \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
 = \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$&lt;/p&gt;
-&lt;p&gt;In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
-is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
-impossible$-$the largest number exponentiated after shifting is $0$.&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;In other words, the &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is shift-invariant. A reasonable choice
+is &lt;span class="math"&gt;\(b = \max_{i=1}^n x_i\)&lt;/span&gt;. With this choice, overflow due to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is
+impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponentiated after shifting is &lt;span class="math"&gt;\(0\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;If what you want to remain in log-space, that is, compute
-$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
-$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to $\exp$, which would be required if using log-sum-exp.&lt;/p&gt;
+&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
+&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;where
-$$
+&lt;div class="math"&gt;$$
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$&lt;/p&gt;
-&lt;p&gt;Typically with the same choice for $b$ as above.&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Typically with the same choice for &lt;span class="math"&gt;\(b\)&lt;/span&gt; as above.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of $\text{sigmoid}(x)$, we have a
-distribution with unnormalized log probabilities $[x,0]$, where we are only
+avoid numerical overflow. In the case of &lt;span class="math"&gt;\(\text{sigmoid}(x)\)&lt;/span&gt;, we have a
+distribution with unnormalized log probabilities &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt;, where we are only
 interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions $[x,0]$ and $[0,-x]$ are equivalent (to
-see why, plug in $b=\max(0,x)$). This is why sigmoid is often expressed in one
+identity, we know that the distributions &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt; and &lt;span class="math"&gt;\([0,-x]\)&lt;/span&gt; are equivalent (to
+see why, plug in &lt;span class="math"&gt;\(b=\max(0,x)\)&lt;/span&gt;). This is why sigmoid is often expressed in one
 of two equivalent ways:&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$&lt;/p&gt;
-&lt;p&gt;Interestingly, each version covers an extreme case: $x=\infty$ and $x=-\infty$,
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Interestingly, each version covers an extreme case: &lt;span class="math"&gt;\(x=\infty\)&lt;/span&gt; and &lt;span class="math"&gt;\(x=-\infty\)&lt;/span&gt;,
 respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="s"&gt;&amp;quot;Numerically-stable sigmoid function.&amp;quot;&lt;/span&gt;
@@ -579,74 +846,79 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         &lt;span class="c"&gt;# zero because it&amp;#39;s 1+z.&lt;/span&gt;
         &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
  \frac{1}{2 \varepsilon} \Big(
    f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
  \Big)
-$$&lt;/p&gt;
-&lt;p&gt;where $\varepsilon &amp;gt; 0$ and $\boldsymbol{e_i}$ is a vector of zeros except at
-$i$ where it is $1$. This approximation is exact in the limit, and accurate to
-$o(\varepsilon^2)$ additive error.&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(\varepsilon &amp;gt; 0\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt; is a vector of zeros except at
+&lt;span class="math"&gt;\(i\)&lt;/span&gt; where it is &lt;span class="math"&gt;\(1\)&lt;/span&gt;. This approximation is exact in the limit, and accurate to
+&lt;span class="math"&gt;\(o(\varepsilon^2)\)&lt;/span&gt; additive error.&lt;/p&gt;
 &lt;p&gt;This is a specific instance of a more general approximation! The dot product of
-the gradient and any (conformable) vector $\boldsymbol{d}$ can be approximated
+the gradient and any (conformable) vector &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; can be approximated
 with the following formula,&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
    f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
  \Big)
-$$&lt;/p&gt;
-&lt;p&gt;We get the special case above when $\boldsymbol{d}=\boldsymbol{e_i}$. This also
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;We get the special case above when &lt;span class="math"&gt;\(\boldsymbol{d}=\boldsymbol{e_i}\)&lt;/span&gt;. This also
 exact in the limit and just as accurate.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Runtime?&lt;/strong&gt; Finite-difference approximation is probably too slow for
   approximating a high-dimensional gradient because the number of function
-  evaluations required is $2 n$ where $n$ is the dimensionality of $x$. However,
-  if the end goal is to approximate a gradient-vector product, a mere $2$
+  evaluations required is &lt;span class="math"&gt;\(2 n\)&lt;/span&gt; where &lt;span class="math"&gt;\(n\)&lt;/span&gt; is the dimensionality of &lt;span class="math"&gt;\(x\)&lt;/span&gt;. However,
+  if the end goal is to approximate a gradient-vector product, a mere &lt;span class="math"&gt;\(2\)&lt;/span&gt;
   function evaluations is probably faster than specialized code for computing
   the gradient.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;How to set $\varepsilon$?&lt;/strong&gt; The second approach is more sensitive to
-  $\varepsilon$ because $\boldsymbol{d}$ is arbitrary, unlike
-  $\boldsymbol{e_i}$, which is a simple unit-norm vector. Luckily some guidance
+&lt;p&gt;&lt;strong&gt;How to set &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt;?&lt;/strong&gt; The second approach is more sensitive to
+  &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; because &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; is arbitrary, unlike
+  &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt;, which is a simple unit-norm vector. Luckily some guidance
   is available. Andrei (2009) reccommends&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 \varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
-$$&lt;/p&gt;
-&lt;p&gt;where $\epsilon_{\text{mach}}$ is
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(\epsilon_{\text{mach}}\)&lt;/span&gt; is
 &lt;a href="http://en.wikipedia.org/wiki/Machine_epsilon"&gt;machine epsilon&lt;/a&gt;. (Numpy users:
 &lt;code&gt;numpy.finfo(x.dtype).eps&lt;/code&gt;).&lt;/p&gt;
 &lt;h2&gt;Why do I care?&lt;/h2&gt;
@@ -654,10 +926,10 @@ $$&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;Well, I tend to work on sparse, but high-dimensional problems where
    finite-difference would be too slow. Thus, my usual solution is to only test
-   several randomly selected dimensions$-$biasing samples toward dimensions
+   several randomly selected dimensions&lt;span class="math"&gt;\(-\)&lt;/span&gt;biasing samples toward dimensions
    which should be nonzero. With the new trick, I can effectively test more
-   dimensions at once by taking random vectors $\boldsymbol{d}$. I recommend
-   sampling $\boldsymbol{d}$ from a spherical Gaussian so that we're uniform on
+   dimensions at once by taking random vectors &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;. I recommend
+   sampling &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; from a spherical Gaussian so that we're uniform on
    the angle of the vector.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -672,42 +944,41 @@ $$&lt;/p&gt;
 &lt;p&gt;Hessian-vector products are an instance of the gradient-vector dot product
 because since the Hessian is just the gradient of the gradient! Now you only
 need to remember one formula!&lt;/p&gt;
-&lt;p&gt;$$
+&lt;p&gt;
+&lt;div class="math"&gt;$$
 H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
   \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
 - \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
 \Big)
-$$&lt;/p&gt;
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on
-&lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math"></category><category term="calculus"></category></entry></feed>
+&lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry></feed>

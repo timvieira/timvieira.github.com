@@ -6,11 +6,11 @@ behavior occurs in the presence of unimportant parameters, which results in many
 (potentially expensive) function evaluations being wasted.&lt;/p&gt;
 &lt;p&gt;This is a very simple point, but nonetheless I'll illustrate with a simple
 example.&lt;/p&gt;
-&lt;p&gt;Consider the following simple example, let's find the argmax of $f(x,y) = -x^2$.&lt;/p&gt;
-&lt;p&gt;Suppose we search over a $10$-by-$10$ grid, resulting in a total of $100$
+&lt;p&gt;Consider the following simple example, let's find the argmax of &lt;span class="math"&gt;\(f(x,y) = -x^2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Suppose we search over a &lt;span class="math"&gt;\(10\)&lt;/span&gt;-by-&lt;span class="math"&gt;\(10\)&lt;/span&gt; grid, resulting in a total of &lt;span class="math"&gt;\(100\)&lt;/span&gt;
 function evaluations. For this function, we expect precision which proportional
-of the number of samples in the $x$-dimension, which is only $10$ samples! On
-the other hand, randomly sampling points over the same space results in $100$
+of the number of samples in the &lt;span class="math"&gt;\(x\)&lt;/span&gt;-dimension, which is only &lt;span class="math"&gt;\(10\)&lt;/span&gt; samples! On
+the other hand, randomly sampling points over the same space results in &lt;span class="math"&gt;\(100\)&lt;/span&gt;
 samples in every dimension.&lt;/p&gt;
 &lt;p&gt;In other words, randomly sample instead of using a rigid grid. If you have
 points, which are not uniformly spaced, I'm willing to bet that an appropriate
@@ -34,34 +34,31 @@ reading see
    terrible set of points. This shouldn't be a problem if you use enough
    samples.&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="misc"></category></entry></feed>
+&lt;/ol&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="misc"></category></entry></feed>
