@@ -2013,14 +2013,14 @@ In&nbsp;[8]:
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/">Notes on KL-divergence with applications to variational inference</a>
+        <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
       </h1>
       <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>It's well-known that
 <a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
-is not symmetric, which direction is right for your problem?</p>
+is not symmetric, which direction is right for fitting your model?</p>
 <p>First, which one is which?</p>
 <p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
 <p><span class="math">\(\textbf{KL}(q || p)\)</span>
@@ -2030,23 +2030,18 @@ is not symmetric, which direction is right for your problem?</p>
   - mean-seeking, inclusive
   - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
   - requires normalization wrt <span class="math">\(p\)</span></p>
-<p><strong>How to remember which direction is which?</strong></p>
-<ul>
-<li>
-<p>The KL notation is a little strange with the "<span class="math">\(||\)</span>", but it can help you
-   remember which is which by pretending its a division symbol (it does
-   correspond to division in the equation).</p>
-</li>
-<li>
-<p>Always normalize wrt the "numerator" and <span class="math">\(q\)</span>.</p>
-</li>
-</ul>
-<p><strong>Computational perspecive</strong>: Now, let's look at what's involved in fitting a
-model <span class="math">\(q_\theta\)</span> in each direction. I'll describe the gradient and pay special
-attention to the issue of normalization.</p>
+<p><strong>How I remember which direction is which?</strong>: The KL notation is a little
+strange with the "<span class="math">\(||\)</span>", but it can help you remember which is which by
+pretending its a division symbol (it does correspond to division in the
+equation). I also fint it helps to remember that you always normalize wrt the
+"numerator" (and <span class="math">\(q\)</span>).</p>
+<h2>Computational perspecive</h2>
+<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
+direction. I'll describe the gradient and pay special attention to the issue of
+normalization.</p>
 <p>Notation: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>, where
 <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
-<h2>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h2>
+<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
 <p>
 <div class="math">\begin{align*}
 \textbf{KL}(q_\theta || p)
@@ -2087,7 +2082,7 @@ we're optimizing.</p>
 <p>This direction is convenient because we don't need to normalize
 <span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
 "hard" direction, which is convex.</p>
-<h2>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h2>
+<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
 <p>
 <div class="math">\begin{align*}
 \textbf{KL}(p || q_\theta)
@@ -2302,7 +2297,7 @@ function's value and the derivative.</p>
           <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </li>
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/">Notes on KL-divergence with applications to variational inference</a>
+          <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
