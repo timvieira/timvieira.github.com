@@ -1752,6 +1752,423 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
+      </h1>
+      <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Consider the p-norm <span class="math">\[
+|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
+\]</span></p>
+<p>In python this translates to:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[4]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+
+<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="s">&quot;First-pass implementation of p-norm.&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
+<p>For example:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[5]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
+
+<span class="k">print</span> <span class="s">&#39;got: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;expected: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">big</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+got: inf
+expected: 1e+300
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This fails because we can't square big</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[6]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+[ inf]
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="A-little-math">A little math<a class="anchor-link" href="#A-little-math">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
+<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span> <span class="math">\[
+|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
+\]</span></p>
+<p>We'll use the following version (harder to remember) <span class="math">\[
+|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\]</span></p>
+<p>Don't believe it? Here's some algebra: <span class="math">\[
+\begin{eqnarray*}
+|| \boldsymbol{x} ||_p
+&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
+&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\end{eqnarray*}
+\]</span></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Back-to-numerical-stability">Back to numerical stability<a class="anchor-link" href="#Back-to-numerical-stability">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow to the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[7]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, our example from before works :-)</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[8]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+1e+300
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Remarks">Remarks<a class="anchor-link" href="#Remarks">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li><p>A special case of this trick is available for <span class="math">\(p=2\)</span> (Euclidean norm), c.f <code>numpy.hypot</code>.</p></li>
+<li><p>It appears as if <code>scipy.linalg.norm</code> is stable while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
+<li><p><code>logsumexp</code> an nearly identical trick, but operates in the log-domain, i.e., <span class="math">\(\log(|| \log(|x|) ||_p)\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
+</ul>
+</div>
+</div>
+</div></p></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/">Notes on KL-divergence with applications to variational inference</a>
+      </h1>
+      <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>It's well-known that
+<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
+is not symmetric, which direction is right for your problem?</p>
+<p>First, which one is which?</p>
+<p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(q || p)\)</span>
+  - mode-seeking, exclusive
+  - no normalization wrt <span class="math">\(p\)</span></p>
+<p><span class="math">\(\textbf{KL}(p || q)\)</span>
+  - mean-seeking, inclusive
+  - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
+  - requires normalization wrt <span class="math">\(p\)</span></p>
+<p><strong>How to remember which direction is which?</strong></p>
+<ul>
+<li>
+<p>The KL notation is a little strange with the "<span class="math">\(||\)</span>", but it can help you
+   remember which is which by pretending its a division symbol (it does
+   correspond to division in the equation).</p>
+</li>
+<li>
+<p>Always normalize wrt the "numerator" and <span class="math">\(q\)</span>.</p>
+</li>
+</ul>
+<p><strong>Computational perspecive</strong>: Now, let's look at what's involved in fitting a
+model <span class="math">\(q_\theta\)</span> in each direction. I'll describe the gradient and pay special
+attention to the issue of normalization.</p>
+<p>Notation: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>, where
+<span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+<h2>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h2>
+<p>
+<div class="math">\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</div>
+</p>
+<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+<div class="math">\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</div>
+</p>
+<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
+we're optimizing.</p>
+<p>This leaves us with the following optimization problem:
+<div class="math">\begin{align*}
+&amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</div>
+</p>
+<p>Let's work out the gradient
+<div class="math">\begin{align*}
+&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</div>
+</p>
+<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
+<p>This is convenient because we don't need to normalize <span class="math">\(p\)</span>.</p>
+<h2>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h2>
+<p>
+<div class="math">\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</div>
+</p>
+<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+<div class="math">\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
+\end{align*}</div>
+</p>
+<p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
+story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
+normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
+expectation propagation, variational decoding, standard maximum likelihood is
+even an example (were <span class="math">\(p\)</span> is the empirical distribution).</p>
+<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
+<p>
+<div class="math">\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</div>
+</p>
+<p>Optimization problem is convex for exponential families.</p>
+<p>Computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
+<p>You can think of maximum likelihood estimation as a method which minimizes KL
+divergence from samples <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data distribution!
+The first term in the gradient is based on a sample ("observed expected feature
+counts").</p>
+<h2>Further reading</h2>
+<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
+account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+<ul>
+<li>
+<p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
+</li>
+<li>
+<p>Exclusive divergences will often favor a single mode.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </h1>
       <p class="meta"><time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time></p>
@@ -1870,218 +2287,6 @@ function's value and the derivative.</p>
 }
 </script></div>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
-      </h1>
-      <p class="meta"><time datetime="2014-08-01T00:00:00" pubdate>Aug 01, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>A while back, <a href="http://people.cs.umass.edu/~wallach/">Hanna</a> and I stumbled upon
-the following blog post:
-<a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
-which got us excited about reservior sampling.</p>
-<p>Around the same time, I attended an talk by
-<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his work on
-perturb-and-MAP
-<a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
-which is inspired by the
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
-(see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent
-similarity between weighted reservior sampling and the Gumbel max trick lead us
-to make some cute connections, which I'll describe in this post.</p>
-<p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, <span class="math">\(x_1,
-x_2, \cdots\)</span>. At any point in time <span class="math">\(t\)</span> we'd like to have a sampled index <span class="math">\(i\)</span>
-available, where the probability of <span class="math">\(i\)</span> is given by <span class="math">\(\pi_t(i) = \frac{x_i}{
-\sum_{j=1}^t x_j}\)</span>.</p>
-<p>Assume, without loss of generality, that <span class="math">\(x_i &gt; 0\)</span> for all <span class="math">\(i\)</span>. (If any element
-has a zero weight we can safely ignore it since it should never be sampled.)</p>
-<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which
-is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
-<dl>
-<dt><span class="math">\(a = -\infty; b = \text{null}  \ \ \text{\# maximum value and index}\)</span></dt>
-<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
-<dd># Compute log-unnormalized probabilities</dd>
-<dd><span class="math">\(w_i = \log(x_i)\)</span></dd>
-<dd># Additively perturb each weight by a Gumbel random variate</dd>
-<dd><span class="math">\(z_i \sim \text{Gumbel}(0,1)\)</span></dd>
-<dd><span class="math">\(k_i = w_i + z_i\)</span></dd>
-<dd># Keep around the largest <span class="math">\(k_i\)</span> (i.e. the argmax)</dd>
-<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
-<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
-<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
-</dl>
-<p>If we interrupt this algorithm at any point, we have a sample <span class="math">\(b\)</span>.</p>
-<p>After convincing myself this algorithm was correct, I sat down to try to
-understand the algorithm in the blog post, which is due to Efraimidis and
-Spirakis (2005) (<a href="http://dl.acm.org/citation.cfm?id=1138834">paywall</a>,
-<a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf">free summary</a>). They
-looked similar in many ways but used different sorting keys / perturbations.</p>
-<p><strong>Efraimidis and Spirakis (2005)</strong>: Here is the ES algorithm for weighted
-reservior sampling</p>
-<dl>
-<dt><span class="math">\(a = -\infty; b = \text{null}\)</span></dt>
-<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
-<dd># Additively perturb each weight by a Gumbel random variate,</dd>
-<dd><span class="math">\(u_i \sim \text{Uniform}(0,1)\)</span></dd>
-<dd><span class="math">\(e_i = u_i^{(\frac{1}{x_i})}\)</span></dd>
-<dd># Keep around the largest <span class="math">\(e_i\)</span></dd>
-<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
-<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
-<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
-</dl>
-<p>Again, if interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>.</p>
-<p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
-algorithms take compute a randomized key and take an argmax. What's the
-relationship between the keys?</p>
-<p>First, note that a <span class="math">\(\text{Gumbel}(0,1)\)</span> variate can be generated via
-<span class="math">\(-\log(-\log(\text{Uniform}(0,1)))\)</span>. This is a straightforward application of
-the
-<a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
-method for random number generation. This means that if we use the same sequence
-of uniform random variates then, <span class="math">\(z_i = -\log(-\log(u_i))\)</span>.</p>
-<p>However, this does not give use equality between <span class="math">\(k_i\)</span> and <span class="math">\(e_i\)</span>, but it does
-turn out that <span class="math">\(k_i = -\log(-\log(e_i))\)</span>, which is useful because this is a
-monotonic transformation on the interval <span class="math">\((0,1)\)</span>. Since monotonic
-transformations preserve ordering, the sequences <span class="math">\(k\)</span> and <span class="math">\(e\)</span> result in the same
-comparison decisions, as well as, the same argmax. In summary, the algorithms
-are the same!</p>
-<p><strong>Extensions</strong>: After reading a little further along in the ES paper, we see
-that the same algorithm can be used to perform <em>sampling without replacement</em> by
-sorting and taking the elements with the highest keys. This same modification is
-applicable to the Gumbel-max-trick because the keys have exactly the same
-ordering as ES.In practice we don't sort the key, but instead use a bounded
-priority queue.</p>
-<p><strong>Closing</strong>: To the best of my knowledge, the connection between the
-Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
-not known as a streaming algorithm, much less known to perform sampling without
-replacement! If you know of a reference let me know. Perhaps, we'll finish
-turning these connections into a
-<a href="https://github.com/timvieira/gumbel">short tech report</a>.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-31T00:00:00" pubdate>Jul 31, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
-log-probabilities:</p>
-<p>
-<div class="math">$$
-\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
-$$</div>
-</p>
-<p><strong>The usual way</strong>: Exponentiate and normalize (using the
-<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
-an algorithm for sampling from a discrete distribution (aka categorical):</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">usual</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
-    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="p">.</span><span class="n">max</span><span class="p">()).</span><span class="n">cumsum</span><span class="p">()</span>     <span class="err">#</span> <span class="n">the</span> <span class="n">exp</span><span class="o">-</span><span class="n">normalize</span> <span class="n">trick</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cdf</span><span class="p">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>The Gumbel max trick</strong>:</p>
-<p>
-<div class="math">$$
-y = \text{argmax}_{i \in \\{1,\cdots,K\\}} x_i + z_i
-$$</div>
-</p>
-<p>where <span class="math">\(z_1 \cdots z_K\)</span> are i.i.d. <span class="math">\(\text{Gumbel}(0,1)\)</span> random variates. It
-turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
-in this
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
-<p>Implementing the Gumbel max trick is remarkable easy:</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">:</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">).</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-
-
-<p>If you don't have access to a Gumbel random variate generator, you can use
-<span class="math">\(-\log(-\log(\text{Uniform}(0,1))\)</span></p>
-<p><strong>Comparison</strong>:</p>
-<ol>
-<li>
-<p>Gumbel max requires <span class="math">\(K\)</span> samples from a uniform. Usual requires only <span class="math">\(1\)</span>.</p>
-</li>
-<li>
-<p>Gumbel is one-pass because it does not require normalization (or a pass to
-     compute the max for use in the exp-normalize trick). More on this in a
-     later post!</p>
-</li>
-<li>
-<p>The Gumbel max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>, whereas ordinary
-     requires <span class="math">\(K\)</span> calls to <span class="math">\(\exp\)</span>. Since <span class="math">\(\exp\)</span> and <span class="math">\(\log\)</span> are expensive
-     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is
-     handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy. By the way, an interesting alternative approach to
-     avoiding <span class="math">\(\exp\)</span> is described on Justin Domke's blog post on
-     <a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">speeding up sampling from a sigmoid</a>,
-     which discusses a trick for <span class="math">\(K=2\)</span>. (Make sure you read the comments!)</p>
-</li>
-</ol>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/tag/math2.html">&larr; Older</a>
 
@@ -2092,6 +2297,12 @@ in this
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/">Notes on KL-divergence with applications to variational inference</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </li>
       <li class="post">
@@ -2099,12 +2310,6 @@ in this
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
       </li>
     </ul>
   </section>
@@ -2121,7 +2326,7 @@ in this
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 

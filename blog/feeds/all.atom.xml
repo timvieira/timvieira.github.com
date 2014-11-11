@@ -250,7 +250,153 @@ In&amp;nbsp;[8]:
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/p&gt;</summary></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;/div&gt;&lt;/p&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Notes on KL-divergence with applications to variational inference</title><link href="http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/" rel="alternate"></link><updated>2014-10-06T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-10-06:post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/</id><summary type="html">&lt;p&gt;It's well-known that
+&lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
+is not symmetric, which direction is right for your problem?&lt;/p&gt;
+&lt;p&gt;First, which one is which?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Cheat sheet&lt;/strong&gt;: If we're fitting &lt;span class="math"&gt;\(q\)&lt;/span&gt; to &lt;span class="math"&gt;\(p\)&lt;/span&gt; using&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(q || p)\)&lt;/span&gt;
+  - mode-seeking, exclusive
+  - no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;
+  - mean-seeking, inclusive
+  - results in a moment-matching problem when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family
+  - requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How to remember which direction is which?&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The KL notation is a little strange with the "&lt;span class="math"&gt;\(||\)&lt;/span&gt;", but it can help you
+   remember which is which by pretending its a division symbol (it does
+   correspond to division in the equation).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Always normalize wrt the "numerator" and &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Computational perspecive&lt;/strong&gt;: Now, let's look at what's involved in fitting a
+model &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; in each direction. I'll describe the gradient and pay special
+attention to the issue of normalization.&lt;/p&gt;
+&lt;p&gt;Notation: &lt;span class="math"&gt;\(p,q_\theta\)&lt;/span&gt; are probabilty distributions. &lt;span class="math"&gt;\(p = \bar{p} / Z_p\)&lt;/span&gt;, where
+&lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is the normalization constant. Similarly for &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;The easy direction &lt;span class="math"&gt;\(\textbf{KL}(q_\theta || p)\)&lt;/span&gt;&lt;/h2&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Let's look at normalization of &lt;span class="math"&gt;\(p\)&lt;/span&gt;, the entropy term is easy because there is no &lt;span class="math"&gt;\(p\)&lt;/span&gt; in it.
+&lt;div class="math"&gt;\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;In this case, &lt;span class="math"&gt;\(-\log Z_p\)&lt;/span&gt; is an additive constant, which can be dropped because
+we're optimizing.&lt;/p&gt;
+&lt;p&gt;This leaves us with the following optimization problem:
+&lt;div class="math"&gt;\begin{align*}
+&amp;amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
+&amp;amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Let's work out the gradient
+&lt;div class="math"&gt;\begin{align*}
+&amp;amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;We killed the one in the last equality because &lt;span class="math"&gt;\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)&lt;/span&gt;, for any &lt;span class="math"&gt;\(q\)&lt;/span&gt; which is a probability distribution.&lt;/p&gt;
+&lt;p&gt;This is convenient because we don't need to normalize &lt;span class="math"&gt;\(p\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Harder direction &lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt;&lt;/h2&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;. So, let's focus on the second term (cross-entropy).
+&lt;div class="math"&gt;\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Unfortunately the &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; factor is unavoidable. The usual "approximate inference
+story" is that &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is hard to compute, while the approximating distributions
+normalization constant &lt;span class="math"&gt;\(Z_q\)&lt;/span&gt; is easy.&lt;/p&gt;
+&lt;p&gt;Nonetheless, optimizing KL in this direction is still useful. Examples include,
+expectation propagation, variational decoding, standard maximum likelihood is
+even an example (were &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical distribution).&lt;/p&gt;
+&lt;p&gt;The gradient, when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family, is intuitive:&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Optimization problem is convex for exponential families.&lt;/p&gt;
+&lt;p&gt;Computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be tractable.&lt;/p&gt;
+&lt;p&gt;You can think of maximum likelihood estimation as a method which minimizes KL
+divergence from samples &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data distribution!
+The first term in the gradient is based on a sample ("observed expected feature
+counts").&lt;/p&gt;
+&lt;h2&gt;Further reading&lt;/h2&gt;
+&lt;p&gt;Both directions of KL are special cases of &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence. For a unified
+account of both directions consider looking into &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Inclusive divergences require &lt;span class="math"&gt;\(q &amp;gt; 0\)&lt;/span&gt; whenever &lt;span class="math"&gt;\(p &amp;gt; 0\)&lt;/span&gt;. No "false negatives".&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Exclusive divergences will often favor a single mode.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="machine-learning"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]

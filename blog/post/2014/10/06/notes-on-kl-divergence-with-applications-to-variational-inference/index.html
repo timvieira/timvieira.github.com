@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Exp-normalize trick</title>
+  <title>Notes on KL-divergence with applications to variational inference</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1751,77 +1751,130 @@ jQuery(document).ready(function($) {
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Exp-normalize trick</h1>
-      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+      <h1 class="entry-title">Notes on KL-divergence with applications to variational inference</h1>
+      <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+  <div class="entry-content"><p>It's well-known that
+<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
+is not symmetric, which direction is right for your problem?</p>
+<p>First, which one is which?</p>
+<p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(q || p)\)</span>
+  - mode-seeking, exclusive
+  - no normalization wrt <span class="math">\(p\)</span></p>
+<p><span class="math">\(\textbf{KL}(p || q)\)</span>
+  - mean-seeking, inclusive
+  - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
+  - requires normalization wrt <span class="math">\(p\)</span></p>
+<p><strong>How to remember which direction is which?</strong></p>
+<ul>
+<li>
+<p>The KL notation is a little strange with the "<span class="math">\(||\)</span>", but it can help you
+   remember which is which by pretending its a division symbol (it does
+   correspond to division in the equation).</p>
+</li>
+<li>
+<p>Always normalize wrt the "numerator" and <span class="math">\(q\)</span>.</p>
+</li>
+</ul>
+<p><strong>Computational perspecive</strong>: Now, let's look at what's involved in fitting a
+model <span class="math">\(q_\theta\)</span> in each direction. I'll describe the gradient and pay special
+attention to the issue of normalization.</p>
+<p>Notation: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>, where
+<span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+<h2>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h2>
 <p>
-<div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$</div>
+<div class="math">\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</div>
 </p>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
+<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+<div class="math">\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</div>
+</p>
+<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
+we're optimizing.</p>
+<p>This leaves us with the following optimization problem:
+<div class="math">\begin{align*}
+&amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</div>
+</p>
+<p>Let's work out the gradient
+<div class="math">\begin{align*}
+&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</div>
+</p>
+<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
+<p>This is convenient because we don't need to normalize <span class="math">\(p\)</span>.</p>
+<h2>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h2>
 <p>
-<div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$</div>
+<div class="math">\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</div>
 </p>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+<div class="math">\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
+\end{align*}</div>
+</p>
+<p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
+story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
+normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
+expectation propagation, variational decoding, standard maximum likelihood is
+even an example (were <span class="math">\(p\)</span> is the empirical distribution).</p>
+<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
 <p>
-<div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$</div>
+<div class="math">\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</div>
 </p>
-<p>where
-<div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</div>
-</p>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Numerically-stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
-<p>
-<div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$</div>
-</p>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
+<p>Optimization problem is convex for exponential families.</p>
+<p>Computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
+<p>You can think of maximum likelihood estimation as a method which minimizes KL
+divergence from samples <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data distribution!
+The first term in the gradient is based on a sample ("observed expected feature
+counts").</p>
+<h2>Further reading</h2>
+<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
+account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+<ul>
+<li>
+<p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
+</li>
+<li>
+<p>Exclusive divergences will often favor a single mode.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -1854,9 +1907,10 @@ respectively. Below is some python code which implements the trick:</p>
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time>  <span class="categories">
+<time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>
   </span>
 </p><div class="sharing">
 </div>    </footer>
@@ -1941,9 +1995,9 @@ respectively. Below is some python code which implements the trick:</p>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/02/11/exp-normalize-trick/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/';
-          var disqus_title = 'Exp-normalize trick';
+          var disqus_identifier = '/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/10/06/notes-on-kl-divergence-with-applications-to-variational-inference/';
+          var disqus_title = 'Notes on KL-divergence with applications to variational inference';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
