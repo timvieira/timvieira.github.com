@@ -1823,7 +1823,9 @@ we're optimizing.</p>
 <p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
-<p>This is convenient because we don't need to normalize <span class="math">\(p\)</span>.</p>
+<p>This direction is convenient because we don't need to normalize
+<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
+"hard" direction, which is convex.</p>
 <h2>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h2>
 <p>
 <div class="math">\begin{align*}
