@@ -1773,7 +1773,7 @@ jQuery(document).ready(function($) {
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[4]:
+In&nbsp;[1]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -1802,7 +1802,7 @@ In&nbsp;[4]:
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[5]:
+In&nbsp;[2]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -1847,7 +1847,7 @@ expected: 1e+300
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[6]:
+In&nbsp;[3]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -1925,14 +1925,14 @@ In&nbsp;[6]:
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow to the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
+<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow on the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[7]:
+In&nbsp;[4]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -1958,7 +1958,7 @@ In&nbsp;[7]:
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[8]:
+In&nbsp;[5]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -2003,11 +2003,48 @@ In&nbsp;[8]:
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
 <li><p>A special case of this trick is available for <span class="math">\(p=2\)</span> (Euclidean norm), c.f <code>numpy.hypot</code>.</p></li>
-<li><p>It appears as if <code>scipy.linalg.norm</code> is stable while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
-<li><p><code>logsumexp</code> an nearly identical trick, but operates in the log-domain, i.e., <span class="math">\(\log(|| \log(|x|) ||_p)\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
+<li><p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
+<li><p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
 </ul>
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[22]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
+<span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<span class="k">print</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
+<span class="k">print</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+1.91432069824
+1.91432069824
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
 </div></p></div>
   		</article>
   		<article>
@@ -2020,7 +2057,7 @@ In&nbsp;[8]:
 
   <div class="entry-content"><p>It's well-known that
 <a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
-is not symmetric, which direction is right for fitting your model?</p>
+is not symmetric, but which direction is right for fitting your model?</p>
 <p>First, which one is which?</p>
 <p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
 <p><span class="math">\(\textbf{KL}(q || p)\)</span>
@@ -2030,17 +2067,17 @@ is not symmetric, which direction is right for fitting your model?</p>
   - mean-seeking, inclusive
   - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
   - requires normalization wrt <span class="math">\(p\)</span></p>
-<p><strong>How I remember which direction is which?</strong>: The KL notation is a little
-strange with the "<span class="math">\(||\)</span>", but it can help you remember which is which by
-pretending its a division symbol (it does correspond to division in the
-equation). I also fint it helps to remember that you always normalize wrt the
-"numerator" (and <span class="math">\(q\)</span>).</p>
+<p><strong>How I remember which is which</strong>: The KL notation is a little strange with the
+"<span class="math">\(||\)</span>". I pretend it's a division symbol. This happens to correspond nicely to a
+division symbol in the corresponding equation (I'm not sure it's
+intentional). It helps to remember that you always normalize wrt the "numerator"
+(and <span class="math">\(q\)</span>).</p>
 <h2>Computational perspecive</h2>
 <p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
-direction. I'll describe the gradient and pay special attention to the issue of
-normalization.</p>
-<p>Notation: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>, where
-<span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.</p>
+<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
+where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
 <h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
 <p>
 <div class="math">\begin{align*}
@@ -2124,10 +2161,12 @@ even an example (were <span class="math">\(p\)</span> is the empirical distribut
 divergence from samples <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data distribution!
 The first term in the gradient is based on a sample ("observed expected feature
 counts").</p>
-<h2>Further reading</h2>
-<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
-account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+<h2>Remarks</h2>
 <ul>
+<li>
+<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
+  account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
 <li>
 <p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
 </li>

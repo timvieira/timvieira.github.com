@@ -1757,7 +1757,7 @@ jQuery(document).ready(function($) {
 
   <div class="entry-content"><p>It's well-known that
 <a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
-is not symmetric, which direction is right for fitting your model?</p>
+is not symmetric, but which direction is right for fitting your model?</p>
 <p>First, which one is which?</p>
 <p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
 <p><span class="math">\(\textbf{KL}(q || p)\)</span>
@@ -1767,17 +1767,17 @@ is not symmetric, which direction is right for fitting your model?</p>
   - mean-seeking, inclusive
   - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
   - requires normalization wrt <span class="math">\(p\)</span></p>
-<p><strong>How I remember which direction is which?</strong>: The KL notation is a little
-strange with the "<span class="math">\(||\)</span>", but it can help you remember which is which by
-pretending its a division symbol (it does correspond to division in the
-equation). I also fint it helps to remember that you always normalize wrt the
-"numerator" (and <span class="math">\(q\)</span>).</p>
+<p><strong>How I remember which is which</strong>: The KL notation is a little strange with the
+"<span class="math">\(||\)</span>". I pretend it's a division symbol. This happens to correspond nicely to a
+division symbol in the corresponding equation (I'm not sure it's
+intentional). It helps to remember that you always normalize wrt the "numerator"
+(and <span class="math">\(q\)</span>).</p>
 <h2>Computational perspecive</h2>
 <p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
-direction. I'll describe the gradient and pay special attention to the issue of
-normalization.</p>
-<p>Notation: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>, where
-<span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.</p>
+<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
+where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
 <h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
 <p>
 <div class="math">\begin{align*}
@@ -1861,10 +1861,12 @@ even an example (were <span class="math">\(p\)</span> is the empirical distribut
 divergence from samples <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data distribution!
 The first term in the gradient is based on a sample ("observed expected feature
 counts").</p>
-<h2>Further reading</h2>
-<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
-account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+<h2>Remarks</h2>
 <ul>
+<li>
+<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
+  account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
 <li>
 <p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
 </li>
