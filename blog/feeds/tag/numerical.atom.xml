@@ -244,7 +244,6 @@ In&amp;nbsp;[5]:
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;A special case of this trick is available for &lt;span class="math"&gt;\(p=2\)&lt;/span&gt; (Euclidean norm), c.f &lt;code&gt;numpy.hypot&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
