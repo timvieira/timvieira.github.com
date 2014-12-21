@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - Tags</title>
+  <title>Importance Sampling</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,22 +1742,146 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-    <h1>Tags for Graduate Descent</h1>        <li><a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a> (2)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a> (2)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a> (1)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/math.html">math</a> (10)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/misc.html">misc</a> (1)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a> (2)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a> (1)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> (2)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a> (2)</li>
-        <li><a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a> (1)</li>
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Importance Sampling</h1>
+      <p class="meta"><time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
+learning and randomized algorithms.</p>
+<h2>Basics</h2>
+<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
+random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
+distribution <span class="math">\(q\)</span>.</p>
+<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
+different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
+<p>
+<div class="math">$$
+\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+$$</div>
+</p>
+<p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
+\Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
+can support things that <span class="math">\(p\)</span> doesn't.</p>
+<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
+"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
+target density and <span class="math">\(q\)</span> the proposal density.</p>
+<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q\)</span>, we can use the Monte
+Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)</span>, as
+an unbiased estimator of <span class="math">\(\mu\)</span>.</p>
+<h2>Remarks</h2>
+<p>There are a few reasons we might want use importance sampling:</p>
+<ol>
+<li>
+<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p\)</span>.</p>
+</li>
+<li>
+<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
+     samples to satisfy some "safety" condition (e.g., a minimum support
+     threshold) and be unbiased. Importance sampling can be used to remove bias,
+     while satisfying the condition.</p>
+</li>
+<li>
+<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
+     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu\)</span>. Check out these
+     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
+     more.</p>
+</li>
+<li>
+<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
+     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
+     to pick the best one). Some cool papers:
+     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
+     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
+     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
+     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+</li>
+</ol>
+<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
+<ol>
+<li>
+<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
+     reduction, active learning and reinforcement learning. It's often difficult
+     to design <span class="math">\(q\)</span>, which results in an estimator with "reasonable" variance. A
+     very difficult case is in off-policy evaluation because it (essentially)
+     requires a good exploratory distribution for every possible policy. (I have
+     much more to say on this topic.)</p>
+</li>
+<li>
+<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
+     (e.g., new articles) and you want to estimate performance on a different
+     dataset (e.g., Twitter).</p>
+</li>
+<li>
+<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
+     to as the propensity score) and use it in the importance sampling
+     estimator. This technique, as far as I can tell, is widely used to remove
+     selection bias when estimating effects of different treatments.</p>
+</li>
+</ol>
+<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
+samples with large weights can drastically throw off the estimator. Thus, it's
+often the case that a biased estimator is preferred, e.g.,
+<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
+<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
+<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
+drawback is that both densities must be normalized, which is often intractable.</p>
+<p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
+evaluation" in more detail in future posts.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>
+  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -1832,6 +1956,9 @@ jQuery(document).ready(function($) {
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2014/12/21/importance-sampling/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/';
+          var disqus_title = 'Importance Sampling';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

@@ -1752,6 +1752,127 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
+      </h1>
+      <p class="meta"><time datetime="2014-08-07T00:00:00" pubdate>Aug 07, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
+<p>
+<div class="math">$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</div>
+</p>
+<p>Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function <span class="math">\(f\)</span>, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: <span class="math">\(f\)</span> must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).</p>
+<p>This post is based on
+<a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf">Martins+'03</a></p>
+<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
+<p>
+<div class="math">$$
+f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
+$$</div>
+</p>
+<p>Take the imaginary part of both sides and solve for <span class="math">\(f'(x)\)</span>. Note: the <span class="math">\(f\)</span> and
+<span class="math">\(f''\)</span> term disappear because <span class="math">\(i^0\)</span> and <span class="math">\(i^2\)</span> are real-valued.</p>
+<p>
+<div class="math">$$
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
+$$</div>
+</p>
+<p>As usual, using a small <span class="math">\(\varepsilon\)</span> let's us throw out higher-order
+terms. And, we arrive at the following approximation:</p>
+<p>
+<div class="math">$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</div>
+</p>
+<p>If instead, we take the real part and solve for <span class="math">\(f(x)\)</span>, we get an approximation
+to the function's value at <span class="math">\(x\)</span>:</p>
+<p>
+<div class="math">$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$</div>
+</p>
+<p>In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.</p>
+<p><strong>Code</strong>:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
+<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c"># convert input to complex number</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c"># return function value and gradient</span>
+    <span class="k">return</span> <span class="n">f1</span>
+</pre></div>
+
+
+<p>A simple test:</p>
+<div class="highlight"><pre><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c"># function</span>
+<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c"># gradient</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Other comments</strong></p>
+<ul>
+<li>
+<p>Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.</p>
+</li>
+<li>
+<p>Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </h1>
       <p class="meta"><time datetime="2014-08-01T00:00:00" pubdate>Aug 01, 2014</time></p>
@@ -1961,78 +2082,6 @@ in this
 }
 </script></div>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-22T00:00:00" pubdate>Jul 22, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given its rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of <span class="math">\(f(x,y) = -x^2\)</span>.</p>
-<p>Suppose we search over a <span class="math">\(10\)</span>-by-<span class="math">\(10\)</span> grid, resulting in a total of <span class="math">\(100\)</span>
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the <span class="math">\(x\)</span>-dimension, which is only <span class="math">\(10\)</span> samples! On
-the other hand, randomly sampling points over the same space results in <span class="math">\(100\)</span>
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
-<ol>
-<li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
-</li>
-<li>
-<p>Grid search tends to produce nicer-looking plots.</p>
-</li>
-<li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
-</li>
-</ol>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/author/tim-vieira3.html">&larr; Older</a>
 
@@ -2044,6 +2093,9 @@ reading see
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </li>
       <li class="post">
@@ -2054,9 +2106,6 @@ reading see
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
       </li>
     </ul>
   </section>
@@ -2073,7 +2122,7 @@ reading see
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 

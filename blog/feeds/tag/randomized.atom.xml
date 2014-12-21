@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/randomized.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-12-21T00:00:00-05:00</updated><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-12-21:post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+learning and randomized algorithms.&lt;/p&gt;
+&lt;h2&gt;Basics&lt;/h2&gt;
+&lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
+random variable &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt; under distribution &lt;span class="math"&gt;\(p\)&lt;/span&gt; from samples of a different
+distribution &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;The key observation is that &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; is can expressed as the expectation of a
+different random variable &lt;span class="math"&gt;\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)&lt;/span&gt; under &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(p(x) &amp;gt; 0
+\Rightarrow q(x) &amp;gt; 0\)&lt;/span&gt;. Without this condition, the equation is biased! Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
+can support things that &lt;span class="math"&gt;\(p\)&lt;/span&gt; doesn't.&lt;/p&gt;
+&lt;p&gt;Terminology: The quantity &lt;span class="math"&gt;\(w(x) = \frac{p(x)}{q(x)}\)&lt;/span&gt; is often referred to as the
+"importance weight" or "importance correction". We often refer to &lt;span class="math"&gt;\(p\)&lt;/span&gt; as the
+target density and &lt;span class="math"&gt;\(q\)&lt;/span&gt; the proposal density.&lt;/p&gt;
+&lt;p&gt;Now, given samples &lt;span class="math"&gt;\(\{ x^{(i)} \}_{i=1}^{n}\)&lt;/span&gt; from &lt;span class="math"&gt;\(q\)&lt;/span&gt;, we can use the Monte
+Carlo estimate, &lt;span class="math"&gt;\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)&lt;/span&gt;, as
+an unbiased estimator of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;p&gt;There are a few reasons we might want use importance sampling:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Convenience&lt;/strong&gt;: It might be trickier to sample directly from &lt;span class="math"&gt;\(p\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Bias-correction&lt;/strong&gt;: Suppose, we're developing an algorithm which requires
+     samples to satisfy some "safety" condition (e.g., a minimum support
+     threshold) and be unbiased. Importance sampling can be used to remove bias,
+     while satisfying the condition.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Variance reduction&lt;/strong&gt;: It might be the case that sampling directly from
+     &lt;span class="math"&gt;\(p\)&lt;/span&gt; would require more samples to estimate &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;. Check out these
+     &lt;a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf"&gt;great notes&lt;/a&gt; for
+     more.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Off-policy evaluation and learning&lt;/strong&gt;: We might want to collect some
+     "exploratory data" from &lt;span class="math"&gt;\(q\)&lt;/span&gt; and evaluate different "policies", &lt;span class="math"&gt;\(p\)&lt;/span&gt; (e.g.,
+     to pick the best one). Some cool papers:
+     &lt;a href="http://arxiv.org/abs/1209.2355"&gt;counterfactual reasoning&lt;/a&gt;,
+     &lt;a href="http://arxiv.org/abs/cs/0204043"&gt;reinforcement learning&lt;/a&gt;,
+     &lt;a href="http://arxiv.org/abs/1103.4601"&gt;contextual bandits&lt;/a&gt;,
+     &lt;a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf"&gt;domain adaptation&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;There are a few common cases for &lt;span class="math"&gt;\(q\)&lt;/span&gt; worth separate consideration:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Control over &lt;span class="math"&gt;\(q\)&lt;/span&gt;&lt;/strong&gt;: This is the case in experimental design, variance
+     reduction, active learning and reinforcement learning. It's often difficult
+     to design &lt;span class="math"&gt;\(q\)&lt;/span&gt;, which results in an estimator with "reasonable" variance. A
+     very difficult case is in off-policy evaluation because it (essentially)
+     requires a good exploratory distribution for every possible policy. (I have
+     much more to say on this topic.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Little to no control over &lt;span class="math"&gt;\(q\)&lt;/span&gt;&lt;/strong&gt;: For example, you're given some dataset
+     (e.g., new articles) and you want to estimate performance on a different
+     dataset (e.g., Twitter).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Unknown &lt;span class="math"&gt;\(q\)&lt;/span&gt;&lt;/strong&gt;: In this case, we want to estimate &lt;span class="math"&gt;\(q\)&lt;/span&gt; (typically referred
+     to as the propensity score) and use it in the importance sampling
+     estimator. This technique, as far as I can tell, is widely used to remove
+     selection bias when estimating effects of different treatments.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Drawbacks&lt;/strong&gt;: The main drawback of importance sampling is variance. A few bad
+samples with large weights can drastically throw off the estimator. Thus, it's
+often the case that a biased estimator is preferred, e.g.,
+&lt;a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/"&gt;estimating the partition function&lt;/a&gt;,
+&lt;a href="http://arxiv.org/abs/1209.2355"&gt;clipping weights&lt;/a&gt;,
+&lt;a href="http://arxiv.org/abs/cs/0204043"&gt;indirect importance sampling&lt;/a&gt;. A secondary
+drawback is that both densities must be normalized, which is often intractable.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What's next?&lt;/strong&gt; I plan to cover "variance reduction" and "off-policy
+evaluation" in more detail in future posts.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="randomized"></category></entry></feed>

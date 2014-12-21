@@ -1752,6 +1752,109 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+      </h1>
+      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
+(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
+<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
+parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+<p>
+<div class="math">$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$</div>
+</p>
+<p>The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
+<p>
+<div class="math">$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$</div>
+</p>
+<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
+is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
+impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
+<p><strong>Exp-normalize v. log-sum-exp</strong></p>
+<p>If what you want to remain in log-space, that is, compute
+<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
+<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!</p>
+<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>
+<div class="math">$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$</div>
+</p>
+<p>where
+<div class="math">$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$</div>
+</p>
+<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
+<p><strong>Numerically-stable sigmoid function</strong></p>
+<p>The sigmoid function can be computed with the exp-normalize trick in order to
+avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
+distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
+interested in the probability of the first event. From the exp-normalize
+identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
+see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
+of two equivalent ways:</p>
+<p>
+<div class="math">$$
+\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+$$</div>
+</p>
+<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
+respectively. Below is some python code which implements the trick:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
+        <span class="c"># zero because it&#39;s 1+z.</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
+</pre></div>
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
       <p class="meta"><time datetime="2014-02-10T00:00:00" pubdate>Feb 10, 2014</time></p>
@@ -1875,6 +1978,9 @@ $$</div>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </li>
       <li class="post">
@@ -1885,9 +1991,6 @@ $$</div>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
       </li>
     </ul>
   </section>
@@ -1904,7 +2007,7 @@ $$</div>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 
