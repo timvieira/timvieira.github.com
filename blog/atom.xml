@@ -13,7 +13,7 @@ semiring.&lt;/p&gt;
 &lt;a href="http://www.aclweb.org/anthology/D09-1005"&gt;Li and Eisner (2009)&lt;/a&gt;. The trick is
 nicely summarized in Table 3 of that paper, which I've pasted below.&lt;/p&gt;
 &lt;div style="text-align:center"&gt;
-&lt;img src="images/logreal.png"/&gt;
+&lt;img src="/blog/images/logreal.png"/&gt;
 &lt;/div&gt;
 
 &lt;p&gt;&lt;strong&gt;Why do I care?&lt;/strong&gt; When computing gradients (e.g., gradient of risk),
