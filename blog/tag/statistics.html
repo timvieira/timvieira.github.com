@@ -1885,7 +1885,7 @@ is not symmetric, but which direction is right for fitting your model?</p>
 <p><span class="math">\(\textbf{KL}(p || q)\)</span>
   - mean-seeking, inclusive
   - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
-  - requires normalization wrt <span class="math">\(p\)</span></p>
+  - requires normalization wrt <span class="math">\(p\)</span> </p>
 <p><strong>How I remember which is which</strong>: The KL notation is a little strange with the
 "<span class="math">\(||\)</span>". I pretend it's a division symbol. This happens to correspond nicely to a
 division symbol in the corresponding equation (I'm not sure it's
@@ -1963,8 +1963,10 @@ we're optimizing.</p>
 story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
 normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
 <p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
-expectation propagation, variational decoding, standard maximum likelihood is
-even an example (were <span class="math">\(p\)</span> is the empirical distribution).</p>
+expectation propagation, variational decoding and maximum likelihood
+estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need to sample from it (which can be just as hard).</p>
 <p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
 <p>
 <div class="math">\begin{align*}
@@ -1974,12 +1976,12 @@ even an example (were <span class="math">\(p\)</span> is the empirical distribut
 &amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}</div>
 </p>
-<p>Optimization problem is convex for exponential families.</p>
-<p>Computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
-<p>You can think of maximum likelihood estimation as a method which minimizes KL
-divergence from samples <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data distribution!
-The first term in the gradient is based on a sample ("observed expected feature
-counts").</p>
+<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential families ---
+i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
+method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
+the true data distribution! The first term in the gradient is based on a sample
+instead of an exact estimate (often called "observed feature counts").</p>
+<p>Downside: computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
 <h2>Remarks</h2>
 <ul>
 <li>
@@ -1991,6 +1993,12 @@ counts").</p>
 </li>
 <li>
 <p>Exclusive divergences will often favor a single mode.</p>
+</li>
+<li>
+<p>Computing the value of KL (not just the gradient) in either direction requires
+  normalization. However, in the "easy" direction, using unnormalized <span class="math">\(p\)</span>
+  results in only an additive constant difference. So, it's still just as
+  useful, if all you care about is optimization (fitting the model).</p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
@@ -2050,7 +2058,7 @@ counts").</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math-numerical.html">math numerical</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 
@@ -2082,6 +2090,41 @@ counts").</p>
   </section>
 
 
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      var widgetId = '551816176788328448',
+          domId = 'tweets',
+          count = 3,
+          hyperlinkUrlsPlus = true,
+          showUserPhoto = false,
+          timeOfTweet = true,
+          dateFormat = 'default',
+          showRetweets = false,
+          customOutputFn = null,
+          showReplyRetweetButtons = false;
+
+      twitterFetcher.fetch(
+        widgetId,
+        domId,
+        count,
+        hyperlinkUrlsPlus,
+        showUserPhoto,
+        timeOfTweet,
+        dateFormat,
+        showRetweets,
+        customOutputFn,
+        showReplyRetweetButtons
+      );
+    });
+  </script>
+  <script src="/theme/js/twitter.js" type="text/javascript"> </script>
+    <a href="http://twitter.com/xtimv" class="twitter-follow-button" data-show-count="true">Follow @xtimv</a>
+</section>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
@@ -2096,5 +2139,14 @@ counts").</p>
 	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
 	   })();
 	</script>
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
 </body>
 </html>

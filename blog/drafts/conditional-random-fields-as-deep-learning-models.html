@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - math</title>
+  <title>Conditional random fields as Deep learning models</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,317 +1742,80 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
+<div>
+  <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
+      <h1 class="entry-title">Conditional random fields as Deep learning models</h1>
+      <p class="meta"><time datetime="2015-02-02T00:00:00" pubdate>Feb 02, 2015</time></p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-<span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is
-a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and
-<span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a
-quadratic has the following simple form:</p>
-<p>
-<div class="math">$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
-$$</div>
-</p>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
-<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by
-replacing <span class="math">\(f\)</span> by it's second-order Talylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at
-some point <span class="math">\(a\)</span></p>
-<p>
-<div class="math">$$
-\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
-$$</div>
-</p>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
-<p>
-<div class="math">$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
-$$</div>
-</p>
-<p>It's common to take the Taylor expansion around <span class="math">\(\mu\)</span>. This simplifies the equation</p>
-<p>
-<div class="math">\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</div>
-</p>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
-      </h1>
-      <p class="meta"><time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time></p>
-</header>
+  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems.</p>
+<p>In the world of structured prediction we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:</p>
+<ol>
+<li>
+<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
+</li>
+<li>
+<p>Change the training objective</p>
+</li>
+<li>
+<p>Approximate inference</p>
+</li>
+</ol>
+<p>Approximate inference is tricky. Things can easily go awry.</p>
+<p>For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>.</p>
+<p>Using approximate marginals from sum-product loopy BP changes objective. The
+resulting objective is not convex.</p>
+<p>In other words, using approximate inference during training changes the
+objective whether you like it or not.</p>
+<p>Here's a simple idea: learn a model which makes accurate predictions given the
+approximate inference algorithm that will be used at test-time. This idea
+appears in a few publications: a handfull of papers by Justin Domke, and a few
+by Stoyanov &amp; Eisner. And, unsuprisingly, it works pretty well.</p>
+<p>Stoyanov &amp; Eisner (2011), use loopy belief propagation as their approximate
+inference algorithm. Their overall architecture is designed to be differentiable
+so they have to use approximate one-best decoding. At the end of the day, it's
+essentially a deep recurrent network. This idea really struck me because it's
+clearly right in the middle between graphical models and deep learning.</p>
+<p>Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a wall with likelihood-based
+training and CRFs. At the same time, maybe we can port over some of the good
+work on approximate inference as deep architectures.</p></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2015-02-02T00:00:00" pubdate>Feb 02, 2015</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/machine-learning-deep-learning-structured-predictions.html">machine-learning deep-learning structured-predictions</a>
+  </span>
+</p><div class="sharing">
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/post/2015/02/02/conditional-random-fields-as-deep-learning-models/" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/post/2015/02/02/conditional-random-fields-as-deep-learning-models/" >Tweet</a>
+</div>    </footer>
+  </article>
 
-  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
-a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three of my colleagues told me that my plots
-had inspired them to make similar plots. The plotting trick is really simple and
-not original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
-non-smooth (black) and a smooth approximating function (blue). The plot shows
-that the approximation is faithful to the overall shape, but sometimes
-over-smooths. In this case, we miss the maximum, which happens near the middle
-of the figure.</p>
-<p><img alt="Alt text" src="/blog/images/cross-section.png" /></p>
-<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
-function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
-<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
-\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
-picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
-as follows,</p>
-<p>
-<div class="math">$$
-f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
-$$</div>
-</p>
-<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
-<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
-plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
-<p><strong>Picking directions</strong>: There are many alternatives for picking
-<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
-<ol>
-<li>
-<p>Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.</p>
-</li>
-<li>
-<p>Coordinate vectors. Varying one dimension per plot.</p>
-</li>
-<li>
-<p>Random. I recommend directions drawn from a spherical
-    Gaussian.<sup id="fnref:sphericalgaussian"><a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote">1</a></sup> The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    <span class="math">\(\alpha\)</span>. It's probably best that our plots don't randomly vary in scale.</p>
-</li>
-</ol>
-<p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and <span class="math">\(\boldsymbol{d_2}\)</span>, and varying two
-parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
-<p>
-<div class="math">$$
-f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
-$$</div>
-</p>
-<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
-verify/explore properties of an objective function, compare approximations, test
-sensitivity to certain parameters/hyperparameters, visually debug optimization
-algorithms.</p>
-<h2>Notes</h2>
-<div class="footnote">
-<hr />
-<ol>
-<li id="fn:sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
-<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
-sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
-<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-</ol>
 </div>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
-      </h1>
-      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
-<p>
-<div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$</div>
-</p>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
-<p>
-<div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$</div>
-</p>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
-<p>
-<div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$</div>
-</p>
-<p>where
-<div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</div>
-</p>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Numerically-stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
-<p>
-<div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$</div>
-</p>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="http://timvieira.github.io/blog/tag/math4.html">&larr; Older</a>
-
-    <a class="next" href="http://timvieira.github.io/blog/tag/math2.html">Newer &rarr;</a>
-  <br />
-</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
@@ -2064,9 +1827,6 @@ respectively. Below is some python code which implements the trick:</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </li>
     </ul>
   </section>
@@ -2153,11 +1913,14 @@ respectively. Below is some python code which implements the trick:</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2015  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2015/02/02/conditional-random-fields-as-deep-learning-models/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2015/02/02/conditional-random-fields-as-deep-learning-models/';
+          var disqus_title = 'Conditional random fields as Deep learning models';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

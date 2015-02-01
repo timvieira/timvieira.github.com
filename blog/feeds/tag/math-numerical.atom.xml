@@ -1,86 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/math-numerical.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-11T00:00:00-05:00</updated><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
-(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
-&lt;p&gt;Supposed you'd like to evaluate a probability distribution $\boldsymbol{\pi}$
-parametrized by a vector $\boldsymbol{x} \in \mathbb{R}^n$ as follows:&lt;/p&gt;
-&lt;p&gt;$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$&lt;/p&gt;
-&lt;p&gt;The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any $b \in \mathbb{R}$,&lt;/p&gt;
-&lt;p&gt;$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$&lt;/p&gt;
-&lt;p&gt;In other words, the $\boldsymbol{\pi}$ is shift-invariant. A reasonable choice
-is $b = \max_{i=1}^n x_i$. With this choice, overflow due to $\exp$ is
-impossible$-$the largest number exponentiated after shifting is $0$.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If what you want to remain in log-space, that is, compute
-$\log(\boldsymbol{\pi})$, you should use logsumexp. However, if
-$\boldsymbol{\pi}$ is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to $\exp$, which would be required if using log-sum-exp.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$&lt;/p&gt;
-&lt;p&gt;where
-$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$&lt;/p&gt;
-&lt;p&gt;Typically with the same choice for $b$ as above.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of $\text{sigmoid}(x)$, we have a
-distribution with unnormalized log probabilities $[x,0]$, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions $[x,0]$ and $[0,-x]$ are equivalent (to
-see why, plug in $b=\max(0,x)$). This is why sigmoid is often expressed in one
-of two equivalent ways:&lt;/p&gt;
-&lt;p&gt;$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$&lt;/p&gt;
-&lt;p&gt;Interestingly, each version covers an extreme case: $x=\infty$ and $x=-\infty$,
-respectively. Below is some python code which implements the trick:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;Numerically-stable sigmoid function.&amp;quot;&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="c"&gt;# if x is less than zero then z will be small, denom can&amp;#39;t be&lt;/span&gt;
-        &lt;span class="c"&gt;# zero because it&amp;#39;s 1+z.&lt;/span&gt;
-        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="math numerical"></category></entry></feed>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/math-numerical.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-02-01T00:00:00-05:00</updated><entry><title>Log-Real number class</title><link href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-01:post/2015/02/01/log-real-number-class/</id><summary type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+representing intermediate quantities in the log-domain. This trick turns
+"multiplication" into "addition", "addition" into "logsumexp", "0" into
+&lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
+reasonable-size numbers.&lt;/p&gt;
+&lt;p&gt;Unfortunately, without modification, this trick is limited to positive numbers
+because &lt;code&gt;log&lt;/code&gt; of a negative number is &lt;code&gt;NaN&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Well, there is good news! For the cost of an extra bit, we can extend this trick
+to the negative reals and furthermore, we get a bonafide ring instead of a mere
+semiring.&lt;/p&gt;
+&lt;p&gt;I first saw this trick in
+&lt;a href="http://www.aclweb.org/anthology/D09-1005"&gt;Li and Eisner (2009)&lt;/a&gt;. The trick is
+nicely summarized in Table 3 of that paper, which I've pasted below.&lt;/p&gt;
+&lt;div style="text-align:center"&gt;
+&lt;img src="images/logreal.png"/&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Why do I care?&lt;/strong&gt; When computing gradients (e.g., gradient of risk),
+intermediate values are rarely all positive. Furthermore, we're often
+multiplying small things together. I've recently found log-reals to be effective
+at squeaking a bit more numerical accuracy.&lt;/p&gt;
+&lt;p&gt;This trick is useful for almost all backprop computations because backprop is
+essentially:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;dv&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;du&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The only tricky bit is lifting all &lt;code&gt;du/dv&lt;/code&gt; computations into the log-reals.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;This trick is better suited to programming languages with structs. Using
+  objects will probably in an horrible slow down and using parallel arrays to
+  store the sign bit and double is probably too tedious and error prone. (Sorry
+  java folks.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Here's a &lt;a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h"&gt;C++ implementation&lt;/a&gt;
+  with operator overloading from Andre Martins&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Note that log-real &lt;code&gt;+=&lt;/code&gt; involves calls to &lt;code&gt;log&lt;/code&gt; and &lt;code&gt;exp&lt;/code&gt;, which will
+  definitely slow your code down a bit (these functions are much slower than
+  addition).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math numerical"></category></entry></feed>

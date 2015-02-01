@@ -1,5 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-12-21T00:00:00-05:00</updated><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-12-21:post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-02-01T00:00:00-05:00</updated><entry><title>Log-Real number class</title><link href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-01:post/2015/02/01/log-real-number-class/</id><summary type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+representing intermediate quantities in the log-domain. This trick turns
+"multiplication" into "addition", "addition" into "logsumexp", "0" into
+&lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
+reasonable-size numbers.&lt;/p&gt;
+&lt;p&gt;Unfortunately, without modification, this trick is limited to positive numbers
+because &lt;code&gt;log&lt;/code&gt; of a negative number is &lt;code&gt;NaN&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Well, there is good news! For the cost of an extra bit, we can extend this trick
+to the negative reals and furthermore, we get a bonafide ring instead of a mere
+semiring.&lt;/p&gt;
+&lt;p&gt;I first saw this trick in
+&lt;a href="http://www.aclweb.org/anthology/D09-1005"&gt;Li and Eisner (2009)&lt;/a&gt;. The trick is
+nicely summarized in Table 3 of that paper, which I've pasted below.&lt;/p&gt;
+&lt;div style="text-align:center"&gt;
+&lt;img src="images/logreal.png"/&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Why do I care?&lt;/strong&gt; When computing gradients (e.g., gradient of risk),
+intermediate values are rarely all positive. Furthermore, we're often
+multiplying small things together. I've recently found log-reals to be effective
+at squeaking a bit more numerical accuracy.&lt;/p&gt;
+&lt;p&gt;This trick is useful for almost all backprop computations because backprop is
+essentially:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;dv&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;du&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The only tricky bit is lifting all &lt;code&gt;du/dv&lt;/code&gt; computations into the log-reals.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;This trick is better suited to programming languages with structs. Using
+  objects will probably in an horrible slow down and using parallel arrays to
+  store the sign bit and double is probably too tedious and error prone. (Sorry
+  java folks.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Here's a &lt;a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h"&gt;C++ implementation&lt;/a&gt;
+  with operator overloading from Andre Martins&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Note that log-real &lt;code&gt;+=&lt;/code&gt; involves calls to &lt;code&gt;log&lt;/code&gt; and &lt;code&gt;exp&lt;/code&gt;, which will
+  definitely slow your code down a bit (these functions are much slower than
+  addition).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math numerical"></category></entry><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-12-21:post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
@@ -404,7 +476,7 @@ is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;
   - mean-seeking, inclusive
   - results in a moment-matching problem when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family
-  - requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt;&lt;/p&gt;
+  - requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; &lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;: The KL notation is a little strange with the
 "&lt;span class="math"&gt;\(||\)&lt;/span&gt;". I pretend it's a division symbol. This happens to correspond nicely to a
 division symbol in the corresponding equation (I'm not sure it's
@@ -482,8 +554,10 @@ we're optimizing.&lt;/p&gt;
 story" is that &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is hard to compute, while the approximating distributions
 normalization constant &lt;span class="math"&gt;\(Z_q\)&lt;/span&gt; is easy.&lt;/p&gt;
 &lt;p&gt;Nonetheless, optimizing KL in this direction is still useful. Examples include,
-expectation propagation, variational decoding, standard maximum likelihood is
-even an example (were &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical distribution).&lt;/p&gt;
+expectation propagation, variational decoding and maximum likelihood
+estimation. In the case of maximum likelihood estimation, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &lt;p&gt;The gradient, when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family, is intuitive:&lt;/p&gt;
 &lt;p&gt;
 &lt;div class="math"&gt;\begin{align*}
@@ -493,12 +567,12 @@ even an example (were &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empiric
 &amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}&lt;/div&gt;
 &lt;/p&gt;
-&lt;p&gt;Optimization problem is convex for exponential families.&lt;/p&gt;
-&lt;p&gt;Computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be tractable.&lt;/p&gt;
-&lt;p&gt;You can think of maximum likelihood estimation as a method which minimizes KL
-divergence from samples &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data distribution!
-The first term in the gradient is based on a sample ("observed expected feature
-counts").&lt;/p&gt;
+&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential families ---
+i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood estimation as a
+method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is
+the true data distribution! The first term in the gradient is based on a sample
+instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
+&lt;p&gt;Downside: computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be tractable.&lt;/p&gt;
 &lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -510,6 +584,12 @@ counts").&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Exclusive divergences will often favor a single mode.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Computing the value of KL (not just the gradient) in either direction requires
+  normalization. However, in the "easy" direction, using unnormalized &lt;span class="math"&gt;\(p\)&lt;/span&gt;
+  results in only an additive constant difference. So, it's still just as
+  useful, if all you care about is optimization (fitting the model).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
@@ -997,7 +1077,11 @@ me and can't see in high-dimensions what do you do?&lt;/p&gt;
 \mathbb{R}^d\)&lt;/span&gt;, take a point of interest &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;, and build a local
 picture of &lt;span class="math"&gt;\(f\)&lt;/span&gt; by evaluating it at various intervals along the chosen direction
 as follows,&lt;/p&gt;
-&lt;p&gt;&lt;span class="math"&gt;\(f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; are fixed for all &lt;span class="math"&gt;\(\alpha_i\)&lt;/span&gt;. Now, you can
 plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;

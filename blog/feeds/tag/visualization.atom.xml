@@ -17,7 +17,11 @@ me and can't see in high-dimensions what do you do?&lt;/p&gt;
 \mathbb{R}^d\)&lt;/span&gt;, take a point of interest &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;, and build a local
 picture of &lt;span class="math"&gt;\(f\)&lt;/span&gt; by evaluating it at various intervals along the chosen direction
 as follows,&lt;/p&gt;
-&lt;p&gt;&lt;span class="math"&gt;\(f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ $ for $\alpha_i \in [\alpha_\min, \alpha_\max]\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
+$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; are fixed for all &lt;span class="math"&gt;\(\alpha_i\)&lt;/span&gt;. Now, you can
 plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
