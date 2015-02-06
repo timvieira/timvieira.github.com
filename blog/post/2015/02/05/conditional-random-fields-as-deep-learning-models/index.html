@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - math</title>
+  <title>Conditional random fields as Deep learning models?</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,599 +1742,100 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
+<div>
+  <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
-      </h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time></p>
+      <h1 class="entry-title">Conditional random fields as Deep learning models?</h1>
+      <p class="meta"><time datetime="2015-02-05T00:00:00" pubdate>Feb 05, 2015</time></p>
 </header>
 
-  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
-learning and randomized algorithms.</p>
-<h2>Basics</h2>
-<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
-random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
-distribution <span class="math">\(q\)</span>.</p>
-<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
-different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
-<p>
-<div class="math">$$
-\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
-$$</div>
-</p>
-<p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
-\Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
-can support things that <span class="math">\(p\)</span> doesn't.</p>
-<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
-"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
-target density and <span class="math">\(q\)</span> the proposal density.</p>
-<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q\)</span>, we can use the Monte
-Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)</span>, as
-an unbiased estimator of <span class="math">\(\mu\)</span>.</p>
-<h2>Remarks</h2>
-<p>There are a few reasons we might want use importance sampling:</p>
+  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.</p>
+<p>In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:</p>
 <ol>
 <li>
-<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p\)</span>.</p>
+<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
 </li>
 <li>
-<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
-     samples to satisfy some "safety" condition (e.g., a minimum support
-     threshold) and be unbiased. Importance sampling can be used to remove bias,
-     while satisfying the condition.</p>
+<p>Change the training objective</p>
 </li>
 <li>
-<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
-     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu\)</span>. Check out these
-     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
-     more.</p>
-</li>
-<li>
-<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
-     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
-     to pick the best one). Some cool papers:
-     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
-     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
-     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
-     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+<p>Approximate inference</p>
 </li>
 </ol>
-<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
-<ol>
-<li>
-<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
-     reduction, active learning and reinforcement learning. It's often difficult
-     to design <span class="math">\(q\)</span>, which results in an estimator with "reasonable" variance. A
-     very difficult case is in off-policy evaluation because it (essentially)
-     requires a good exploratory distribution for every possible policy. (I have
-     much more to say on this topic.)</p>
-</li>
-<li>
-<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
-     (e.g., new articles) and you want to estimate performance on a different
-     dataset (e.g., Twitter).</p>
-</li>
-<li>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
-     to as the propensity score) and use it in the importance sampling
-     estimator. This technique, as far as I can tell, is widely used to remove
-     selection bias when estimating effects of different treatments.</p>
-</li>
-</ol>
-<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
-samples with large weights can drastically throw off the estimator. Thus, it's
-often the case that a biased estimator is preferred, e.g.,
-<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
-<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
-<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
-drawback is that both densities must be normalized, which is often intractable.</p>
-<p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
-evaluation" in more detail in future posts.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
-      </h1>
-      <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
-</header>
+<p>Approximate inference is tricky. Things can easily go awry.</p>
+<p>For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
+approximations works fine.)</p>
+<p>It looks like using approximate inference during training changes the training
+objective.</p>
+<p>So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.</p>
+<p>Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handfull of papers by Justin Domke, and a few by
+Stoyanov &amp; Eisner.</p>
+<p>Unsuprisingly, it works pretty well.</p>
+<p>I first saw this idea in Stoyanov &amp; Eisner (2011). They use loopy belief
+propagation as their approximate inference algorithm. At the end of the day,
+their model is essentially a deep recurrent network, which came from unrolling
+inference in a graphical model. This idea really struck me because it's clearly
+right in the middle between graphical models and deep learning.</p>
+<p>You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.</p>
+<p>Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.</p></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2015-02-05T00:00:00" pubdate>Feb 05, 2015</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/machine-learning-deep-learning-structured-prediction.html">machine-learning deep-learning structured-prediction</a>
+  </span>
+</p><div class="sharing">
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" >Tweet</a>
+</div>    </footer>
+  </article>
 
-  <div class="entry-content"><p>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
 </div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Consider the p-norm <span class="math">\[
-|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-\]</span></p>
-<p>In python this translates to:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[1]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
-
-<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="s">&quot;First-pass implementation of p-norm.&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
-<p>For example:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[2]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-
-<span class="k">print</span> <span class="s">&#39;got: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&#39;expected: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">big</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-got: inf
-expected: 1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>This fails because we can't square big</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[3]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-[ inf]
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="A-little-math">A little math<a class="anchor-link" href="#A-little-math">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span> <span class="math">\[
-|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-\]</span></p>
-<p>We'll use the following version (harder to remember) <span class="math">\[
-|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\]</span></p>
-<p>Don't believe it? Here's some algebra: <span class="math">\[
-\begin{eqnarray*}
-|| \boldsymbol{x} ||_p
-&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\end{eqnarray*}
-\]</span></p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Back-to-numerical-stability">Back to numerical stability<a class="anchor-link" href="#Back-to-numerical-stability">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow on the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[4]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now, our example from before works :-)</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[5]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Remarks">Remarks<a class="anchor-link" href="#Remarks">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li><p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
-<li><p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
-</ul>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[22]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="k">print</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1.91432069824
-1.91432069824
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div></p></div>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
-      </h1>
-      <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>It's well-known that
-<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
-is not symmetric, but which direction is right for fitting your model?</p>
-<p>First, which one is which?</p>
-<p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
-<p><span class="math">\(\textbf{KL}(q || p)\)</span>
-  - mode-seeking, exclusive
-  - no normalization wrt <span class="math">\(p\)</span></p>
-<p><span class="math">\(\textbf{KL}(p || q)\)</span>
-  - mean-seeking, inclusive
-  - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
-  - requires normalization wrt <span class="math">\(p\)</span> </p>
-<p><strong>How I remember which is which</strong>: The KL notation is a little strange with the
-"<span class="math">\(||\)</span>". I pretend it's a division symbol. This happens to correspond nicely to a
-division symbol in the corresponding equation (I'm not sure it's
-intentional). It helps to remember that you always normalize wrt the "numerator"
-(and <span class="math">\(q\)</span>).</p>
-<h2>Computational perspecive</h2>
-<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
-direction. In this section, I'll describe the gradient and pay special attention
-to the issue of normalization.</p>
-<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
-where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
-<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
-<p>
-<div class="math">\begin{align*}
-\textbf{KL}(q_\theta || p)
-&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
-&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
-&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
-\end{align*}</div>
-</p>
-<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
-<div class="math">\begin{align*}
-\sum_d q(d) \log p(d)
-&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
-&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
-&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
-&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
-\end{align*}</div>
-</p>
-<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
-we're optimizing.</p>
-<p>This leaves us with the following optimization problem:
-<div class="math">\begin{align*}
-&amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
-&amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
-\end{align*}</div>
-</p>
-<p>Let's work out the gradient
-<div class="math">\begin{align*}
-&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
-\end{align*}</div>
-</p>
-<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
-\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
-\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
-<p>This direction is convenient because we don't need to normalize
-<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
-"hard" direction, which is convex.</p>
-<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
-<p>
-<div class="math">\begin{align*}
-\textbf{KL}(p || q_\theta)
-&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
-&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
-&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
-\end{align*}</div>
-</p>
-<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
-<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
-<div class="math">\begin{align*}
-\sum_d p(d) \log q(d)
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
-\end{align*}</div>
-</p>
-<p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
-story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
-normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
-<p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
-expectation propagation, variational decoding and maximum likelihood
-estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
-distribution, so technically you don't have to compute its normalizing constant,
-but you do need to sample from it (which can be just as hard).</p>
-<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
-<p>
-<div class="math">\begin{align*}
-\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
-&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
-\end{align*}</div>
-</p>
-<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential families ---
-i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
-method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
-the true data distribution! The first term in the gradient is based on a sample
-instead of an exact estimate (often called "observed feature counts").</p>
-<p>Downside: computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
-<h2>Remarks</h2>
-<ul>
-<li>
-<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
-  account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
-</li>
-<li>
-<p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
-</li>
-<li>
-<p>Exclusive divergences will often favor a single mode.</p>
-</li>
-<li>
-<p>Computing the value of KL (not just the gradient) in either direction requires
-  normalization. However, in the "easy" direction, using unnormalized <span class="math">\(p\)</span>
-  results in only an additive constant difference. So, it's still just as
-  useful, if all you care about is optimization (fitting the model).</p>
-</li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="http://timvieira.github.io/blog/tag/math2.html">&larr; Older</a>
-
-  <br />
-</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
@@ -2343,12 +1844,6 @@ instead of an exact estimate (often called "observed feature counts").</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </li>
     </ul>
   </section>
@@ -2435,11 +1930,14 @@ instead of an exact estimate (often called "observed feature counts").</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2015  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2015/02/05/conditional-random-fields-as-deep-learning-models/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/';
+          var disqus_title = 'Conditional random fields as Deep learning models?';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
