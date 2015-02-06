@@ -1752,6 +1752,88 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+      </h1>
+      <p class="meta"><time datetime="2015-02-01T00:00:00" pubdate>Feb 01, 2015</time></p>
+</header>
+
+  <div class="entry-content"><p>Most people know how to avoid numerical underflow in probability computations by
+representing intermediate quantities in the log-domain. This trick turns
+"multiplication" into "addition", "addition" into "logsumexp", "0" into
+<span class="math">\(-\infty\)</span> and "1" into <span class="math">\(0\)</span>. Most importantly, it turns really small numbers into
+reasonable-size numbers.</p>
+<p>Unfortunately, without modification, this trick is limited to positive numbers
+because <code>log</code> of a negative number is <code>NaN</code>.</p>
+<p>Well, there is good news! For the cost of an extra bit, we can extend this trick
+to the negative reals and furthermore, we get a bonafide ring instead of a mere
+semiring.</p>
+<p>I first saw this trick in
+<a href="http://www.aclweb.org/anthology/D09-1005">Li and Eisner (2009)</a>. The trick is
+nicely summarized in Table 3 of that paper, which I've pasted below.</p>
+<div style="text-align:center">
+<img src="/blog/images/logreal.png"/>
+</div>
+
+<p><strong>Why do I care?</strong> When computing gradients (e.g., gradient of risk),
+intermediate values are rarely all positive. Furthermore, we're often
+multiplying small things together. I've recently found log-reals to be effective
+at squeaking a bit more numerical accuracy.</p>
+<p>This trick is useful for almost all backprop computations because backprop is
+essentially:</p>
+<div class="highlight"><pre><span class="n">adjoint</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+=</span> <span class="n">adjoint</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">dv</span><span class="o">/</span><span class="n">du</span><span class="p">.</span>
+</pre></div>
+
+
+<p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
+<p>Implementation:</p>
+<ul>
+<li>
+<p>This trick is better suited to programming languages with structs. Using
+  objects will probably in an horrible slow down and using parallel arrays to
+  store the sign bit and double is probably too tedious and error prone. (Sorry
+  java folks.)</p>
+</li>
+<li>
+<p>Here's a <a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h">C++ implementation</a>
+  with operator overloading from Andre Martins</p>
+</li>
+<li>
+<p>Note that log-real <code>+=</code> involves calls to <code>log</code> and <code>exp</code>, which will
+  definitely slow your code down a bit (these functions are much slower than
+  addition).</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </h1>
       <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
@@ -2158,6 +2240,9 @@ respectively. Below is some python code which implements the trick:</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </li>
       <li class="post">
@@ -2178,7 +2263,7 @@ respectively. Below is some python code which implements the trick:</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning-deep-learning-structured-prediction.html">machine-learning deep-learning structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/math-numerical.html">math numerical</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 
@@ -2248,7 +2333,7 @@ respectively. Below is some python code which implements the trick:</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2015  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">

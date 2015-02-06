@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/deep-learning.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-02-05T00:00:00-05:00</updated><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-05:post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.&lt;/p&gt;
+&lt;p&gt;In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Limit the expressiveness of the model (i.e., don't use to model you want)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Change the training objective&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Approximate inference&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Approximate inference is tricky. Things can easily go awry.&lt;/p&gt;
+&lt;p&gt;For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+&lt;a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf"&gt;(Kulesza &amp;amp; Pereira, 2007)&lt;/a&gt;. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+&lt;a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf"&gt;sometimes&lt;/a&gt; these loopy BP
+approximations works fine.)&lt;/p&gt;
+&lt;p&gt;It looks like using approximate inference during training changes the training
+objective.&lt;/p&gt;
+&lt;p&gt;So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.&lt;/p&gt;
+&lt;p&gt;Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handfull of papers by Justin Domke, and a few by
+Stoyanov &amp;amp; Eisner.&lt;/p&gt;
+&lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
+&lt;p&gt;I first saw this idea in Stoyanov &amp;amp; Eisner (2011). They use loopy belief
+propagation as their approximate inference algorithm. At the end of the day,
+their model is essentially a deep recurrent network, which came from unrolling
+inference in a graphical model. This idea really struck me because it's clearly
+right in the middle between graphical models and deep learning.&lt;/p&gt;
+&lt;p&gt;You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.&lt;/p&gt;
+&lt;p&gt;Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.&lt;/p&gt;</summary><category term="machine-learning"></category><category term="deep-learning"></category><category term="structured-prediction"></category></entry></feed>
