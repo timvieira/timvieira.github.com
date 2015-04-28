@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Visualizing high-dimensional functions with cross-sections</title>
+  <title>Graduate Descent - crf</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,88 +1742,90 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li class="active">
+    <li >
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div>
-  <article class="hentry" role="article">
+<div class="blog-index">
+  		<article>
 <header>
-      <h1 class="entry-title">Visualizing high-dimensional functions with cross-sections</h1>
-      <p class="meta"><time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time></p>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
+      </h1>
+      <p class="meta"><time datetime="2015-04-29T00:00:00" pubdate>Apr 29, 2015</time></p>
 </header>
 
-  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
-a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three of my colleagues told me that my plots
-had inspired them to make similar plots. The plotting trick is really simple and
-not original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
-non-smooth (black) and a smooth approximating function (blue). The plot shows
-that the approximation is faithful to the overall shape, but sometimes
-over-smooths. In this case, we miss the maximum, which happens near the middle
-of the figure.</p>
-<p><img alt="Alt text" src="/blog/images/cross-section.png" /></p>
-<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
-function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
-<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
-\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
-picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
-as follows,</p>
+  <div class="entry-content"><p>A short rant: multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."</p>
+<p>Multiclass logistic regression is simple. The goal is to predict the correct
+label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
+on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
+gradient:</p>
 <p>
 <div class="math">$$
-f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
+\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$</div>
 </p>
-<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
-<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
-plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
-<p><strong>Picking directions</strong>: There are many alternatives for picking
-<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
-<ol>
-<li>
-<p>Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.</p>
-</li>
-<li>
-<p>Coordinate vectors. Varying one dimension per plot.</p>
-</li>
-<li>
-<p>Random. I recommend directions drawn from a spherical
-    Gaussian.<sup id="fnref:sphericalgaussian"><a class="footnote-ref" href="#fn:sphericalgaussian" rel="footnote">1</a></sup> The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    <span class="math">\(\alpha\)</span>. It's probably best that our plots don't randomly vary in scale.</p>
-</li>
-</ol>
-<p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and <span class="math">\(\boldsymbol{d_2}\)</span>, and varying two
-parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
+<p>where
+<div class="math">$$
+\begin{eqnarray*}
+p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
+Z(x) &amp;=&amp; \sum_{y \in Y} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
+$$</div>
+</p>
+<p>At test-time, we often take the highest-scoring label under the model.</p>
 <p>
 <div class="math">$$
-f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
 $$</div>
 </p>
-<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
-verify/explore properties of an objective function, compare approximations, test
-sensitivity to certain parameters/hyperparameters, visually debug optimization
-algorithms.</p>
-<h2>Notes</h2>
-<div class="footnote">
-<hr />
+<p>A conditional random field is exactly multiclass logistic regression. The only
+difference is that the sum and argmax are inefficient to compute naively (i.e.,
+by enumeration). This point is often lost when people first learn about
+CRFs. Some people never make this connection.</p>
+<p>Here's some stuff you'll see once we start talking about CRFs:</p>
 <ol>
-<li id="fn:sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
-<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
-sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
-<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref:sphericalgaussian" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+<li>
+<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)</p>
+</li>
+<li>
+<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
+</li>
+<li>
+<p>Model templates (i.e., repeated feature functions)</p>
 </li>
 </ol>
-</div>
+<p>In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
+<p>Graphical models establish a notation and structural properties which allow
+efficient inference -- things like cycles and treewidth.</p>
+<p>Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size" -- the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.</p>
+<p>
+<div class="math">$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$</div>
+</p>
+<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
+<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
+<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
+the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
+at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
+<p>Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -1851,43 +1853,17 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
-    <footer>
-<p class="meta">
-  <span class="byline author vcard">
-    Posted by <span class="fn">Tim Vieira</span>
-  </span>
-<time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>
-  </span>
-</p><div class="sharing">
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" >Tweet</a>
-</div>    </footer>
-  </article>
+  		</article>
+<div class="pagination">
 
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
-  </section>
-</div>
+  <br />
+</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </li>
     </ul>
   </section>
@@ -1974,14 +1950,11 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2015  - Tim Vieira -
+    Copyright &copy;  2015  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/';
-          var disqus_title = 'Visualizing high-dimensional functions with cross-sections';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

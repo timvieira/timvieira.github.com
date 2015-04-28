@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/crf.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-04-29:post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."&lt;/p&gt;
+&lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
+label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
+on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
+gradient:&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;where
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+p(y|x) &amp;amp;=&amp;amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp;amp; \ \ \ \ \text{and} \ \ \ \ &amp;amp;
+Z(x) &amp;amp;=&amp;amp; \sum_{y \in Y} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;A conditional random field is exactly multiclass logistic regression. The only
+difference is that the sum and argmax are inefficient to compute naively (i.e.,
+by enumeration). This point is often lost when people first learn about
+CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;Here's some stuff you'll see once we start talking about CRFs:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Graphical models (factor graphs, Bayes nets, Markov random fields)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Model templates (i.e., repeated feature functions)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt;.)&lt;/p&gt;
+&lt;p&gt;Graphical models establish a notation and structural properties which allow
+efficient inference -- things like cycles and treewidth.&lt;/p&gt;
+&lt;p&gt;Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size" -- the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.&lt;/p&gt;
+&lt;p&gt;
+&lt;div class="math"&gt;$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is a labeled subset of variables often called a factor and
+&lt;span class="math"&gt;\(\boldsymbol{y}_\alpha\)&lt;/span&gt; is the subvector containing values of variables
+&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. Basically, the feature function &lt;span class="math"&gt;\(\phi\)&lt;/span&gt; gets to look at some subset of
+the variables being predicted &lt;span class="math"&gt;\(y\)&lt;/span&gt; and the entire input &lt;span class="math"&gt;\(x\)&lt;/span&gt;. The ability to look
+at more of &lt;span class="math"&gt;\(y\)&lt;/span&gt; allows the model to make more coherent predictions.&lt;/p&gt;
+&lt;p&gt;Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry></feed>
