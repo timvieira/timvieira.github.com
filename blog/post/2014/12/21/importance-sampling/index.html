@@ -1752,7 +1752,7 @@ jQuery(document).ready(function($) {
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Importance Sampling</h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
@@ -1763,11 +1763,9 @@ random variable <span class="math">\(f(x)\)</span> under distribution <span clas
 distribution <span class="math">\(q\)</span>.</p>
 <p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
 different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
-<p>
 <div class="math">$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$</div>
-</p>
 <p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
 \Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
 can support things that <span class="math">\(p\)</span> doesn't.</p>
@@ -1837,6 +1835,16 @@ drawback is that both densities must be normalized, which is often intractable.<
 <p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
 evaluation" in more detail in future posts.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1847,8 +1855,8 @@ evaluation" in more detail in future posts.</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1857,9 +1865,26 @@ evaluation" in more detail in future posts.</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
@@ -1868,7 +1893,7 @@ evaluation" in more detail in future posts.</p>
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time>  <span class="categories">
+<time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>

@@ -1752,7 +1752,7 @@ jQuery(document).ready(function($) {
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Expected value of a quadratic and the Delta method</h1>
-      <p class="meta"><time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time></p>
 </header>
 
   <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
@@ -1761,28 +1761,23 @@ of a quadratic function, i.e.,
 a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and
 <span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a
 quadratic has the following simple form:</p>
-<p>
 <div class="math">$$
 \mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
 =
 \text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
 $$</div>
-</p>
 <p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
 function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
 <span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by
 replacing <span class="math">\(f\)</span> by it's second-order Talylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at
 some point <span class="math">\(a\)</span></p>
-<p>
 <div class="math">$$
 \hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
 $$</div>
-</p>
 <p>The expectation of this Talyor approximation is a quadratic function! Let's try
 to apply our new equation for the expected value of quadratic. We can use the
 trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, covariance matrix is shift
 invariant and the Hessian is a symmetric matrix!</p>
-<p>
 <div class="math">$$
 \begin{aligned}
 \mathbb{E}\left[ \hat{f_{a}}(x) \right]
@@ -1792,20 +1787,27 @@ invariant and the Hessian is a symmetric matrix!</p>
    \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
 \end{aligned}
 $$</div>
-</p>
 <p>It's common to take the Taylor expansion around <span class="math">\(\mu\)</span>. This simplifies the equation</p>
-<p>
 <div class="math">\begin{aligned}
 \mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
 &amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
 &amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
 \end{aligned}</div>
-</p>
 <p>That looks much more tractable! Error bounds are possible to derive, but outside
 to scope of this post. For a nice use of the delta method in machine learning
 see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
 <a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1816,8 +1818,8 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1826,9 +1828,26 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
@@ -1837,7 +1856,7 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-07-21T00:00:00" pubdate>Jul 21, 2014</time>  <span class="categories">
+<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
   </span>
 </p><div class="sharing">

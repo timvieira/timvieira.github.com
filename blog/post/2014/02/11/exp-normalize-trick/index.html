@@ -1752,27 +1752,23 @@ jQuery(document).ready(function($) {
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Exp-normalize trick</h1>
-      <p class="meta"><time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time></p>
+      <p class="meta"><time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
 (<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
 <p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
 parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
-<p>
 <div class="math">$$
 \pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
 $$</div>
-</p>
 <p>The exp-normalize trick leverages the following identity to avoid numerical
 overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
-<p>
 <div class="math">$$
 \pi_i
 = \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
 = \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
 $$</div>
-</p>
 <p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
 is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
 impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
@@ -1783,16 +1779,14 @@ impossible<span class="math">\(-\)</span>the largest number exponentiated after 
 avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
 and more importantly exp-normalize is more numerically stable!</p>
 <p><strong>Log-sum-exp for computing the log-distibution</strong></p>
-<p>
 <div class="math">$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
 $$</div>
-</p>
 <p>where
+</p>
 <div class="math">$$
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$</div>
-</p>
 <p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
 <p><strong>Numerically-stable sigmoid function</strong></p>
 <p>The sigmoid function can be computed with the exp-normalize trick in order to
@@ -1802,11 +1796,9 @@ interested in the probability of the first event. From the exp-normalize
 identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
 see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
 of two equivalent ways:</p>
-<p>
 <div class="math">$$
 \text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
 $$</div>
-</p>
 <p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
 respectively. Below is some python code which implements the trick:</p>
 <div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -1823,6 +1815,16 @@ respectively. Below is some python code which implements the trick:</p>
 
 
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1833,8 +1835,8 @@ respectively. Below is some python code which implements the trick:</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1843,9 +1845,26 @@ respectively. Below is some python code which implements the trick:</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
@@ -1854,7 +1873,7 @@ respectively. Below is some python code which implements the trick:</p>
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-02-11T00:00:00" pubdate>Feb 11, 2014</time>  <span class="categories">
+<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>
   </span>

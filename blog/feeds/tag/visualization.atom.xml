@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/visualization.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-12T00:00:00-05:00</updated><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/visualization.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-02-12T00:00:00-05:00</updated><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -17,11 +17,9 @@ me and can't see in high-dimensions what do you do?&lt;/p&gt;
 \mathbb{R}^d\)&lt;/span&gt;, take a point of interest &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;, and build a local
 picture of &lt;span class="math"&gt;\(f\)&lt;/span&gt; by evaluating it at various intervals along the chosen direction
 as follows,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; are fixed for all &lt;span class="math"&gt;\(\alpha_i\)&lt;/span&gt;. Now, you can
 plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
@@ -46,11 +44,9 @@ plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
 using 2 vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d_2}\)&lt;/span&gt;, and varying two
 parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Closing remarks&lt;/strong&gt;: These types of plots are probably best used to: empirically
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
@@ -69,6 +65,16 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
 &lt;/ol&gt;
 &lt;/div&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -79,8 +85,8 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -89,9 +95,26 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><category term="math"></category><category term="visualization"></category></entry></feed>

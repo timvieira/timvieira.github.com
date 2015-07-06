@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/structured-prediction.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-02-05T00:00:00-05:00</updated><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-05:post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/structured-prediction.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-02-05T00:00:00-05:00</updated><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
 deep learning might not be as crazy as it seems. And maybe even convince some
 deep learning lovers that the graphical models might have interesting things to
 offer.&lt;/p&gt;
@@ -35,7 +35,7 @@ to model miss-specification and approximate inference. In other words, make
 training conditions as close as possible to test-time conditions.&lt;/p&gt;
 &lt;p&gt;Now, as long as everything is differentiable, you can apply automatic
 differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handfull of papers by Justin Domke, and a few by
+a few publications, including a handful of papers by Justin Domke, and a few by
 Stoyanov &amp;amp; Eisner.&lt;/p&gt;
 &lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
 &lt;p&gt;I first saw this idea in Stoyanov &amp;amp; Eisner (2011). They use loopy belief

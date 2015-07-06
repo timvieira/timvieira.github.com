@@ -1754,7 +1754,7 @@ jQuery(document).ready(function($) {
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
       </h1>
-      <p class="meta"><time datetime="2015-04-29T00:00:00" pubdate>Apr 29, 2015</time></p>
+      <p class="meta"><time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time></p>
 </header>
 
   <div class="entry-content"><p>A short rant: multiclass logistic regression and conditional random fields (CRF)
@@ -1764,25 +1764,21 @@ be surrounded by additional "stuff."</p>
 label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
 on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
 gradient:</p>
-<p>
 <div class="math">$$
 \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$</div>
-</p>
 <p>where
+</p>
 <div class="math">$$
 \begin{eqnarray*}
 p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
-Z(x) &amp;=&amp; \sum_{y \in Y} \exp(\theta^\top \phi(x,y))
+Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
 \end{eqnarray*}
 $$</div>
-</p>
 <p>At test-time, we often take the highest-scoring label under the model.</p>
-<p>
 <div class="math">$$
 \hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
 $$</div>
-</p>
 <p>A conditional random field is exactly multiclass logistic regression. The only
 difference is that the sum and argmax are inefficient to compute naively (i.e.,
 by enumeration). This point is often lost when people first learn about
@@ -1811,12 +1807,10 @@ a CRF. Templating "solves" the problem that not all training examples have the
 same "size" -- the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
 template specifies how to compute the features for an entire output, by looking
 at interactions between subsets of variables.</p>
-<p>
 <div class="math">$$
 \phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
 \boldsymbol{y}_\alpha)
 $$</div>
-</p>
 <p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
 <span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
 <span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
@@ -1827,6 +1821,16 @@ trying to compute instead of how you're computing it. In this post, this allowed
 us see the similarity between logistic regression and CRFs even though they seem
 quite different.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1837,8 +1841,8 @@ quite different.</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1847,19 +1851,92 @@ quite different.</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Read On &crarr;</a>
+  </footer>
   		</article>
   		<article>
 <header>
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
       </h1>
-      <p class="meta"><time datetime="2015-02-05T00:00:00" pubdate>Feb 05, 2015</time></p>
+      <p class="meta"><time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time></p>
 </header>
 
   <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
@@ -1898,7 +1975,7 @@ to model miss-specification and approximate inference. In other words, make
 training conditions as close as possible to test-time conditions.</p>
 <p>Now, as long as everything is differentiable, you can apply automatic
 differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handfull of papers by Justin Domke, and a few by
+a few publications, including a handful of papers by Justin Domke, and a few by
 Stoyanov &amp; Eisner.</p>
 <p>Unsuprisingly, it works pretty well.</p>
 <p>I first saw this idea in Stoyanov &amp; Eisner (2011). They use loopy belief
@@ -1921,7 +1998,7 @@ good work on approximate inference as deep architectures.</p></div>
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
       </h1>
-      <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
+      <p class="meta"><time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>It's well-known that
@@ -1948,15 +2025,14 @@ to the issue of normalization.</p>
 <p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
 where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
 <h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
-<p>
 <div class="math">\begin{align*}
 \textbf{KL}(q_\theta || p)
 &amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
 &amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
 &amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
 \end{align*}</div>
-</p>
 <p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+</p>
 <div class="math">\begin{align*}
 \sum_d q(d) \log p(d)
 &amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
@@ -1964,16 +2040,16 @@ where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly
 &amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
 &amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
 \end{align*}</div>
-</p>
 <p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
 we're optimizing.</p>
 <p>This leaves us with the following optimization problem:
+</p>
 <div class="math">\begin{align*}
 &amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
 &amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
 \end{align*}</div>
-</p>
 <p>Let's work out the gradient
+</p>
 <div class="math">\begin{align*}
 &amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
@@ -1981,7 +2057,6 @@ we're optimizing.</p>
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
 \end{align*}</div>
-</p>
 <p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
@@ -1989,16 +2064,15 @@ we're optimizing.</p>
 <span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
 "hard" direction, which is convex.</p>
 <h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
-<p>
 <div class="math">\begin{align*}
 \textbf{KL}(p || q_\theta)
 &amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
 &amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
 &amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
 \end{align*}</div>
-</p>
 <p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
 <span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+</p>
 <div class="math">\begin{align*}
 \sum_d p(d) \log q(d)
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
@@ -2008,7 +2082,6 @@ we're optimizing.</p>
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
 \end{align*}</div>
-</p>
 <p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
 story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
 normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
@@ -2018,14 +2091,12 @@ estimation. In the case of maximum likelihood estimation, <span class="math">\(p
 distribution, so technically you don't have to compute its normalizing constant,
 but you do need to sample from it (which can be just as hard).</p>
 <p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
-<p>
 <div class="math">\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}</div>
-</p>
 <p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential families ---
 i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
 method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
@@ -2052,6 +2123,16 @@ instead of an exact estimate (often called "observed feature counts").</p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -2062,8 +2143,8 @@ instead of an exact estimate (often called "observed feature counts").</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -2072,12 +2153,85 @@ instead of an exact estimate (often called "observed feature counts").</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">Read On &crarr;</a>
+  </footer>
   		</article>
 <div class="pagination">
 

@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-04-29:post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/all.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
 label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
 on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
 gradient:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where
+&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray*}
 p(y|x) &amp;amp;=&amp;amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp;amp; \ \ \ \ \text{and} \ \ \ \ &amp;amp;
-Z(x) &amp;amp;=&amp;amp; \sum_{y \in Y} \exp(\theta^\top \phi(x,y))
+Z(x) &amp;amp;=&amp;amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
 \end{eqnarray*}
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;A conditional random field is exactly multiclass logistic regression. The only
 difference is that the sum and argmax are inefficient to compute naively (i.e.,
 by enumeration). This point is often lost when people first learn about
@@ -53,12 +49,10 @@ a CRF. Templating "solves" the problem that not all training examples have the
 same "size" -- the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
 template specifies how to compute the features for an entire output, by looking
 at interactions between subsets of variables.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
 \boldsymbol{y}_\alpha)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is a labeled subset of variables often called a factor and
 &lt;span class="math"&gt;\(\boldsymbol{y}_\alpha\)&lt;/span&gt; is the subvector containing values of variables
 &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. Basically, the feature function &lt;span class="math"&gt;\(\phi\)&lt;/span&gt; gets to look at some subset of
@@ -69,6 +63,16 @@ trying to compute instead of how you're computing it. In this post, this allowed
 us see the similarity between logistic regression and CRFs even though they seem
 quite different.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -79,8 +83,8 @@ quite different.&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -89,12 +93,29 @@ quite different.&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-05:post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+&lt;/script&gt;</summary><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
 deep learning might not be as crazy as it seems. And maybe even convince some
 deep learning lovers that the graphical models might have interesting things to
 offer.&lt;/p&gt;
@@ -130,7 +151,7 @@ to model miss-specification and approximate inference. In other words, make
 training conditions as close as possible to test-time conditions.&lt;/p&gt;
 &lt;p&gt;Now, as long as everything is differentiable, you can apply automatic
 differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handfull of papers by Justin Domke, and a few by
+a few publications, including a handful of papers by Justin Domke, and a few by
 Stoyanov &amp;amp; Eisner.&lt;/p&gt;
 &lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
 &lt;p&gt;I first saw this idea in Stoyanov &amp;amp; Eisner (2011). They use loopy belief
@@ -146,7 +167,7 @@ more open ended. Unlike graphical models, deep learning models have more
 variation in model structures. Maybe being more open minded about model
 structures is a good thing. We seem to have hit a brick wall with
 likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.&lt;/p&gt;</summary><category term="machine-learning"></category><category term="deep-learning"></category><category term="structured-prediction"></category></entry><entry><title>Log-Real number class</title><link href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-02-01:post/2015/02/01/log-real-number-class/</id><summary type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+good work on approximate inference as deep architectures.&lt;/p&gt;</summary><category term="machine-learning"></category><category term="deep-learning"></category><category term="structured-prediction"></category></entry><entry><title>Log-Real number class</title><link href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</id><summary type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
 representing intermediate quantities in the log-domain. This trick turns
 "multiplication" into "addition", "addition" into "logsumexp", "0" into
 &lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
@@ -169,7 +190,7 @@ multiplying small things together. I've recently found log-reals to be effective
 at squeaking a bit more numerical accuracy.&lt;/p&gt;
 &lt;p&gt;This trick is useful for almost all backprop computations because backprop is
 essentially:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;adjoint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;dv&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;du&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;adjoint(u) += adjoint(v) * dv/du.
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -193,6 +214,16 @@ essentially:&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -203,8 +234,8 @@ essentially:&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -213,12 +244,29 @@ essentially:&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-12-21:post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
@@ -226,11 +274,9 @@ random variable &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt; under distributio
 distribution &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;The key observation is that &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; is can expressed as the expectation of a
 different random variable &lt;span class="math"&gt;\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)&lt;/span&gt; under &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(p(x) &amp;gt; 0
 \Rightarrow q(x) &amp;gt; 0\)&lt;/span&gt;. Without this condition, the equation is biased! Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
 can support things that &lt;span class="math"&gt;\(p\)&lt;/span&gt; doesn't.&lt;/p&gt;
@@ -300,6 +346,16 @@ drawback is that both densities must be normalized, which is often intractable.&
 &lt;p&gt;&lt;strong&gt;What's next?&lt;/strong&gt; I plan to cover "variance reduction" and "off-policy
 evaluation" in more detail in future posts.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -310,8 +366,8 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -320,152 +376,72 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="randomized"></category></entry><entry><title>Numerically-stable p-norms</title><link href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/" rel="alternate"></link><updated>2014-11-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-11-10:post/2014/11/10/numerically-stable-p-norms/</id><summary type="html">&lt;p&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Consider the p-norm &lt;span class="math"&gt;\[
+&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="randomized"></category></entry><entry><title>Numerically-stable p-norms</title><link href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/" rel="alternate"></link><updated>2014-11-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</id><summary type="html">&lt;p&gt;Consider the p-norm
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-\]&lt;/span&gt;&lt;/p&gt;
+$$&lt;/div&gt;
 &lt;p&gt;In python this translates to:&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[1]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="s"&gt;&amp;quot;First-pass implementation of p-norm.&amp;quot;&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;---even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
 &lt;p&gt;For example:&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[2]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
-&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-
-&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;got: &lt;/span&gt;&lt;span class="si"&gt;%g&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;expected: &lt;/span&gt;&lt;span class="si"&gt;%g&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="n"&gt;inf&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;   &lt;span class="c"&gt;# expected: 1e+300&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;
-got: inf
-expected: 1e+300
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;This fails because we can't square big&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[3]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="n"&gt;inf&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;
-[ inf]
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="A-little-math"&gt;A little math&lt;a class="anchor-link" href="#A-little-math"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2&gt;A little math&lt;/h2&gt;
 &lt;p&gt;There is a way to avoid overflow on the account of a few large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;Here's a little fact about p-norms: for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; &lt;span class="math"&gt;\[
+&lt;p&gt;Here's a little fact about p-norms: for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
 || \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;We'll use the following version (harder to remember) &lt;span class="math"&gt;\[
+$$&lt;/div&gt;
+&lt;p&gt;We'll use the following version (harder to remember)
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Don't believe it? Here's some algebra: &lt;span class="math"&gt;\[
+$$&lt;/div&gt;
+&lt;p&gt;Don't believe it? Here's some algebra:
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
 \begin{eqnarray*}
 || \boldsymbol{x} ||_p
 &amp;amp;=&amp;amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
@@ -474,145 +450,97 @@ In&amp;nbsp;[3]:
 &amp;amp;=&amp;amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
 &amp;amp;=&amp;amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
 \end{eqnarray*}
-\]&lt;/span&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Back-to-numerical-stability"&gt;Back to numerical stability&lt;a class="anchor-link" href="#Back-to-numerical-stability"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take the power of is one --- making it very difficult to overflow on the account of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[4]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+$$&lt;/div&gt;
+&lt;h2&gt;Back to numerical stability&lt;/h2&gt;
+&lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take
+the power of is one --- making it very difficult to overflow on the account of
+&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;Now, our example from before works :-)&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[5]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;1e+300&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;
-1e+300
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Remarks"&gt;Remarks&lt;a class="anchor-link" href="#Remarks"&gt;&amp;#182;&lt;/a&gt;&lt;/h2&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;
-In&amp;nbsp;[22]:
-&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class="highlight-ipynb"&gt;&lt;pre class="ipynb"&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;arsenal.math&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;arsenal.math&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;abs&lt;/span&gt;
-&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
-&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;
+&lt;span class="mf"&gt;1.91432069824&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="mf"&gt;1.91432069824&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
 
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
 
-
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;
-1.91432069824
-1.91432069824
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;&lt;/p&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>KL-divergence as an objective function</title><link href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/" rel="alternate"></link><updated>2014-10-06T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-10-06:post/2014/10/06/kl-divergence-as-an-objective-function/</id><summary type="html">&lt;p&gt;It's well-known that
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('TeX' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>KL-divergence as an objective function</title><link href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/" rel="alternate"></link><updated>2014-10-06T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</id><summary type="html">&lt;p&gt;It's well-known that
 &lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
 is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;First, which one is which?&lt;/p&gt;
@@ -636,15 +564,14 @@ to the issue of normalization.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Notation&lt;/strong&gt;: &lt;span class="math"&gt;\(p,q_\theta\)&lt;/span&gt; are probabilty distributions. &lt;span class="math"&gt;\(p = \bar{p} / Z_p\)&lt;/span&gt;,
 where &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is the normalization constant. Similarly for &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
 &lt;h3&gt;The easy direction &lt;span class="math"&gt;\(\textbf{KL}(q_\theta || p)\)&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \textbf{KL}(q_\theta || p)
 &amp;amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
 &amp;amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
 &amp;amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Let's look at normalization of &lt;span class="math"&gt;\(p\)&lt;/span&gt;, the entropy term is easy because there is no &lt;span class="math"&gt;\(p\)&lt;/span&gt; in it.
+&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \sum_d q(d) \log p(d)
 &amp;amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
@@ -652,16 +579,16 @@ where &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is the normalization constan
 &amp;amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
 &amp;amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;In this case, &lt;span class="math"&gt;\(-\log Z_p\)&lt;/span&gt; is an additive constant, which can be dropped because
 we're optimizing.&lt;/p&gt;
 &lt;p&gt;This leaves us with the following optimization problem:
+&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 &amp;amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
 &amp;amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Let's work out the gradient
+&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 &amp;amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
 &amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
@@ -669,7 +596,6 @@ we're optimizing.&lt;/p&gt;
 &amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
 &amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;We killed the one in the last equality because &lt;span class="math"&gt;\(\sum_d \nabla
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0\)&lt;/span&gt;, for any &lt;span class="math"&gt;\(q\)&lt;/span&gt; which is a probability distribution.&lt;/p&gt;
@@ -677,16 +603,15 @@ we're optimizing.&lt;/p&gt;
 &lt;span class="math"&gt;\(p\)&lt;/span&gt;. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
 "hard" direction, which is convex.&lt;/p&gt;
 &lt;h3&gt;Harder direction &lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt;&lt;/h3&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \textbf{KL}(p || q_\theta)
 &amp;amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
 &amp;amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
 &amp;amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Clearly the first term (entropy) won't matter if we're just trying optimize wrt
 &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;. So, let's focus on the second term (cross-entropy).
+&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \sum_d p(d) \log q(d)
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
@@ -696,7 +621,6 @@ we're optimizing.&lt;/p&gt;
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Unfortunately the &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; factor is unavoidable. The usual "approximate inference
 story" is that &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is hard to compute, while the approximating distributions
 normalization constant &lt;span class="math"&gt;\(Z_q\)&lt;/span&gt; is easy.&lt;/p&gt;
@@ -706,14 +630,12 @@ estimation. In the case of maximum likelihood estimation, &lt;span class="math"&
 distribution, so technically you don't have to compute its normalizing constant,
 but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &lt;p&gt;The gradient, when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family, is intuitive:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential families ---
 i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood estimation as a
 method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is
@@ -740,6 +662,16 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -750,8 +682,8 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -760,17 +692,32 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="machine-learning"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
-&lt;p&gt;
+&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="machine-learning"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Recall, the centered-difference approximation is a fairly accurate method for
 approximating derivatives of a univariate function &lt;span class="math"&gt;\(f\)&lt;/span&gt;, which only requires two
 function evaluations. A similar derivation, based on the Taylor series expansion
@@ -781,7 +728,6 @@ or matlab, this often requires no modification to source code).&lt;/p&gt;
 &lt;p&gt;This post is based on
 &lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(x + i \cdot \varepsilon) =
   \frac{i^0 \varepsilon^0}{0!} f(x)
@@ -790,28 +736,21 @@ f(x + i \cdot \varepsilon) =
 + \frac{i^3 \varepsilon^3}{3!} f'''(x)
 + \cdots
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(f''\)&lt;/span&gt; term disappear because &lt;span class="math"&gt;\(i^0\)&lt;/span&gt; and &lt;span class="math"&gt;\(i^2\)&lt;/span&gt; are real-valued.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
 terms. And, we arrive at the following approximation:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
 to the function's value at &lt;span class="math"&gt;\(x\)&lt;/span&gt;:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;In other words, a single (complex) function evaluations computes both the
 function's value and the derivative.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
@@ -851,6 +790,16 @@ function's value and the derivative.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -861,8 +810,8 @@ function's value and the derivative.&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -871,12 +820,29 @@ function's value and the derivative.&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-01:post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -958,6 +924,16 @@ replacement! If you know of a reference let me know. Perhaps, we'll finish
 turning these connections into a
 &lt;a href="https://github.com/timvieira/gumbel"&gt;short tech report&lt;/a&gt;.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -968,8 +944,8 @@ turning these connections into a
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -978,43 +954,56 @@ turning these connections into a
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-31:post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The usual way&lt;/strong&gt;: Exponentiate and normalize (using the
 &lt;a href="/blog/post/2014/02/11/exp-normalize-trick/"&gt;exp-normalize trick&lt;/a&gt;), then use the
 an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;usual&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;cdf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()).&lt;/span&gt;&lt;span class="n"&gt;cumsum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;     &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;normalize&lt;/span&gt; &lt;span class="n"&gt;trick&lt;/span&gt;
-    &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-    &lt;span class="n"&gt;u&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;searchsorted&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;def usual(x):
+    cdf = exp(x - x.max()).cumsum()     # the exp-normalize trick
+    z = cdf[-1]
+    u = uniform(0,1)
+    return cdf.searchsorted(u * z)
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;&lt;strong&gt;The Gumbel max trick&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 y = \text{argmax}_{i \in \\{1,\cdots,K\\}} x_i + z_i
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(z_1 \cdots z_K\)&lt;/span&gt; are i.i.d. &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; random variates. It
 turns out that &lt;span class="math"&gt;\(y\)&lt;/span&gt; is distributed according to &lt;span class="math"&gt;\(\pi\)&lt;/span&gt;. (See the short derivations
 in this
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;blog post&lt;/a&gt;.)&lt;/p&gt;
 &lt;p&gt;Implementing the Gumbel max trick is remarkable easy:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;gumbel_max_sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gumbel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;loc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scale&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="n"&gt;argmax&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;def gumbel_max_sample(x):
+    z = gumbel(loc=0, scale=1, size=x.shape)
+    return (x + g).argmax(axis=1)
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -1043,6 +1032,16 @@ in this
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1053,8 +1052,8 @@ in this
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1063,12 +1062,29 @@ in this
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-22:post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-22:blog/post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
@@ -1105,6 +1121,16 @@ reading see
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1115,8 +1141,8 @@ reading see
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1125,39 +1151,51 @@ reading see
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="misc"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-07-21:post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+&lt;/script&gt;</summary><category term="misc"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
 &lt;span class="math"&gt;\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)&lt;/span&gt; , where &lt;span class="math"&gt;\(x\)&lt;/span&gt; is
 a random vector and &lt;span class="math"&gt;\(A\)&lt;/span&gt; is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(\Sigma\)&lt;/span&gt; be the mean and variance of &lt;span class="math"&gt;\(x\)&lt;/span&gt;. It turns out the expected value of a
 quadratic has the following simple form:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
 =
 \text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Delta Method&lt;/strong&gt;: Suppose we'd like to compute expected value of a nonlinear
 function &lt;span class="math"&gt;\(f\)&lt;/span&gt; applied our random variable &lt;span class="math"&gt;\(x\)&lt;/span&gt;,
 &lt;span class="math"&gt;\(\mathbb{E}\left[ f(x) \right]\)&lt;/span&gt;. The Delta method approximates this expection by
 replacing &lt;span class="math"&gt;\(f\)&lt;/span&gt; by it's second-order Talylor approximation &lt;span class="math"&gt;\(\hat{f_{a}}\)&lt;/span&gt; taken at
 some point &lt;span class="math"&gt;\(a\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;The expectation of this Talyor approximation is a quadratic function! Let's try
 to apply our new equation for the expected value of quadratic. We can use the
 trick from above with &lt;span class="math"&gt;\(A=H(a)\)&lt;/span&gt; and &lt;span class="math"&gt;\(x = (x-a)\)&lt;/span&gt;. Note, covariance matrix is shift
 invariant and the Hessian is a symmetric matrix!&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \begin{aligned}
 \mathbb{E}\left[ \hat{f_{a}}(x) \right]
@@ -1167,20 +1205,27 @@ invariant and the Hessian is a symmetric matrix!&lt;/p&gt;
    \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
 \end{aligned}
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;It's common to take the Taylor expansion around &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;. This simplifies the equation&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;\begin{aligned}
 \mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
 &amp;amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
 &amp;amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
 \end{aligned}&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;That looks much more tractable! Error bounds are possible to derive, but outside
 to scope of this post. For a nice use of the delta method in machine learning
 see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; and
 &lt;a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf"&gt;(Smith &amp;amp; Eisner,'06)&lt;/a&gt;&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1191,8 +1236,8 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1201,12 +1246,29 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-12:post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;/script&gt;</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -1224,11 +1286,9 @@ me and can't see in high-dimensions what do you do?&lt;/p&gt;
 \mathbb{R}^d\)&lt;/span&gt;, take a point of interest &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;, and build a local
 picture of &lt;span class="math"&gt;\(f\)&lt;/span&gt; by evaluating it at various intervals along the chosen direction
 as follows,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Of course, you'll have to pick a reasonable range and discretize it. Note,
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; are fixed for all &lt;span class="math"&gt;\(\alpha_i\)&lt;/span&gt;. Now, you can
 plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
@@ -1253,11 +1313,9 @@ plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
 using 2 vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d_2}\)&lt;/span&gt;, and varying two
 parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Closing remarks&lt;/strong&gt;: These types of plots are probably best used to: empirically
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
@@ -1276,6 +1334,16 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
 &lt;/ol&gt;
 &lt;/div&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1286,8 +1354,8 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1296,29 +1364,42 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-11:post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/script&gt;</summary><category term="math"></category><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;The exp-normalize trick leverages the following identity to avoid numerical
 overflow. For any &lt;span class="math"&gt;\(b \in \mathbb{R}\)&lt;/span&gt;,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \pi_i
 = \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
 = \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;In other words, the &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is shift-invariant. A reasonable choice
 is &lt;span class="math"&gt;\(b = \max_{i=1}^n x_i\)&lt;/span&gt;. With this choice, overflow due to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is
 impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponentiated after shifting is &lt;span class="math"&gt;\(0\)&lt;/span&gt;.&lt;/p&gt;
@@ -1329,16 +1410,14 @@ impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponent
 avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
 and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where
+&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Typically with the same choice for &lt;span class="math"&gt;\(b\)&lt;/span&gt; as above.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
@@ -1348,11 +1427,9 @@ interested in the probability of the first event. From the exp-normalize
 identity, we know that the distributions &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt; and &lt;span class="math"&gt;\([0,-x]\)&lt;/span&gt; are equivalent (to
 see why, plug in &lt;span class="math"&gt;\(b=\max(0,x)\)&lt;/span&gt;). This is why sigmoid is often expressed in one
 of two equivalent ways:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Interestingly, each version covers an extreme case: &lt;span class="math"&gt;\(x=\infty\)&lt;/span&gt; and &lt;span class="math"&gt;\(x=-\infty\)&lt;/span&gt;,
 respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -1369,6 +1446,16 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
 
 
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1379,8 +1466,8 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1389,14 +1476,30 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
  \frac{1}{2 \varepsilon} \Big(
@@ -1404,14 +1507,12 @@ finite-difference approximation).&lt;/p&gt;
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
  \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\varepsilon &amp;gt; 0\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt; is a vector of zeros except at
 &lt;span class="math"&gt;\(i\)&lt;/span&gt; where it is &lt;span class="math"&gt;\(1\)&lt;/span&gt;. This approximation is exact in the limit, and accurate to
 &lt;span class="math"&gt;\(o(\varepsilon^2)\)&lt;/span&gt; additive error.&lt;/p&gt;
 &lt;p&gt;This is a specific instance of a more general approximation! The dot product of
 the gradient and any (conformable) vector &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; can be approximated
 with the following formula,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
@@ -1419,7 +1520,6 @@ with the following formula,&lt;/p&gt;
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
  \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;We get the special case above when &lt;span class="math"&gt;\(\boldsymbol{d}=\boldsymbol{e_i}\)&lt;/span&gt;. This also
 exact in the limit and just as accurate.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Runtime?&lt;/strong&gt; Finite-difference approximation is probably too slow for
@@ -1432,11 +1532,9 @@ exact in the limit and just as accurate.&lt;/p&gt;
   &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; because &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; is arbitrary, unlike
   &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt;, which is a simple unit-norm vector. Luckily some guidance
   is available. Andrei (2009) reccommends&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\epsilon_{\text{mach}}\)&lt;/span&gt; is
 &lt;a href="http://en.wikipedia.org/wiki/Machine_epsilon"&gt;machine epsilon&lt;/a&gt;. (Numpy users:
 &lt;code&gt;numpy.finfo(x.dtype).eps&lt;/code&gt;).&lt;/p&gt;
@@ -1463,7 +1561,6 @@ $$&lt;/div&gt;
 &lt;p&gt;Hessian-vector products are an instance of the gradient-vector dot product
 because since the Hessian is just the gradient of the gradient! Now you only
 need to remember one formula!&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
@@ -1471,10 +1568,19 @@ H(\boldsymbol{x})\, \boldsymbol{d} \approx
 - \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
 \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on
 &lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1485,8 +1591,8 @@ $$&lt;/div&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1495,9 +1601,26 @@ $$&lt;/div&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry></feed>

@@ -1752,7 +1752,7 @@ jQuery(document).ready(function($) {
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Visualizing high-dimensional functions with cross-sections</h1>
-      <p class="meta"><time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time></p>
+      <p class="meta"><time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
@@ -1773,11 +1773,9 @@ me and can't see in high-dimensions what do you do?</p>
 \mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
 picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
 as follows,</p>
-<p>
 <div class="math">$$
 f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$</div>
-</p>
 <p>Of course, you'll have to pick a reasonable range and discretize it. Note,
 <span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
 plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
@@ -1802,11 +1800,9 @@ plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
 <p><strong>Extension to 3d</strong>: It's pretty easy to extend this generating 3d plots by
 using 2 vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and <span class="math">\(\boldsymbol{d_2}\)</span>, and varying two
 parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
-<p>
 <div class="math">$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$</div>
-</p>
 <p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
@@ -1825,6 +1821,16 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
 </ol>
 </div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1835,8 +1841,8 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1845,9 +1851,26 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
@@ -1856,7 +1879,7 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time>  <span class="categories">
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>
   </span>

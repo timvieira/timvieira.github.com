@@ -1754,7 +1754,7 @@ jQuery(document).ready(function($) {
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00" pubdate>Dec 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
@@ -1765,11 +1765,9 @@ random variable <span class="math">\(f(x)\)</span> under distribution <span clas
 distribution <span class="math">\(q\)</span>.</p>
 <p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
 different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
-<p>
 <div class="math">$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$</div>
-</p>
 <p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
 \Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
 can support things that <span class="math">\(p\)</span> doesn't.</p>
@@ -1839,6 +1837,16 @@ drawback is that both densities must be normalized, which is often intractable.<
 <p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
 evaluation" in more detail in future posts.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1849,8 +1857,8 @@ evaluation" in more detail in future posts.</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -1859,162 +1867,138 @@ evaluation" in more detail in future posts.</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Read On &crarr;</a>
+  </footer>
   		</article>
   		<article>
 <header>
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
       </h1>
-      <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
+      <p class="meta"><time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Consider the p-norm <span class="math">\[
+  <div class="entry-content"><p>Consider the p-norm
+</p>
+<div class="math">$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-\]</span></p>
+$$</div>
 <p>In python this translates to:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[1]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
 
 <span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
     <span class="s">&quot;First-pass implementation of p-norm.&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
 <p>For example:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[2]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-
-<span class="k">print</span> <span class="s">&#39;got: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&#39;expected: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">big</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>   <span class="c"># expected: 1e+300</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-got: inf
-expected: 1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>This fails because we can't square big</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[3]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-[ inf]
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="A-little-math">A little math<a class="anchor-link" href="#A-little-math">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
+<h2>A little math</h2>
 <p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span> <span class="math">\[
+<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
+</p>
+<div class="math">$$
 || \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-\]</span></p>
-<p>We'll use the following version (harder to remember) <span class="math">\[
+$$</div>
+<p>We'll use the following version (harder to remember)
+</p>
+<div class="math">$$
 || \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\]</span></p>
-<p>Don't believe it? Here's some algebra: <span class="math">\[
+$$</div>
+<p>Don't believe it? Here's some algebra:
+</p>
+<div class="math">$$
 \begin{eqnarray*}
 || \boldsymbol{x} ||_p
 &amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
@@ -2023,152 +2007,160 @@ In&nbsp;[3]:
 &amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
 &amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
 \end{eqnarray*}
-\]</span></p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Back-to-numerical-stability">Back to numerical stability<a class="anchor-link" href="#Back-to-numerical-stability">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow on the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[4]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+$$</div>
+<h2>Back to numerical stability</h2>
+<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take
+the power of is one --- making it very difficult to overflow on the account of
+<span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>Now, our example from before works :-)</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[5]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="mf">1e+300</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Remarks">Remarks<a class="anchor-link" href="#Remarks">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Remarks</h2>
 <ul>
-<li><p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
-<li><p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
+<li>
+<p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p>
+</li>
+<li>
+<p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p>
+</li>
 </ul>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[22]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="k">print</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
+<span class="mf">1.91432069824</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+<span class="mf">1.91432069824</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
 
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('TeX' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
 
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1.91432069824
-1.91432069824
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div></p></div>
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Read On &crarr;</a>
+  </footer>
   		</article>
   		<article>
 <header>
       <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
       </h1>
-      <p class="meta"><time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time></p>
+      <p class="meta"><time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time></p>
 </header>
 
   <div class="entry-content"><p>It's well-known that
@@ -2195,15 +2187,14 @@ to the issue of normalization.</p>
 <p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
 where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
 <h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
-<p>
 <div class="math">\begin{align*}
 \textbf{KL}(q_\theta || p)
 &amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
 &amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
 &amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
 \end{align*}</div>
-</p>
 <p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+</p>
 <div class="math">\begin{align*}
 \sum_d q(d) \log p(d)
 &amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
@@ -2211,16 +2202,16 @@ where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly
 &amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
 &amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
 \end{align*}</div>
-</p>
 <p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
 we're optimizing.</p>
 <p>This leaves us with the following optimization problem:
+</p>
 <div class="math">\begin{align*}
 &amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
 &amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
 \end{align*}</div>
-</p>
 <p>Let's work out the gradient
+</p>
 <div class="math">\begin{align*}
 &amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
@@ -2228,7 +2219,6 @@ we're optimizing.</p>
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
 &amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
 \end{align*}</div>
-</p>
 <p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
@@ -2236,16 +2226,15 @@ we're optimizing.</p>
 <span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
 "hard" direction, which is convex.</p>
 <h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
-<p>
 <div class="math">\begin{align*}
 \textbf{KL}(p || q_\theta)
 &amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
 &amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
 &amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
 \end{align*}</div>
-</p>
 <p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
 <span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+</p>
 <div class="math">\begin{align*}
 \sum_d p(d) \log q(d)
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
@@ -2255,7 +2244,6 @@ we're optimizing.</p>
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
 \end{align*}</div>
-</p>
 <p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
 story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
 normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
@@ -2265,14 +2253,12 @@ estimation. In the case of maximum likelihood estimation, <span class="math">\(p
 distribution, so technically you don't have to compute its normalizing constant,
 but you do need to sample from it (which can be just as hard).</p>
 <p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
-<p>
 <div class="math">\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}</div>
-</p>
 <p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential families ---
 i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
 method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
@@ -2299,6 +2285,16 @@ instead of an exact estimate (often called "observed feature counts").</p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -2309,8 +2305,8 @@ instead of an exact estimate (often called "observed feature counts").</p>
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -2319,12 +2315,85 @@ instead of an exact estimate (often called "observed feature counts").</p>
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">Read On &crarr;</a>
+  </footer>
   		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/category/misc3.html">&larr; Older</a>

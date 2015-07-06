@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/category/misc.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 29 Apr 2015 00:00:00 -0400</lastBuildDate><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
@@ -115,7 +115,7 @@ quite different.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Apr 2015 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</guid><category>machine-learning</category><category>rant</category><category>crf</category></item><item><title>Conditional random fields as Deep learning models?</title><link>http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</link><description>&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
 deep learning might not be as crazy as it seems. And maybe even convince some
 deep learning lovers that the graphical models might have interesting things to
 offer.&lt;/p&gt;
@@ -167,7 +167,7 @@ more open ended. Unlike graphical models, deep learning models have more
 variation in model structures. Maybe being more open minded about model
 structures is a good thing. We seem to have hit a brick wall with
 likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.&lt;/p&gt;</summary><category term="machine-learning"></category><category term="deep-learning"></category><category term="structured-prediction"></category></entry><entry><title>Log-Real number class</title><link href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</id><summary type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+good work on approximate inference as deep architectures.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 05 Feb 2015 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</guid><category>machine-learning</category><category>deep-learning</category><category>structured-prediction</category></item><item><title>Log-Real number class</title><link>http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/</link><description>&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
 representing intermediate quantities in the log-domain. This trick turns
 "multiplication" into "addition", "addition" into "logsumexp", "0" into
 &lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
@@ -266,7 +266,7 @@ essentially:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 01 Feb 2015 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</guid><category>math</category><category>numerical</category></item><item><title>Importance Sampling</title><link>http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/</link><description>&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
@@ -398,7 +398,7 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="randomized"></category></entry><entry><title>Numerically-stable p-norms</title><link href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/" rel="alternate"></link><updated>2014-11-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</id><summary type="html">&lt;p&gt;Consider the p-norm
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>math</category><category>statistics</category><category>randomized</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
@@ -540,7 +540,7 @@ the power of is one --- making it very difficult to overflow on the account of
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>KL-divergence as an objective function</title><link href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/" rel="alternate"></link><updated>2014-10-06T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</id><summary type="html">&lt;p&gt;It's well-known that
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Nov 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</guid><category>math</category><category>numerical</category></item><item><title>KL-divergence as an objective function</title><link>http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</link><description>&lt;p&gt;It's well-known that
 &lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
 is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;First, which one is which?&lt;/p&gt;
@@ -714,7 +714,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="statistics"></category><category term="machine-learning"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 06 Oct 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</guid><category>math</category><category>statistics</category><category>machine-learning</category></item><item><title>Complex-step derivative</title><link>http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/</link><description>&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
@@ -842,7 +842,7 @@ function's value and the derivative.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 07 Aug 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</guid><category>math</category><category>calculus</category></item><item><title>Gumbel max trick and weighted reservoir sampling</title><link>http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</link><description>&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -976,7 +976,7 @@ turning these connections into a
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -1084,7 +1084,7 @@ in this
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="sampling"></category><category term="Gumbel"></category></entry><entry><title>Rant against grid search</title><link href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-22:blog/post/2014/07/22/rant-against-grid-search/</id><summary type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 31 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Rant against grid search</title><link>http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/</link><description>&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
@@ -1173,7 +1173,7 @@ reading see
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="misc"></category></entry><entry><title>Expected value of a quadratic and the Delta method</title><link href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" rel="alternate"></link><updated>2014-07-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 22 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-22:blog/post/2014/07/22/rant-against-grid-search/</guid><category>misc</category></item><item><title>Expected value of a quadratic and the Delta method</title><link>http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</link><description>&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
 &lt;span class="math"&gt;\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)&lt;/span&gt; , where &lt;span class="math"&gt;\(x\)&lt;/span&gt; is
 a random vector and &lt;span class="math"&gt;\(A\)&lt;/span&gt; is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; and
@@ -1268,7 +1268,7 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category></entry><entry><title>Visualizing high-dimensional functions with cross-sections</title><link href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/" rel="alternate"></link><updated>2014-02-12T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</id><summary type="html">&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</guid><category>math</category></item><item><title>Visualizing high-dimensional functions with cross-sections</title><link>http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</link><description>&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -1386,7 +1386,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 12 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</guid><category>math</category><category>visualization</category></item><item><title>Exp-normalize trick</title><link>http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/</link><description>&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
@@ -1498,7 +1498,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="numerical"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 11 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</guid><category>math</category><category>numerical</category></item><item><title>Gradient-vector product</title><link>http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/</link><description>&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
@@ -1623,4 +1623,4 @@ $$&lt;/div&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry></feed>
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</guid><category>math</category><category>calculus</category></item></channel></rss>

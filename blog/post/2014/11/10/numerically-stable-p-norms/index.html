@@ -1752,150 +1752,53 @@ jQuery(document).ready(function($) {
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Numerically-stable p-norms</h1>
-      <p class="meta"><time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time></p>
+      <p class="meta"><time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Consider the p-norm <span class="math">\[
+  <div class="entry-content"><p>Consider the p-norm
+</p>
+<div class="math">$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-\]</span></p>
+$$</div>
 <p>In python this translates to:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[1]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
 
 <span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
     <span class="s">&quot;First-pass implementation of p-norm.&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
 <p>For example:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[2]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-
-<span class="k">print</span> <span class="s">&#39;got: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&#39;expected: </span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">big</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>   <span class="c"># expected: 1e+300</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-got: inf
-expected: 1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>This fails because we can't square big</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[3]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-[ inf]
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="A-little-math">A little math<a class="anchor-link" href="#A-little-math">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
+<h2>A little math</h2>
 <p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span> <span class="math">\[
+<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
+</p>
+<div class="math">$$
 || \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-\]</span></p>
-<p>We'll use the following version (harder to remember) <span class="math">\[
+$$</div>
+<p>We'll use the following version (harder to remember)
+</p>
+<div class="math">$$
 || \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\]</span></p>
-<p>Don't believe it? Here's some algebra: <span class="math">\[
+$$</div>
+<p>Don't believe it? Here's some algebra:
+</p>
+<div class="math">$$
 \begin{eqnarray*}
 || \boldsymbol{x} ||_p
 &amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
@@ -1904,151 +1807,103 @@ In&nbsp;[3]:
 &amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
 &amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
 \end{eqnarray*}
-\]</span></p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Back-to-numerical-stability">Back to numerical stability<a class="anchor-link" href="#Back-to-numerical-stability">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take the power of is one --- making it very difficult to overflow on the account of <span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[4]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+$$</div>
+<h2>Back to numerical stability</h2>
+<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take
+the power of is one --- making it very difficult to overflow on the account of
+<span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <p>Now, our example from before works :-)</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[5]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="k">print</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="mf">1e+300</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1e+300
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Remarks">Remarks<a class="anchor-link" href="#Remarks">&#182;</a></h2>
-</div>
-</div>
-</div>
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Remarks</h2>
 <ul>
-<li><p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p></li>
-<li><p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p></li>
+<li>
+<p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p>
+</li>
+<li>
+<p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p>
+</li>
 </ul>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">
-In&nbsp;[22]:
-</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class="highlight-ipynb"><pre class="ipynb"><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="k">print</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="k">print</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
+<span class="mf">1.91432069824</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+<span class="mf">1.91432069824</span>
 </pre></div>
 
-</div>
-</div>
-</div>
 
-<div class="output_wrapper">
-<div class="output">
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
 
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>
-1.91432069824
-1.91432069824
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div></p></div>
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('TeX' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_TeX');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_TeX-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_TeX-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_TeX-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
     <footer>
 <p class="meta">
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-11-10T00:00:00" pubdate>Nov 10, 2014</time>  <span class="categories">
+<time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time>  <span class="categories">
     <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>
   </span>

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/calculus.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-07T00:00:00-04:00</updated><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-08-07:post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
-&lt;p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/calculus.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2014-08-07T00:00:00-04:00</updated><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Recall, the centered-difference approximation is a fairly accurate method for
 approximating derivatives of a univariate function &lt;span class="math"&gt;\(f\)&lt;/span&gt;, which only requires two
 function evaluations. A similar derivation, based on the Taylor series expansion
@@ -15,7 +13,6 @@ or matlab, this often requires no modification to source code).&lt;/p&gt;
 &lt;p&gt;This post is based on
 &lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(x + i \cdot \varepsilon) =
   \frac{i^0 \varepsilon^0}{0!} f(x)
@@ -24,28 +21,21 @@ f(x + i \cdot \varepsilon) =
 + \frac{i^3 \varepsilon^3}{3!} f'''(x)
 + \cdots
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(f''\)&lt;/span&gt; term disappear because &lt;span class="math"&gt;\(i^0\)&lt;/span&gt; and &lt;span class="math"&gt;\(i^2\)&lt;/span&gt; are real-valued.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
 terms. And, we arrive at the following approximation:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
 to the function's value at &lt;span class="math"&gt;\(x\)&lt;/span&gt;:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;In other words, a single (complex) function evaluations computes both the
 function's value and the derivative.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
@@ -85,6 +75,16 @@ function's value and the derivative.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -95,8 +95,8 @@ function's value and the derivative.&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -105,14 +105,30 @@ function's value and the derivative.&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2014-02-10:post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry><entry><title>Gradient-vector product</title><link href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/" rel="alternate"></link><updated>2014-02-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</id><summary type="html">&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
  \frac{1}{2 \varepsilon} \Big(
@@ -120,14 +136,12 @@ finite-difference approximation).&lt;/p&gt;
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
  \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\varepsilon &amp;gt; 0\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt; is a vector of zeros except at
 &lt;span class="math"&gt;\(i\)&lt;/span&gt; where it is &lt;span class="math"&gt;\(1\)&lt;/span&gt;. This approximation is exact in the limit, and accurate to
 &lt;span class="math"&gt;\(o(\varepsilon^2)\)&lt;/span&gt; additive error.&lt;/p&gt;
 &lt;p&gt;This is a specific instance of a more general approximation! The dot product of
 the gradient and any (conformable) vector &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; can be approximated
 with the following formula,&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
@@ -135,7 +149,6 @@ with the following formula,&lt;/p&gt;
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
  \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;We get the special case above when &lt;span class="math"&gt;\(\boldsymbol{d}=\boldsymbol{e_i}\)&lt;/span&gt;. This also
 exact in the limit and just as accurate.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Runtime?&lt;/strong&gt; Finite-difference approximation is probably too slow for
@@ -148,11 +161,9 @@ exact in the limit and just as accurate.&lt;/p&gt;
   &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; because &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; is arbitrary, unlike
   &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt;, which is a simple unit-norm vector. Luckily some guidance
   is available. Andrei (2009) reccommends&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\epsilon_{\text{mach}}\)&lt;/span&gt; is
 &lt;a href="http://en.wikipedia.org/wiki/Machine_epsilon"&gt;machine epsilon&lt;/a&gt;. (Numpy users:
 &lt;code&gt;numpy.finfo(x.dtype).eps&lt;/code&gt;).&lt;/p&gt;
@@ -179,7 +190,6 @@ $$&lt;/div&gt;
 &lt;p&gt;Hessian-vector products are an instance of the gradient-vector dot product
 because since the Hessian is just the gradient of the gradient! Now you only
 need to remember one formula!&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 H(\boldsymbol{x})\, \boldsymbol{d} \approx
 \frac{1}{2 \varepsilon} \Big(
@@ -187,10 +197,19 @@ H(\boldsymbol{x})\, \boldsymbol{d} \approx
 - \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
 \Big)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;With this trick you never have to actually compute the gnarly Hessian! More on
 &lt;a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/"&gt;Justin Domke's blog&lt;/a&gt;&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -201,8 +220,8 @@ $$&lt;/div&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -211,9 +230,26 @@ $$&lt;/div&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><category term="math"></category><category term="calculus"></category></entry></feed>

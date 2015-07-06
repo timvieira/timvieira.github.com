@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/crf.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io/blog,2015-04-29:post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/crf.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2015-04-29T00:00:00-04:00</updated><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
 label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
 on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
 gradient:&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where
+&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray*}
 p(y|x) &amp;amp;=&amp;amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp;amp; \ \ \ \ \text{and} \ \ \ \ &amp;amp;
-Z(x) &amp;amp;=&amp;amp; \sum_{y \in Y} \exp(\theta^\top \phi(x,y))
+Z(x) &amp;amp;=&amp;amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
 \end{eqnarray*}
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;A conditional random field is exactly multiclass logistic regression. The only
 difference is that the sum and argmax are inefficient to compute naively (i.e.,
 by enumeration). This point is often lost when people first learn about
@@ -53,12 +49,10 @@ a CRF. Templating "solves" the problem that not all training examples have the
 same "size" -- the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
 template specifies how to compute the features for an entire output, by looking
 at interactions between subsets of variables.&lt;/p&gt;
-&lt;p&gt;
 &lt;div class="math"&gt;$$
 \phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
 \boldsymbol{y}_\alpha)
 $$&lt;/div&gt;
-&lt;/p&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is a labeled subset of variables often called a factor and
 &lt;span class="math"&gt;\(\boldsymbol{y}_\alpha\)&lt;/span&gt; is the subvector containing values of variables
 &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. Basically, the feature function &lt;span class="math"&gt;\(\phi\)&lt;/span&gt; gets to look at some subset of
@@ -69,6 +63,16 @@ trying to compute instead of how you're computing it. In this post, this allowed
 us see the similarity between logistic regression and CRFs even though they seem
 quite different.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -79,8 +83,8 @@ quite different.&lt;/p&gt;
         "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
@@ -89,9 +93,26 @@ quite different.&lt;/p&gt;
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry></feed>
