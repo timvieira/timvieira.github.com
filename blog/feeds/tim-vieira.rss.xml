@@ -25,7 +25,7 @@ with respect to their common argument, &lt;span class="math"&gt;\(x\)&lt;/span&g
 $$&lt;/div&gt;
 &lt;p&gt;As you can see in the equation above, the gradient takes the form of a
 "leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
-&lt;p&gt;A naive method for computing the gradient computes the leave-out-out products
+&lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
 from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)---resulting in a overall runtime of
 &lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
 computing this efficiently.&lt;/p&gt;
