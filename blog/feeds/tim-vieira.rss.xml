@@ -47,7 +47,7 @@ $$&lt;/div&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Requires &lt;span class="math"&gt;\(f \ne 0\)&lt;/span&gt;. No worries, we can handle zeros with three cases: (1) If
-   No zeros: the division trick works fine. (2) Only one zero: implies that only
+   no zeros: the division trick works fine. (2) Only one zero: implies that only
    one term in the sum will have a nonzero gradient, which we compute via
    leave-one-out product. (3) Two or more zeros: all gradients are zero and
    there is no work to be done.&lt;/p&gt;
@@ -81,7 +81,8 @@ $$&lt;/div&gt;
 &lt;p&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Doesn't require multiplicative inverse.&lt;/p&gt;
+&lt;p&gt;Doesn't require multiplicative inverse assuming you can compute &lt;span class="math"&gt;\(\gradx{ \log
+   f_i(x) }\)&lt;/span&gt; without it.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Con:&lt;/p&gt;
