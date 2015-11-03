@@ -1763,11 +1763,11 @@ $$</div>
 <p><strong>The usual way</strong>: Exponentiate and normalize (using the
 <a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
 an algorithm for sampling from a discrete distribution (aka categorical):</p>
-<div class="highlight"><pre>def usual(x):
-    cdf = exp(x - x.max()).cumsum()     # the exp-normalize trick
-    z = cdf[-1]
-    u = uniform(0,1)
-    return cdf.searchsorted(u * z)
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">usual</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>     <span class="c"># the exp-normalize trick</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
 </pre></div>
 
 
@@ -1780,9 +1780,9 @@ turns out that <span class="math">\(y\)</span> is distributed according to <span
 in this
 <a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
 <p>Implementing the Gumbel max trick is remarkable easy:</p>
-<div class="highlight"><pre>def gumbel_max_sample(x):
-    z = gumbel(loc=0, scale=1, size=x.shape)
-    return (x + g).argmax(axis=1)
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
 
