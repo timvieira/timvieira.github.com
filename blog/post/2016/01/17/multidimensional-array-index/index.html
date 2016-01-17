@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Expected value of a quadratic and the Delta method</title>
+  <title>Multidimensional array index</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1751,52 +1751,108 @@ jQuery(document).ready(function($) {
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Expected value of a quadratic and the Delta method</h1>
-      <p class="meta"><time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time></p>
+      <h1 class="entry-title">Multidimensional array index</h1>
+      <p class="meta"><time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-<span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is
-a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and
-<span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a
-quadratic has the following simple form:</p>
-<div class="math">$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
-$$</div>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
-<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by
-replacing <span class="math">\(f\)</span> by it's second-order Talylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at
-some point <span class="math">\(a\)</span></p>
-<div class="math">$$
-\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
-$$</div>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
-<div class="math">$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
-$$</div>
-<p>It's common to take the Taylor expansion around <span class="math">\(\mu\)</span>. This simplifies the equation</p>
-<div class="math">\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</div>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
+  <div class="entry-content"><p>This is a simple note on how to compute the bijective mapping between the
+indices of an <span class="math">\(n\)</span>-dimensional array and a flat, one-dimensional array. We'll
+look at both direction of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
+<p>This mapping can be used as a perfect hash for tuples, assuming each dimension
+<span class="math">\(a, b, c, \ldots\)</span> is positive integers and bounded <span class="math">\(a \le A, b \le B, c \le C,
+\ldots\)</span></p>
+<h3>Start small</h3>
+<p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inverse_3</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">J</span><span class="o">*</span><span class="n">K</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Here's our test case:</p>
+<div class="highlight"><pre><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
+<span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+            <span class="k">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
+            <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
+            <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>Note: This is not the only bijective mapping from <code>tuple</code> to <code>int</code> that we
+could have come up with. The one we chose corresponds to the particular layout,
+which is apparent in the test case.</p>
+<p>For <span class="math">\(n=4\)</span> the pattern is <span class="math">\(((a \cdot B + b) \cdot C + d) \cdot D + d\)</span>.</p>
+<p>Sidenote: we don't actually need the bound <span class="math">\(a \le A\)</span> in either <code>index</code> or
+<code>inverse</code>. This gives us a little extra flexibility because our first
+dimension can be infinite/unknown.</p>
+<h3>General case</h3>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
+    <span class="c"># the pattern:</span>
+    <span class="c"># ((i*J + j)*K + k)*L + l</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">total</span> <span class="o">/=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">key</span>
+</pre></div>
+
+
+<h2>Appendix</h2>
+<h3>Testing the general case</h3>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
+
+<span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="s">&quot;Test that `index` produces the layout we expect.&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_inverse</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+
+
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -1856,11 +1912,11 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
   <span class="byline author vcard">
     Posted by <span class="fn">Tim Vieira</span>
   </span>
-<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="categories">
-    <a class="category" href="../../../../../tag/math.html">math</a>
+<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>  <span class="categories">
+    <a class="category" href="../../../../../tag/misc.html">misc</a>
   </span>
 </p><div class="sharing">
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="../../../../../post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" data-via="xtimv" data-counturl="../../../../../post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="../../../../../post/2016/01/17/multidimensional-array-index/" data-via="xtimv" data-counturl="../../../../../post/2016/01/17/multidimensional-array-index/" >Tweet</a>
 </div>    </footer>
   </article>
 

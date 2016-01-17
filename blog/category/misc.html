@@ -1752,6 +1752,223 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="../post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
+      </h1>
+      <p class="meta"><time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time></p>
+</header>
+
+  <div class="entry-content"><p>This is a simple note on how to compute the bijective mapping between the
+indices of an <span class="math">\(n\)</span>-dimensional array and a flat, one-dimensional array. We'll
+look at both direction of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
+<p>This mapping can be used as a perfect hash for tuples, assuming each dimension
+<span class="math">\(a, b, c, \ldots\)</span> is positive integers and bounded <span class="math">\(a \le A, b \le B, c \le C,
+\ldots\)</span></p>
+<h3>Start small</h3>
+<p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inverse_3</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">J</span><span class="o">*</span><span class="n">K</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Here's our test case:</p>
+<div class="highlight"><pre><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
+<span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+            <span class="k">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
+            <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
+            <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>Note: This is not the only bijective mapping from <code>tuple</code> to <code>int</code> that we
+could have come up with. The one we chose corresponds to the particular layout,
+which is apparent in the test case.</p>
+<p>For <span class="math">\(n=4\)</span> the pattern is <span class="math">\(((a \cdot B + b) \cdot C + d) \cdot D + d\)</span>.</p>
+<p>Sidenote: we don't actually need the bound <span class="math">\(a \le A\)</span> in either <code>index</code> or
+<code>inverse</code>. This gives us a little extra flexibility because our first
+dimension can be infinite/unknown.</p>
+<h3>General case</h3>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
+    <span class="c"># the pattern:</span>
+    <span class="c"># ((i*J + j)*K + k)*L + l</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">total</span> <span class="o">/=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">key</span>
+</pre></div>
+
+
+<h2>Appendix</h2>
+<h3>Testing the general case</h3>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
+
+<span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="s">&quot;Test that `index` produces the layout we expect.&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_inverse</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="../post/2016/01/17/multidimensional-array-index/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="../post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
       </h1>
       <p class="meta"><time datetime="2015-07-29T00:00:00-04:00" pubdate>Jul 29, 2015</time></p>
@@ -2192,68 +2409,6 @@ quite different.</p>
     <a rel="full-article" href="../post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Read On &crarr;</a>
   </footer>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="../post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
-      </h1>
-      <p class="meta"><time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time></p>
-</header>
-
-  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
-deep learning might not be as crazy as it seems. And maybe even convince some
-deep learning lovers that the graphical models might have interesting things to
-offer.</p>
-<p>In the world of structured prediction, we are plagued by the high-treewidth
-problem -- models with loopy factors are "bad" because exact inference is
-intractable. There are three common approaches for dealing with this problem:</p>
-<ol>
-<li>
-<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
-</li>
-<li>
-<p>Change the training objective</p>
-</li>
-<li>
-<p>Approximate inference</p>
-</li>
-</ol>
-<p>Approximate inference is tricky. Things can easily go awry.</p>
-<p>For example, structured perceptron training with loopy max-product BP instead of
-exact max product can diverge
-<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
-example: using approximate marginals from sum-product loopy BP in place of the
-true marginals in the gradient of the log-likelihood. This results in a
-different nonconvex objective function. (Note:
-<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
-approximations works fine.)</p>
-<p>It looks like using approximate inference during training changes the training
-objective.</p>
-<p>So, here's a simple idea: learn a model which makes accurate predictions given
-the approximate inference algorithm that will be used at test-time. Furthermore,
-we should minimize empirical risk instead of log-likelihood because it is robust
-to model miss-specification and approximate inference. In other words, make
-training conditions as close as possible to test-time conditions.</p>
-<p>Now, as long as everything is differentiable, you can apply automatic
-differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handful of papers by Justin Domke, and a few by
-Stoyanov &amp; Eisner.</p>
-<p>Unsuprisingly, it works pretty well.</p>
-<p>I first saw this idea in Stoyanov &amp; Eisner (2011). They use loopy belief
-propagation as their approximate inference algorithm. At the end of the day,
-their model is essentially a deep recurrent network, which came from unrolling
-inference in a graphical model. This idea really struck me because it's clearly
-right in the middle between graphical models and deep learning.</p>
-<p>You can immediately imagine swapping in other approximate inference algorithms
-in place of loopy BP.</p>
-<p>Deep learning approaches get a bad reputation because there are a lot of
-"tricks" to get nonconvex optimization to work and because model structures are
-more open ended. Unlike graphical models, deep learning models have more
-variation in model structures. Maybe being more open minded about model
-structures is a good thing. We seem to have hit a brick wall with
-likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.</p></div>
-  		</article>
 <div class="pagination">
     <a class="prev" href="../category/misc2.html">&larr; Older</a>
 
@@ -2263,6 +2418,9 @@ good work on approximate inference as deep architectures.</p></div>
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="../post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
+      </li>
       <li class="post">
           <a href="../post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
       </li>
@@ -2274,9 +2432,6 @@ good work on approximate inference as deep architectures.</p></div>
       </li>
       <li class="post">
           <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
-      </li>
-      <li class="post">
-          <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
     </ul>
   </section>
@@ -2363,7 +2518,7 @@ good work on approximate inference as deep architectures.</p></div>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2015  - Tim Vieira -
+    Copyright &copy;  2014-2016  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script type="text/javascript">
