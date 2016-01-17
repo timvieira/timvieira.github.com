@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 17 Jan 2016 00:00:00 -0500</lastBuildDate><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute the bijective mapping between the
-indices of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll
-look at both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This mapping can be used as a perfect hash for tuples, assuming each dimension
-&lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded &lt;span class="math"&gt;\(a \le A, b \le B, c \le C,
-\ldots\)&lt;/span&gt;&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 17 Jan 2016 00:00:00 -0500</lastBuildDate><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
+of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll look at
+both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We'll assume each dimension &lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded
+&lt;span class="math"&gt;\(a \le A, b \le B, c \le C, \ldots\)&lt;/span&gt;&lt;/p&gt;
 &lt;h3&gt;Start small&lt;/h3&gt;
 &lt;p&gt;Let's start by looking at &lt;span class="math"&gt;\(n = 3\)&lt;/span&gt; and generalize from there.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;index_3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
