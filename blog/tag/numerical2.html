@@ -1803,14 +1803,14 @@ of two equivalent ways:</p>
 $$</div>
 <p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
 respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s">&quot;Numerically-stable sigmoid function.&quot;</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="s2">&quot;Numerically-stable sigmoid function.&quot;</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c"># zero because it&#39;s 1+z.</span>
+        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
+        <span class="c1"># zero because it&#39;s 1+z.</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
 </pre></div>
@@ -1963,7 +1963,7 @@ respectively. Below is some python code which implements the trick:</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/math.html">math</a>  </section>
+    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/math.html">math</a>  </section>
 
 
 

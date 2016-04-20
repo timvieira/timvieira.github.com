@@ -1764,7 +1764,7 @@ both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt
 <span class="math">\(a \le A, b \le B, c \le C, \ldots\)</span></p>
 <h3>Start small</h3>
 <p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
     <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
     <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
@@ -1782,12 +1782,12 @@ both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt
 
 
 <p>Here's our test case:</p>
-<div class="highlight"><pre><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
+<div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
 <span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
-            <span class="k">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
+            <span class="k">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
             <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
             <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1802,10 +1802,10 @@ which is apparent in the test case.</p>
 <code>inverse</code>. This gives us a little extra flexibility because our first
 dimension can be infinite/unknown.</p>
 <h3>General case</h3>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="s">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
-    <span class="c"># the pattern:</span>
-    <span class="c"># ((i*J + j)*K + k)*L + l</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s2">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
+    <span class="c1"># the pattern:</span>
+    <span class="c1"># ((i*J + j)*K + k)*L + l</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
         <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -1813,7 +1813,7 @@ dimension can be infinite/unknown.</p>
     <span class="k">return</span> <span class="n">key</span>
 
 <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="s">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
+    <span class="s2">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
         <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
@@ -1829,10 +1829,10 @@ dimension can be infinite/unknown.</p>
 
 <h2>Appendix</h2>
 <h3>Testing the general case</h3>
-<div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
 
 <span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
-    <span class="s">&quot;Test that `index` produces the layout we expect.&quot;</span>
+    <span class="s2">&quot;Test that `index` produces the layout we expect.&quot;</span>
     <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
     <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
 
@@ -1840,7 +1840,7 @@ dimension can be infinite/unknown.</p>
     <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
     <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
@@ -2447,7 +2447,7 @@ quite different.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/math.html">math</a>  </section>
+    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/math.html">math</a>  </section>
 
 
 
