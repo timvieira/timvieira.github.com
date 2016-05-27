@@ -1752,6 +1752,449 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="../post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
+      </h1>
+      <p class="meta"><time datetime="2015-07-29T00:00:00-04:00" pubdate>Jul 29, 2015</time></p>
+</header>
+
+  <div class="entry-content"><div class="math">$$
+\newcommand{\gradx}[1]{\grad{x}{ #1 }}
+\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bigo}[0]{\mathcal{O}}
+$$</div>
+<p>In this post we'll look at how to compute the gradient of a product. This is
+such a common subroutine in machine learning that it's worth careful
+consideration. In a later post, I'll describe the gradient of a
+sum-over-products, which is another interesting and common pattern in machine
+learning (e.g., exponential families, CRFs, context-free grammar, case-factor
+diagrams, semiring-weighted logic programming).</p>
+<p>Given a collection of functions with a common argument <span class="math">\(f_1, \cdots, f_n \in \{
+\R^d \mapsto \R \}\)</span>.</p>
+<p>Define their product <span class="math">\(p(x) = \prod_{i=1}^n f_i(x)\)</span></p>
+<p>Suppose, we'd like to compute the gradient of the product of these functions
+with respect to their common argument, <span class="math">\(x\)</span>.</p>
+<div class="math">$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;=&amp; \gradx{ \prod_{i=1}^n f_i(x) }
+&amp;=&amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
+\end{eqnarray*}
+$$</div>
+<p>As you can see in the equation above, the gradient takes the form of a
+"leave-one-out product" sometimes called a "cavity."</p>
+<p>A naive method for computing the gradient computes the leave-one-out products
+from scratch for each <span class="math">\(i\)</span> (outer loop)---resulting in a overall runtime of
+<span class="math">\(O(n^2)\)</span> to compute the gradient. Later, we'll see a dynamic program for
+computing this efficiently.</p>
+<p><strong>Division trick</strong>: Before going down the dynamic programming rabbit hole, let's
+consider the following relatively simple method for computing the gradient,
+which uses division:</p>
+<div class="math">$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;=&amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
+&amp;=&amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
+\end{eqnarray*}
+$$</div>
+<p>Pro:</p>
+<ul>
+<li>Runtime <span class="math">\(\bigo(n)\)</span> with space <span class="math">\(\bigo(1)\)</span>.</li>
+</ul>
+<p>Con:</p>
+<ul>
+<li>
+<p>Requires <span class="math">\(f \ne 0\)</span>. No worries, we can handle zeros with three cases: (1) If
+   no zeros: the division trick works fine. (2) Only one zero: implies that only
+   one term in the sum will have a nonzero gradient, which we compute via
+   leave-one-out product. (3) Two or more zeros: all gradients are zero and
+   there is no work to be done.</p>
+</li>
+<li>
+<p>Requires multiplicative inverse operator (division) <em>and</em>
+   associative-commutative multiplication, which means it's not applicable to
+   matrices.</p>
+</li>
+</ul>
+<p><strong>Log trick</strong>: Suppose <span class="math">\(f_i\)</span> are very small numbers (e.g., probabilities), which
+we'd rather not multiply together because we'll quickly lose precision (e.g.,
+for large <span class="math">\(n\)</span>). It's common practice (especially in machine learning) to replace
+<span class="math">\(f_i\)</span> with <span class="math">\(\log f_i\)</span>, which turns products into sums, <span class="math">\(\prod_{j=1}^n f_j(x) =
+\exp \left( \sum_{j=1}^n \log f_j(x) \right)\)</span>, and tiny numbers (like
+<span class="math">\(\texttt{3.72e-44}\)</span>) into large ones (like <span class="math">\(\texttt{-100}\)</span>).</p>
+<p>Furthermore, using the identity <span class="math">\((\nabla g) = g \cdot \nabla \log g\)</span>, we can
+operate exclusively in the "<span class="math">\(\log\)</span>-domain".</p>
+<div class="math">$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;=&amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
+\end{eqnarray*}
+$$</div>
+<p>Pro:</p>
+<ul>
+<li>
+<p>Numerically stable</p>
+</li>
+<li>
+<p>Runtime <span class="math">\(\bigo(n)\)</span> with space <span class="math">\(\bigo(1)\)</span>.</p>
+</li>
+<li>
+<p>Doesn't require multiplicative inverse assuming you can compute <span class="math">\(\gradx{ \log
+   f_i(x) }\)</span> without it.</p>
+</li>
+</ul>
+<p>Con:</p>
+<ul>
+<li>
+<p>Requires <span class="math">\(f &gt; 0\)</span>. But, we can use
+   <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">LogReal number class</a>
+   to represent negative numbers in log-space, but we still need to be careful
+   about zeros (like in the division trick).</p>
+</li>
+<li>
+<p>Doesn't easily generalize to other notions of multiplication.</p>
+</li>
+</ul>
+<p><strong>Dynamic programming trick</strong>: <span class="math">\(\bigo(n)\)</span> runtime and <span class="math">\(\bigo(n)\)</span> space. You may
+recognize this as forward-backward algorithm for linear chain CRFs
+(cf. <a href="http://www.inference.phy.cam.ac.uk/hmw26/papers/crf_intro.pdf">Wallach (2004)</a>,
+section 7).</p>
+<p>The trick is very straightforward when you think about it in isolation. Compute
+the products of all prefixes and suffixes. Then, multiply them together.</p>
+<p>Here are the equations:</p>
+<div class="math">$$
+\begin{eqnarray*}
+\alpha_0(x) &amp;=&amp; 1 \\
+\alpha_t(x)
+   &amp;=&amp; \prod_{i \le t} f_i(x)
+   = \alpha_{t-1}(x) \cdot f_t(x) \\
+\beta_{n+1}(x) &amp;=&amp; 1 \\
+\beta_t(x)
+  &amp;=&amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
+\gradx{ p(x) }
+&amp;=&amp; \sum_{i=1}^n \left( \prod_{j &lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &gt; i} f_j(x) \right) \\
+&amp;=&amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
+\end{eqnarray*}
+$$</div>
+<p>Clearly, this requires <span class="math">\(O(n)\)</span> additional space.</p>
+<p>Only requires an associative operator (i.e., Does not require it to be
+commutative or invertible like earlier strategies).</p>
+<p>Why do we care about the non-commutative multiplication? A common example is
+matrix multiplication where <span class="math">\(A B C \ne B C A\)</span>, even if all matrices have the
+conformable dimensions.</p>
+<p><strong>Connections to automatic differentiation</strong>: The theory behind reverse-mode
+automatic differentiation says that if you can compute a function, then you
+<em>can</em> compute it's gradient with the same asymptotic complexity, <em>but</em> you might
+need more space. That's exactly what we did here: We started with a naive
+algorithm for computing the gradient with <span class="math">\(\bigo(n^2)\)</span> time and <span class="math">\(\bigo(1)\)</span> space
+(other than the space to store the <span class="math">\(n\)</span> functions) and ended up with a <span class="math">\(\bigo(n)\)</span>
+time <span class="math">\(\bigo(n)\)</span> space algorithm with a little clever thinking. What I'm saying
+is autodiff---even if you don't use a magical package---tells us that an
+efficient algorithm for the gradient always exists. Furthermore, it tells you
+how to derive it manually, if you are so inclined. The key is to reuse
+intermediate quantities (hence the increase in space).</p>
+<p><em>Sketch</em>: In the gradient-of-a-product case, assuming we implemented
+multiplication left-to-right (forward pass) that already defines the prefix
+products (<span class="math">\(\alpha\)</span>). It turns out that the backward pass gives us <span class="math">\(\beta\)</span> as
+adjoints. Lastly, we'd propagate gradients through the <span class="math">\(f\)</span>'s to get
+<span class="math">\(\frac{\partial p}{\partial x}\)</span>. Essentially, we end up with exactly the dynamic
+programming algorithm we came up with.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="../post/2015/07/29/gradient-of-a-product/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="../post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
+      </h1>
+      <p class="meta"><time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time></p>
+</header>
+
+  <div class="entry-content"><p>A short rant: multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."</p>
+<p>Multiclass logistic regression is simple. The goal is to predict the correct
+label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
+on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
+gradient:</p>
+<div class="math">$$
+\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+$$</div>
+<p>where
+</p>
+<div class="math">$$
+\begin{eqnarray*}
+p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
+Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
+$$</div>
+<p>At test-time, we often take the highest-scoring label under the model.</p>
+<div class="math">$$
+\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
+$$</div>
+<p>A conditional random field is exactly multiclass logistic regression. The only
+difference is that the sum and argmax are inefficient to compute naively (i.e.,
+by enumeration). This point is often lost when people first learn about
+CRFs. Some people never make this connection.</p>
+<p>Here's some stuff you'll see once we start talking about CRFs:</p>
+<ol>
+<li>
+<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)</p>
+</li>
+<li>
+<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
+</li>
+<li>
+<p>Model templates (i.e., repeated feature functions)</p>
+</li>
+</ol>
+<p>In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
+<p>Graphical models establish a notation and structural properties which allow
+efficient inference -- things like cycles and treewidth.</p>
+<p>Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size" -- the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.</p>
+<div class="math">$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$</div>
+<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
+<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
+<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
+the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
+at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
+<p>Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="../post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="../post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
       </h1>
       <p class="meta"><time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time></p>
@@ -1811,369 +2254,6 @@ structures is a good thing. We seem to have hit a brick wall with
 likelihood-based training. At the same time, maybe we can port over some of the
 good work on approximate inference as deep architectures.</p></div>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
-      </h1>
-      <p class="meta"><time datetime="2015-02-01T00:00:00-05:00" pubdate>Feb 01, 2015</time></p>
-</header>
-
-  <div class="entry-content"><p>Most people know how to avoid numerical underflow in probability computations by
-representing intermediate quantities in the log-domain. This trick turns
-"multiplication" into "addition", "addition" into "logsumexp", "0" into
-<span class="math">\(-\infty\)</span> and "1" into <span class="math">\(0\)</span>. Most importantly, it turns really small numbers into
-reasonable-size numbers.</p>
-<p>Unfortunately, without modification, this trick is limited to positive numbers
-because <code>log</code> of a negative number is <code>NaN</code>.</p>
-<p>Well, there is good news! For the cost of an extra bit, we can extend this trick
-to the negative reals and furthermore, we get a bonafide ring instead of a mere
-semiring.</p>
-<p>I first saw this trick in
-<a href="http://www.aclweb.org/anthology/D09-1005">Li and Eisner (2009)</a>. The trick is
-nicely summarized in Table 3 of that paper, which I've pasted below.</p>
-<div style="text-align:center">
-<img src="/blog/images/logreal.png"/>
-</div>
-
-<p><strong>Why do I care?</strong> When computing gradients (e.g., gradient of risk),
-intermediate values are rarely all positive. Furthermore, we're often
-multiplying small things together. I've recently found log-reals to be effective
-at squeaking a bit more numerical accuracy.</p>
-<p>This trick is useful for almost all backprop computations because backprop is
-essentially:</p>
-<div class="highlight"><pre><span></span>adjoint(u) += adjoint(v) * dv/du.
-</pre></div>
-
-
-<p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
-<p>Implementation:</p>
-<ul>
-<li>
-<p>This trick is better suited to programming languages with structs. Using
-  objects will probably in an horrible slow down and using parallel arrays to
-  store the sign bit and double is probably too tedious and error prone. (Sorry
-  java folks.)</p>
-</li>
-<li>
-<p>Here's a <a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h">C++ implementation</a>
-  with operator overloading from Andre Martins</p>
-</li>
-<li>
-<p>Note that log-real <code>+=</code> involves calls to <code>log</code> and <code>exp</code>, which will
-  definitely slow your code down a bit (these functions are much slower than
-  addition).</p>
-</li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="../post/2015/02/01/log-real-number-class/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
-      </h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
-learning and randomized algorithms.</p>
-<h2>Basics</h2>
-<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
-random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
-distribution <span class="math">\(q\)</span>.</p>
-<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
-different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
-<div class="math">$$
-\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
-$$</div>
-<p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
-\Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
-can support things that <span class="math">\(p\)</span> doesn't.</p>
-<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
-"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
-target density and <span class="math">\(q\)</span> the proposal density.</p>
-<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q\)</span>, we can use the Monte
-Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)</span>, as
-an unbiased estimator of <span class="math">\(\mu\)</span>.</p>
-<h2>Remarks</h2>
-<p>There are a few reasons we might want use importance sampling:</p>
-<ol>
-<li>
-<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p\)</span>.</p>
-</li>
-<li>
-<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
-     samples to satisfy some "safety" condition (e.g., a minimum support
-     threshold) and be unbiased. Importance sampling can be used to remove bias,
-     while satisfying the condition.</p>
-</li>
-<li>
-<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
-     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu\)</span>. Check out these
-     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
-     more.</p>
-</li>
-<li>
-<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
-     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
-     to pick the best one). Some cool papers:
-     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
-     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
-     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
-     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
-</li>
-</ol>
-<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
-<ol>
-<li>
-<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
-     reduction, active learning and reinforcement learning. It's often difficult
-     to design <span class="math">\(q\)</span>, which results in an estimator with "reasonable" variance. A
-     very difficult case is in off-policy evaluation because it (essentially)
-     requires a good exploratory distribution for every possible policy. (I have
-     much more to say on this topic.)</p>
-</li>
-<li>
-<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
-     (e.g., new articles) and you want to estimate performance on a different
-     dataset (e.g., Twitter).</p>
-</li>
-<li>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
-     to as the propensity score) and use it in the importance sampling
-     estimator. This technique, as far as I can tell, is widely used to remove
-     selection bias when estimating effects of different treatments.</p>
-</li>
-</ol>
-<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
-samples with large weights can drastically throw off the estimator. Thus, it's
-often the case that a biased estimator is preferred, e.g.,
-<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
-<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
-<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
-drawback is that both densities must be normalized, which is often intractable.</p>
-<p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
-evaluation" in more detail in future posts.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="../post/2014/12/21/importance-sampling/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="../author/tim-vieira3.html">&larr; Older</a>
 
@@ -2185,6 +2265,12 @@ evaluation" in more detail in future posts.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="../post/2016/05/27/dimensional-analysis-of-gradient-descent/">Dimensional analysis of gradient descent</a>
+      </li>
+      <li class="post">
+          <a href="../post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a>
+      </li>
+      <li class="post">
           <a href="../post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
       </li>
       <li class="post">
@@ -2192,12 +2278,6 @@ evaluation" in more detail in future posts.</p>
       </li>
       <li class="post">
           <a href="../post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
-      </li>
-      <li class="post">
-          <a href="../post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
-      </li>
-      <li class="post">
-          <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
       </li>
     </ul>
   </section>
@@ -2214,7 +2294,7 @@ evaluation" in more detail in future posts.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/math.html">math</a>  </section>
+    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/optimization.html">optimization</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/math.html">math</a>  </section>
 
 
 

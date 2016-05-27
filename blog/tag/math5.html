@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent</title>
+  <title>Graduate Descent - math</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -1742,7 +1742,7 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li class="active">
+    <li >
     <a href="../category/misc.html">Misc</a>
     </li>
 </ul></nav>
@@ -1752,57 +1752,70 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+        <a href="../post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
       </h1>
-      <p class="meta"><time datetime="2015-02-01T00:00:00-05:00" pubdate>Feb 01, 2015</time></p>
+      <p class="meta"><time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Most people know how to avoid numerical underflow in probability computations by
-representing intermediate quantities in the log-domain. This trick turns
-"multiplication" into "addition", "addition" into "logsumexp", "0" into
-<span class="math">\(-\infty\)</span> and "1" into <span class="math">\(0\)</span>. Most importantly, it turns really small numbers into
-reasonable-size numbers.</p>
-<p>Unfortunately, without modification, this trick is limited to positive numbers
-because <code>log</code> of a negative number is <code>NaN</code>.</p>
-<p>Well, there is good news! For the cost of an extra bit, we can extend this trick
-to the negative reals and furthermore, we get a bonafide ring instead of a mere
-semiring.</p>
-<p>I first saw this trick in
-<a href="http://www.aclweb.org/anthology/D09-1005">Li and Eisner (2009)</a>. The trick is
-nicely summarized in Table 3 of that paper, which I've pasted below.</p>
-<div style="text-align:center">
-<img src="/blog/images/logreal.png"/>
-</div>
-
-<p><strong>Why do I care?</strong> When computing gradients (e.g., gradient of risk),
-intermediate values are rarely all positive. Furthermore, we're often
-multiplying small things together. I've recently found log-reals to be effective
-at squeaking a bit more numerical accuracy.</p>
-<p>This trick is useful for almost all backprop computations because backprop is
-essentially:</p>
-<div class="highlight"><pre><span></span>adjoint(u) += adjoint(v) * dv/du.
+  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
+(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
+<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
+parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+<div class="math">$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$</div>
+<p>The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
+<div class="math">$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$</div>
+<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
+is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
+impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
+<p><strong>Exp-normalize v. log-sum-exp</strong></p>
+<p>If what you want to remain in log-space, that is, compute
+<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
+<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!</p>
+<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<div class="math">$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$</div>
+<p>where
+</p>
+<div class="math">$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$</div>
+<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
+<p><strong>Numerically-stable sigmoid function</strong></p>
+<p>The sigmoid function can be computed with the exp-normalize trick in order to
+avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
+distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
+interested in the probability of the first event. From the exp-normalize
+identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
+see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
+of two equivalent ways:</p>
+<div class="math">$$
+\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+$$</div>
+<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
+respectively. Below is some python code which implements the trick:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="s2">&quot;Numerically-stable sigmoid function.&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
+        <span class="c1"># zero because it&#39;s 1+z.</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
 </pre></div>
 
 
-<p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
-<p>Implementation:</p>
-<ul>
-<li>
-<p>This trick is better suited to programming languages with structs. Using
-  objects will probably in an horrible slow down and using parallel arrays to
-  store the sign bit and double is probably too tedious and error prone. (Sorry
-  java folks.)</p>
-</li>
-<li>
-<p>Here's a <a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h">C++ implementation</a>
-  with operator overloading from Andre Martins</p>
-</li>
-<li>
-<p>Note that log-real <code>+=</code> involves calls to <code>log</code> and <code>exp</code>, which will
-  definitely slow your code down a bit (these functions are much slower than
-  addition).</p>
-</li>
-</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -1911,96 +1924,89 @@ essentially:</p>
 }
 </script></div>
   <footer>
-    <a rel="full-article" href="../post/2015/02/01/log-real-number-class/">Read On &crarr;</a>
+    <a rel="full-article" href="../post/2014/02/11/exp-normalize-trick/">Read On &crarr;</a>
   </footer>
   		</article>
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
+        <a href="../post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
-learning and randomized algorithms.</p>
-<h2>Basics</h2>
-<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
-random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
-distribution <span class="math">\(q\)</span>.</p>
-<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
-different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
+  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
+finite-difference approximation).</p>
 <div class="math">$$
-\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
+ \frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
+ \Big)
 $$</div>
-<p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
-\Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
-can support things that <span class="math">\(p\)</span> doesn't.</p>
-<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
-"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
-target density and <span class="math">\(q\)</span> the proposal density.</p>
-<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q\)</span>, we can use the Monte
-Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)</span>, as
-an unbiased estimator of <span class="math">\(\mu\)</span>.</p>
-<h2>Remarks</h2>
-<p>There are a few reasons we might want use importance sampling:</p>
+<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
+<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
+<span class="math">\(o(\varepsilon^2)\)</span> additive error.</p>
+<p>This is a specific instance of a more general approximation! The dot product of
+the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
+with the following formula,</p>
+<div class="math">$$
+\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+ \Big)
+$$</div>
+<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
+exact in the limit and just as accurate.</p>
+<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
+  approximating a high-dimensional gradient because the number of function
+  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
+  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
+  function evaluations is probably faster than specialized code for computing
+  the gradient.</p>
+<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
+  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
+  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
+  is available. Andrei (2009) reccommends</p>
+<div class="math">$$
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
+$$</div>
+<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
+<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
+<code>numpy.finfo(x.dtype).eps</code>).</p>
+<h2>Why do I care?</h2>
 <ol>
 <li>
-<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p\)</span>.</p>
+<p>Well, I tend to work on sparse, but high-dimensional problems where
+   finite-difference would be too slow. Thus, my usual solution is to only test
+   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
+   which should be nonzero. With the new trick, I can effectively test more
+   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
+   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
+   the angle of the vector.</p>
 </li>
 <li>
-<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
-     samples to satisfy some "safety" condition (e.g., a minimum support
-     threshold) and be unbiased. Importance sampling can be used to remove bias,
-     while satisfying the condition.</p>
-</li>
-<li>
-<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
-     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu\)</span>. Check out these
-     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
-     more.</p>
-</li>
-<li>
-<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
-     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
-     to pick the best one). Some cool papers:
-     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
-     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
-     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
-     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+<p>Sometimes the gradient-vector dot product is the end goal. This is the case
+   with Hessian-vector products, which arises in many optimization algorithms,
+   such as stochastic meta descent. Hessian-vector products are an instance of
+   the gradient-vector dot product because the Hessian is just the gradient of
+   the gradient.</p>
 </li>
 </ol>
-<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
-<ol>
-<li>
-<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
-     reduction, active learning and reinforcement learning. It's often difficult
-     to design <span class="math">\(q\)</span>, which results in an estimator with "reasonable" variance. A
-     very difficult case is in off-policy evaluation because it (essentially)
-     requires a good exploratory distribution for every possible policy. (I have
-     much more to say on this topic.)</p>
-</li>
-<li>
-<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
-     (e.g., new articles) and you want to estimate performance on a different
-     dataset (e.g., Twitter).</p>
-</li>
-<li>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
-     to as the propensity score) and use it in the importance sampling
-     estimator. This technique, as far as I can tell, is widely used to remove
-     selection bias when estimating effects of different treatments.</p>
-</li>
-</ol>
-<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
-samples with large weights can drastically throw off the estimator. Thus, it's
-often the case that a biased estimator is preferred, e.g.,
-<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
-<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
-<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
-drawback is that both densities must be normalized, which is often intractable.</p>
-<p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
-evaluation" in more detail in future posts.</p>
+<h2>Hessian-vector product</h2>
+<p>Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!</p>
+<div class="math">$$
+H(\boldsymbol{x})\, \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+\Big)
+$$</div>
+<p>With this trick you never have to actually compute the gnarly Hessian! More on
+<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -2109,221 +2115,12 @@ evaluation" in more detail in future posts.</p>
 }
 </script></div>
   <footer>
-    <a rel="full-article" href="../post/2014/12/21/importance-sampling/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="../post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
-      </h1>
-      <p class="meta"><time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>Consider the p-norm
-</p>
-<div class="math">$$
-|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-$$</div>
-<p>In python this translates to:</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
-
-<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="s2">&quot;First-pass implementation of p-norm.&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
-<p>For example:</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>   <span class="c1"># expected: 1e+300</span>
-</pre></div>
-
-
-<p>This fails because we can't square big</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
-</pre></div>
-
-
-<h2>A little math</h2>
-<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
-</p>
-<div class="math">$$
-|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-$$</div>
-<p>We'll use the following version (harder to remember)
-</p>
-<div class="math">$$
-|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-$$</div>
-<p>Don't believe it? Here's some algebra:
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-|| \boldsymbol{x} ||_p
-&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\end{eqnarray*}
-$$</div>
-<h2>Back to numerical stability</h2>
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take
-the power of is one --- making it very difficult to overflow on the account of
-<span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, our example from before works :-)</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="mf">1e+300</span>
-</pre></div>
-
-
-<h2>Remarks</h2>
-<ul>
-<li>
-<p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p>
-</li>
-<li>
-<p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p>
-</li>
-</ul>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="mf">1.91432069824</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-<span class="mf">1.91432069824</span>
-</pre></div>
-
-
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="../post/2014/11/10/numerically-stable-p-norms/">Read On &crarr;</a>
+    <a rel="full-article" href="../post/2014/02/10/gradient-vector-product/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
-    <a class="prev" href="../category/misc4.html">&larr; Older</a>
 
-    <a class="next" href="../category/misc2.html">Newer &rarr;</a>
+    <a class="next" href="../tag/math4.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">
@@ -2337,13 +2134,13 @@ the power of is one --- making it very difficult to overflow on the account of
           <a href="../post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a>
       </li>
       <li class="post">
-          <a href="../post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
-      </li>
-      <li class="post">
           <a href="../post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
       </li>
       <li class="post">
-          <a href="../post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
+          <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+      </li>
+      <li class="post">
+          <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
     </ul>
   </section>
