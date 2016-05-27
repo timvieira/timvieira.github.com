@@ -38,7 +38,7 @@ step sizes to be &lt;span class="math"&gt;\(&amp;gt; 0\)&lt;/span&gt;).&lt;/p&gt
 &lt;p&gt;Another method for handling step sizes is line search. However, line search
 won't let us run online. Furthermore, line search would be too slow in the case
 where we want a step size for each dimension.&lt;/p&gt;
-&lt;p&gt;In machine learning, we've become fond to online methods, which adapt the step
+&lt;p&gt;In machine learning, we've become fond of online methods, which adapt the step
 size as they go. The general idea is to estimate a step size matrix that passes
 the unit check (for each dimension of &lt;span class="math"&gt;\(x\)&lt;/span&gt;). Furthermore, we want do as little
 extra work as possible to get this estimate (e.g., we want to avoid computing a
@@ -79,7 +79,7 @@ affect the values we should use for them.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -152,11 +152,11 @@ optimization process will continue to optimize regardless of how we change
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
 optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
 predictable way.&lt;/p&gt;
-&lt;p&gt;To do this we'll appeal to the implicit function theorem. Let's looking the
+&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's looking the
 general case to simplify notation. Suppose &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; are related through a
 function &lt;span class="math"&gt;\(g\)&lt;/span&gt; as follows,&lt;/p&gt;
 &lt;div class="math"&gt;$$g(x,y) = 0.$$&lt;/div&gt;
-&lt;p&gt;Assuming &lt;span class="math"&gt;\(g\)&lt;/span&gt; is a smooth function in &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt;, then we can perturb either
+&lt;p&gt;Assuming &lt;span class="math"&gt;\(g\)&lt;/span&gt; is a smooth function in &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt;, we can perturb either
 argument, say &lt;span class="math"&gt;\(x\)&lt;/span&gt; by a small amount &lt;span class="math"&gt;\(\Delta_x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; by &lt;span class="math"&gt;\(\Delta_y\)&lt;/span&gt;. Because
 system preserves the constraint, i.e.,&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -227,7 +227,7 @@ which make fewer and less-brittle assumptions about the inner optimization.&lt;/
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -377,7 +377,7 @@ dimension can be infinite/unknown.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -572,7 +572,7 @@ programming algorithm we came up with.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -688,7 +688,7 @@ quite different.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -839,7 +839,7 @@ essentially:&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -971,7 +971,7 @@ evaluation" in more detail in future posts.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1113,7 +1113,7 @@ the power of is one --- making it very difficult to overflow on the account of
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1287,7 +1287,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1415,7 +1415,7 @@ function's value and the derivative.&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1549,7 +1549,7 @@ turning these connections into a
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1657,7 +1657,7 @@ in this
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1746,7 +1746,7 @@ reading see
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1841,7 +1841,7 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1959,7 +1959,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2071,7 +2071,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2196,7 +2196,7 @@ $$&lt;/div&gt;
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = file:////home/timv/projects/blog/output/MathJax.js;
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
