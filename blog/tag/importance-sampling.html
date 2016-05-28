@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - numerical</title>
+  <title>Graduate Descent - importance-sampling</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -52,70 +52,28 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="../post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+        <a href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
       </h1>
-      <p class="meta"><time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time></p>
+      <p class="meta"><time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
-<div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$</div>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
-<div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$</div>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
-<div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$</div>
-<p>where
-</p>
-<div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</div>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Numerically-stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
-<div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$</div>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s2">&quot;Numerically-stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c1"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
+  <div class="entry-content"><p>The following is a quick rant about
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>.</p>
+<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
+<blockquote>
+<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
+</blockquote>
+<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
+<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
+<p>With importance sampling, it is possible to achieve a variance reduction over
+Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
+for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
+variance</em> estimate <em>with a single sample</em>!</p>
+<p>Of course, this is an unreasonable distribution to use because the normalizing
+constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
+proposal distributions exist</em>.</p>
+<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
+"importance sampling for variance reduction" to learn more.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -224,12 +182,11 @@ respectively. Below is some python code which implements the trick:</p>
 }
 </script></div>
   <footer>
-    <a rel="full-article" href="../post/2014/02/11/exp-normalize-trick/">Read On &crarr;</a>
+    <a rel="full-article" href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
 
-    <a class="next" href="../tag/numerical.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">
@@ -237,16 +194,7 @@ respectively. Below is some python code which implements the trick:</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="../post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
-      </li>
-      <li class="post">
-          <a href="../post/2015/02/01/log-real-number-class/">Log-Real number class</a>
-      </li>
-      <li class="post">
-          <a href="../post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
-      </li>
-      <li class="post">
-          <a href="../post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+          <a href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
       </li>
     </ul>
   </section>
@@ -333,7 +281,7 @@ respectively. Below is some python code which implements the trick:</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2015  - Tim Vieira -
+    Copyright &copy;  2016  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script type="text/javascript">

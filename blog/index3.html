@@ -52,6 +52,68 @@
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
+      </h1>
+      <p class="meta"><time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time></p>
+</header>
+
+  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.</p>
+<p>In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:</p>
+<ol>
+<li>
+<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
+</li>
+<li>
+<p>Change the training objective</p>
+</li>
+<li>
+<p>Approximate inference</p>
+</li>
+</ol>
+<p>Approximate inference is tricky. Things can easily go awry.</p>
+<p>For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
+approximations works fine.)</p>
+<p>It looks like using approximate inference during training changes the training
+objective.</p>
+<p>So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.</p>
+<p>Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handful of papers by Justin Domke, and a few by
+Stoyanov &amp; Eisner.</p>
+<p>Unsuprisingly, it works pretty well.</p>
+<p>I first saw this idea in Stoyanov &amp; Eisner (2011). They use loopy belief
+propagation as their approximate inference algorithm. At the end of the day,
+their model is essentially a deep recurrent network, which came from unrolling
+inference in a graphical model. This idea really struck me because it's clearly
+right in the middle between graphical models and deep learning.</p>
+<p>You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.</p>
+<p>Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.</p></div>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="./post/2015/02/01/log-real-number-class/">Log-Real number class</a>
       </h1>
       <p class="meta"><time datetime="2015-02-01T00:00:00-05:00" pubdate>Feb 01, 2015</time></p>
@@ -412,214 +474,6 @@ evaluation" in more detail in future posts.</p>
     <a rel="full-article" href="./post/2014/12/21/importance-sampling/">Read On &crarr;</a>
   </footer>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="./post/2014/11/10/numerically-stable-p-norms/">Numerically-stable p-norms</a>
-      </h1>
-      <p class="meta"><time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>Consider the p-norm
-</p>
-<div class="math">$$
-|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
-$$</div>
-<p>In python this translates to:</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
-
-<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="s2">&quot;First-pass implementation of p-norm.&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>---even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
-<p>For example:</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>   <span class="c1"># expected: 1e+300</span>
-</pre></div>
-
-
-<p>This fails because we can't square big</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
-</pre></div>
-
-
-<h2>A little math</h2>
-<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
-</p>
-<div class="math">$$
-|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-$$</div>
-<p>We'll use the following version (harder to remember)
-</p>
-<div class="math">$$
-|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-$$</div>
-<p>Don't believe it? Here's some algebra:
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-|| \boldsymbol{x} ||_p
-&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\end{eqnarray*}
-$$</div>
-<h2>Back to numerical stability</h2>
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take
-the power of is one --- making it very difficult to overflow on the account of
-<span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, our example from before works :-)</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="mf">1e+300</span>
-</pre></div>
-
-
-<h2>Remarks</h2>
-<ul>
-<li>
-<p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p>
-</li>
-<li>
-<p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.</p>
-</li>
-</ul>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="mf">1.91432069824</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-<span class="mf">1.91432069824</span>
-</pre></div>
-
-
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="./post/2014/11/10/numerically-stable-p-norms/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="./index4.html">&larr; Older</a>
 
@@ -631,6 +485,9 @@ the power of is one --- making it very difficult to overflow on the account of
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+      </li>
+      <li class="post">
           <a href="./post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a>
       </li>
       <li class="post">
@@ -641,9 +498,6 @@ the power of is one --- making it very difficult to overflow on the account of
       </li>
       <li class="post">
           <a href="./post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
-      </li>
-      <li class="post">
-          <a href="./post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
       </li>
     </ul>
   </section>
@@ -660,7 +514,7 @@ the power of is one --- making it very difficult to overflow on the account of
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/visualization.html">visualization</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/randomized.html">randomized</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/math.html">math</a>  </section>
+    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/visualization.html">visualization</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/randomized.html">randomized</a>,    <a href="./tag/math.html">math</a>  </section>
 
 
 

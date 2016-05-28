@@ -52,6 +52,142 @@
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+      </h1>
+      <p class="meta"><time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time></p>
+</header>
+
+  <div class="entry-content"><p>The following is a quick rant about
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>.</p>
+<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
+<blockquote>
+<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
+</blockquote>
+<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
+<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
+<p>With importance sampling, it is possible to achieve a variance reduction over
+Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
+for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
+variance</em> estimate <em>with a single sample</em>!</p>
+<p>Of course, this is an unreasonable distribution to use because the normalizing
+constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
+proposal distributions exist</em>.</p>
+<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
+"importance sampling for variance reduction" to learn more.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </h1>
       <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
@@ -496,6 +632,9 @@ instead of an exact estimate (often called "observed feature counts").</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="../post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+      </li>
+      <li class="post">
           <a href="../post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
       <li class="post">
@@ -516,7 +655,7 @@ instead of an exact estimate (often called "observed feature counts").</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/optimization.html">optimization</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/math.html">math</a>  </section>
+    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/visualization.html">visualization</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/importance-sampling.html">importance-sampling</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/optimization.html">optimization</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/randomized.html">randomized</a>,    <a href="../tag/math.html">math</a>  </section>
 
 
 
@@ -586,7 +725,7 @@ instead of an exact estimate (often called "observed feature counts").</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2016  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script type="text/javascript">

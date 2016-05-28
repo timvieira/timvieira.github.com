@@ -1,5 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 27 May 2016 00:00:00 -0400</lastBuildDate><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Sat, 28 May 2016 00:00:00 -0400</lastBuildDate><item><title>The optimal proposal distribution is not p</title><link>http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</link><description>&lt;p&gt;The following is a quick rant about
+&lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I've heard the following &lt;strong&gt;incorrect&lt;/strong&gt; statement one too many times,&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;We chose &lt;span class="math"&gt;\(q \approx p\)&lt;/span&gt; because &lt;span class="math"&gt;\(q=p\)&lt;/span&gt; is the "optimal" proposal distribution.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;While it is certainly a good idea to pick &lt;span class="math"&gt;\(q\)&lt;/span&gt; to be as similar as possible to
+&lt;span class="math"&gt;\(p\)&lt;/span&gt;, it is by no means &lt;em&gt;optimal&lt;/em&gt; because it is oblivious to &lt;span class="math"&gt;\(f\)&lt;/span&gt;!&lt;/p&gt;
+&lt;p&gt;With importance sampling, it is possible to achieve a variance reduction over
+Monte Carlo estimation. The optimal proposal distribution, assuming &lt;span class="math"&gt;\(f(x) \ge 0\)&lt;/span&gt;
+for all &lt;span class="math"&gt;\(x\)&lt;/span&gt;, is &lt;span class="math"&gt;\(q(x) \propto p(x) f(x).\)&lt;/span&gt; This choice of &lt;span class="math"&gt;\(q\)&lt;/span&gt; gives us a &lt;em&gt;zero
+variance&lt;/em&gt; estimate &lt;em&gt;with a single sample&lt;/em&gt;!&lt;/p&gt;
+&lt;p&gt;Of course, this is an unreasonable distribution to use because the normalizing
+constant &lt;em&gt;is the thing you are trying to estimate&lt;/em&gt;, but it is proof that &lt;em&gt;better
+proposal distributions exist&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The key to doing better than &lt;span class="math"&gt;\(q=p\)&lt;/span&gt; is to take &lt;span class="math"&gt;\(f\)&lt;/span&gt; into account. Look up
+"importance sampling for variance reduction" to learn more.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 28 May 2016 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</guid><category>math</category><category>statistics</category><category>sampling</category><category>importance-sampling</category></item><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
 this augmented number system, dimensional analysis provides a crucial sanity
 check, much like type checking in a programming language. There are simple rules
 for building up units and constraints on what operations are allowed. For
