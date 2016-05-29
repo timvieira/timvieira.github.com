@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tim-vieira.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2016-05-28T00:00:00-04:00</updated><entry><title>The optimal proposal distribution is not p</title><link href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/" rel="alternate"></link><updated>2016-05-28T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</id><summary type="html">&lt;p&gt;The following is a quick rant about
-&lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;
+(see that post for notation).&lt;/p&gt;
 &lt;p&gt;I've heard the following &lt;strong&gt;incorrect&lt;/strong&gt; statement one too many times,&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;We chose &lt;span class="math"&gt;\(q \approx p\)&lt;/span&gt; because &lt;span class="math"&gt;\(q=p\)&lt;/span&gt; is the "optimal" proposal distribution.&lt;/p&gt;
