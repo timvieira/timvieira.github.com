@@ -1540,7 +1540,7 @@ function's value and the derivative.&lt;/p&gt;
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
-&lt;p&gt;Around the same time, I attended an talk by
+&lt;p&gt;Around the same time, I attended a talk by
 &lt;a href="http://cs.haifa.ac.il/~tamir/"&gt;Tamir Hazan&lt;/a&gt; about some of his work on
 perturb-and-MAP
 &lt;a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf"&gt;(Hazan &amp;amp; Jaakkola, 2012)&lt;/a&gt;,
@@ -1609,7 +1609,7 @@ are the same!&lt;/p&gt;
 that the same algorithm can be used to perform &lt;em&gt;sampling without replacement&lt;/em&gt; by
 sorting and taking the elements with the highest keys. This same modification is
 applicable to the Gumbel-max-trick because the keys have exactly the same
-ordering as ES.In practice we don't sort the key, but instead use a bounded
+ordering as ES. In practice we don't sort the key, but instead use a bounded
 priority queue.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Closing&lt;/strong&gt;: To the best of my knowledge, the connection between the
 Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
