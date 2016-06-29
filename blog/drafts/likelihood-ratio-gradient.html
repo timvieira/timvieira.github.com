@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Likelihood-ratio gradient</title>
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+  <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="http://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Atom</a></li>
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li><a href="http://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/archives.html">Archive</a></li>
+    <li class="active">
+    <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
+    </li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Likelihood-ratio gradient</h1>
+      <p class="meta"><time datetime="2016-06-09T00:00:00-04:00" pubdate>Jun 09, 2016</time></p>
+</header>
+
+  <div class="entry-content"><p>Policy search methods are a popular approach to reinforcement learning (RL)
+problems due to their ability to scale to large state spaces including
+continuous and partially observed domains. Policy search methods operate by
+directly searching the space of policies, as opposed to indirect methods, which
+learn a model of the environment and derive a policy from it. The most common
+policy search methods are based on stochastic gradient ascent, termed policy
+gradient methods
+(<a href="http://incompleteideas.net/sutton/williams-92.pdf">Williams,92</a>;
+<a href="https://webdocs.cs.ualberta.ca/~sutton/papers/SMSM-NIPS99.pdf">Sutton+,99</a>).</p>
+<p>Since we are in the RL setting, we will be searching for a good policy <em>without
+a priori knowledge of the dynamics model or the reward function</em>.</p>
+<p>A <strong>Markov Decision Process</strong> (MDP) over a state set <span class="math">\(\mathcal{S}\)</span> and action
+set <span class="math">\(\mathcal{A}\)</span> consists of:</p>
+<ul>
+<li>
+<p><span class="math">\(p(s_{t+1}|s_t,a_t)\)</span>: A <strong>dynamics model</strong> that specifies the probability of
+    transition to each state <span class="math">\(s_{t+1}\)</span> upon execution of action <span class="math">\(a_t\)</span> in state
+    <span class="math">\(s_t\)</span>.</p>
+</li>
+<li>
+<p><span class="math">\(R(s_t)\)</span>: A <strong>reward function</strong> that specifies a scalar value for being in
+    state <span class="math">\(s_t\)</span>.</p>
+</li>
+</ul>
+<p>We'll assume that periodically (after every <span class="math">\(H\)</span> steps) the environment will
+terminate the current <strong>episode</strong> and drop us in an initial state <span class="math">\(s_0\)</span>.</p>
+<p>Our goal is to attain a policy, <span class="math">\(\pi\)</span>, a mapping from states to action, such
+that the <strong>utility</strong> <span class="math">\(J(\pi)\)</span> is maximized,</p>
+<div class="math">\begin{equation}\label{def:policyperformance}
+  J(\pi) = \mathbb{E}\left[ R(s_0) + R(s_1) + \dots + R(s_H) \Biggr| \pi \right].
+\end{equation}</div>
+<p>Computing <span class="math">\(J(\pi)\)</span> is a common subroutine in many RL algorithms called <strong>policy
+evaluation</strong>.</p>
+<p>Given this definition it is natural to want to try to optimize <span class="math">\(J(\pi)\)</span> by
+gradient ascent. We'll get there in a minute; let's talk a little bit more about
+notation and assumptions.</p>
+<p>Policy gradient assumes that <span class="math">\(\pi\)</span> is a <strong>stochastic policy</strong>, i.e., actions are
+drawn randomly <span class="math">\(a \sim \pi(\cdot|s)\)</span>. Additionally, <span class="math">\(\pi\)</span> is parametrized by a
+vector, <span class="math">\(\theta \in \mathbb{R}^d\)</span>, and <span class="math">\(\frac{\partial
+\pi_\theta}{\partial\theta}\)</span> exists.</p>
+<p>A <strong>trajectory</strong> in an MDP, is a sequence of random variables representing
+states and actions drawn from environment <span class="math">\(\tau=[s_0,a_0,s_1,a_1\dots,s_H,a_H]\)</span>
+by following a policy, <span class="math">\(\pi_\theta\)</span> in the environment for <span class="math">\(H\)</span> steps (<span class="math">\(a_H\)</span> is a
+dummy action so we don't count it towards the trajectory length). Let
+<span class="math">\(p(\tau|\pi_\theta)\)</span> denote the distribution over trajectories in the
+environment given that we are following a particular policy.</p>
+<p>The conditional independence assumptions of the MDP imply the following
+factorization of <span class="math">\(p(\tau|\pi_\theta)\)</span>,</p>
+<div class="math">\begin{equation}\label{eq:mdp-prob}
+p(\tau|\pi_\theta) = p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t)
+\end{equation}</div>
+<p><strong>Deriving the policy gradient</strong>: Here we describe the a basic method for
+estimating <span class="math">\(\nabla_\theta J(\pi_\theta)\)</span>, known as the likelihood-ratio
+gradient.</p>
+<p>Let <span class="math">\(q(\tau)\)</span> be distribution over trajectories, which comes from following a
+policy <span class="math">\(q\)</span>. (See my earlier post on
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>.)</p>
+<div class="math">\begin{eqnarray}
+  \nabla_\theta J(\theta)
+  &amp;=&amp; \nabla_\theta \mathbb{E}_{\tau \sim p(\cdot|\pi_\theta) }\left[ \sum_{t=0}^H R(s_t) \Biggr| \pi_\theta \right]  \\
+  &amp;=&amp; \nabla_\theta \sum_\tau p(\tau|\pi_\theta) R(\tau) \\
+  &amp;=&amp; \sum_\tau \nabla_\theta p(\tau|\pi_\theta) R(\tau) \label{eq:requires-interchange} \\
+  &amp;=&amp; \sum_\tau q(\tau) \frac{\nabla_\theta p(\tau|\pi_\theta)}{q(\tau)} R(\tau) \label{eq:likelihoodratio-sum-version} \\
+  &amp;=&amp; \mathbb{E}_{\tau \sim q}\left[ \frac{\nabla_\theta p(\tau|\pi_\theta)}{q(\tau)} R(\tau) \Biggr| \pi_\theta \right] \label{eq:likelihoodratio}
+\end{eqnarray}</div>
+<p>A few notes on the derivation:</p>
+<ul>
+<li>
+<p>Note that even if <span class="math">\(q = p_\theta\)</span>, we still need to "correct" for the bias
+   (via importance weights, i.e., we divide by <span class="math">\(q\)</span> in our sampled gradients even
+   if <span class="math">\(q=p_\theta\)</span>.</p>
+</li>
+<li>
+<p>Technical note: Line \ref{eq:requires-interchange} requires an interchange of
+   derivative and integral, which can be troublesome if any bits of the math can
+   explode. We're not going to worry about it.</p>
+</li>
+<li>
+<p>It's a very interesting fact that we can obtain unbiased gradient estimates
+   for <span class="math">\(\pi_\theta\)</span> by evaluating on samples from a completely different policy!
+   For example, <span class="math">\(q(\tau)=p(\tau|\pi_\theta)\)</span> is a valid choice, as is
+   <span class="math">\(p(\tau|\pi_{\theta'})\)</span> for a different set of parameters. In fact, <em>any</em>
+   distribution over trajectories, which has support everywhere
+   <span class="math">\(p(\tau|\pi_\theta)\)</span>, is valid (a general requirement in importance
+   sampling).</p>
+</li>
+</ul>
+<p>Given the MDP conditional independence assumptions, we can further simplify the
+computation of the ratio term <span class="math">\(\nabla_\theta p(\tau|\pi_\theta)/q(\tau),\)</span>
+</p>
+<div class="math">\begin{eqnarray}
+\frac{\nabla_\theta p(\tau|\pi_\theta)}{{q(\tau)}}
+&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \frac{\nabla_\theta p(\tau|\pi_\theta)}{p(\tau|\pi_\theta)} \\
+&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \nabla_\theta \log p(\tau|\pi_\theta) \\
+&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \nabla_\theta \log \left( p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \cdot \pi_\theta(a_t|s_t)\right) \\
+&amp;=&amp; w(\tau) \cdot \nabla_\theta \left( \log p(s_0) + \sum_{t=0}^H \log p(s_{t+1}|s_t,a_t) + \log \pi_\theta(a_t|s_t) \right) \\
+&amp;=&amp; w(\tau) \cdot \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t|s_t) \label{eq:missingweights}.
+\end{eqnarray}</div>
+<p>Now, we expand the importance weight, <span class="math">\(w(\tau)\)</span>.
+</p>
+<div class="math">\begin{eqnarray}
+w(\tau)
+= \frac{p(\tau|\pi_\theta)}{q(\tau)}
+= \frac{ p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) }
+       { p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) q(a_t|s_t) }
+= \frac{\prod_{t=0}^H \pi_\theta(a_t|s_t)}
+       {\prod_{t=0}^H q(a_t|s_t)}
+\end{eqnarray}</div>
+<p>Now, plugging our simplified expression for <span class="math">\(w(\tau)\)</span> back into
+(\ref{eq:missingweights}) and (\ref{eq:likelihoodratio-sum-version}),</p>
+<div class="math">\begin{equation}\label{eq:LR-MDP}
+ \nabla_\theta J(\theta) = \sum_{\tau} q(\tau)
+      \left( \prod_{t=0}^H \frac{\pi_\theta(a_t|s_t)}{q(a_t|s_t)} \right)
+      \cdot \left( \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t|s_t) \right)
+      \cdot \left( \sum_{t=0}^H R(s_t) \right).
+\end{equation}</div>
+<p>This equation shows that <em>no knowledge of the dynamics are needed to estimate
+the gradient</em> as long as we can sample from <span class="math">\(q(\tau)\)</span>. This method gets the name
+<strong>likelihood-ratio</strong> because of the division in the importance weight. It is
+applicable beyond RL! Specifically, in cases where there are factors in a joint
+probability model that we want to cancel out because we can't evaluate the
+probability directly (e.g., because it is the real world not a simulation), but
+we can sample from it (e.g., <a href="http://arxiv.org/abs/1209.2355">Bottou+,13</a>).</p>
+<p><strong>Computing the gradient</strong>: If the state space is managable in size and we know
+the parameters of the MDP, we can use dynamic programming to compute
+<span class="math">\(\nabla_\theta J(\pi_\theta)\)</span> <em>exactly</em>. This is because the sum over
+trajectories in Eq \ref{eq:LR-MDP} factors nicely due to the Markov assumptions.
+Evaluting <span class="math">\(J(\pi_\theta)\)</span> is equivalent to computing the value of a Markov
+reward process (an MDP with the policy fixed is a <strong>Markov reward process</strong>). To
+get the gradient, you can simply backpropagate through the policy evaluation
+procedure.</p>
+<p><strong>Estimating the gradient</strong>: In most cases, however, the state space is too big
+<em>and</em> we don't know the dynamics or rewards, thus dynamic programming is
+infeasible. So we use a <strong>Monte Carlo estimate</strong>. We can get an unbiased
+estimates by sampling a bunch of trajectories, <span class="math">\(\tau^{(1)} \dots \tau^{(m)}
+\overset{\text{i.i.d.}}{\sim} q\)</span> and computing</p>
+<div class="math">\begin{eqnarray}
+\hat{J}(\pi_\theta)
+&amp;=&amp; \frac{1}{m} \sum_{j=1}^m
+  w^{(j)}
+  \cdot \left( \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a^{(j)}_t|s^{(j)}_t) \right)
+  \cdot \left( \sum_{t=0}^H R(s^{(j)}_t) \right). \label{eq:LRMCestimate}
+\end{eqnarray}</div>
+<p>where</p>
+<div class="math">$$
+w^{(j)} = \frac{p(\tau^{(j)}|\pi_\theta)}{q(\tau^{(j)})} = \prod_{t=0}^H \frac{\pi_\theta(a^{(j)}_t|s^{(j)}_t)}{q(a^{(j)}_t|s^{(j)}_t)}
+$$</div>
+<p>This Monte Carlo estimate is unbiased, but is it any good?  Does it help us
+estimate a good policy? One might imagine that if the state spaces or action
+spaces is very large, far too many sample trajectories will be needed in order
+to obtain a precise estimate; this notion can be described mathematically as the
+variance of the estimate. Furthermore, if the sampling policy <span class="math">\(q\)</span> is too
+dissimilar to <span class="math">\(\pi_\theta\)</span> the samples will be a weak estimate of the true
+gradient.</p>
+<p><strong>Other stuff</strong></p>
+<ul>
+<li>
+<p>Variance reduction</p>
+</li>
+<li>
+<p>optimal baseline: always recommended, not described here.</p>
+</li>
+<li>
+<p>Control variate: generalization of optimal baseline to other available
+     quantities with known exact expectations.</p>
+<p>(The optimal baseline uses the gradient-of-log-policy as a control
+ variate. It's correct because the expected value of this quantity is
+ zero. It can't hurt variance unless the coefficients are poorly estimated
+ (actually, there are more precise conditions).)</p>
+</li>
+<li>
+<p>actor-critic</p>
+<p>Introduces bias (unless we have a "compatible" parameterization between the
+ policy and value function).</p>
+<p>There are many bias-variance tradeoffs available under this general scheme.</p>
+</li>
+<li>
+<p>Past rewards are independent of future actions. This let's us rewrite the
+     MC estimate to obtain a variance reduction. (not described here)</p>
+</li>
+<li>
+<p>Self-normalized version (if memory serves, you don't benefit/need optimal
+   baselines for this version)</p>
+</li>
+<li>
+<p>Relaxing discrete decisions to stochastic ones. Learning under complicated
+   reward functions in complex environments.</p>
+</li>
+</ul>
+<p><strong>When does policy gradient fail</strong>:</p>
+<ul>
+<li>
+<p>We need a strong signal from beginning to end when using policy
+   gradient. Thus, policy gradient works best when used with aggressive <strong>reward
+   shaping</strong>, that reward functions which aren't super "hands off" and "push
+   back" the reward signal to earlier states. This is not always easy to do.</p>
+</li>
+<li>
+<p>Stochastic policies tend to learn more conservative policies. (Although it is
+   the case that deterministic policies are a special case of stochastic
+   policies.) The classic example is Sutton and Barto's cliff problem where the
+   optimal policy walks a straight line across the edge of a cliff, but
+   stochastic policies tend to learn to move away from edge of the cliff because
+   during learning it tends to fall off.</p>
+</li>
+<li>
+<p>Kakade &amp; Langford (2002): the long corridor problem (I prefer "walking a
+   tight rope" since it's more like the cliff problem). In this case, it's
+   difficult to reach final state and thus we never get a reward. It may take
+   exponential time in <span class="math">\(H\)</span> to reach the final state even once when we're just
+   sampling random stuff.</p>
+</li>
+<li>
+<p>Long trajectories (for example the visual attention paper uses <span class="math">\(5\)</span>
+   steps. Jacob Andrea's recent best paper at NAACL uses <span class="math">\(H=1\)</span>). Of course,
+   there is a tradeof between number of actions and trajectory length (otherwise
+   we could say trivially say that we just have each trajectory as a single
+   action making <span class="math">\(H=1\)</span> (in a trivial sense).</p>
+</li>
+<li>
+<p>State spaces with sparse rewards. We need a strong reward signal to leads
+   policy gradient in the right direction.</p>
+</li>
+<li>
+<p>Another case, where it'd be tempting to apply policy gradient is in
+   structured predication where you try to minimize the risk (expected loss
+   under the model). In this situation, normalization constants and samples are
+   often too slow get.</p>
+</li>
+</ul>
+<p><strong>Misc tricks</strong>:</p>
+<ul>
+<li>
+<p><strong>How big should we set <span class="math">\(m\)</span>?</strong> I like to set the minibatch size <span class="math">\(m\)</span> in any
+  finicky SGD setup to ensure that the inner product between the current
+  gradient and previous gradient is positive. This prevents excessive
+  oscillation. Monitoring this quantity is pretty easy.</p>
+</li>
+<li>
+<p><strong>Gradient clipping</strong> is sometimes useful because we may have exploding
+  gradients. (It seems like every one uses the magic value <span class="math">\(5\)</span>. I'd prefer to
+  use something with appropriate units for the given problem. Maybe something
+  based on the norms of previous gradients.)</p>
+</li>
+<li>
+<p><strong>Reward normalization</strong>: I'm not crazy about normalizing rewards (e.g.,
+  subtract mean and divide by variance; or possibly the rank transform used in
+  CMA-ES).</p>
+</li>
+<li>
+<p><strong>Natural gradient</strong>: Seems to work if the additional computation is faster
+  than collecting more samples. I recommend analytic Fisher matrix-vector
+  products instead of the empirical Fisher matrix and the truncated conjugate
+  gradient trick to avoid ever materializing the Fisher matrix. Natural gradient
+  is (approximately) parameterization invariant.</p>
+</li>
+<li>
+<p><strong>Self-normalized importance sampling</strong> (divide by <span class="math">\(\sum_{j=1}^m w^{(j)}\)</span>
+  instead of <span class="math">\(m\)</span> in the MC estimate). Introduces bias which decreases with <span class="math">\(m\)</span>
+  (eventually the bias vanishes). Often works better than the vaniila REINFORCE
+  algorithm.</p>
+</li>
+<li>
+<p><strong>Off-line optimization</strong>: After you've collected a large sample (big <span class="math">\(m\)</span>) you
+  can optimze <span class="math">\(\hat{J}\)</span> using your favorite deterministic optimization algorithm
+  (e.g., L-BFGS). You'll definitely want some type of "regularization" which
+  prefers policies in places with sufficient samples. You can measure this type
+  of thing in many ways (e.g., Bottou, Levine &amp; Koltun, ; Philip Thomas; Tang &amp;
+  Abbeel, 2010). The original paper on this topic is (probably) "learning from
+  scarce experience" (Peshkin &amp; Shelton, 2002) or Shelton's thesis. A similar
+  deterministic approximation appears in PEGASUS (Ng &amp; Jordan, 2000)</p>
+</li>
+</ul>
+<p><strong>Take home messages</strong>:</p>
+<ul>
+<li>
+<p>If you can evaluate it, then you can take the gradient of it (assuming it
+   exists). This even holds if the evaluation is based on Monte Carlo.</p>
+</li>
+<li>
+<p>The likelihood-ratio shows up all over the place, not just RL. It even shows
+   up in counterfactual / causal reasoning.</p>
+</li>
+<li>
+<p>We described a general way to learn from watching someone else act in a world
+   we don't understand. The only catch is that in order for us to learn from
+   them we need them to do a little bit of "exploration" (and tell us their
+   action probabilities).</p>
+</li>
+<li>
+<p>Policy gradient is useful in many domains, but usually doesn't work out of
+   the box. It's an interesting set of math tricks nonetheless.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2016-06-09T00:00:00-04:00" pubdate>Jun 09, 2016</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/rl.html">rl</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/policy-gradient.html">policy-gradient</a>
+  </span>
+</p><div class="sharing">
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/drafts/likelihood-ratio-gradient.html" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/drafts/likelihood-ratio-gradient.html" >Tweet</a>
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
+      </li>
+    </ul>
+  </section>
+
+<!--      
+  <section>
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
+    </ul>
+  </section>
+ 
+-->
+
+  <section>
+  <h1>Tags</h1>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+
+
+
+  <section>
+    <h1>GitHub Repos</h1>
+    <ul id="gh_repos">
+      <li class="loading">Status updating...</li>
+    </ul>
+      <a href="https://github.com/timvieira">@timvieira</a> on GitHub
+    <script type="text/javascript">
+      $.domReady(function(){
+          if (!window.jXHR){
+              var jxhr = document.createElement('script');
+              jxhr.type = 'text/javascript';
+              jxhr.src = 'http://timvieira.github.io/blog/theme/js/jXHR.js';
+              var s = document.getElementsByTagName('script')[0];
+              s.parentNode.insertBefore(jxhr, s);
+          }
+
+          github.showRepos({
+              user: 'timvieira',
+              count: 4,
+              skip_forks: true,
+              target: '#gh_repos'
+          });
+      });
+    </script>
+    <script src="http://timvieira.github.io/blog/theme/js/github.js" type="text/javascript"> </script>
+  </section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      var widgetId = '551816176788328448',
+          domId = 'tweets',
+          count = 3,
+          hyperlinkUrlsPlus = true,
+          showUserPhoto = false,
+          timeOfTweet = true,
+          dateFormat = 'default',
+          showRetweets = false,
+          customOutputFn = null,
+          showReplyRetweetButtons = false;
+
+      twitterFetcher.fetch(
+        widgetId,
+        domId,
+        count,
+        hyperlinkUrlsPlus,
+        showUserPhoto,
+        timeOfTweet,
+        dateFormat,
+        showRetweets,
+        customOutputFn,
+        showReplyRetweetButtons
+      );
+    });
+  </script>
+  <script src="/theme/js/twitter.js" type="text/javascript"> </script>
+    <a href="http://twitter.com/xtimv" class="twitter-follow-button" data-show-count="true">Follow @xtimv</a>
+</section>
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014-2016  - Tim Vieira -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+	<script type="text/javascript">
+	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/drafts/likelihood-ratio-gradient.html';
+          var disqus_url = 'http://timvieira.github.io/blog/drafts/likelihood-ratio-gradient.html';
+          var disqus_title = 'Likelihood-ratio gradient';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+</body>
+</html>
