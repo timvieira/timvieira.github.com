@@ -55,23 +55,26 @@
       <p class="meta"><time datetime="2016-06-28T00:00:00-04:00" pubdate>Jun 28, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>The following post is about instance of "sampling from <span class="math">\(p\)</span> is not optimal, but
-you probably think it is." It's surprising how few people seem to know this
-trick. Myself included! It was brought to my attention recently by
+  <div class="entry-content"><p>The following post is about instance of "sampling in proportion to <span class="math">\(p\)</span> is not
+optimal, but you probably think it is." It's surprising how few people seem to
+know this trick. Myself included! It was brought to my attention recently by
 <a href="http://lowrank.net/nikos/">Nikos Karampatziakis</a>. (Thanks, Nikos!)</p>
 <p>The paper credited for this trick is
 <a href="http://www.pnas.org/content/106/6/1716.full.pdf">Press (2008)</a>. I'm borrowing
 heavily from that paper as well as an email exchange from Nikos.</p>
-<p><strong>Setting</strong>: Suppose you are a government trying to identify terrorists. You
-have hired a team of data scientists to develop a fancy machine learning model,
-which assigns a probability <span class="math">\(p_i\)</span> that individual <span class="math">\(i\)</span> of the population (of size
-<span class="math">\(n\)</span>) is a terrorist.</p>
-<p>Since lining people up and testing them is not very nice, we decide to sample
-individuals (with replacement) for a random screening.</p>
-<p><strong>How many individuals do we test to find one terrorist?</strong> Suppose individual
-<span class="math">\(j\)</span> is the terrorist. The expected number of screenings until we find <span class="math">\(j\)</span> under
-a randomized screening policy <span class="math">\(q\)</span> (possibly different from <span class="math">\(p\)</span>) is
-</p>
+<p><strong>Setting</strong>: Suppose you're trying to find a special recipe from a cookbook that
+  you made one time but just can't remember exactly which recipe it was. So,
+  based on the ingredients of each recipe, you come up with a prior probability
+  <span class="math">\(p_i\)</span> that recipe <span class="math">\(i\)</span> is the one you're looking for. In total, the cookbook
+  has <span class="math">\(n\)</span> recipes and <span class="math">\(\sum_{i=1}^n p_i = 1\)</span>.</p>
+<p>A good strategy would be to sort recipes by <span class="math">\(p_i\)</span> and cook the most promising
+ones first. Unfortunately, you're not a great chef so there is some probability
+that you make it wrong. So, it's a good idea to try recipes multiple times. This
+suggests a <em>sampling with replacement</em> strategy. Let's call this strategy
+<span class="math">\(\boldsymbol{q}\)</span> (to distinguish it from <span class="math">\(\boldsymbol{p}\)</span>).</p>
+<p><strong>How many recipes until we find the special one?</strong> To start, suppose the
+special recipe is <span class="math">\(j\)</span>. Then, the expected number of recipes we have to make
+until we find <span class="math">\(j\)</span> under the strategy <span class="math">\(\boldsymbol{q}\)</span> is</p>
 <div class="math">$$
 \sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
 $$</div>
@@ -88,7 +91,6 @@ $$</div>
     font-size: 16px;
     cursor: pointer;
 }
-
 .derivation {
   background-color: #f2f2f2;
   border: thin solid #ddd;
@@ -109,10 +111,7 @@ function toggle(x) { $(x).toggle(); }
 <div class="math">$$
 \sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j},
 $$</div>
-<p>which "marginalizes out" the time <span class="math">\(t\)</span> we find the terrorist. Each term
-multiplies the time step by the probability we find the terrorist at exactly
-that time.</p>
-<p>Let <span class="math">\(a = (1-q_j)\)</span>, to clean up notation slightly.
+<p>Let <span class="math">\(a = (1-q_j)\)</span>, to clean up notation.
 </p>
 <div class="math">$$
 = q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
@@ -141,55 +140,65 @@ $$</div>
 $$</div>
 </div>
 
-<p>If the terrorist <span class="math">\(j\)</span> is actually distributed according to <span class="math">\(p\)</span>, then the
-expected number of screenings per terrorist found is
+<p>The equation says that expected time it takes to sample <span class="math">\(j\)</span> for <em>the first time</em>
+is the probability we didn't sample for <span class="math">\((t-1)\)</span> steps times the probability we
+sample it at time <span class="math">\(t\)</span>. We multiply this probability by the time <span class="math">\(t\)</span> to get the
+<em>expected</em> time.</p>
+<p>This equation assumes that we known <span class="math">\(j\)</span> is the special recipe with certainty
+when we sample it. We'll revisit this assumption later when we consider
+potential errors in executing the recipe.</p>
+<p>Since we don't which <span class="math">\(j\)</span> is the right one, we take an expectation over it
+according to the prior distribution, which yields the following equation,
 </p>
 <div class="math">$$
 f(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{q_i}.
 $$</div>
-<p>Let's plugin a few values in for <span class="math">\(\boldsymbol{q}\)</span>.</p>
-<p><span class="math">\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)</span>.</p>
-<p><span class="math">\(f(\text{Uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n\)</span></p>
-<p>Uniform is just as good as <span class="math">\(\boldsymbol{p}\)</span>, yikes!</p>
-<p><strong>What's the <em>optimal</em> <span class="math">\(\boldsymbol{q}\)</span>?</strong>: We can address this question by
+<p><strong>The first surprising thing</strong>: Uniform is just as good as <span class="math">\(\boldsymbol{p}\)</span>,
+  yikes! <span class="math">\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)</span> and
+  <span class="math">\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n\)</span>. (Assume, without
+  loss of generality, that <span class="math">\(p_i &gt; 0\)</span> since we can just drop these elements from
+  <span class="math">\(\boldsymbol{p}\)</span>.)</p>
+<p><strong>What's the <em>optimal</em> <span class="math">\(\boldsymbol{q}\)</span>?</strong> We can address this question by
 solving the following optimization (which will have a nice closed form
 solution),</p>
 <div class="math">$$
 \begin{eqnarray*}
-&amp;&amp; \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
+&amp;&amp; \boldsymbol{q}^* = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
 &amp;&amp; \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \\
 &amp;&amp; \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
 \end{eqnarray*}
 $$</div>
-<p>The objective minimizes the number of screenings per terrorist found subject to
-the constraint that <span class="math">\(\boldsymbol{q}\)</span> is a valid probability distribution. The
-solutions turns out to be</p>
+<p>The optimization problem says minimize the expected time to find the special
+recipe. The constraints enforce that <span class="math">\(\boldsymbol{q}\)</span> be a valid probability
+distribution.</p>
+<p>The optimal strategy, which we get via Lagrange multipliers, turns out to be,
+</p>
 <div class="math">$$
-q_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
 $$</div>
 <p><button onclick="toggle('#Lagrange')" class="toggle-button">Derivation</button>
 <div id="Lagrange" style="display:none;" class="derivation">
 To solve this constrained optimization problem, we form the
 Lagrangian,</p>
-<div class="math">$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot (1 - \sum_{i=1}^n q_i),$$</div>
-<p>and solve for <span class="math">\(\boldsymbol{q}\)</span> and Langrange multiper <span class="math">\(\lambda\)</span> such that
-partial derivatives are all equal to zero, which gives us the following system
-of nonlinear equations:</p>
+<div class="math">$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$</div>
+<p>and solve for <span class="math">\(\boldsymbol{q}\)</span> and multiplier <span class="math">\(\lambda\)</span> such that partial
+derivatives are all equal to zero. This gives us the following system of
+nonlinear equations,</p>
 <div class="math">$$
 \begin{eqnarray*}
 &amp;&amp; \lambda - \frac{p_i}{q_i^2} = 0 \ \ \ \text{for } 1 \le i \le n \\
-&amp;&amp; \lambda \cdot (1 - \sum_{i=1}^n q_i) = 0
+&amp;&amp; \lambda \cdot \left(1 - \sum_{i=1}^n q_i \right) = 0.
 \end{eqnarray*}
 $$</div>
-<p>We see that <span class="math">\(q_i = \pm \sqrt{\frac{p_i}{\lambda}}\)</span> work for the first equation,
-but since we need <span class="math">\(q_i \ge 0\)</span>, we take the positive one. Plugging in <span class="math">\(\lambda\)</span>,
-we get a normalized distribution,</p>
+<p>We see that <span class="math">\(q_i = \pm \sqrt{\frac{p_i}{\lambda}}\)</span> works for the first set of
+equations, but since we need <span class="math">\(q_i \ge 0\)</span>, we take the positive one. Solving for
+<span class="math">\(\lambda\)</span> and plugging it in, we get a normalized distribution,</p>
 <div class="math">$$
-q_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
 $$</div>
 </div>
 
-<p><strong>How much better is <span class="math">\(f(q^*)\)</span> vs <span class="math">\(f(p)\)</span>?</strong>
+<p><strong>How much better is <span class="math">\(q^*\)</span>?</strong>
 </p>
 <div class="math">$$
 f(q^*) = \sum_i \frac{p_i}{q^*_i}
@@ -199,19 +208,46 @@ f(q^*) = \sum_i \frac{p_i}{q^*_i}
 $$</div>
 <p>which sometimes equals <span class="math">\(n\)</span>, e.g., when <span class="math">\(\boldsymbol{p}\)</span> is uniform, but is never
 bigger than <span class="math">\(n\)</span>.</p>
-<p><strong>What's the intuition?</strong>: The reason why the <span class="math">\(\sqrt{p}\)</span>-scheme is preferred is
-because we save on <em>additional</em> screenings. For example, if an individual has
-<span class="math">\(k\)</span> times higher risk than the average individual, then that person will screen
-<span class="math">\(\sqrt{k}\)</span> more often (instead of <span class="math">\(k\)</span>, which we'd get under <span class="math">\(\boldsymbol{p}\)</span>).</p>
-<p>We can improve upon the <span class="math">\(\sqrt{p}\)</span>-scheme by sampling <em>without replacement</em>, but
-that many be undesirable for many reasons. The ideal without replacement scheme
-would be to sort the individuals according to <span class="math">\(\boldsymbol{p}\)</span> (in increasing
-order), which would give us <span class="math">\(\sum_{i=1}^n i \cdot p_{\text{sorted}(i)}\)</span>. This
-can be significantly better than the <span class="math">\(\sqrt{p}\)</span>-scheme. Some theoretical
-comparison is available in the original paper.</p>
-<p><strong>Summary</strong>: Even the math says that you shouldn't be profiling that hard! Take
-  your prejudices and <span class="math">\(\sqrt{\cdot}\)</span> them for a more productive life! Remember
-  that <span class="math">\(p\)</span> is tempting, but often not optimal!</p>
+<p><strong>What's the intuition?</strong> The reason why the <span class="math">\(\sqrt{p}\)</span>-scheme is preferred is
+because we save on <em>additional</em> cooking experiments. For example, if a recipe
+has <span class="math">\(k\)</span> higher prior probability than the average recipe, then that recipe will
+try it <span class="math">\(\sqrt{k}\)</span> more often; compared to instead of <span class="math">\(k\)</span>, which we'd get under
+<span class="math">\(\boldsymbol{p}\)</span>. Additional cooking experiments are not so advantageous.</p>
+<p><strong>Allowing for noise in the cooking process</strong>: Suppose that for each recipe we
+  had a prior belief about how hard that recipe is for us to cook. Denote that
+  belief <span class="math">\(s_i\)</span> (<span class="math">\(s\)</span> is for "at our <em>skill</em> level"), these belief are between
+  zero (never get it right) and one (perfect everytime) and do not sum to one
+  over the cookbook.</p>
+<p>Following a similar derivation to before, the time to cook the special recipe
+<span class="math">\(j\)</span> and cook it correctly is,
+</p>
+<div class="math">$$
+\sum_{t=1}^\infty t \cdot (1 - \color{red}{s_j} q_j)^{t-1} q_{j} \color{red}{s_j} = \frac{1}{s_j \cdot q_j}
+$$</div>
+<p>
+That gives rise to a modified objective,
+</p>
+<div class="math">$$
+f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
+$$</div>
+<p>This is exactly the same as the previous objective, except we've replaced <span class="math">\(p_i\)</span>
+with <span class="math">\(p_i/s_i\)</span>. Thus, we can reuse our previous derivation to get the optimal
+strategy, <span class="math">\(q^*_i \propto \sqrt{p_i / s_i}\)</span>. If noise is constant, then we
+recover the original solution, <span class="math">\(q^*_i \propto \sqrt{p_i}\)</span>.</p>
+<p><strong>A more realistic application</strong>: In certain language modeling applications, we
+  avoid computing normalization constants by using importance sampling or noise
+  contrastive estimation techniques. These techniques depend on a proposal
+  distribution, which folks often take to be the unigram
+  distribution. Unfortunately, this gives too many samples of stop words (e.g.,
+  "the", "an", "a"), so practitioners "anneal" the unigram distribution (to
+  increase the entropy), that is sample from <span class="math">\(q_i \propto
+  p_{\text{unigram},i}^\alpha\)</span>. Typically, <span class="math">\(\alpha\)</span> is set by grid search and,
+  no surprise, <span class="math">\(\alpha \approx 1/2\)</span> tends to work best! The <span class="math">\(\sqrt{p}\)</span>-sampling
+  trick is a theoretical justification in favor of annealing by <span class="math">\(1/2\)</span> as well as
+  annealing as the right thing to at all (e.g., why not do additive
+  smoothing?). The assumption is that we want to sample the actual word at a
+  given position (the special recipe) as soon as possible, given that all we
+  have access to is the unigram prior.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
