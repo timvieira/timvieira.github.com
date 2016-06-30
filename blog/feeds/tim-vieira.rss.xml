@@ -1,5 +1,308 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Sat, 28 May 2016 00:00:00 -0400</lastBuildDate><item><title>The optimal proposal distribution is not p</title><link>http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</link><description>&lt;p&gt;The following is a quick rant about
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 28 Jun 2016 00:00:00 -0400</lastBuildDate><item><title>Sqrt-biased sampling</title><link>http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</link><description>&lt;p&gt;The following post is about instance of "sampling in proportion to &lt;span class="math"&gt;\(p\)&lt;/span&gt; is not
+optimal, but you probably think it is." It's surprising how few people seem to
+know this trick. Myself included! It was brought to my attention recently by
+&lt;a href="http://lowrank.net/nikos/"&gt;Nikos Karampatziakis&lt;/a&gt;. (Thanks, Nikos!)&lt;/p&gt;
+&lt;p&gt;The paper credited for this trick is
+&lt;a href="http://www.pnas.org/content/106/6/1716.full.pdf"&gt;Press (2008)&lt;/a&gt;. I'm borrowing
+heavily from that paper as well as an email exchange from Nikos.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setting&lt;/strong&gt;: Suppose you're an aspiring chef with a severe head injury affecting
+  your long- and short- term memory trying to find a special recipe from a
+  cookbook that you made one time but just can't remember exactly which recipe
+  it was. So, based on the ingredients of each recipe, you come up with a prior
+  probability &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; that recipe &lt;span class="math"&gt;\(i\)&lt;/span&gt; is the one you're looking for. In total, the
+  cookbook has &lt;span class="math"&gt;\(n\)&lt;/span&gt; recipes and &lt;span class="math"&gt;\(\sum_{i=1}^n p_i = 1\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;A good strategy would be to sort recipes by &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; and cook the most promising
+ones first. Unfortunately, you're not a great chef so there is some probability
+that you'll mess-up the recipe. So, it's a good idea to try recipes multiple
+times. Also, you have no short term memory...&lt;/p&gt;
+&lt;p&gt;This suggests a &lt;em&gt;sampling with replacement&lt;/em&gt; strategy, where we sample a recipe
+from the cookbook to try &lt;em&gt;independently&lt;/em&gt; of whether we've tried it before
+(called a &lt;em&gt;memoryless&lt;/em&gt; strategy). Let's give this strategy the name
+&lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt;. Note that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is a probability distribution over
+the recipes in the cookbook, just like &lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How many recipes until we find the special one?&lt;/strong&gt; To start, suppose the
+special recipe is &lt;span class="math"&gt;\(j\)&lt;/span&gt;. Then, the expected number of recipes we have to make
+until we find &lt;span class="math"&gt;\(j\)&lt;/span&gt; under the strategy &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
+$$&lt;/div&gt;
+&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;button onclick="toggle('#derivation')" class="toggle-button"&gt;Derivation&lt;/button&gt;
+&lt;div id="derivation" style="display:none;" class="derivation"&gt;
+&lt;strong&gt;Derivation&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;We start with
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j},
+$$&lt;/div&gt;
+&lt;p&gt;Let &lt;span class="math"&gt;\(a = (1-q_j)\)&lt;/span&gt;, to clean up notation.
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+= q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
+$$&lt;/div&gt;
+&lt;p&gt;Using the identity &lt;span class="math"&gt;\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)&lt;/span&gt;,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+= q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
+$$&lt;/div&gt;
+&lt;p&gt;Fishing the gradient out of the sum and tweaking summation index,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+= q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
+= q_{j} \nabla_a\left[ -1 + \sum_{t=0}^\infty a^{t}\right]
+$$&lt;/div&gt;
+&lt;p&gt;Plugin in the solution to the geometric series,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+= q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
+$$&lt;/div&gt;
+&lt;p&gt;Take the derivative, expanding &lt;span class="math"&gt;\(a\)&lt;/span&gt; and simplify,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+= q_{j} \frac{1}{(1-a)^2}
+= \frac{1}{q_j}
+$$&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The equation says that expected time it takes to sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;em&gt;the first time&lt;/em&gt;
+is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
+sample it at time &lt;span class="math"&gt;\(t\)&lt;/span&gt;. We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
+&lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
+&lt;p&gt;Note that this equation assumes that we known &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
+certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
+consider potential errors in executing the recipe.&lt;/p&gt;
+&lt;p&gt;Since we don't which &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the right one, we take an expectation over it
+according to the prior distribution, which yields the following equation,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{q_i}.
+$$&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;The first surprising thing&lt;/strong&gt;: Uniform is just as good as &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;,
+  yikes! &lt;span class="math"&gt;\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)&lt;/span&gt; and
+  &lt;span class="math"&gt;\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n\)&lt;/span&gt;. (Assume, without
+  loss of generality, that &lt;span class="math"&gt;\(p_i &amp;gt; 0\)&lt;/span&gt; since we can just drop these elements from
+  &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What's the &lt;em&gt;optimal&lt;/em&gt; &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt;?&lt;/strong&gt; We can address this question by
+solving the following optimization (which will have a nice closed form
+solution),&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+&amp;amp;&amp;amp; \boldsymbol{q}^* = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
+&amp;amp;&amp;amp; \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \\
+&amp;amp;&amp;amp; \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;The optimization problem says minimize the expected time to find the special
+recipe. The constraints enforce that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; be a valid probability
+distribution.&lt;/p&gt;
+&lt;p&gt;The optimal strategy, which we get via Lagrange multipliers, turns out to be,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+$$&lt;/div&gt;
+&lt;p&gt;&lt;button onclick="toggle('#Lagrange')" class="toggle-button"&gt;Derivation&lt;/button&gt;
+&lt;div id="Lagrange" style="display:none;" class="derivation"&gt;
+To solve this constrained optimization problem, we form the
+Lagrangian,&lt;/p&gt;
+&lt;div class="math"&gt;$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$&lt;/div&gt;
+&lt;p&gt;and solve for &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; and multiplier &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; such that partial
+derivatives are all equal to zero. This gives us the following system of
+nonlinear equations,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+&amp;amp;&amp;amp; \lambda - \frac{p_i}{q_i^2} = 0 \ \ \ \text{for } 1 \le i \le n \\
+&amp;amp;&amp;amp; \lambda \cdot \left(1 - \sum_{i=1}^n q_i \right) = 0.
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;We see that &lt;span class="math"&gt;\(q_i = \pm \sqrt{\frac{p_i}{\lambda}}\)&lt;/span&gt; works for the first set of
+equations, but since we need &lt;span class="math"&gt;\(q_i \ge 0\)&lt;/span&gt;, we take the positive one. Solving for
+&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; and plugging it in, we get a normalized distribution,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+$$&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;How much better is &lt;span class="math"&gt;\(q^*\)&lt;/span&gt;?&lt;/strong&gt;
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f(q^*) = \sum_i \frac{p_i}{q^*_i}
+= \sum_i \frac{p_i}{ \frac{\sqrt{p_i} }{ \sum_j \sqrt{p_j}} }
+= \left( \sum_i \frac{p_i}{ \sqrt{p_i} } \right) \left( \sum_j \sqrt{p_j} \right)
+= \left( \sum_i \sqrt{p_i} \right)^2
+$$&lt;/div&gt;
+&lt;p&gt;which sometimes equals &lt;span class="math"&gt;\(n\)&lt;/span&gt;, e.g., when &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt; is uniform, but is never
+bigger than &lt;span class="math"&gt;\(n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What's the intuition?&lt;/strong&gt; The reason why the &lt;span class="math"&gt;\(\sqrt{p}\)&lt;/span&gt;-scheme is preferred is
+because we save on &lt;em&gt;additional&lt;/em&gt; cooking experiments. For example, if a recipe
+has &lt;span class="math"&gt;\(k\)&lt;/span&gt; higher prior probability than the average recipe, then that recipe will
+try it &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; more often; compared to instead of &lt;span class="math"&gt;\(k\)&lt;/span&gt;, which we'd get under
+&lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;. Additional cooking experiments are not so advantageous.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Allowing for noise in the cooking process&lt;/strong&gt;: Suppose that for each recipe we
+  had a prior belief about how hard that recipe is for us to cook. Denote that
+  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; (&lt;span class="math"&gt;\(s\)&lt;/span&gt; is for "at our &lt;em&gt;skill&lt;/em&gt; level"), these belief are between
+  zero (never get it right) and one (perfect every time) and do not sum to one
+  over the cookbook.&lt;/p&gt;
+&lt;p&gt;Following a similar derivation to before, the time to cook the special recipe
+&lt;span class="math"&gt;\(j\)&lt;/span&gt; and cook it correctly is,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\sum_{t=1}^\infty t \cdot (1 - \color{red}{s_j} q_j)^{t-1} q_{j} \color{red}{s_j} = \frac{1}{s_j \cdot q_j}
+$$&lt;/div&gt;
+&lt;p&gt;
+That gives rise to a modified objective,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
+$$&lt;/div&gt;
+&lt;p&gt;This is exactly the same as the previous objective, except we've replaced &lt;span class="math"&gt;\(p_i\)&lt;/span&gt;
+with &lt;span class="math"&gt;\(p_i/s_i\)&lt;/span&gt;. Thus, we can reuse our previous derivation to get the optimal
+strategy, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i / s_i}\)&lt;/span&gt;. If noise is constant, then we
+recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Extension to finding multiple tasty recipes&lt;/strong&gt;: Suppose we're trying to find
+  several tasty recipes, not just a single special one. Now, &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; is our prior
+  belief that we'll like the recipe at all. How do we minimize the time until we
+  find a tasty one? It turns out the same trick works without modification
+  because all derivations apply to each recipe independently. The same trick
+  works if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; does not sums to one over &lt;span class="math"&gt;\(n\)&lt;/span&gt;. For example, if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; is the
+  independent probability that you'll like recipe &lt;span class="math"&gt;\(i\)&lt;/span&gt; at all, not the
+  probability that it's the special one.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Beyond memoryless policies&lt;/strong&gt;: Clearly, our choice of a memoryless policy can
+  be beat by a policy family that balances exploration (trying new recipes) and
+  exploitation (trying the recipes our best guess at the special
+  recipe).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Overall, the problem we've posed is similar to a
+    &lt;a href="https://en.wikipedia.org/wiki/Multi-armed_bandit"&gt;multi-armed bandit&lt;/a&gt;. In
+    our case, the arms are the recipes, pulling the arm is trying the recipe and
+    the reward is whether or not we liked the recipe (possibly noisy). The key
+    difference between our setup and multi-armed bandits is that we trust our
+    prior distribution &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt; and noise model &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If the amount of noise &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; is known and we trust the prior &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; then
+    there is an optimal deterministic (without-replacement) strategy that we can
+    get by sorting the recipes by &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; accounting for the error rates
+    &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;. This approach is described in the original paper.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;A more realistic application&lt;/strong&gt;: In certain language modeling applications, we
+  avoid computing normalization constants (which require summing over a massive
+  vocabulary) by using importance sampling, negative sampling or noise
+  contrastive estimation techniques (e.g.,
+  &lt;a href="https://arxiv.org/pdf/1511.06909.pdf"&gt;Ji+,06&lt;/a&gt;
+  &lt;a href="http://www.aclweb.org/anthology/Q15-1016"&gt;Levy+,15&lt;/a&gt;). These techniques depend
+  on a proposal distribution, which folks often take to be the unigram
+  distribution. Unfortunately, this gives too many samples of stop words (e.g.,
+  "the", "an", "a"), so practitioners "anneal" the unigram distribution (to
+  increase the entropy), that is sample from &lt;span class="math"&gt;\(q_i \propto
+  p_{\text{unigram},i}^\alpha\)&lt;/span&gt;. Typically, &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is set by grid search and
+  (no surprise) &lt;span class="math"&gt;\(\alpha \approx 1/2\)&lt;/span&gt; tends to work best! The &lt;span class="math"&gt;\(\sqrt{p}\)&lt;/span&gt;-sampling
+  trick is possibly a reverse-engineered justification in favor of annealing as
+  "the right thing to do" (e.g., why not do additive smoothing?) and it even
+  tells us how to set the annealing parameter &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. The key assumption is
+  that we want to sample the actual word at a given position as often as
+  possible while still being diverse thanks to the coverage of unigram
+  prior. (Furthermore, memoryless sampling leads to simpler algorithms.)&lt;/p&gt;
+&lt;!--
+Actually, many word2vec papers use $\alpha=3/4$, which was suggested in
+[Levy+,15](http://www.aclweb.org/anthology/Q15-1016), including the default
+value in
+[gensim](https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/models/word2vec.py#L462). So,
+[Ryan Cotterell](https://ryancotterell.github.io/) ran a quick experiment with
+gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
+
+    Word similarity accuracy (avg of 10 runs)
+    | alpha | accuracy |
+    +==================+
+    |  0.00 |    0.354 |
+    |  0.25 |    0.403 |
+    |  0.50 |    0.414 |
+    |  0.75 |    0.395 |
+    |  1.00 |    0.345 |
+--&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 28 Jun 2016 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2016-06-28:blog/post/2016/06/28/sqrt-biased-sampling/</guid><category>sampling</category><category>decision-making</category></item><item><title>The optimal proposal distribution is not p</title><link>http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</link><description>&lt;p&gt;The following is a quick rant about
 &lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;
 (see that post for notation).&lt;/p&gt;
 &lt;p&gt;I've heard the following &lt;strong&gt;incorrect&lt;/strong&gt; statement one too many times,&lt;/p&gt;
