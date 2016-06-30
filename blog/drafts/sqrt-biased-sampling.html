@@ -243,11 +243,11 @@ recover the original solution, <span class="math">\(q^*_i \propto \sqrt{p_i}\)</
   unigram distribution (to increase the entropy), that is sample from <span class="math">\(q_i
   \propto p_{\text{unigram},i}^\alpha\)</span>. Typically, <span class="math">\(\alpha\)</span> is set by grid
   search and (no surprise) <span class="math">\(\alpha \approx 1/2\)</span> tends to work best! The
-  <span class="math">\(\sqrt{p}\)</span>-sampling trick is a theoretical in favor of annealing as "the right
-  thing to do" (e.g., why not do additive smoothing?) and it even tells us how
-  to set the annealing parameter <span class="math">\(\alpha\)</span>. The key assumption is that we want to
-  sample the actual word at a given position as soon as possible, given that all
-  we have access to is the unigram prior.</p>
+  <span class="math">\(\sqrt{p}\)</span>-sampling trick is a theoretical justification in favor of annealing
+  as "the right thing to do" (e.g., why not do additive smoothing?) and it even
+  tells us how to set the annealing parameter <span class="math">\(\alpha\)</span>. The key assumption is
+  that we want to sample the actual word at a given position as soon as
+  possible, given that all we have access to is the unigram prior.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
