@@ -161,8 +161,8 @@ $$&lt;/div&gt;
 bigger than &lt;span class="math"&gt;\(n\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;What's the intuition?&lt;/strong&gt; The reason why the &lt;span class="math"&gt;\(\sqrt{p}\)&lt;/span&gt;-scheme is preferred is
 because we save on &lt;em&gt;additional&lt;/em&gt; cooking experiments. For example, if a recipe
-has &lt;span class="math"&gt;\(k\)&lt;/span&gt; higher prior probability than the average recipe, then that recipe will
-try it &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; more often; compared to instead of &lt;span class="math"&gt;\(k\)&lt;/span&gt;, which we'd get under
+has &lt;span class="math"&gt;\(k\)&lt;/span&gt; times higher prior probability than the average recipe, then we will try
+that recipe &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; times more often; compared to &lt;span class="math"&gt;\(k\)&lt;/span&gt;, which we'd get under
 &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;. Additional cooking experiments are not so advantageous.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Allowing for noise in the cooking process&lt;/strong&gt;: Suppose that for each recipe we
   had a prior belief about how hard that recipe is for us to cook. Denote that
