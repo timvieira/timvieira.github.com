@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><atom:link href="/blog/feeds/tim-vieira.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 28 Jun 2016 00:00:00 -0400</lastBuildDate><item><title>Sqrt-biased sampling</title><link>http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</link><description>&lt;p&gt;The following post is about instance of "sampling in proportion to &lt;span class="math"&gt;\(p\)&lt;/span&gt; is not
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Tue, 28 Jun 2016 00:00:00 -0400</lastBuildDate><item><title>Sqrt-biased sampling</title><link>http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</link><description>&lt;p&gt;The following post is about instance of "sampling in proportion to &lt;span class="math"&gt;\(p\)&lt;/span&gt; is not
 optimal, but you probably think it is." It's surprising how few people seem to
 know this trick. Myself included! It was brought to my attention recently by
 &lt;a href="http://lowrank.net/nikos/"&gt;Nikos Karampatziakis&lt;/a&gt;. (Thanks, Nikos!)&lt;/p&gt;
@@ -67,12 +67,12 @@ $$&lt;/div&gt;
 &lt;div class="math"&gt;$$
 = q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
 $$&lt;/div&gt;
-&lt;p&gt;Using the identity &lt;span class="math"&gt;\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)&lt;/span&gt;,
+&lt;p&gt;Use the identity &lt;span class="math"&gt;\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)&lt;/span&gt;,
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 = q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
 $$&lt;/div&gt;
-&lt;p&gt;Fishing the gradient out of the sum and tweaking summation index,
+&lt;p&gt;Fish the gradient out of the sum and tweak summation index,
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 = q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
@@ -83,7 +83,7 @@ $$&lt;/div&gt;
 &lt;div class="math"&gt;$$
 = q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
 $$&lt;/div&gt;
-&lt;p&gt;Take the derivative, expanding &lt;span class="math"&gt;\(a\)&lt;/span&gt; and simplify,
+&lt;p&gt;Take derivative, expand &lt;span class="math"&gt;\(a\)&lt;/span&gt; and simplify,
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 = q_{j} \frac{1}{(1-a)^2}
@@ -259,11 +259,13 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -273,6 +275,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -302,7 +305,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 28 Jun 2016 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2016-06-28:blog/post/2016/06/28/sqrt-biased-sampling/</guid><category>sampling</category><category>decision-making</category></item><item><title>The optimal proposal distribution is not p</title><link>http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</link><description>&lt;p&gt;The following is a quick rant about
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 28 Jun 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-06-28:blog/post/2016/06/28/sqrt-biased-sampling/</guid><category>sampling</category><category>decision-making</category></item><item><title>The optimal proposal distribution is not p</title><link>http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</link><description>&lt;p&gt;The following is a quick rant about
 &lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;
 (see that post for notation).&lt;/p&gt;
 &lt;p&gt;I've heard the following &lt;strong&gt;incorrect&lt;/strong&gt; statement one too many times,&lt;/p&gt;
@@ -330,11 +333,13 @@ proposal distributions exist&lt;/em&gt;.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -344,6 +349,7 @@ proposal distributions exist&lt;/em&gt;.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -373,7 +379,7 @@ proposal distributions exist&lt;/em&gt;.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 28 May 2016 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</guid><category>math</category><category>statistics</category><category>sampling</category><category>importance-sampling</category></item><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 28 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</guid><category>math</category><category>statistics</category><category>sampling</category><category>importance-sampling</category></item><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
 this augmented number system, dimensional analysis provides a crucial sanity
 check, much like type checking in a programming language. There are simple rules
 for building up units and constraints on what operations are allowed. For
@@ -449,11 +455,13 @@ affect the values we should use for them.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -463,6 +471,7 @@ affect the values we should use for them.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -492,7 +501,7 @@ affect the values we should use for them.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 27 May 2016 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2016-05-27:blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</guid><category>math</category><category>optimization</category></item><item><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link>http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</link><description>&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 27 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-27:blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</guid><category>math</category><category>optimization</category></item><item><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link>http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</link><description>&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
 optimization---the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -608,11 +617,13 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -622,6 +633,7 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -651,7 +663,7 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 05 Mar 2016 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2016-03-05:blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</guid><category>math</category><category>calculus</category></item><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 05 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-03-05:blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</guid><category>math</category><category>calculus</category></item><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
 of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll look at
 both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;We'll assume each dimension &lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded
@@ -758,11 +770,13 @@ dimension can be infinite/unknown.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -772,6 +786,7 @@ dimension can be infinite/unknown.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -801,7 +816,7 @@ dimension can be infinite/unknown.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 17 Jan 2016 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2016-01-17:blog/post/2016/01/17/multidimensional-array-index/</guid><category>misc</category></item><item><title>Gradient of a product</title><link>http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/</link><description>&lt;div class="math"&gt;$$
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 17 Jan 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-01-17:blog/post/2016/01/17/multidimensional-array-index/</guid><category>misc</category></item><item><title>Gradient of a product</title><link>http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/</link><description>&lt;div class="math"&gt;$$
 \newcommand{\gradx}[1]{\grad{x}{ #1 }}
 \newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
 \newcommand{\R}{\mathbb{R}}
@@ -953,11 +968,13 @@ programming algorithm we came up with.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -967,6 +984,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -996,7 +1014,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>math</category><category>calculus</category><category>numerical</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>math</category><category>calculus</category><category>numerical</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
@@ -1069,11 +1087,13 @@ quite different.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1083,6 +1103,7 @@ quite different.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1112,7 +1133,7 @@ quite different.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Apr 2015 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</guid><category>machine-learning</category><category>rant</category><category>crf</category></item><item><title>Conditional random fields as Deep learning models?</title><link>http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</link><description>&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Apr 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</guid><category>machine-learning</category><category>rant</category><category>crf</category></item><item><title>Conditional random fields as Deep learning models?</title><link>http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</link><description>&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
 deep learning might not be as crazy as it seems. And maybe even convince some
 deep learning lovers that the graphical models might have interesting things to
 offer.&lt;/p&gt;
@@ -1138,7 +1159,7 @@ example: using approximate marginals from sum-product loopy BP in place of the
 true marginals in the gradient of the log-likelihood. This results in a
 different nonconvex objective function. (Note:
 &lt;a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf"&gt;sometimes&lt;/a&gt; these loopy BP
-approximations works fine.)&lt;/p&gt;
+approximations work fine.)&lt;/p&gt;
 &lt;p&gt;It looks like using approximate inference during training changes the training
 objective.&lt;/p&gt;
 &lt;p&gt;So, here's a simple idea: learn a model which makes accurate predictions given
@@ -1164,7 +1185,7 @@ more open ended. Unlike graphical models, deep learning models have more
 variation in model structures. Maybe being more open minded about model
 structures is a good thing. We seem to have hit a brick wall with
 likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 05 Feb 2015 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</guid><category>machine-learning</category><category>deep-learning</category><category>structured-prediction</category></item><item><title>Log-Real number class</title><link>http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/</link><description>&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+good work on approximate inference as deep architectures.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 05 Feb 2015 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-02-05:blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</guid><category>machine-learning</category><category>deep-learning</category><category>structured-prediction</category></item><item><title>Log-Real number class</title><link>http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/</link><description>&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
 representing intermediate quantities in the log-domain. This trick turns
 "multiplication" into "addition", "addition" into "logsumexp", "0" into
 &lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
@@ -1220,11 +1241,13 @@ essentially:&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1234,6 +1257,7 @@ essentially:&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1263,7 +1287,7 @@ essentially:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 01 Feb 2015 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</guid><category>math</category><category>numerical</category></item><item><title>Importance Sampling</title><link>http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/</link><description>&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 01 Feb 2015 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</guid><category>math</category><category>numerical</category></item><item><title>Importance Sampling</title><link>http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/</link><description>&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
@@ -1352,11 +1376,13 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1366,6 +1392,7 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1395,7 +1422,7 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>math</category><category>statistics</category><category>randomized</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>math</category><category>statistics</category><category>randomized</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
@@ -1494,11 +1521,13 @@ the power of is one --- making it very difficult to overflow on the account of
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1508,6 +1537,7 @@ the power of is one --- making it very difficult to overflow on the account of
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1537,7 +1567,7 @@ the power of is one --- making it very difficult to overflow on the account of
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Nov 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</guid><category>math</category><category>numerical</category></item><item><title>KL-divergence as an objective function</title><link>http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</link><description>&lt;p&gt;It's well-known that
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Nov 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</guid><category>math</category><category>numerical</category></item><item><title>KL-divergence as an objective function</title><link>http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</link><description>&lt;p&gt;It's well-known that
 &lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
 is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;First, which one is which?&lt;/p&gt;
@@ -1668,11 +1698,13 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1682,6 +1714,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1711,7 +1744,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 06 Oct 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</guid><category>math</category><category>statistics</category><category>machine-learning</category></item><item><title>Complex-step derivative</title><link>http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/</link><description>&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 06 Oct 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</guid><category>math</category><category>statistics</category><category>machine-learning</category></item><item><title>Complex-step derivative</title><link>http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/</link><description>&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
@@ -1796,11 +1829,13 @@ function's value and the derivative.&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1810,6 +1845,7 @@ function's value and the derivative.&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1839,7 +1875,7 @@ function's value and the derivative.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 07 Aug 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</guid><category>math</category><category>calculus</category></item><item><title>Gumbel max trick and weighted reservoir sampling</title><link>http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</link><description>&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 07 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</guid><category>math</category><category>calculus</category></item><item><title>Gumbel max trick and weighted reservoir sampling</title><link>http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</link><description>&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -1930,11 +1966,13 @@ turning these connections into a
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -1944,6 +1982,7 @@ turning these connections into a
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -1973,7 +2012,7 @@ turning these connections into a
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -2038,11 +2077,13 @@ in this
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2052,6 +2093,7 @@ in this
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2081,7 +2123,7 @@ in this
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 31 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Rant against grid search</title><link>http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/</link><description>&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 31 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Rant against grid search</title><link>http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/</link><description>&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
@@ -2127,11 +2169,13 @@ reading see
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2141,6 +2185,7 @@ reading see
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2170,7 +2215,7 @@ reading see
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 22 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-22:blog/post/2014/07/22/rant-against-grid-search/</guid><category>misc</category></item><item><title>Expected value of a quadratic and the Delta method</title><link>http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</link><description>&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 22 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-22:blog/post/2014/07/22/rant-against-grid-search/</guid><category>misc</category></item><item><title>Expected value of a quadratic and the Delta method</title><link>http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</link><description>&lt;p&gt;&lt;strong&gt;Expected value of a quadratic&lt;/strong&gt;: Suppose we'd like to compute the expectation
 of a quadratic function, i.e.,
 &lt;span class="math"&gt;\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)&lt;/span&gt; , where &lt;span class="math"&gt;\(x\)&lt;/span&gt; is
 a random vector and &lt;span class="math"&gt;\(A\)&lt;/span&gt; is deterministic &lt;em&gt;symmetric&lt;/em&gt; matrix. Let &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; and
@@ -2222,11 +2267,13 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2236,6 +2283,7 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2265,7 +2313,7 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Jul 2014 00:00:00 -0400</pubDate><guid>tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</guid><category>math</category></item><item><title>Visualizing high-dimensional functions with cross-sections</title><link>http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</link><description>&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</guid><category>math</category></item><item><title>Visualizing high-dimensional functions with cross-sections</title><link>http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</link><description>&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -2340,11 +2388,13 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2354,6 +2404,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2383,7 +2434,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 12 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</guid><category>math</category><category>visualization</category></item><item><title>Exp-normalize trick</title><link>http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/</link><description>&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 12 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</guid><category>math</category><category>visualization</category></item><item><title>Exp-normalize trick</title><link>http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/</link><description>&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
@@ -2452,11 +2503,13 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2466,6 +2519,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2495,7 +2549,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 11 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</guid><category>math</category><category>numerical</category></item><item><title>Gradient-vector product</title><link>http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/</link><description>&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 11 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</guid><category>math</category><category>numerical</category></item><item><title>Gradient-vector product</title><link>http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/</link><description>&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
@@ -2577,11 +2631,13 @@ $$&lt;/div&gt;
         indent = (screen.width &lt; 768) ? "0em" : indent;
         linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -2591,6 +2647,7 @@ $$&lt;/div&gt;
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
@@ -2620,4 +2677,4 @@ $$&lt;/div&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Feb 2014 00:00:00 -0500</pubDate><guid>tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</guid><category>math</category><category>calculus</category></item></channel></rss>
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</guid><category>math</category><category>calculus</category></item></channel></rss>

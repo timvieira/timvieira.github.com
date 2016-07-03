@@ -123,12 +123,12 @@ $$</div>
 <div class="math">$$
 = q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
 $$</div>
-<p>Using the identity <span class="math">\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)</span>,
+<p>Use the identity <span class="math">\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)</span>,
 </p>
 <div class="math">$$
 = q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
 $$</div>
-<p>Fishing the gradient out of the sum and tweaking summation index,
+<p>Fish the gradient out of the sum and tweak summation index,
 </p>
 <div class="math">$$
 = q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
@@ -139,7 +139,7 @@ $$</div>
 <div class="math">$$
 = q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
 $$</div>
-<p>Take the derivative, expanding <span class="math">\(a\)</span> and simplify,
+<p>Take derivative, expand <span class="math">\(a\)</span> and simplify,
 </p>
 <div class="math">$$
 = q_{j} \frac{1}{(1-a)^2}
@@ -315,11 +315,13 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
         indent = (screen.width < 768) ? "0em" : indent;
         linebreak = (screen.width < 768) ? 'true' : linebreak;
     }
-    
+
     var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -329,6 +331,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
         "    displayAlign: '"+ align +"'," +
         "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
         "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
