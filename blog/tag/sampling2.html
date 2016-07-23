@@ -12058,7 +12058,7 @@ an algorithm for sampling from a discrete distribution (aka categorical):</p>
 
 <p><strong>The Gumbel max trick</strong>:</p>
 <div class="math">$$
-y = \text{argmax}_{i \in \\{1,\cdots,K\\}} x_i + z_i
+y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
 $$</div>
 <p>where <span class="math">\(z_1 \cdots z_K\)</span> are i.i.d. <span class="math">\(\text{Gumbel}(0,1)\)</span> random variates. It
 turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
