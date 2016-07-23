@@ -11986,41 +11986,6 @@ to obtain a precise estimate; this notion can be described mathematically as the
 variance of the estimate. Furthermore, if the sampling policy <span class="math">\(q\)</span> is too
 dissimilar to <span class="math">\(\pi_\theta\)</span> the samples will be a weak estimate of the true
 gradient.</p>
-<p><strong>Other stuff</strong></p>
-<ul>
-<li>
-<p>Variance reduction</p>
-</li>
-<li>
-<p>optimal baseline: always recommended, not described here.</p>
-</li>
-<li>
-<p>Control variate: generalization of optimal baseline to other available
-     quantities with known exact expectations.</p>
-<p>(The optimal baseline uses the gradient-of-log-policy as a control
- variate. It's correct because the expected value of this quantity is
- zero. It can't hurt variance unless the coefficients are poorly estimated
- (actually, there are more precise conditions).)</p>
-</li>
-<li>
-<p>actor-critic</p>
-<p>Introduces bias (unless we have a "compatible" parameterization between the
- policy and value function).</p>
-<p>There are many bias-variance tradeoffs available under this general scheme.</p>
-</li>
-<li>
-<p>Past rewards are independent of future actions. This let's us rewrite the
-     MC estimate to obtain a variance reduction. (not described here)</p>
-</li>
-<li>
-<p>Self-normalized version (if memory serves, you don't benefit/need optimal
-   baselines for this version)</p>
-</li>
-<li>
-<p>Relaxing discrete decisions to stochastic ones. Learning under complicated
-   reward functions in complex environments.</p>
-</li>
-</ul>
 <p><strong>When does policy gradient fail</strong>:</p>
 <ul>
 <li>
@@ -12103,6 +12068,52 @@ gradient.</p>
   Abbeel, 2010). The original paper on this topic is (probably) "learning from
   scarce experience" (Peshkin &amp; Shelton, 2002) or Shelton's thesis. A similar
   deterministic approximation appears in PEGASUS (Ng &amp; Jordan, 2000)</p>
+</li>
+<li>
+<p><strong>Variance reduction</strong></p>
+</li>
+<li>
+<p>The baseline trick: always recommended, not described here.</p>
+<p><strong>TODO</strong>: Explain why the baseline "is a thing"... it looked totally
+arbitrary to me when I first saw it.</p>
+</li>
+<li>
+<p>Control variate: generalization of optimal baseline to other available
+    quantities with known exact expectations.</p>
+<p>(The optimal baseline uses the gradient-of-log-policy as a control
+variate. It's correct because the expected value of this quantity is
+zero. It can't hurt variance unless the coefficients are poorly estimated
+(actually, there are more precise conditions).)</p>
+</li>
+<li>
+<p>Actor-critic (i.e., using a value function approximator in addition to
+    policy learning)</p>
+<p>Introduces bias (unless we have a "compatible" parameterization between the
+policy and value function).</p>
+<p>There are many bias-variance tradeoffs available under this general scheme.</p>
+</li>
+<li>
+<p>Past rewards are independent of future actions. This let's us rewrite the
+    MC estimate to obtain a variance reduction. (not described here)</p>
+</li>
+</ul>
+<p><strong>Remarks</strong></p>
+<ul>
+<li>
+<p><strong>Relaxing discrete actions into stochastic ones</strong>: A common way to handle
+   discrete (i.e., nondifferentiable) structures/decisions is to put a
+   differentiable density over the structure. (Note: this shouldn't be
+   surprising -- it's what we do in structured prediction, e.g. with CRFs!)</p>
+</li>
+<li>
+<p><strong>Unknown environments</strong>: Dynamics cancel out! Note that we need to be able
+   to get samples from the unknown factors in the environment/model.</p>
+</li>
+<li>
+<p><strong>Bandit feedback</strong>: Learning under nondecomposable reward functions Policy
+   gradient naturally handles "bandit feedback" (i.e., you only see the values
+   of trajectories that you sample). In contrast with "full information" which
+   tells you the reward of all possible trajectories.</p>
 </li>
 </ul>
 <p><strong>Take home messages</strong>:</p>

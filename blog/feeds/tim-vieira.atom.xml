@@ -747,7 +747,7 @@ heavily from that paper as well as an email exchange from Nikos.&lt;/p&gt;
   cookbook that you made one time but just can't remember exactly which recipe
   it was. So, based on the ingredients of each recipe, you come up with a prior
   probability &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; that recipe &lt;span class="math"&gt;\(i\)&lt;/span&gt; is the one you're looking for. In total, the
-  cookbook has &lt;span class="math"&gt;\(n\)&lt;/span&gt; recipes and &lt;span class="math"&gt;\(\sum_{i=1}^n p_i = 1\)&lt;/span&gt;.&lt;/p&gt;
+  cookbook has &lt;span class="math"&gt;\(n\)&lt;/span&gt; recipes and &lt;span class="math"&gt;\(\sum_{i=1}^n p_i = 1.\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;A good strategy would be to sort recipes by &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; and cook the most promising
 ones first. Unfortunately, you're not a great chef so there is some probability
 that you'll mess-up the recipe. So, it's a good idea to try recipes multiple
@@ -755,10 +755,10 @@ times. Also, you have no short term memory...&lt;/p&gt;
 &lt;p&gt;This suggests a &lt;em&gt;sampling with replacement&lt;/em&gt; strategy, where we sample a recipe
 from the cookbook to try &lt;em&gt;independently&lt;/em&gt; of whether we've tried it before
 (called a &lt;em&gt;memoryless&lt;/em&gt; strategy). Let's give this strategy the name
-&lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt;. Note that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is a probability distribution over
+&lt;span class="math"&gt;\(\boldsymbol{q}.\)&lt;/span&gt; Note that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is a probability distribution over
 the recipes in the cookbook, just like &lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How many recipes until we find the special one?&lt;/strong&gt; To start, suppose the
-special recipe is &lt;span class="math"&gt;\(j\)&lt;/span&gt;. Then, the expected number of recipes we have to make
+special recipe is &lt;span class="math"&gt;\(j.\)&lt;/span&gt; Then, the expected number of recipes we have to make
 until we find &lt;span class="math"&gt;\(j\)&lt;/span&gt; under the strategy &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
@@ -829,12 +829,12 @@ $$&lt;/div&gt;
 
 &lt;p&gt;The equation says that expected time it takes to sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;em&gt;the first time&lt;/em&gt;
 is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
-sample it at time &lt;span class="math"&gt;\(t\)&lt;/span&gt;. We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
+sample it at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt; We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
 &lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
 &lt;p&gt;Note that this equation assumes that we known &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
 certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
 consider potential errors in executing the recipe.&lt;/p&gt;
-&lt;p&gt;Since we don't which &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the right one, we take an expectation over it
+&lt;p&gt;Since we don't known which &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the right one, we take an expectation over it
 according to the prior distribution, which yields the following equation,
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -842,9 +842,9 @@ f(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{q_i}.
 $$&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;The first surprising thing&lt;/strong&gt;: Uniform is just as good as &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;,
   yikes! &lt;span class="math"&gt;\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)&lt;/span&gt; and
-  &lt;span class="math"&gt;\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n\)&lt;/span&gt;. (Assume, without
+  &lt;span class="math"&gt;\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n.\)&lt;/span&gt; (Assume, without
   loss of generality, that &lt;span class="math"&gt;\(p_i &amp;gt; 0\)&lt;/span&gt; since we can just drop these elements from
-  &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;.)&lt;/p&gt;
+  &lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt;)&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;What's the &lt;em&gt;optimal&lt;/em&gt; &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt;?&lt;/strong&gt; We can address this question by
 solving the following optimization (which will have a nice closed form
 solution),&lt;/p&gt;
@@ -894,17 +894,16 @@ f(q^*) = \sum_i \frac{p_i}{q^*_i}
 = \left( \sum_i \sqrt{p_i} \right)^2
 $$&lt;/div&gt;
 &lt;p&gt;which sometimes equals &lt;span class="math"&gt;\(n\)&lt;/span&gt;, e.g., when &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt; is uniform, but is never
-bigger than &lt;span class="math"&gt;\(n\)&lt;/span&gt;.&lt;/p&gt;
+bigger than &lt;span class="math"&gt;\(n.\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;What's the intuition?&lt;/strong&gt; The reason why the &lt;span class="math"&gt;\(\sqrt{p}\)&lt;/span&gt;-scheme is preferred is
 because we save on &lt;em&gt;additional&lt;/em&gt; cooking experiments. For example, if a recipe
 has &lt;span class="math"&gt;\(k\)&lt;/span&gt; times higher prior probability than the average recipe, then we will try
 that recipe &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; times more often; compared to &lt;span class="math"&gt;\(k\)&lt;/span&gt;, which we'd get under
-&lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt;. Additional cooking experiments are not so advantageous.&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt; Additional cooking experiments are not so advantageous.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Allowing for noise in the cooking process&lt;/strong&gt;: Suppose that for each recipe we
   had a prior belief about how hard that recipe is for us to cook. Denote that
-  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; (&lt;span class="math"&gt;\(s\)&lt;/span&gt; is for "at our &lt;em&gt;skill&lt;/em&gt; level"), these belief are between
-  zero (never get it right) and one (perfect every time) and do not sum to one
-  over the cookbook.&lt;/p&gt;
+  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;, these belief are between zero (never get it right) and one
+  (perfect every time) and do not sum to one over the cookbook.&lt;/p&gt;
 &lt;p&gt;Following a similar derivation to before, the time to cook the special recipe
 &lt;span class="math"&gt;\(j\)&lt;/span&gt; and cook it correctly is,
 &lt;/p&gt;
@@ -918,21 +917,20 @@ That gives rise to a modified objective,
 f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
 $$&lt;/div&gt;
 &lt;p&gt;This is exactly the same as the previous objective, except we've replaced &lt;span class="math"&gt;\(p_i\)&lt;/span&gt;
-with &lt;span class="math"&gt;\(p_i/s_i\)&lt;/span&gt;. Thus, we can reuse our previous derivation to get the optimal
-strategy, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i / s_i}\)&lt;/span&gt;. If noise is constant, then we
-recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i}\)&lt;/span&gt;.&lt;/p&gt;
+with &lt;span class="math"&gt;\(p_i/s_i.\)&lt;/span&gt; Thus, we can reuse our previous derivation to get the optimal
+strategy, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i / s_i}.\)&lt;/span&gt; If noise is constant, then we
+recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_i}.\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Extension to finding multiple tasty recipes&lt;/strong&gt;: Suppose we're trying to find
   several tasty recipes, not just a single special one. Now, &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; is our prior
   belief that we'll like the recipe at all. How do we minimize the time until we
   find a tasty one? It turns out the same trick works without modification
   because all derivations apply to each recipe independently. The same trick
-  works if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; does not sums to one over &lt;span class="math"&gt;\(n\)&lt;/span&gt;. For example, if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; is the
+  works if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; does not sums to one over &lt;span class="math"&gt;\(n.\)&lt;/span&gt; For example, if &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; is the
   independent probability that you'll like recipe &lt;span class="math"&gt;\(i\)&lt;/span&gt; at all, not the
   probability that it's the special one.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Beyond memoryless policies&lt;/strong&gt;: Clearly, our choice of a memoryless policy can
   be beat by a policy family that balances exploration (trying new recipes) and
-  exploitation (trying the recipes our best guess at the special
-  recipe).&lt;/p&gt;
+  exploitation (trying our best guess).&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Overall, the problem we've posed is similar to a
@@ -940,13 +938,13 @@ recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_
     our case, the arms are the recipes, pulling the arm is trying the recipe and
     the reward is whether or not we liked the recipe (possibly noisy). The key
     difference between our setup and multi-armed bandits is that we trust our
-    prior distribution &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt; and noise model &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt;.&lt;/p&gt;
+    prior distribution &lt;span class="math"&gt;\(\boldsymbol{p}\)&lt;/span&gt; and noise model &lt;span class="math"&gt;\(\boldsymbol{s}.\)&lt;/span&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;If the amount of noise &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; is known and we trust the prior &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; then
     there is an optimal deterministic (without-replacement) strategy that we can
     get by sorting the recipes by &lt;span class="math"&gt;\(p_i\)&lt;/span&gt; accounting for the error rates
-    &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;. This approach is described in the original paper.&lt;/p&gt;
+    &lt;span class="math"&gt;\(s_i.\)&lt;/span&gt; This approach is described in the original paper.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;A more realistic application&lt;/strong&gt;: In certain language modeling applications, we
@@ -959,11 +957,11 @@ recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_
   distribution. Unfortunately, this gives too many samples of stop words (e.g.,
   "the", "an", "a"), so practitioners "anneal" the unigram distribution (to
   increase the entropy), that is sample from &lt;span class="math"&gt;\(q_i \propto
-  p_{\text{unigram},i}^\alpha\)&lt;/span&gt;. Typically, &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is set by grid search and
+  p_{\text{unigram},i}^\alpha.\)&lt;/span&gt; Typically, &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is set by grid search and
   (no surprise) &lt;span class="math"&gt;\(\alpha \approx 1/2\)&lt;/span&gt; tends to work best! The &lt;span class="math"&gt;\(\sqrt{p}\)&lt;/span&gt;-sampling
   trick is possibly a reverse-engineered justification in favor of annealing as
   "the right thing to do" (e.g., why not do additive smoothing?) and it even
-  tells us how to set the annealing parameter &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. The key assumption is
+  tells us how to set the annealing parameter &lt;span class="math"&gt;\(\alpha.\)&lt;/span&gt; The key assumption is
   that we want to sample the actual word at a given position as often as
   possible while still being diverse thanks to the coverage of unigram
   prior. (Furthermore, memoryless sampling leads to simpler algorithms.)&lt;/p&gt;
@@ -973,7 +971,7 @@ Actually, many word2vec papers use $\alpha=3/4$, which was suggested in
 value in
 [gensim](https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/models/word2vec.py#L462). So,
 [Ryan Cotterell](https://ryancotterell.github.io/) ran a quick experiment with
-gensim, which confirmed the suspicion that $1/2$ may be better than $3/4$.
+gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
 
     Word similarity accuracy (avg of 10 runs)
     | alpha | accuracy |
