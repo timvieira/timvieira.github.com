@@ -11881,10 +11881,11 @@ in this
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is
      handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy. See my later <a href="/blog/fast-sampling-sigmoid.md">post</a> on
-     fast sigmoid sampling (i.e., when <span class="math">\(K=2\)</span>).</p>
+     e.g. python+numpy.</p>
 </li>
 </ol>
+<p><strong>Further reading</strong>: I have a few posts relating to the Gumbel-max trick. Have a
+look at <a href="/blog/tag/Gumbel">posts tagged with Gumbel</a>.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

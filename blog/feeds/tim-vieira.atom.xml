@@ -2795,10 +2795,11 @@ in this
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
      handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy. See my later &lt;a href="/blog/fast-sampling-sigmoid.md"&gt;post&lt;/a&gt; on
-     fast sigmoid sampling (i.e., when &lt;span class="math"&gt;\(K=2\)&lt;/span&gt;).&lt;/p&gt;
+     e.g. python+numpy.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;: I have a few posts relating to the Gumbel-max trick. Have a
+look at &lt;a href="/blog/tag/Gumbel"&gt;posts tagged with Gumbel&lt;/a&gt;.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
