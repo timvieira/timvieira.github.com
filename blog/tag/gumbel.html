@@ -12089,10 +12089,8 @@ in this
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is
      handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy. By the way, an interesting alternative approach to
-     avoiding <span class="math">\(\exp\)</span> is described on Justin Domke's blog post on
-     <a href="http://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">speeding up sampling from a sigmoid</a>,
-     which discusses a trick for <span class="math">\(K=2\)</span>. (Make sure you read the comments!)</p>
+     e.g. python+numpy. See my later <a href="/blog/fast-sampling-sigmoid.md">post</a> on
+     fast sigmoid sampling (i.e., when <span class="math">\(K=2\)</span>).</p>
 </li>
 </ol>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
