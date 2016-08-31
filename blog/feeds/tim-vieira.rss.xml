@@ -951,7 +951,7 @@ recover the original solution, &lt;span class="math"&gt;\(q^*_i \propto \sqrt{p_
   avoid computing normalization constants (which require summing over a massive
   vocabulary) by using importance sampling, negative sampling or noise
   contrastive estimation techniques (e.g.,
-  &lt;a href="https://arxiv.org/pdf/1511.06909.pdf"&gt;Ji+,16&lt;/a&gt;
+  &lt;a href="https://arxiv.org/pdf/1511.06909.pdf"&gt;Ji+,16&lt;/a&gt;;
   &lt;a href="http://www.aclweb.org/anthology/Q15-1016"&gt;Levy+,15&lt;/a&gt;). These techniques depend
   on a proposal distribution, which folks often take to be the unigram
   distribution. Unfortunately, this gives too many samples of stop words (e.g.,
