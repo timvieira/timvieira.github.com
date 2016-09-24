@@ -41,10 +41,6 @@ a,
 a:link,
 a:visited {
     color: #000;
-    -webkit-transition:color 0.1s;
-    -moz-transition:color 0.1s;
-    -o-transition:color 0.1s;
-    transition:color 0.1s
 }
 
 a:hover{
@@ -115,6 +111,10 @@ h2 {
       text-decoration: none;
   }
 
+  #name-container a:hover {
+      color: #09f;
+  }
+
   #name {
   }
 
@@ -138,37 +138,6 @@ h2 {
   #bunchoflinks {
     padding: 5px 0 5px 0;
   }
-
-    #facebook {
-      //background:transparent url(../img/facebook-16x16.png) no-repeat scroll left center;
-      //padding-left: 18px
-    }
-
-    #delicious {
-      //background:transparent url(../img/delicious-16x16.png) no-repeat scroll left center;
-      //padding-left: 18px
-    }
-
-    #gmail {
-      //background:transparent url(../img/gmail-icon16.gif) no-repeat scroll left center;
-      //padding-left: 18px
-    }
-
-    #bitbucket {
-      //background:transparent url(../img/bitbucket.png) no-repeat scroll left center;
-      //padding-left: 18px
-    }
-
-    #github {
-      //background:transparent url(../img/github.png) no-repeat scroll left center;
-      //padding: 2px 0px 0px 18px;
-    }
-
-  #cv {
-    font-size: 13px;
-    padding: 2px 0 4px 0;
-  }
-
 
 
 #fun .project .thumbnail {
@@ -212,4 +181,16 @@ h2 {
 
 #footer {
   clear: both;
+}
+
+.extra {
+    background-color: #666;
+    text-decoration: none;
+    color: #fff !important;
+    border-radius: 6px;
+    padding: 1px 5px 2px 5px;
+}
+
+.extra:hover {
+    background-color: #73AD21 !important;
 }
