@@ -35,7 +35,7 @@ hyperparameters, e.g.,
 &lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;There's at least one catch!&lt;/strong&gt; Although the &lt;em&gt;time&lt;/em&gt; complexity of computing the
 gradient is as good as the function, the &lt;em&gt;space&lt;/em&gt; complexity may be much larger
-because (at least the default reverse-mode) autodiff recipe requires memoizing
+because the autodiff recipe (at least the default reverse-mode one) requires memoizing
 all intermediate quantities (e.g., the quantities you overwrite in a
 loop). There are generic methods for balancing the time-space tradeoff in
 autodiff, since you can (at least in theory) reconstruct the intermediate
