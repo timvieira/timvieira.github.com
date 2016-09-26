@@ -27,9 +27,9 @@ via &lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual pre
 &lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
 through many approximate inference algorithms, e.g.,
 &lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
-and many of Justin Domke's papers, to avoid problems issues I've mentioned
+and many of Justin Domke's papers, to avoid issues I've mentioned
 &lt;a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/"&gt;before&lt;/a&gt;. You
-can even backprop through gradient descent to get gradients of dev loss wrt
+can even backprop through optimization algorithms to get gradients of dev loss wrt
 hyperparameters, e.g.,
 &lt;a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf"&gt;Domke'12&lt;/a&gt; and
 &lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
