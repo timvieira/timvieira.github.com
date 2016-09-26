@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - Authors</title>
+  <title>Learn automatic differentiation</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -11819,16 +11819,169 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-    <h1>Authors on Graduate Descent</h1>
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Learn automatic differentiation</h1>
+      <p class="meta"><time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time></p>
+</header>
 
-    <ul>        <li><a href="http://timvieira.github.io/blog/author/tim-vieira.html">Tim Vieira</a> (22)</li>
-    </ul>
+  <div class="entry-content"><p>Here are some references for learning autodiff:</p>
+<p>I learned automatic differentiation from section 2 of
+<a href="http://users.cecs.anu.edu.au/~jdomke/courses/sml2011/08autodiff_nnets.pdf">this document</a>.</p>
+<ul>
+<li>
+<p>It's very short and simple.</p>
+</li>
+<li>
+<p>I recommend doing the example on paper, including drawing the graph of the
+  function so you can annotate it as you follow along.</p>
+</li>
+<li>
+<p>It's also useful to compare the automatic differentiation method to the (less
+  efficient) method for taking gradients you learned in calculus (often called
+  "symbolic differentiation").</p>
+</li>
+<li>
+<p>The key: Just like intermediate quantities improve efficiency of function
+    evaluation (i.e., "forward propagation"), the intermediate gradients (i.e.,
+    partial derivatives of intermediate variables wrt the output node, often
+    called "adjoints") allow for equally efficient gradient evaluation ("back
+    propagation").</p>
+</li>
+<li>
+<p>The structure of the backward algorithm is always the same.</p>
+</li>
+</ul>
+<p>We have:</p>
+<ul>
+<li>
+<p>adjoint of output node = 1</p>
+</li>
+<li>
+<p><code>+=</code> feeding into the adjoint value of all nodes (only necessary if
+     an intermediate node is reused, otherwise you /can/ just assign the value
+     with <code>=</code>).</p>
+</li>
+<li>
+<p>The <code>+=</code> values aggregated into a node always have the same form:
+     adjoint of later node times the 'local gradient' at the edge.</p>
+</li>
+<li>
+<p>The units of the quantities flowing along the edges always pass the unit
+     test (just like the chain rule, but note that we add partials that reuse a
+     node). <span class="math">\(\frac{\partial out}{\partial v}\)</span> <code>+=</code> <span class="math">\(\frac{\partial
+     out}{\partial v} \cdot \frac{\partial u}{\partial v}\)</span> for <span class="math">\(u \in
+     \text{outgoing}(v)\)</span></p>
+</li>
+</ul>
+<p><strong>Testing</strong></p>
+<p>You can test your understanding by making up your own functions then testing
+that you got the gradients correct using the
+<a href="https://en.wikipedia.org/wiki/Numerical_differentiation">finite-difference test</a>
+(sometimes called "numerical differentiation")</p>
+<ul>
+<li>
+<p>This is the main way that people test that the gradient implementation is
+  correct (for the function its based on; remember though just because the
+  fdcheck passes doesn't mean that the <span class="math">\(f\)</span> is implemented correctly, just that
+  the gradient matches <span class="math">\(f\)</span>, including any bugs that <span class="math">\(f\)</span> may have).</p>
+</li>
+<li>
+<p>You should always use the "two-point" version.</p>
+</li>
+<li>
+<p>Test the gradient at multiple inputs (maybe randomly chosen, or chosen to test
+  corner/extreme cases).</p>
+</li>
+<li>
+<p>Compare the numerical gradient to your derived gradient using relative error,
+  not absolute error. This is available under numpy.allclose.</p>
+</li>
+<li>
+<p>This "test suite" (described under these bullet points) is implemented in
+  scipy.optimize.check_grad.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>
+  </span>
+</p><div class="sharing">
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/drafts/learn-automatic-differentiation.html" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/drafts/learn-automatic-differentiation.html" >Tweet</a>
+</div>    </footer>
+  </article>
+
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -11938,6 +12091,9 @@ jQuery(document).ready(function($) {
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/drafts/learn-automatic-differentiation.html';
+          var disqus_url = 'http://timvieira.github.io/blog/drafts/learn-automatic-differentiation.html';
+          var disqus_title = 'Learn automatic differentiation';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

@@ -11829,6 +11829,190 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
+      </h1>
+      <p class="meta"><time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time></p>
+</header>
+
+  <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
+because it makes it rapidly prototype deep networks with plenty of doodads and
+geegaws, but because it means that evaluating the gradient <span class="math">\(\nabla f(x)\)</span> is as
+fast of computing <span class="math">\(f(x)\)</span>. In fact, the gradient provably requires at most a
+<em>small</em> constant factor more arithmetic operations than the function itself.
+Furthermore, autodiff tells us how to derive and implement the gradient
+efficiently. This is a fascinating result that is perhaps not emphasized enough
+in machine learning.</p>
+<p>Some examples:</p>
+<ul>
+<li>
+<p><strong>The gradient should never be asymptotically slower than the function.</strong> In
+  my recent <a href="/doc/2016-emnlp-vocrf.pdf">EMNLP'16 paper</a>, my coauthors and I
+  found a line of work on variable-order CRFs
+  (<a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf">Ye+'09</a>;
+  <a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf">Cuong+'14</a>), which
+  had an unnecessarily slow and complicated algorithm for computing gradients,
+  which was asymptotically (and practically) slower than their forward
+  algorithm. Without breaking a sweat, we derived a simpler and more efficient
+  gradient algorithm by simply applying backprop to the forward algorithm (and
+  made some other contributions).</p>
+</li>
+<li>
+<p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
+  inside-outside, are actually just instances of automatic differentiation
+  (i.e., outside is just backprop on inside). This shouldn't be a surprise
+  because these algorithms are used to compute gradients. Basically, if you know
+  backprop and the inside algorithm, then derive the outside algorithm
+  manually. I find it easier to understand the outside algorithm via its
+  connection to backprop, then via
+  <a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>.</p>
+</li>
+<li>
+<p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
+  through many approximate inference algorithms, e.g.,
+  <a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
+  and many of Justin Domke's papers, to avoid problems issues I've mentioned
+  <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">before</a>. You
+  can even backprop through gradient descent to get gradients of dev loss wrt
+  hyperparameters, e.g.,
+  <a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf">Domke'12</a> and
+  <a href="https://arxiv.org/abs/1502.03492">Maclaurin+'15</a>.</p>
+</li>
+</ul>
+<p><strong>There's at least one catch!</strong> Although the <em>time</em> complexity of computing the
+gradient is as good as the function, the <em>space</em> complexity may be much larger
+because (at least the default reverse-mode) autodiff recipe requires memoizing
+all intermediate quantities (e.g., the quantities you overwrite in a
+loop). There are generic methods for balancing the time-space tradeoff in
+autodiff, since you can (at least in theory) reconstruct the intermediate
+quantities by playing the forward computation again from intermediate
+checkpoints (at a cost to runtime, of course). A recent example is
+<a href="https://arxiv.org/abs/1606.03401">Gruslys+'16</a>.</p>
+<p><strong>A final remark</strong>. Despite the name "automatic" differentiation, there is no
+need to rely on software to "automatically" give you gradient routines. Applying
+the backprop transformation is generally easy to do manually and sometimes more
+efficient than using a library. Many autodiff libraries lack good support for
+dynamic computation graph, i.e., when the structure depends on quantities that
+vary with the input (e.g., sentence length).</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
       </h1>
       <p class="meta"><time datetime="2016-07-04T00:00:00-04:00" pubdate>Jul 04, 2016</time></p>
@@ -12715,197 +12899,6 @@ proposal distributions exist</em>.</p>
     <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">Read On &crarr;</a>
   </footer>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a>
-      </h1>
-      <p class="meta"><time datetime="2016-05-27T00:00:00-04:00" pubdate>May 27, 2016</time></p>
-</header>
-
-  <div class="entry-content"><p>In physical sciences, numbers are paired with units and called quantities. In
-this augmented number system, dimensional analysis provides a crucial sanity
-check, much like type checking in a programming language. There are simple rules
-for building up units and constraints on what operations are allowed. For
-example, you can't multiply quantities which are not conformable or add
-quantities with different units. Also, we generally know the units of the input
-and desired output, which allows us to check that our computations at least
-produce the right units.</p>
-<p>In this post, we'll discuss the dimensional analysis of gradient ascent, which
-will hopefully help us understand why the "step size" is parameter so finicky
-and why it even exists.</p>
-<p>Gradient ascent is an iterative procedure for (locally) maximizing a function,
-<span class="math">\(f: \mathbb{R}^d \mapsto \mathbb{R}\)</span>.</p>
-<div class="math">$$
-x_{t+1} = x_t + \alpha \frac{\partial f(x_t)}{\partial x}
-$$</div>
-<p>In general, <span class="math">\(\alpha\)</span> is a <span class="math">\(d \times d\)</span> matrix, but often we constrain the matrix
-to be simple, e.g., <span class="math">\(a\cdot I\)</span> for some scalar <span class="math">\(a\)</span> or <span class="math">\(\text{diag}(a)\)</span> for some
-vector <span class="math">\(a\)</span>.</p>
-<p>Now, let's look at the units of the change in <span class="math">\(\Delta x=x_{t+1} - x_t\)</span>,
-</p>
-<div class="math">$$
-(\textbf{units }\Delta x) = \left(\textbf{units }\alpha\cdot \frac{\partial f(x_t)}{\partial x}\right) = (\textbf{units }\alpha) \frac{(\textbf{units }f)}{(\textbf{units }x)}.
-$$</div>
-<p>The units of <span class="math">\(\Delta x\)</span> must be <span class="math">\((\textbf{units }x)\)</span>. However, if we assume <span class="math">\(f\)</span>
-is unit free, we're happy with <span class="math">\((\textbf{units }x) / (\textbf{units }f)\)</span>.</p>
-<p>Solving for the units of <span class="math">\(\alpha\)</span> we get,
-</p>
-<div class="math">$$
-(\textbf{units }\alpha) = \frac{(\textbf{units }x)^2}{(\textbf{units }f)}.
-$$</div>
-<p>This gives us an idea for what <span class="math">\(\alpha\)</span> should be.</p>
-<p>For example, the inverse Hessian passes the unit check (if we assume <span class="math">\(f\)</span> unit
-free). The disadvantages of the Hessian is that it needs to be positive-definite
-(or at least invertible) in order to be a valid "step size" (i.e., we need
-step sizes to be <span class="math">\(&gt; 0\)</span>).</p>
-<p>Another method for handling step sizes is line search. However, line search
-won't let us run online. Furthermore, line search would be too slow in the case
-where we want a step size for each dimension.</p>
-<p>In machine learning, we've become fond of online methods, which adapt the step
-size as they go. The general idea is to estimate a step size matrix that passes
-the unit check (for each dimension of <span class="math">\(x\)</span>). Furthermore, we want do as little
-extra work as possible to get this estimate (e.g., we want to avoid computing a
-Hessian because that would be extra work). So, the step size should be based
-only iterates and gradients up to time <span class="math">\(t\)</span>.</p>
-<ul>
-<li>
-<p><a href="http://www.magicbroom.info/Papers/DuchiHaSi10.pdf">AdaGrad</a> doesn't doesn't
-  pass the unit check. This motivated AdaDelta.</p>
-</li>
-<li>
-<p><a href="https://arxiv.org/abs/1212.5701">AdaDelta</a> uses the ratio of (running
-  estimates of) the root-mean-squares of <span class="math">\(\Delta x\)</span> and <span class="math">\(\partial f / \partial
-  x\)</span>. The mean is taken using an exponentially weighted moving average. See
-  paper for actual implementation.</p>
-</li>
-<li>
-<p><a href="http://arxiv.org/abs/1412.6980">Adam</a> came later and made some tweaks to
-  remove (unintended) bias in the AdaDelta estimates of the numerator and
-  denominator.</p>
-</li>
-</ul>
-<p>In summary, it's important/useful to analyze the units of numerical algorithms
-in order to get a sanity check (i.e., catch mistakes) as well as to develop an
-understanding of why certain parameters exist and how properties of a problem
-affect the values we should use for them.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/tag/math2.html">&larr; Older</a>
 
@@ -12915,6 +12908,9 @@ affect the values we should use for them.</p>
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
       </li>
@@ -12926,9 +12922,6 @@ affect the values we should use for them.</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
       </li>
     </ul>
   </section>
@@ -12945,7 +12938,7 @@ affect the values we should use for them.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 

@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - Authors</title>
+  <title>Evaluating ∇f(x) is as fast as f(x)</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -11819,16 +11819,156 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li >
+    <li class="active">
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-    <h1>Authors on Graduate Descent</h1>
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Evaluating ∇f(x) is as fast as f(x)</h1>
+      <p class="meta"><time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time></p>
+</header>
 
-    <ul>        <li><a href="http://timvieira.github.io/blog/author/tim-vieira.html">Tim Vieira</a> (22)</li>
-    </ul>
+  <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
+because it makes it rapidly prototype deep networks with plenty of doodads and
+geegaws, but because it means that evaluating the gradient <span class="math">\(\nabla f(x)\)</span> is as
+fast of computing <span class="math">\(f(x)\)</span>. In fact, the gradient provably requires at most a
+<em>small</em> constant factor more arithmetic operations than the function itself.
+Furthermore, autodiff tells us how to derive and implement the gradient
+efficiently. This is a fascinating result that is perhaps not emphasized enough
+in machine learning.</p>
+<p>Some examples:</p>
+<ul>
+<li>
+<p><strong>The gradient should never be asymptotically slower than the function.</strong> In
+  my recent <a href="/doc/2016-emnlp-vocrf.pdf">EMNLP'16 paper</a>, my coauthors and I
+  found a line of work on variable-order CRFs
+  (<a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf">Ye+'09</a>;
+  <a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf">Cuong+'14</a>), which
+  had an unnecessarily slow and complicated algorithm for computing gradients,
+  which was asymptotically (and practically) slower than their forward
+  algorithm. Without breaking a sweat, we derived a simpler and more efficient
+  gradient algorithm by simply applying backprop to the forward algorithm (and
+  made some other contributions).</p>
+</li>
+<li>
+<p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
+  inside-outside, are actually just instances of automatic differentiation
+  (i.e., outside is just backprop on inside). This shouldn't be a surprise
+  because these algorithms are used to compute gradients. Basically, if you know
+  backprop and the inside algorithm, then derive the outside algorithm
+  manually. I find it easier to understand the outside algorithm via its
+  connection to backprop, then via
+  <a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>.</p>
+</li>
+<li>
+<p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
+  through many approximate inference algorithms, e.g.,
+  <a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
+  and many of Justin Domke's papers, to avoid problems issues I've mentioned
+  <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">before</a>. You
+  can even backprop through gradient descent to get gradients of dev loss wrt
+  hyperparameters, e.g.,
+  <a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf">Domke'12</a> and
+  <a href="https://arxiv.org/abs/1502.03492">Maclaurin+'15</a>.</p>
+</li>
+</ul>
+<p><strong>There's at least one catch!</strong> Although the <em>time</em> complexity of computing the
+gradient is as good as the function, the <em>space</em> complexity may be much larger
+because (at least the default reverse-mode) autodiff recipe requires memoizing
+all intermediate quantities (e.g., the quantities you overwrite in a
+loop). There are generic methods for balancing the time-space tradeoff in
+autodiff, since you can (at least in theory) reconstruct the intermediate
+quantities by playing the forward computation again from intermediate
+checkpoints (at a cost to runtime, of course). A recent example is
+<a href="https://arxiv.org/abs/1606.03401">Gruslys+'16</a>.</p>
+<p><strong>A final remark</strong>. Despite the name "automatic" differentiation, there is no
+need to rely on software to "automatically" give you gradient routines. Applying
+the backprop transformation is generally easy to do manually and sometimes more
+efficient than using a library. Many autodiff libraries lack good support for
+dynamic computation graph, i.e., when the structure depends on quantities that
+vary with the input (e.g., sentence length).</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Tim Vieira</span>
+  </span>
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/rant.html">rant</a>
+  </span>
+</p><div class="sharing">
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" >Tweet</a>
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -11938,6 +12078,9 @@ jQuery(document).ready(function($) {
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
+          var disqus_identifier = '/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
+          var disqus_url = 'http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
+          var disqus_title = 'Evaluating ∇f(x) is as fast as f(x)';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
