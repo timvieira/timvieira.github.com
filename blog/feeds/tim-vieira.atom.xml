@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tim-vieira.atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2016-09-25T00:00:00-04:00</updated><entry><title>Evaluating ∇f(x) is as fast as f(x)</title><link href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"></link><published>2016-09-25T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-09-25:blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id><summary type="html">&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
-because it makes it rapidly prototype deep networks with plenty of doodads and
-geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; is as
-fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at most a
-&lt;em&gt;small&lt;/em&gt; constant factor more arithmetic operations than the function itself.
-Furthermore, autodiff tells us how to derive and implement the gradient
+because it makes it easy to rapidly prototype deep networks with plenty of
+doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
+f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
+most a &lt;em&gt;small&lt;/em&gt; constant factor more arithmetic operations than the function
+itself.  Furthermore, autodiff tells us how to derive and implement the gradient
 efficiently. This is a fascinating result that is perhaps not emphasized enough
 in machine learning.&lt;/p&gt;
 &lt;p&gt;Some examples:&lt;/p&gt;
