@@ -7,42 +7,32 @@ most a &lt;em&gt;small&lt;/em&gt; constant factor more arithmetic operations tha
 itself.  Furthermore, autodiff tells us how to derive and implement the gradient
 efficiently. This is a fascinating result that is perhaps not emphasized enough
 in machine learning.&lt;/p&gt;
-&lt;p&gt;Some examples:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;strong&gt;The gradient should never be asymptotically slower than the function.&lt;/strong&gt; In
-  my recent &lt;a href="/doc/2016-emnlp-vocrf.pdf"&gt;EMNLP'16 paper&lt;/a&gt;, my coauthors and I
-  found a line of work on variable-order CRFs
-  (&lt;a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf"&gt;Ye+'09&lt;/a&gt;;
-  &lt;a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf"&gt;Cuong+'14&lt;/a&gt;), which
-  had an unnecessarily slow and complicated algorithm for computing gradients,
-  which was asymptotically (and practically) slower than their forward
-  algorithm. Without breaking a sweat, we derived a simpler and more efficient
-  gradient algorithm by simply applying backprop to the forward algorithm (and
-  made some other contributions).&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;The gradient should never be asymptotically slower than the function.&lt;/strong&gt; In my
+recent &lt;a href="/doc/2016-emnlp-vocrf.pdf"&gt;EMNLP'16 paper&lt;/a&gt;, my coauthors and I found a
+line of work on variable-order CRFs
+(&lt;a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf"&gt;Ye+'09&lt;/a&gt;;
+&lt;a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf"&gt;Cuong+'14&lt;/a&gt;), which
+had an unnecessarily slow and complicated algorithm for computing gradients,
+which was asymptotically (and practically) slower than their forward
+algorithm. Without breaking a sweat, we derived a simpler and more efficient
+gradient algorithm by simply applying backprop to the forward algorithm (and
+made some other contributions).&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Many algorithms are just backprop.&lt;/strong&gt; For example, forward-backward and
-  inside-outside, are actually just instances of automatic differentiation
-  (i.e., outside is just backprop on inside). This shouldn't be a surprise
-  because these algorithms are used to compute gradients. Basically, if you know
-  backprop and the inside algorithm, then derive the outside algorithm
-  manually. I find it easier to understand the outside algorithm via its
-  connection to backprop, then via
-  &lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
+inside-outside, are actually just instances of automatic differentiation (i.e.,
+outside is just backprop on inside). This shouldn't be a surprise because these
+algorithms are used to compute gradients. Basically, if you know backprop and
+the inside algorithm, then derive the outside algorithm manually. I find it
+easier to understand the outside algorithm via its connection to backprop, then
+via &lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
-  through many approximate inference algorithms, e.g.,
-  &lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
-  and many of Justin Domke's papers, to avoid problems issues I've mentioned
-  &lt;a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/"&gt;before&lt;/a&gt;. You
-  can even backprop through gradient descent to get gradients of dev loss wrt
-  hyperparameters, e.g.,
-  &lt;a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf"&gt;Domke'12&lt;/a&gt; and
-  &lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+through many approximate inference algorithms, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
+and many of Justin Domke's papers, to avoid problems issues I've mentioned
+&lt;a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/"&gt;before&lt;/a&gt;. You
+can even backprop through gradient descent to get gradients of dev loss wrt
+hyperparameters, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf"&gt;Domke'12&lt;/a&gt; and
+&lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;There's at least one catch!&lt;/strong&gt; Although the &lt;em&gt;time&lt;/em&gt; complexity of computing the
 gradient is as good as the function, the &lt;em&gt;space&lt;/em&gt; complexity may be much larger
 because (at least the default reverse-mode) autodiff recipe requires memoizing
