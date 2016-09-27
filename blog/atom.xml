@@ -21,9 +21,10 @@ made some other contributions).&lt;/p&gt;
 inside-outside, are actually just instances of automatic differentiation (i.e.,
 outside is just backprop on inside). This shouldn't be a surprise because these
 algorithms are used to compute gradients. Basically, if you know backprop and
-the inside algorithm, then derive the outside algorithm manually. I find it
-easier to understand the outside algorithm via its connection to backprop, then
-via &lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;.&lt;/p&gt;
+the inside algorithm, then you can derive the outside algorithm manually. I find
+it easier to understand the outside algorithm via its connection to backprop,
+then via
+&lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
 through many approximate inference algorithms, e.g.,
 &lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
