@@ -1,5 +1,220 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sun, 25 Sep 2016 00:00:00 -0400</lastBuildDate><item><title>Evaluating ∇f(x) is as fast as f(x)</title><link>http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</link><description>&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence in sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+s_n\)&lt;/span&gt;, such that &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is set deterministically.&lt;/p&gt;
+&lt;p&gt;So, producing the initial sequence takes &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time. If all we care
+about is the final state, then we can do it in &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; space.&lt;/p&gt;
+&lt;p&gt;Now, we'd like to devise an algorithm, which can reconstruct each point in the
+sequence efficiently as we traverse it backwards. You can think of this as
+"hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
+&lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;
+the size of each state is large, this will be infeasible.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 0&lt;/strong&gt;: Rerun the forward pass &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. Runtime &lt;span class="math"&gt;\(\mathcal{O}(n^2)\)&lt;/span&gt;, space
+  &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 1&lt;/strong&gt;: Suppose we save &lt;span class="math"&gt;\(k \le n\)&lt;/span&gt; states evenly spaced "checkpoints"?
+Clearly, this gives us &lt;span class="math"&gt;\(\mathcal{O}(k)\)&lt;/span&gt; space, but what does it do to
+the runtime?  Well, if we are at time &lt;span class="math"&gt;\(t\)&lt;/span&gt; the we have to "replay" computation
+from the last recorded checkpoint to get &lt;span class="math"&gt;\(s_t\)&lt;/span&gt;, which takes &lt;span class="math"&gt;\(O(n/k)\)&lt;/span&gt; time. Thus,
+the overall runtimes becomes &lt;span class="math"&gt;\(O(n^2/k)\)&lt;/span&gt;. This runtime is not ideal.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 2&lt;/strong&gt;: &lt;em&gt;Idea 1&lt;/em&gt; did something kind of silly, within a chunk of size &lt;span class="math"&gt;\(n/k\)&lt;/span&gt;,
+it does each computation multiple times! Suppose we increase the memory
+requirement &lt;em&gt;just a little bit&lt;/em&gt; to remember the current chunk we're working on,
+making it now &lt;span class="math"&gt;\(\mathcal{O}(k + n/k)\)&lt;/span&gt;. Now, we compute each state at most &lt;span class="math"&gt;\(2\)&lt;/span&gt;
+times: once in the initial sequence and once in the reverse. This implies a
+&lt;em&gt;linear&lt;/em&gt; runtime.  Now, the question: how should we set &lt;span class="math"&gt;\(k\)&lt;/span&gt; so that we minimize
+extra space? Easy! Solve the following little optimization problem:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
+$$&lt;/div&gt;
+&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;button onclick="toggle('#derivation')" class="toggle-button"&gt;Derivation&lt;/button&gt;
+&lt;div id="derivation" style="display:none;" class="derivation"&gt;
+To get the minimum, we solve for &lt;span class="math"&gt;\(k\)&lt;/span&gt; that sets the derivative to zero.
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+    0 &amp;amp;=&amp;amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
+      &amp;amp;=&amp;amp; 1-n/k^2 \\
+n/k^2 &amp;amp;=&amp;amp; 1 \\
+  k^2 &amp;amp;=&amp;amp; n \\
+    k &amp;amp;=&amp;amp; \sqrt{n}
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;
+&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;Since it's safe to assume that &lt;span class="math"&gt;\(n,k \ge 1\)&lt;/span&gt; and &lt;span class="math"&gt;\(\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &amp;gt; 0\)&lt;/span&gt; this is indeed a minimum. It's also global minimum
+because &lt;span class="math"&gt;\(k+n/k\)&lt;/span&gt; is convex in &lt;span class="math"&gt;\(k\)&lt;/span&gt; when &lt;span class="math"&gt;\(n,k &amp;gt; 0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;p&gt;That's nuts! We get away with &lt;em&gt;sublinear&lt;/em&gt; space &lt;span class="math"&gt;\(\mathcal{O}(\sqrt{n})\)&lt;/span&gt; and we
+only blow up our runtime by a factor of 2. Also, I really love the "introduce a
+parameter then optimize it out" trick.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sqrt_space&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ceil&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sqrt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="n"&gt;memory&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+    &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# last chunk may be shorter than k.&lt;/span&gt;
+        &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;reversed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+            &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="n"&gt;B&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;B&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Idea 3&lt;/strong&gt;: What if we apply "the remember &lt;span class="math"&gt;\(k\)&lt;/span&gt; states" trick &lt;em&gt;recursively&lt;/em&gt;? I'm
+going to work this out for &lt;span class="math"&gt;\(k=2\)&lt;/span&gt; (and then claim that the value of &lt;span class="math"&gt;\(k\)&lt;/span&gt; doesn't
+matter).&lt;/p&gt;
+&lt;p&gt;Run forward to get the midpoint at &lt;span class="math"&gt;\(s_{m}\)&lt;/span&gt;, where &lt;span class="math"&gt;\(m=b + \lfloor n/2
+\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;code&gt;[b:m]&lt;/code&gt; and &lt;code&gt;[m:e]&lt;/code&gt; (using
+Python slice syntax). We hit the base case when the width of the interval is
+one.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# do O(n/2) work to find the midpoint with O(1) space.&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+        &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;, which gives us
+a &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; space bound.&lt;/p&gt;
+&lt;p&gt;We can characterize runtime with the following recurrence relation, &lt;span class="math"&gt;\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)&lt;/span&gt;. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to &lt;span class="math"&gt;\(\mathcal{O}(n \log n)\)&lt;/span&gt; time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;p&gt;The algorithms describe in this post are generic algorithmic tricks, which has
+been used in a number of place, including&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The classic computer science interview problem of reversing a singly-linked list
+  under a tight budget on &lt;em&gt;additional&lt;/em&gt; memory.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Backpropagation for computing gradients in sequence models, including HMMs
+  (&lt;a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf"&gt;Zweig &amp;amp; Padmanabhan, 2000&lt;/a&gt;)
+  and RNNs (&lt;a href="https://arxiv.org/abs/1604.06174v2"&gt;Chen et al., 2016&lt;/a&gt;).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Memory-efficient &lt;a href="https://arxiv.org/pdf/cs/0310016v1"&gt;omniscient debugging&lt;/a&gt;,
+  which allows a user to inspect program state while moving forward &lt;em&gt;and
+  backward&lt;/em&gt; in time.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here's the
+&lt;a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2"&gt;code gist&lt;/a&gt;,
+complete with test cases.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 01 Oct 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-10-01:blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/</guid><category>algorithms</category></item><item><title>Evaluating ∇f(x) is as fast as f(x)</title><link>http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</link><description>&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
 because it makes it easy to rapidly prototype deep networks with plenty of
 doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
 f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
@@ -18,13 +233,16 @@ algorithm. Without breaking a sweat, we derived a simpler and more efficient
 gradient algorithm by simply applying backprop to the forward algorithm (and
 made some other contributions).&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Many algorithms are just backprop.&lt;/strong&gt; For example, forward-backward and
-inside-outside, are actually just instances of automatic differentiation (i.e.,
+inside-outside, are actually just instances of automatic differentiation
+(&lt;a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf"&gt;Eisner,'16&lt;/a&gt;) (i.e.,
 outside is just backprop on inside). This shouldn't be a surprise because these
 algorithms are used to compute gradients. Basically, if you know backprop and
 the inside algorithm, then you can derive the outside algorithm by applying the
 backprop transform manually. I find it easier to understand the outside
 algorithm via its connection to backprop, then via
-&lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;.&lt;/p&gt;
+&lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;. Note
+that inside-outside and forward-backward pre-date backpropagation and have
+additional uses beyond computing gradients.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
 through many approximate inference algorithms, e.g.,
 &lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;

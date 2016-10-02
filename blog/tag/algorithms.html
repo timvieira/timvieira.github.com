@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Complex-step derivative</title>
+  <title>Graduate Descent - algorithms</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -11819,94 +11819,180 @@ jQuery(document).ready(function($) {
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
-    <li class="active">
+    <li >
     <a href="http://timvieira.github.io/blog/category/misc.html">Misc</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div>
-  <article class="hentry" role="article">
+<div class="blog-index">
+  		<article>
 <header>
-      <h1 class="entry-title">Complex-step derivative</h1>
-      <p class="meta"><time datetime="2014-08-07T00:00:00-04:00" pubdate>Aug 07, 2014</time></p>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/">Reversing a sequence in sublinear space</a>
+      </h1>
+      <p class="meta"><time datetime="2016-10-01T00:00:00-04:00" pubdate>Oct 01, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
+  <div class="entry-content"><p>Suppose we have a computation, which generates sequence of states <span class="math">\(s_1 \ldots
+s_n\)</span>, such that <span class="math">\(s_{t} = f(s_{t-1})\)</span> and <span class="math">\(s_0\)</span> is set deterministically.</p>
+<p>So, producing the initial sequence takes <span class="math">\(\mathcal{O}(n)\)</span> time. If all we care
+about is the final state, then we can do it in <span class="math">\(\mathcal{O}(1)\)</span> space.</p>
+<p>Now, we'd like to devise an algorithm, which can reconstruct each point in the
+sequence efficiently as we traverse it backwards. You can think of this as
+"hitting undo" from the end of the sequence or reversing a singly-liked list.</p>
+<p>Obviously, we <em>could</em> just record the entire sequence, but if <span class="math">\(n\)</span> is large <em>or</em>
+the size of each state is large, this will be infeasible.</p>
+<p><strong>Idea 0</strong>: Rerun the forward pass <span class="math">\(n\)</span> times. Runtime <span class="math">\(\mathcal{O}(n^2)\)</span>, space
+  <span class="math">\(\mathcal{O}(1)\)</span>.</p>
+<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(k \le n\)</span> states evenly spaced "checkpoints"?
+Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to
+the runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation
+from the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus,
+the overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
+<p><strong>Idea 2</strong>: <em>Idea 1</em> did something kind of silly, within a chunk of size <span class="math">\(n/k\)</span>,
+it does each computation multiple times! Suppose we increase the memory
+requirement <em>just a little bit</em> to remember the current chunk we're working on,
+making it now <span class="math">\(\mathcal{O}(k + n/k)\)</span>. Now, we compute each state at most <span class="math">\(2\)</span>
+times: once in the initial sequence and once in the reverse. This implies a
+<em>linear</em> runtime.  Now, the question: how should we set <span class="math">\(k\)</span> so that we minimize
+extra space? Easy! Solve the following little optimization problem:</p>
 <div class="math">$$
-f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
 $$</div>
-<p>Recall, the centered-difference approximation is a fairly accurate method for
-approximating derivatives of a univariate function <span class="math">\(f\)</span>, which only requires two
-function evaluations. A similar derivation, based on the Taylor series expansion
-with a complex perturbation, gives us a similarly-accurate approximation with a
-single (complex) function evaluation instead of two (real-valued) function
-evaluations. Note: <span class="math">\(f\)</span> must support complex inputs (in frameworks, such as numpy
-or matlab, this often requires no modification to source code).</p>
-<p>This post is based on
-<a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf">Martins+'03</a></p>
-<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
+<style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><button onclick="toggle('#derivation')" class="toggle-button">Derivation</button>
+<div id="derivation" style="display:none;" class="derivation">
+To get the minimum, we solve for <span class="math">\(k\)</span> that sets the derivative to zero.
+</p>
 <div class="math">$$
-f(x + i \cdot \varepsilon) =
-  \frac{i^0 \varepsilon^0}{0!} f(x)
-+ \frac{i^1 \varepsilon^1}{1!} f'(x)
-+ \frac{i^2 \varepsilon^2}{2!} f''(x)
-+ \frac{i^3 \varepsilon^3}{3!} f'''(x)
-+ \cdots
+\begin{eqnarray}
+    0 &amp;=&amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
+      &amp;=&amp; 1-n/k^2 \\
+n/k^2 &amp;=&amp; 1 \\
+  k^2 &amp;=&amp; n \\
+    k &amp;=&amp; \sqrt{n}
+\end{eqnarray}
 $$</div>
-<p>Take the imaginary part of both sides and solve for <span class="math">\(f'(x)\)</span>. Note: the <span class="math">\(f\)</span> and
-<span class="math">\(f''\)</span> term disappear because <span class="math">\(i^0\)</span> and <span class="math">\(i^2\)</span> are real-valued.</p>
-<div class="math">$$
-f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
-$$</div>
-<p>As usual, using a small <span class="math">\(\varepsilon\)</span> let's us throw out higher-order
-terms. And, we arrive at the following approximation:</p>
-<div class="math">$$
-f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$</div>
-<p>If instead, we take the real part and solve for <span class="math">\(f(x)\)</span>, we get an approximation
-to the function's value at <span class="math">\(x\)</span>:</p>
-<div class="math">$$
-f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$</div>
-<p>In other words, a single (complex) function evaluations computes both the
-function's value and the derivative.</p>
-<p><strong>Code</strong>:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
-<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c1"># convert input to complex number</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c1"># return function value and gradient</span>
-    <span class="k">return</span> <span class="n">f1</span>
+<p>
+<br/></p>
+<p>Since it's safe to assume that <span class="math">\(n,k \ge 1\)</span> and <span class="math">\(\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &gt; 0\)</span> this is indeed a minimum. It's also global minimum
+because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\)</span> when <span class="math">\(n,k &gt; 0\)</span>.</p>
+</div>
+
+<p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
+only blow up our runtime by a factor of 2. Also, I really love the "introduce a
+parameter then optimize it out" trick.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">memory</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">:</span>
+        <span class="c1"># last chunk may be shorter than k.</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">memory</span><span class="p">[</span><span class="n">b</span><span class="o">-</span><span class="n">c</span><span class="p">],</span> <span class="n">c</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+            <span class="n">b</span> <span class="o">-=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="s2">&quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&quot;</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">B</span>
 </pre></div>
 
 
-<p>A simple test:</p>
-<div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c1"># function</span>
-<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c1"># gradient</span>
-<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<p><strong>Idea 3</strong>: What if we apply "the remember <span class="math">\(k\)</span> states" trick <em>recursively</em>? I'm
+going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
+matter).</p>
+<p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
+\rfloor\)</span>. Next, recurse on the left and right chunks <code>[b:m]</code> and <code>[m:e]</code> (using
+Python slice syntax). We hit the base case when the width of the interval is
+one.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">s0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># do O(n/2) work to find the midpoint with O(1) space.</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
 </pre></div>
 
 
-<p><strong>Other comments</strong></p>
+<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
+a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
+<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that <span class="math">\(k=2\)</span>.</p>
+<h2>Remarks</h2>
+<p>The algorithms describe in this post are generic algorithmic tricks, which has
+been used in a number of place, including</p>
 <ul>
 <li>
-<p>Using the complex-step method to estimate the gradients of multivariate
-  functions requires independent approximations for each dimension of the
-  input.</p>
+<p>The classic computer science interview problem of reversing a singly-linked list
+  under a tight budget on <em>additional</em> memory.</p>
 </li>
 <li>
-<p>Although the complex-step approximation only requires a single function
-  evaluation, it's unlikely faster than performing two function evaluations
-  because operations on complex numbers are generally much slower than on floats
-  or doubles.</p>
+<p>Backpropagation for computing gradients in sequence models, including HMMs
+  (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
+  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>).</p>
+</li>
+<li>
+<p>Memory-efficient <a href="https://arxiv.org/pdf/cs/0310016v1">omniscient debugging</a>,
+  which allows a user to inspect program state while moving forward <em>and
+  backward</em> in time.</p>
 </li>
 </ul>
+<p>Here's the
+<a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">code gist</a>,
+complete with test cases.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -11963,44 +12049,77 @@ function's value and the derivative.</p>
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script></div>
-    <footer>
-<p class="meta">
-  <span class="byline author vcard">
-    Posted by <span class="fn">Tim Vieira</span>
-  </span>
-<time datetime="2014-08-07T00:00:00-04:00" pubdate>Aug 07, 2014</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>
-  </span>
-</p><div class="sharing">
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" >Tweet</a>
-</div>    </footer>
-  </article>
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
 
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
-  </section>
-</div>
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/">Read On &crarr;</a>
+  </footer>
+  		</article>
+<div class="pagination">
+
+  <br />
+</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/">Reversing a sequence in sublinear space</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
       </li>
     </ul>
   </section>
@@ -12087,14 +12206,11 @@ function's value and the derivative.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2016  - Tim Vieira -
+    Copyright &copy;  2016  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">
 	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2014/08/07/complex-step-derivative/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/';
-          var disqus_title = 'Complex-step derivative';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

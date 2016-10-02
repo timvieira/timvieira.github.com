@@ -11853,13 +11853,16 @@ algorithm. Without breaking a sweat, we derived a simpler and more efficient
 gradient algorithm by simply applying backprop to the forward algorithm (and
 made some other contributions).</p>
 <p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
-inside-outside, are actually just instances of automatic differentiation (i.e.,
+inside-outside, are actually just instances of automatic differentiation
+(<a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Eisner,'16</a>) (i.e.,
 outside is just backprop on inside). This shouldn't be a surprise because these
 algorithms are used to compute gradients. Basically, if you know backprop and
 the inside algorithm, then you can derive the outside algorithm by applying the
 backprop transform manually. I find it easier to understand the outside
 algorithm via its connection to backprop, then via
-<a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>.</p>
+<a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>. Note
+that inside-outside and forward-backward pre-date backpropagation and have
+additional uses beyond computing gradients.</p>
 <p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
 through many approximate inference algorithms, e.g.,
 <a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
@@ -12538,7 +12541,7 @@ programming algorithm we came up with.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 
