@@ -11843,11 +11843,11 @@ sequence efficiently as we traverse it backwards. You can think of this as
 the size of each state is large, this will be infeasible.</p>
 <p><strong>Idea 0</strong>: Rerun the forward pass <span class="math">\(n\)</span> times. Runtime <span class="math">\(\mathcal{O}(n^2)\)</span>, space
   <span class="math">\(\mathcal{O}(1)\)</span>.</p>
-<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(k \le n\)</span> states evenly spaced "checkpoints"?
-Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to
-the runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation
-from the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus,
-the overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
+<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(0 &lt; k \le n\)</span> evenly spaced "checkpoint" states.
+Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to the
+runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation from
+the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus, the
+overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
 <p><strong>Idea 2</strong>: <em>Idea 1</em> did something kind of silly, within a chunk of size <span class="math">\(n/k\)</span>,
 it does each computation multiple times! Suppose we increase the memory
 requirement <em>just a little bit</em> to remember the current chunk we're working on,

@@ -8,11 +8,11 @@ sequence efficiently as we traverse it backwards. You can think of this as
 the size of each state is large, this will be infeasible.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Idea 0&lt;/strong&gt;: Rerun the forward pass &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. Runtime &lt;span class="math"&gt;\(\mathcal{O}(n^2)\)&lt;/span&gt;, space
   &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Idea 1&lt;/strong&gt;: Suppose we save &lt;span class="math"&gt;\(k \le n\)&lt;/span&gt; states evenly spaced "checkpoints"?
-Clearly, this gives us &lt;span class="math"&gt;\(\mathcal{O}(k)\)&lt;/span&gt; space, but what does it do to
-the runtime?  Well, if we are at time &lt;span class="math"&gt;\(t\)&lt;/span&gt; the we have to "replay" computation
-from the last recorded checkpoint to get &lt;span class="math"&gt;\(s_t\)&lt;/span&gt;, which takes &lt;span class="math"&gt;\(O(n/k)\)&lt;/span&gt; time. Thus,
-the overall runtimes becomes &lt;span class="math"&gt;\(O(n^2/k)\)&lt;/span&gt;. This runtime is not ideal.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 1&lt;/strong&gt;: Suppose we save &lt;span class="math"&gt;\(0 &amp;lt; k \le n\)&lt;/span&gt; evenly spaced "checkpoint" states.
+Clearly, this gives us &lt;span class="math"&gt;\(\mathcal{O}(k)\)&lt;/span&gt; space, but what does it do to the
+runtime?  Well, if we are at time &lt;span class="math"&gt;\(t\)&lt;/span&gt; the we have to "replay" computation from
+the last recorded checkpoint to get &lt;span class="math"&gt;\(s_t\)&lt;/span&gt;, which takes &lt;span class="math"&gt;\(O(n/k)\)&lt;/span&gt; time. Thus, the
+overall runtimes becomes &lt;span class="math"&gt;\(O(n^2/k)\)&lt;/span&gt;. This runtime is not ideal.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Idea 2&lt;/strong&gt;: &lt;em&gt;Idea 1&lt;/em&gt; did something kind of silly, within a chunk of size &lt;span class="math"&gt;\(n/k\)&lt;/span&gt;,
 it does each computation multiple times! Suppose we increase the memory
 requirement &lt;em&gt;just a little bit&lt;/em&gt; to remember the current chunk we're working on,
