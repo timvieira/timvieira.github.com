@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2016-10-01T00:00:00-04:00</updated><entry><title>Reversing a sequence with sublinear space</title><link href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/" rel="alternate"></link><published>2016-10-01T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-10-01:blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</id><summary type="html">&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt;, such that &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is set deterministically.&lt;/p&gt;
-&lt;p&gt;So, producing the initial sequence takes &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time. If all we care
-about is the final state, then we can do it in &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; space.&lt;/p&gt;
-&lt;p&gt;Now, we'd like to devise an algorithm, which can reconstruct each point in the
+&lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
 "hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
 &lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;

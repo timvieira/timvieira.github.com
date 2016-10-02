@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt;, such that &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is set deterministically.&lt;/p&gt;
-&lt;p&gt;So, producing the initial sequence takes &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time. If all we care
-about is the final state, then we can do it in &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; space.&lt;/p&gt;
-&lt;p&gt;Now, we'd like to devise an algorithm, which can reconstruct each point in the
+&lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
 "hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
 &lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;

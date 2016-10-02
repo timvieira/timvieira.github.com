@@ -11834,9 +11834,7 @@ jQuery(document).ready(function($) {
 
   <div class="entry-content"><p>Suppose we have a computation, which generates sequence of states <span class="math">\(s_1 \ldots
 s_n\)</span>, such that <span class="math">\(s_{t} = f(s_{t-1})\)</span> and <span class="math">\(s_0\)</span> is set deterministically.</p>
-<p>So, producing the initial sequence takes <span class="math">\(\mathcal{O}(n)\)</span> time. If all we care
-about is the final state, then we can do it in <span class="math">\(\mathcal{O}(1)\)</span> space.</p>
-<p>Now, we'd like to devise an algorithm, which can reconstruct each point in the
+<p>We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
 "hitting undo" from the end of the sequence or reversing a singly-liked list.</p>
 <p>Obviously, we <em>could</em> just record the entire sequence, but if <span class="math">\(n\)</span> is large <em>or</em>
