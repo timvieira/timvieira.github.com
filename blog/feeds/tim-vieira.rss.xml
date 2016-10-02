@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
-s_n\)&lt;/span&gt;, such that &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is set deterministically.&lt;/p&gt;
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
 "hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
@@ -111,7 +111,7 @@ parameter then optimize it out" trick.&lt;/p&gt;
 going to work this out for &lt;span class="math"&gt;\(k=2\)&lt;/span&gt; (and then claim that the value of &lt;span class="math"&gt;\(k\)&lt;/span&gt; doesn't
 matter).&lt;/p&gt;
 &lt;p&gt;Run forward to get the midpoint at &lt;span class="math"&gt;\(s_{m}\)&lt;/span&gt;, where &lt;span class="math"&gt;\(m=b + \lfloor n/2
-\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;span class="math"&gt;\([b,m)\)&lt;/span&gt; and &lt;span class="math"&gt;\([m,e)\)&lt;/span&gt;. 
+\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;span class="math"&gt;\([b,m)\)&lt;/span&gt; and &lt;span class="math"&gt;\([m,e)\)&lt;/span&gt;.
 We hit the base case when the width of the interval is
 one.&lt;/p&gt;
 &lt;p&gt;Note that we implicitly store midpoints as we recurse (thanks to the stack

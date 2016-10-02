@@ -11832,8 +11832,8 @@ jQuery(document).ready(function($) {
       <p class="meta"><time datetime="2016-10-01T00:00:00-04:00" pubdate>Oct 01, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>Suppose we have a computation, which generates sequence of states <span class="math">\(s_1 \ldots
-s_n\)</span>, such that <span class="math">\(s_{t} = f(s_{t-1})\)</span> and <span class="math">\(s_0\)</span> is set deterministically.</p>
+  <div class="entry-content"><p>Suppose we have a computation which generates sequence of states <span class="math">\(s_1 \ldots
+s_n\)</span> according to <span class="math">\(s_{t} = f(s_{t-1})\)</span> where <span class="math">\(s_0\)</span> is given.</p>
 <p>We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
 "hitting undo" from the end of the sequence or reversing a singly-liked list.</p>
@@ -11944,7 +11944,7 @@ parameter then optimize it out" trick.</p>
 going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
 matter).</p>
 <p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
-\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>. 
+\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>.
 We hit the base case when the width of the interval is
 one.</p>
 <p>Note that we implicitly store midpoints as we recurse (thanks to the stack
