@@ -11883,8 +11883,8 @@ $$</div>
 function toggle(x) { $(x).toggle(); }
 </script>
 
-<p><button onclick="toggle('#derivation')" class="toggle-button">Derivation</button>
-<div id="derivation" style="display:none;" class="derivation">
+<p><button onclick="toggle('#derivation-optimal-space')" class="toggle-button">Derivation</button>
+<div id="derivation-optimal-space" style="display:none;" class="derivation">
 To get the minimum, we solve for <span class="math">\(k\)</span> that sets the derivative to zero.
 </p>
 <div class="math">$$
@@ -11906,8 +11906,8 @@ because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\
 <p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
 only blow up our runtime by a factor of 2. Also, I really love the "introduce a
 parameter then optimize it out" trick.</p>
-<p><button onclick="toggle('#code')">Code</button>
-<div id="code" style="display:none;"></p>
+<p><button onclick="toggle('#code-sqrt-space')">Code</button>
+<div id="code-sqrt-space" style="display:none;"></p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
     <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
@@ -11955,8 +11955,8 @@ a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
 mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
 like in the case of sorting, the branching factor doesn't matter so we're happy
 with or initial assumption that <span class="math">\(k=2\)</span>.</p>
-<p><button onclick="toggle('#code')">Code</button>
-<div id="code" style="display:none;"></p>
+<p><button onclick="toggle('#code-recursive')">Code</button>
+<div id="code-recursive" style="display:none;"></p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">s0</span>
