@@ -11908,6 +11908,8 @@ because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\
 <p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
 only blow up our runtime by a factor of 2. Also, I really love the "introduce a
 parameter then optimize it out" trick.</p>
+<p><button onclick="toggle('#code')">Code</button>
+<div id="code" style="display:none;"></p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
     <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
@@ -11938,13 +11940,25 @@ parameter then optimize it out" trick.</p>
 </pre></div>
 
 
+</div>
+
 <p><strong>Idea 3</strong>: What if we apply "the remember <span class="math">\(k\)</span> states" trick <em>recursively</em>? I'm
 going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
 matter).</p>
 <p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
-\rfloor\)</span>. Next, recurse on the left and right chunks <code>[b:m]</code> and <code>[m:e]</code> (using
-Python slice syntax). We hit the base case when the width of the interval is
+\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>. 
+We hit the base case when the width of the interval is
 one.</p>
+<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
+a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
+<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that <span class="math">\(k=2\)</span>.</p>
+<p><button onclick="toggle('#code')">Code</button>
+<div id="code" style="display:none;"></p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">s0</span>
@@ -11961,14 +11975,8 @@ one.</p>
 </pre></div>
 
 
-<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
-frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
-a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
-<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
-\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
-mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
-like in the case of sorting, the branching factor doesn't matter so we're happy
-with or initial assumption that <span class="math">\(k=2\)</span>.</p>
+</div>
+
 <h2>Remarks</h2>
 <p>The algorithms describe in this post are generic algorithmic tricks, which has
 been used in a number of place, including</p>

@@ -73,6 +73,8 @@ because &lt;span class="math"&gt;\(k+n/k\)&lt;/span&gt; is convex in &lt;span cl
 &lt;p&gt;That's nuts! We get away with &lt;em&gt;sublinear&lt;/em&gt; space &lt;span class="math"&gt;\(\mathcal{O}(\sqrt{n})\)&lt;/span&gt; and we
 only blow up our runtime by a factor of 2. Also, I really love the "introduce a
 parameter then optimize it out" trick.&lt;/p&gt;
+&lt;p&gt;&lt;button onclick="toggle('#code')"&gt;Code&lt;/button&gt;
+&lt;div id="code" style="display:none;"&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sqrt_space&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ceil&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sqrt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
     &lt;span class="n"&gt;memory&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
@@ -103,13 +105,25 @@ parameter then optimize it out" trick.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;/div&gt;
+
 &lt;p&gt;&lt;strong&gt;Idea 3&lt;/strong&gt;: What if we apply "the remember &lt;span class="math"&gt;\(k\)&lt;/span&gt; states" trick &lt;em&gt;recursively&lt;/em&gt;? I'm
 going to work this out for &lt;span class="math"&gt;\(k=2\)&lt;/span&gt; (and then claim that the value of &lt;span class="math"&gt;\(k\)&lt;/span&gt; doesn't
 matter).&lt;/p&gt;
 &lt;p&gt;Run forward to get the midpoint at &lt;span class="math"&gt;\(s_{m}\)&lt;/span&gt;, where &lt;span class="math"&gt;\(m=b + \lfloor n/2
-\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;code&gt;[b:m]&lt;/code&gt; and &lt;code&gt;[m:e]&lt;/code&gt; (using
-Python slice syntax). We hit the base case when the width of the interval is
+\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;span class="math"&gt;\([b,m)\)&lt;/span&gt; and &lt;span class="math"&gt;\([m,e)\)&lt;/span&gt;. 
+We hit the base case when the width of the interval is
 one.&lt;/p&gt;
+&lt;p&gt;Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;, which gives us
+a &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; space bound.&lt;/p&gt;
+&lt;p&gt;We can characterize runtime with the following recurrence relation, &lt;span class="math"&gt;\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)&lt;/span&gt;. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to &lt;span class="math"&gt;\(\mathcal{O}(n \log n)\)&lt;/span&gt; time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;button onclick="toggle('#code')"&gt;Code&lt;/button&gt;
+&lt;div id="code" style="display:none;"&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
         &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
@@ -126,14 +140,8 @@ one.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Note that we implicitly store midpoints as we recurse (thanks to the stack
-frame).  The max depth of the recursion is &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;, which gives us
-a &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; space bound.&lt;/p&gt;
-&lt;p&gt;We can characterize runtime with the following recurrence relation, &lt;span class="math"&gt;\(T(n) = 2
-\cdot T(n/2) + \mathcal{O}(n)\)&lt;/span&gt;. Since we recognize this as the recurrence for
-mergesort, we know that it flattens to &lt;span class="math"&gt;\(\mathcal{O}(n \log n)\)&lt;/span&gt; time. Also, just
-like in the case of sorting, the branching factor doesn't matter so we're happy
-with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/div&gt;
+
 &lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;p&gt;The algorithms describe in this post are generic algorithmic tricks, which has
 been used in a number of place, including&lt;/p&gt;
