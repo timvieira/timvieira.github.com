@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence in sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation, which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt;, such that &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is set deterministically.&lt;/p&gt;
 &lt;p&gt;So, producing the initial sequence takes &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time. If all we care
 about is the final state, then we can do it in &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; space.&lt;/p&gt;
@@ -214,7 +214,7 @@ complete with test cases.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 01 Oct 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-10-01:blog/post/2016/10/01/reversing-a-sequence-in-sublinear-space/</guid><category>algorithms</category></item><item><title>Evaluating ∇f(x) is as fast as f(x)</title><link>http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</link><description>&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 01 Oct 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-10-01:blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</guid><category>algorithms</category></item><item><title>Evaluating ∇f(x) is as fast as f(x)</title><link>http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</link><description>&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
 because it makes it easy to rapidly prototype deep networks with plenty of
 doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
 f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
