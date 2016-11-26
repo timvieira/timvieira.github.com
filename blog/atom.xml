@@ -9,6 +9,33 @@ changes to its &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional input vec
 form of the quantity we're going to compute is &lt;span class="math"&gt;\(z = \bigoplus_{i=1}^n w_i\)&lt;/span&gt;,
 where &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; is some associative binary operator with identity element
 &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
 &lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#operator-mathy');"&gt;more formally...&lt;/button&gt;
 &lt;div id="operator-mathy" class="derivation" style="display:none"&gt;&lt;/p&gt;
 &lt;ul&gt;
