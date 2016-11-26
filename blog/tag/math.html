@@ -11946,12 +11946,12 @@ which makes implementation simpler.)</p>
 
 
 <p><strong>Updating <span class="math">\(w_k\)</span></strong> boils down to fixing intermediate sums that (transitively)
-  depend on <span class="math">\(w_k\)</span>. I won't go into all of the details here, instead I'll give
+  depend on <span class="math">\(w_k.\)</span> I won't go into all of the details here, instead I'll give
   code (below). I'd like to quickly point out that the term "parents" is not
-  great for our purposes because they are the <em>dependents</em>: when an input
-  changes the value the parents, grand parents, great grand parents, etc, become
-  stale and need to be recomputed bottom up (from the leaves). The code below
-  implements the update method for changing the value of <span class="math">\(w_k\)</span> and runs in
+  great for our purposes because they are actually the <em>dependents</em>: when an
+  input changes the value the parents, grand parents, great grand parents, etc,
+  become stale and need to be recomputed bottom up (from the leaves). The code
+  below implements the update method for changing the value of <span class="math">\(w_k\)</span> and runs in
   <span class="math">\(\mathcal{O}(\log n)\)</span> time.</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="s2">&quot;Update w[k] = v` in time O(log n).&quot;</span>

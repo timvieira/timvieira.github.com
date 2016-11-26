@@ -111,12 +111,12 @@ which makes implementation simpler.)&lt;/p&gt;
 
 
 &lt;p&gt;&lt;strong&gt;Updating &lt;span class="math"&gt;\(w_k\)&lt;/span&gt;&lt;/strong&gt; boils down to fixing intermediate sums that (transitively)
-  depend on &lt;span class="math"&gt;\(w_k\)&lt;/span&gt;. I won't go into all of the details here, instead I'll give
+  depend on &lt;span class="math"&gt;\(w_k.\)&lt;/span&gt; I won't go into all of the details here, instead I'll give
   code (below). I'd like to quickly point out that the term "parents" is not
-  great for our purposes because they are the &lt;em&gt;dependents&lt;/em&gt;: when an input
-  changes the value the parents, grand parents, great grand parents, etc, become
-  stale and need to be recomputed bottom up (from the leaves). The code below
-  implements the update method for changing the value of &lt;span class="math"&gt;\(w_k\)&lt;/span&gt; and runs in
+  great for our purposes because they are actually the &lt;em&gt;dependents&lt;/em&gt;: when an
+  input changes the value the parents, grand parents, great grand parents, etc,
+  become stale and need to be recomputed bottom up (from the leaves). The code
+  below implements the update method for changing the value of &lt;span class="math"&gt;\(w_k\)&lt;/span&gt; and runs in
   &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; time.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="s2"&gt;&amp;quot;Update w[k] = v` in time O(log n).&amp;quot;&lt;/span&gt;
