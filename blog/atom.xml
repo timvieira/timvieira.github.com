@@ -66,10 +66,9 @@ order of operations,&lt;/p&gt;
 &lt;div class="math"&gt;$$
 z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
 $$&lt;/div&gt;
-&lt;p&gt;&lt;br/&gt;
-Heap structure: Here the parentheses form a balance tree, which looks much more
-like a recursive implementation the does each half &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; and combines
-their results (divide-and-conquer style),&lt;/p&gt;
+&lt;p&gt;&lt;br/&gt; Heap structure: Here the parentheses form a balanced tree, which looks
+much more like a recursive implementation that computes the left and right
+halves and &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt;s the results (divide-and-conquer style),&lt;/p&gt;
 &lt;div class="math"&gt;$$
 z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
 $$&lt;/div&gt;
@@ -80,10 +79,9 @@ has &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt;. The intermediate q
 parenthesized expressions.&lt;/p&gt;
 &lt;p&gt;Since fewer intermediate quantities depend on a given input, fewer intermediates
 need to be adjusted upon a change to the input. Therefore, we get faster
-algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span class="math"&gt;\(z\)&lt;/span&gt; as the inputs change (we
-also maintain the values of the intermediate quantities).&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt;: We're going to maintain the values of the intermediates
-quantities by storing them in a heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary
+algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span class="math"&gt;\(z\)&lt;/span&gt; as the inputs change.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt;: We're going to store the values of the intermediates
+quantities and inputs in a heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary
 tree. In our case, the tree has depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the
 values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's leaves (aligned left) and padding with
 &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining leaves. Thus, &lt;span class="math"&gt;\(\boldsymbol{S} &amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
