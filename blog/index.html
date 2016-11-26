@@ -12029,9 +12029,6 @@ which makes implementation simpler.)</p>
 <p><strong>Sampling from an evolving distribution</strong>: Suppose that <span class="math">\(\boldsymbol{w}\)</span>
 corresponds to a categorical distributions over <span class="math">\(\{1, \ldots, n\}\)</span> and that we'd
 like to sample elements from in proportion to this (unnormalized) distribution.</p>
-<p>It turns out that the heap structure has yet another advantage for sampling!
-Namely, the intermediate sums allow us to perform binary search of the sampled
-element!</p>
 <p>Other methods like the <a href="http://www.keithschwarz.com/darts-dice-coins/">alias</a> or
 inverse CDF methods are efficient after a somewhat costly initialization
 step. But! they are not as efficient as the heap sampler when the distribution
