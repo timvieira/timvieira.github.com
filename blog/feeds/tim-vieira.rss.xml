@@ -1,5 +1,323 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Sat, 01 Oct 2016 00:00:00 -0400</lastBuildDate><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Mon, 21 Nov 2016 00:00:00 -0500</lastBuildDate><item><title>Heaps for incremental computation</title><link>http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</link><description>&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
+(e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
+changes to its inputs. The trick and it's implementation are inspired by the
+well-known max-heap datastructure. I'll also describe a really elegant
+application to fast sampling under an evolving categorical distribution.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: Suppose we'd like to efficiently compute a summary quantity under
+changes to its &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional input vector &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;. The particular
+form of the quantity we're going to compute is &lt;span class="math"&gt;\(z = \bigoplus_{i=1}^n w_i\)&lt;/span&gt;,
+where &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; is some associative binary operator with identity element
+&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#operator-mathy');"&gt;more formally...&lt;/button&gt;
+&lt;div id="operator-mathy" class="derivation" style="display:none"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\boldsymbol{w} \in \boldsymbol{K}^n\)&lt;/span&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Associative: &lt;span class="math"&gt;\((a \oplus b) \oplus c = a \oplus (b \oplus c)\)&lt;/span&gt; for all &lt;span class="math"&gt;\(a,b,c
+  \in \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Identity element: &lt;span class="math"&gt;\(\boldsymbol{0} \in \boldsymbol{K}\)&lt;/span&gt; such that &lt;span class="math"&gt;\(k \oplus
+  \boldsymbol{0} = \boldsymbol{0} \oplus k = k\)&lt;/span&gt;, for all &lt;span class="math"&gt;\(k \in \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;The trick&lt;/strong&gt;: Essentially, the trick boils down to &lt;em&gt;parenthesis placement&lt;/em&gt; in
+the expression which computes &lt;span class="math"&gt;\(z\)&lt;/span&gt;. A freedom we assumed via the associative
+property.&lt;/p&gt;
+&lt;p&gt;I'll demonstrate by example with &lt;span class="math"&gt;\(n=8\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Linear structure: We generally compute something like &lt;span class="math"&gt;\(z\)&lt;/span&gt; with a simple
+loop. This looks like a right-branching binary tree when we think about the
+order of operations,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;
+Heap structure: Here the parentheses form a balance tree, which looks much more
+like a recursive implementation the does each half &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; and combines
+their results (divide-and-conquer style),&lt;/p&gt;
+&lt;div class="math"&gt;$$
+z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;
+The benefit of the heap structure is that there are &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;
+intermediate quantities that depend on any input, whereas the linear structure
+has &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt;. The intermediate quantities correspond to the values of each of the
+parenthesized expressions.&lt;/p&gt;
+&lt;p&gt;Since fewer intermediate quantities depend on a given input, fewer intermediates
+need to be adjusted upon a change to the input. Therefore, we get faster
+algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span class="math"&gt;\(z\)&lt;/span&gt; as the inputs change (we
+also maintain the values of the intermediate quantities).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt;: We're going to maintain the values of the intermediates
+quantities by storing them in a heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary
+tree. In our case, the tree has depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the
+values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's leaves (aligned left) and padding with
+&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining leaves. Thus, &lt;span class="math"&gt;\(\boldsymbol{S} &amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;This structure makes our implementation really nice and efficient because we
+don't need pointers to find the parent or children of a node (i.e., no need to
+wrap elements into a "node" class like in a general tree data structure). So, we
+can pack everything into an array, which means our implementation has great
+memory/cache locality and low storage overhead.&lt;/p&gt;
+&lt;p&gt;Traversing the tree is pretty simple: Let &lt;span class="math"&gt;\(d\)&lt;/span&gt; be the number of internal nodes,
+nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are interal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
+\cdot i},\)&lt;/span&gt; right child &lt;span class="math"&gt;\(\rightarrow {2 \cdot i + 1},\)&lt;/span&gt; parent &lt;span class="math"&gt;\(\rightarrow
+\lfloor i / 2 \rfloor.\)&lt;/span&gt; (Note that these operations assume the array's indices
+start at &lt;span class="math"&gt;\(1\)&lt;/span&gt;. We generally fake this by adding a dummy node at position &lt;span class="math"&gt;\(0\)&lt;/span&gt;,
+which makes implementation simpler.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Initializing the heap&lt;/strong&gt;: Here's code that initializes the heap structure we
+  just described.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sumheap&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Create sumheap from weights `w` in O(n) time.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ceil&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;  &lt;span class="c1"&gt;# number of intermediates&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;zeros&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;                &lt;span class="c1"&gt;# intermediates + leaves&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;                     &lt;span class="c1"&gt;# store `w` at leaves.&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;reversed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Updating &lt;span class="math"&gt;\(w_k\)&lt;/span&gt;&lt;/strong&gt; boils down to fixing intermediate sums that (transitively)
+  depend on &lt;span class="math"&gt;\(w_k\)&lt;/span&gt;. I won't go into all of the details here, instead I'll give
+  code (below). I'd like to quickly point out that the term "parents" is not
+  great for our purposes because they are the &lt;em&gt;dependents&lt;/em&gt;: when an input
+  changes the value the parents, grand parents, great grand parents, etc, become
+  stale and need to be recomputed bottom up (from the leaves). The code below
+  implements the update method for changing the value of &lt;span class="math"&gt;\(w_k\)&lt;/span&gt; and runs in
+  &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; time.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Update w[k] = v` in time O(log n).&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;   &lt;span class="c1"&gt;# fix parents in the tree.&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;//=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Numerical stability&lt;/strong&gt;: If the operations are noisy (e.g., floating point
+   operator), then the heap version may be better behaved. For example, if
+   operations have an independent, additive noise rate &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; then noise
+   of &lt;span class="math"&gt;\(z_{\text{heap}}\)&lt;/span&gt; is &lt;span class="math"&gt;\(\mathcal{O}(\varepsilon \cdot \log n)\)&lt;/span&gt;, whereas
+   &lt;span class="math"&gt;\(z_{\text{linear}}\)&lt;/span&gt; is &lt;span class="math"&gt;\(\mathcal{O}(\varepsilon \cdot n)\)&lt;/span&gt;. (Without further
+   assumptions about the underlying operator, I don't believe you can do better
+   than that.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Relationship to max-heap&lt;/strong&gt;: In the case of a max or min heap, we can avoid
+   allocating extra space for intermediate quantities because all intermediates
+   values are equal to exactly one element of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Change propagation&lt;/strong&gt;: The general idea of &lt;em&gt;adjusting&lt;/em&gt; cached intermediate
+   quantities is a neat idea. In fact, we encounter it each time we type
+   &lt;code&gt;make&lt;/code&gt; at the command line! The general technique goes by many
+   names&amp;mdash;including change propagation, incremental maintenance, and
+   functional reactive programming&amp;mdash;and applies to basically &lt;em&gt;any&lt;/em&gt;
+   side-effect-free computation. However, most effective when the dependency
+   structure of the computation is sparsity and requires little overhead to find
+   and refresh stale values. In our example of computing &lt;span class="math"&gt;\(z\)&lt;/span&gt;, these
+   considerations manifest themselves as the heap vs linear structures and our
+   fast array implementation instead of a generic tree datastructure.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Generalizations&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;No zero? No problem. We don't &lt;em&gt;actually&lt;/em&gt; require a zero element. So, it's
+   fair to augment &lt;span class="math"&gt;\(\boldsymbol{K} \cup \{ \textsf{null} \}\)&lt;/span&gt; where
+   &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt; is distinguished value (i.e., &lt;span class="math"&gt;\(\textsf{null} \notin
+   \boldsymbol{K}\)&lt;/span&gt;) that &lt;em&gt;acts&lt;/em&gt; just like a zero after we overload &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; to
+   satisfy the definition of a zero (e.g., by adding an if-statement).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Generalization to an arbitrary maps instead of fixed vectors is possible with
+   a "locator" map, which a bijective map from elements to indices in a dense
+   array.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Support for growing and shrinking: We support &lt;strong&gt;growing&lt;/strong&gt; by maintaining an
+   underlying array that is always slightly larger than we need&amp;mdash;---which
+   we're &lt;em&gt;already&lt;/em&gt; in heap datastructure. Doubling the size of the underlying
+   array (i.e., rounding up to the next power of two) has the added benefit of
+   allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This is because
+   the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to allocate a
+   new array and copying old values, happens so infrequently that they can be
+   completely amortized. &lt;strong&gt;Shrinking&lt;/strong&gt; is a little more complicated. Generally,
+   this is implemented with an occupancy threshold, but it is tricky to get this
+   shrink threshold perfect because an adversary can force a type of "thrashing"
+   where we repeatedly shrink and grow. Ignoring the resizing of
+   &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;, we can fake shrinking by replacing the old value with
+   &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt;. There's a better implementation when &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; is
+   commutative, where we swap the last element of the array into the deleted
+   position and replace the last element with &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Application&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Sampling from an evolving distribution&lt;/strong&gt;: Suppose that &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;
+corresponds to a categorical distributions over &lt;span class="math"&gt;\(\{1, \ldots, n\}\)&lt;/span&gt; and that we'd
+like to sample elements from in proportion to this (unnormalized) distribution.&lt;/p&gt;
+&lt;p&gt;It turns out that the heap structure has yet another advantage for sampling!
+Namely, the intermediate sums allow us to perform binary search of the sampled
+element!&lt;/p&gt;
+&lt;p&gt;Other methods like the &lt;a href="http://www.keithschwarz.com/darts-dice-coins/"&gt;alias&lt;/a&gt; or
+inverse CDF methods are efficient after a somewhat costly initialization
+step. But! they are not as efficient as the heap sampler when the distribution
+is being updated. (I'm not sure about whether variants of alias that support
+updates.)&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;Sample&lt;/th&gt;
+&lt;th&gt;Update&lt;/th&gt;
+&lt;th&gt;Init&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;alias&lt;/td&gt;
+&lt;td&gt;O(1)&lt;/td&gt;
+&lt;td&gt;O(n)?&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;i-CDF&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;heap&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;Use cases include&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Gibbs_sampling"&gt;Gibbs sampling&lt;/a&gt;, where
+  distributions are constantly modified and sampled from (changes may not be
+  sparse so YMMV)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/"&gt;EXP3&lt;/a&gt;
+  (&lt;a href="https://en.wikipedia.org/wiki/Multi-armed_bandit"&gt;mutli-armed bandit algorithm&lt;/a&gt;)
+  is an excellent example of an algorithm that samples and modifies a single
+  weight in the distribution.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Stochastic priority queues&lt;/em&gt; where we sample proportional to priority and the
+  weights on items in the queue may change, elements are possibly removed after
+  they are sampled (i.e., sampling without replacement), and elements are added.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Again, I won't spell out all of the details of these algorithm. Instead, I'll
+just give the code.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Inverse CDF sampling&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Ordinary sampling method, O(n) init, O(log n) per sample.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cumsum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;            &lt;span class="c1"&gt;# build cdf, O(n)&lt;/span&gt;
+    &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;     &lt;span class="c1"&gt;# random probe, p ~ Uniform(0, z)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;searchsorted&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# binary search, O(log n)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Heap sampling&lt;/strong&gt; is essentially the same, except the cdf is stored as heap,
+which is perfect for binary search!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hsample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Sample from sumheap, O(log n) per sample.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="c1"&gt;# number of internal nodes.&lt;/span&gt;
+    &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;  &lt;span class="c1"&gt;# random probe, p ~ Uniform(0, z)&lt;/span&gt;
+    &lt;span class="c1"&gt;# Use binary search to find the index of the largest CDF (represented as a&lt;/span&gt;
+    &lt;span class="c1"&gt;# heap) value that is less than a random probe.&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# Determine if the value is in the left or right subtree.&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;*=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;         &lt;span class="c1"&gt;# Point at left child&lt;/span&gt;
+        &lt;span class="n"&gt;left&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;    &lt;span class="c1"&gt;# Probability mass under left subtree.&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;   &lt;span class="c1"&gt;# Value is in right subtree.&lt;/span&gt;
+            &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;  &lt;span class="c1"&gt;# Subtract mass from left subtree&lt;/span&gt;
+            &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;     &lt;span class="c1"&gt;# Point at right child&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Complete code and test cases for heap sampling are available in this
+&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Nov 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-11-21:blog/post/2016/11/21/heaps-for-incremental-computation/</guid><category>math</category><category>sampling</category><category>datastructures</category></item><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as

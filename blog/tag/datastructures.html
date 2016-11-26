@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - sampling</title>
+  <title>Graduate Descent - datastructures</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -11829,414 +11829,273 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+        <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
       </h1>
-      <p class="meta"><time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time></p>
+      <p class="meta"><time datetime="2016-11-21T00:00:00-05:00" pubdate>Nov 21, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>The following is a quick rant about
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
-(see that post for notation).</p>
-<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
-<blockquote>
-<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
-</blockquote>
-<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
-<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
-<p>With importance sampling, it is possible to achieve a variance reduction over
-Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
-for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
-variance</em> estimate <em>with a single sample</em>!</p>
-<p>Of course, this is an unreasonable distribution to use because the normalizing
-constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
-proposal distributions exist</em>.</p>
-<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
-"importance sampling for variance reduction" to learn more.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
+  <div class="entry-content"><p>In this post, I'll describe a neat trick for maintaining a summary quantity
+(e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
+changes to its inputs. The trick and it's implementation are inspired by the
+well-known max-heap datastructure. I'll also describe a really elegant
+application to fast sampling under an evolving categorical distribution.</p>
+<p><strong>Setup</strong>: Suppose we'd like to efficiently compute a summary quantity under
+changes to its <span class="math">\(n\)</span>-dimensional input vector <span class="math">\(\boldsymbol{w}\)</span>. The particular
+form of the quantity we're going to compute is <span class="math">\(z = \bigoplus_{i=1}^n w_i\)</span>,
+where <span class="math">\(\oplus\)</span> is some associative binary operator with identity element
+<span class="math">\(\boldsymbol{0}\)</span>.</p>
+<p><button class="toggle-button" onclick="toggle('#operator-mathy');">more formally...</button>
+<div id="operator-mathy" class="derivation" style="display:none"></p>
+<ul>
+<li>
+<p><span class="math">\(\boldsymbol{w} \in \boldsymbol{K}^n\)</span></p>
+</li>
+<li>
+<p><span class="math">\(\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}\)</span>.</p>
+</li>
+<li>
+<p>Associative: <span class="math">\((a \oplus b) \oplus c = a \oplus (b \oplus c)\)</span> for all <span class="math">\(a,b,c
+  \in \boldsymbol{K}\)</span>.</p>
+</li>
+<li>
+<p>Identity element: <span class="math">\(\boldsymbol{0} \in \boldsymbol{K}\)</span> such that <span class="math">\(k \oplus
+  \boldsymbol{0} = \boldsymbol{0} \oplus k = k\)</span>, for all <span class="math">\(k \in \boldsymbol{K}\)</span>.</p>
+</li>
+</ul>
+</div>
 
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
-      </h1>
-      <p class="meta"><time datetime="2014-08-01T00:00:00-04:00" pubdate>Aug 01, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p>A while back, <a href="http://people.cs.umass.edu/~wallach/">Hanna</a> and I stumbled upon
-the following blog post:
-<a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
-which got us excited about reservior sampling.</p>
-<p>Around the same time, I attended a talk by
-<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his work on
-perturb-and-MAP
-<a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
-which is inspired by the
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
-(see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent
-similarity between weighted reservior sampling and the Gumbel max trick lead us
-to make some cute connections, which I'll describe in this post.</p>
-<p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, <span class="math">\(x_1,
-x_2, \cdots\)</span>. At any point in time <span class="math">\(t\)</span> we'd like to have a sampled index <span class="math">\(i\)</span>
-available, where the probability of <span class="math">\(i\)</span> is given by <span class="math">\(\pi_t(i) = \frac{x_i}{
-\sum_{j=1}^t x_j}\)</span>.</p>
-<p>Assume, without loss of generality, that <span class="math">\(x_i &gt; 0\)</span> for all <span class="math">\(i\)</span>. (If any element
-has a zero weight we can safely ignore it since it should never be sampled.)</p>
-<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which
-is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
-<dl>
-<dt><span class="math">\(a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}\)</span></dt>
-<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
-<dd># Compute log-unnormalized probabilities</dd>
-<dd><span class="math">\(w_i = \log(x_i)\)</span></dd>
-<dd># Additively perturb each weight by a Gumbel random variate</dd>
-<dd><span class="math">\(z_i \sim \text{Gumbel}(0,1)\)</span></dd>
-<dd><span class="math">\(k_i = w_i + z_i\)</span></dd>
-<dd># Keep around the largest <span class="math">\(k_i\)</span> (i.e. the argmax)</dd>
-<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
-<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
-<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
-</dl>
-<p>If we interrupt this algorithm at any point, we have a sample <span class="math">\(b\)</span>.</p>
-<p>After convincing myself this algorithm was correct, I sat down to try to
-understand the algorithm in the blog post, which is due to Efraimidis and
-Spirakis (2005) (<a href="http://dl.acm.org/citation.cfm?id=1138834">paywall</a>,
-<a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf">free summary</a>). They
-looked similar in many ways but used different sorting keys / perturbations.</p>
-<p><strong>Efraimidis and Spirakis (2005)</strong>: Here is the ES algorithm for weighted
-reservior sampling</p>
-<dl>
-<dt><span class="math">\(a = -\infty; b = \text{null}\)</span></dt>
-<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
-<dd># Additively perturb each weight by a Gumbel random variate,</dd>
-<dd><span class="math">\(u_i \sim \text{Uniform}(0,1)\)</span></dd>
-<dd><span class="math">\(e_i = u_i^{(\frac{1}{x_i})}\)</span></dd>
-<dd># Keep around the largest <span class="math">\(e_i\)</span></dd>
-<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
-<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
-<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
-</dl>
-<p>Again, if interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>.</p>
-<p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
-algorithms compute a randomized key and take an argmax. What's the relationship
-between the keys?</p>
-<p>First, note that a <span class="math">\(\text{Gumbel}(0,1)\)</span> variate can be generated via
-<span class="math">\(-\log(-\log(\text{Uniform}(0,1)))\)</span>. This is a straightforward application of
-the
-<a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
-method for random number generation. This means that if we use the same sequence
-of uniform random variates then, <span class="math">\(z_i = -\log(-\log(u_i))\)</span>.</p>
-<p>However, this does not give use equality between <span class="math">\(k_i\)</span> and <span class="math">\(e_i\)</span>, but it does
-turn out that <span class="math">\(k_i = -\log(-\log(e_i))\)</span>, which is useful because this is a
-monotonic transformation on the interval <span class="math">\((0,1)\)</span>. Since monotonic
-transformations preserve ordering, the sequences <span class="math">\(k\)</span> and <span class="math">\(e\)</span> result in the same
-comparison decisions, as well as, the same argmax. In summary, the algorithms
-are the same!</p>
-<p><strong>Extensions</strong>: After reading a little further along in the ES paper, we see
-that the same algorithm can be used to perform <em>sampling without replacement</em> by
-sorting and taking the elements with the highest keys. This same modification is
-applicable to the Gumbel-max-trick because the keys have exactly the same
-ordering as ES. In practice we don't sort the key, but instead use a bounded
-priority queue.</p>
-<p><strong>Closing</strong>: To the best of my knowledge, the connection between the
-Gumbel-max-trick and ES is undocumented. Furthermore, the Gumbel-max-trick is
-not known as a streaming algorithm, much less known to perform sampling without
-replacement! If you know of a reference let me know. Perhaps, we'll finish
-turning these connections into a
-<a href="https://github.com/timvieira/gumbel">short tech report</a>.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Read On &crarr;</a>
-  </footer>
-  		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-31T00:00:00-04:00" pubdate>Jul 31, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
-log-probabilities:</p>
+<p><strong>The trick</strong>: Essentially, the trick boils down to <em>parenthesis placement</em> in
+the expression which computes <span class="math">\(z\)</span>. A freedom we assumed via the associative
+property.</p>
+<p>I'll demonstrate by example with <span class="math">\(n=8\)</span>.</p>
+<p>Linear structure: We generally compute something like <span class="math">\(z\)</span> with a simple
+loop. This looks like a right-branching binary tree when we think about the
+order of operations,</p>
 <div class="math">$$
-\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
+z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
 $$</div>
-<p><strong>The usual way</strong>: Exponentiate and normalize (using the
-<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
-an algorithm for sampling from a discrete distribution (aka categorical):</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">usual</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>     <span class="c1"># the exp-normalize trick</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cdf</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
+<p><br/>
+Heap structure: Here the parentheses form a balance tree, which looks much more
+like a recursive implementation the does each half <span class="math">\(\boldsymbol{w}\)</span> and combines
+their results (divide-and-conquer style),</p>
+<div class="math">$$
+z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
+$$</div>
+<p><br/>
+The benefit of the heap structure is that there are <span class="math">\(\mathcal{O}(\log n)\)</span>
+intermediate quantities that depend on any input, whereas the linear structure
+has <span class="math">\(\mathcal{O}(n)\)</span>. The intermediate quantities correspond to the values of each of the
+parenthesized expressions.</p>
+<p>Since fewer intermediate quantities depend on a given input, fewer intermediates
+need to be adjusted upon a change to the input. Therefore, we get faster
+algorithms for <em>maintaining</em> the output quantity <span class="math">\(z\)</span> as the inputs change (we
+also maintain the values of the intermediate quantities).</p>
+<p><strong>Heap datastructure</strong>: We're going to maintain the values of the intermediates
+quantities by storing them in a heap datastructure, which is a <em>complete</em> binary
+tree. In our case, the tree has depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the
+values of <span class="math">\(\boldsymbol{w}\)</span> at it's leaves (aligned left) and padding with
+<span class="math">\(\boldsymbol{0}\)</span> for remaining leaves. Thus, <span class="math">\(\boldsymbol{S} &lt; 4 n\)</span>.</p>
+<p>This structure makes our implementation really nice and efficient because we
+don't need pointers to find the parent or children of a node (i.e., no need to
+wrap elements into a "node" class like in a general tree data structure). So, we
+can pack everything into an array, which means our implementation has great
+memory/cache locality and low storage overhead.</p>
+<p>Traversing the tree is pretty simple: Let <span class="math">\(d\)</span> be the number of internal nodes,
+nodes <span class="math">\(1 \le i \le d\)</span> are interal. For node <span class="math">\(i\)</span>, left child <span class="math">\(\rightarrow {2
+\cdot i},\)</span> right child <span class="math">\(\rightarrow {2 \cdot i + 1},\)</span> parent <span class="math">\(\rightarrow
+\lfloor i / 2 \rfloor.\)</span> (Note that these operations assume the array's indices
+start at <span class="math">\(1\)</span>. We generally fake this by adding a dummy node at position <span class="math">\(0\)</span>,
+which makes implementation simpler.)</p>
+<p><strong>Initializing the heap</strong>: Here's code that initializes the heap structure we
+  just described.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sumheap</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="s2">&quot;Create sumheap from weights `w` in O(n) time.&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>  <span class="c1"># number of intermediates</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>                <span class="c1"># intermediates + leaves</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">d</span><span class="p">:</span><span class="n">d</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>                     <span class="c1"># store `w` at leaves.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">)):</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">S</span>
 </pre></div>
 
 
-<p><strong>The Gumbel max trick</strong>:</p>
-<div class="math">$$
-y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
-$$</div>
-<p>where <span class="math">\(z_1 \cdots z_K\)</span> are i.i.d. <span class="math">\(\text{Gumbel}(0,1)\)</span> random variates. It
-turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
-in this
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
-<p>Implementing the Gumbel max trick is remarkable easy:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<p><strong>Updating <span class="math">\(w_k\)</span></strong> boils down to fixing intermediate sums that (transitively)
+  depend on <span class="math">\(w_k\)</span>. I won't go into all of the details here, instead I'll give
+  code (below). I'd like to quickly point out that the term "parents" is not
+  great for our purposes because they are the <em>dependents</em>: when an input
+  changes the value the parents, grand parents, great grand parents, etc, become
+  stale and need to be recomputed bottom up (from the leaves). The code below
+  implements the update method for changing the value of <span class="math">\(w_k\)</span> and runs in
+  <span class="math">\(\mathcal{O}(\log n)\)</span> time.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="s2">&quot;Update w[k] = v` in time O(log n).&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">d</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="n">k</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>   <span class="c1"># fix parents in the tree.</span>
+        <span class="n">i</span> <span class="o">//=</span> <span class="mi">2</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 </pre></div>
 
 
-<p>If you don't have access to a Gumbel random variate generator, you can use
-<span class="math">\(-\log(-\log(\text{Uniform}(0,1))\)</span></p>
-<p><strong>Comparison</strong>:</p>
-<ol>
+<h2>Remarks</h2>
+<ul>
 <li>
-<p>Gumbel max requires <span class="math">\(K\)</span> samples from a uniform. Usual requires only <span class="math">\(1\)</span>.</p>
+<p><strong>Numerical stability</strong>: If the operations are noisy (e.g., floating point
+   operator), then the heap version may be better behaved. For example, if
+   operations have an independent, additive noise rate <span class="math">\(\varepsilon\)</span> then noise
+   of <span class="math">\(z_{\text{heap}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot \log n)\)</span>, whereas
+   <span class="math">\(z_{\text{linear}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot n)\)</span>. (Without further
+   assumptions about the underlying operator, I don't believe you can do better
+   than that.)</p>
 </li>
 <li>
-<p>Gumbel is one-pass because it does not require normalization (or a pass to
-     compute the max for use in the exp-normalize trick). More on this in a
-     later post!</p>
+<p><strong>Relationship to max-heap</strong>: In the case of a max or min heap, we can avoid
+   allocating extra space for intermediate quantities because all intermediates
+   values are equal to exactly one element of <span class="math">\(\boldsymbol{w}\)</span>.</p>
 </li>
 <li>
-<p>The Gumbel max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>, whereas ordinary
-     requires <span class="math">\(K\)</span> calls to <span class="math">\(\exp\)</span>. Since <span class="math">\(\exp\)</span> and <span class="math">\(\log\)</span> are expensive
-     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is
-     handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy.</p>
+<p><strong>Change propagation</strong>: The general idea of <em>adjusting</em> cached intermediate
+   quantities is a neat idea. In fact, we encounter it each time we type
+   <code>make</code> at the command line! The general technique goes by many
+   names&mdash;including change propagation, incremental maintenance, and
+   functional reactive programming&mdash;and applies to basically <em>any</em>
+   side-effect-free computation. However, most effective when the dependency
+   structure of the computation is sparsity and requires little overhead to find
+   and refresh stale values. In our example of computing <span class="math">\(z\)</span>, these
+   considerations manifest themselves as the heap vs linear structures and our
+   fast array implementation instead of a generic tree datastructure.</p>
 </li>
-</ol>
-<p><strong>Further reading</strong>: I have a few posts relating to the Gumbel-max trick. Have a
-look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
+</ul>
+<h2>Generalizations</h2>
+<ul>
+<li>
+<p>No zero? No problem. We don't <em>actually</em> require a zero element. So, it's
+   fair to augment <span class="math">\(\boldsymbol{K} \cup \{ \textsf{null} \}\)</span> where
+   <span class="math">\(\textsf{null}\)</span> is distinguished value (i.e., <span class="math">\(\textsf{null} \notin
+   \boldsymbol{K}\)</span>) that <em>acts</em> just like a zero after we overload <span class="math">\(\oplus\)</span> to
+   satisfy the definition of a zero (e.g., by adding an if-statement).</p>
+</li>
+<li>
+<p>Generalization to an arbitrary maps instead of fixed vectors is possible with
+   a "locator" map, which a bijective map from elements to indices in a dense
+   array.</p>
+</li>
+<li>
+<p>Support for growing and shrinking: We support <strong>growing</strong> by maintaining an
+   underlying array that is always slightly larger than we need&mdash;---which
+   we're <em>already</em> in heap datastructure. Doubling the size of the underlying
+   array (i.e., rounding up to the next power of two) has the added benefit of
+   allowing us to grow <span class="math">\(\boldsymbol{w}\)</span> at no asymptotic cost!  This is because
+   the resize operation, which requires an <span class="math">\(\mathcal{O}(n)\)</span> time to allocate a
+   new array and copying old values, happens so infrequently that they can be
+   completely amortized. <strong>Shrinking</strong> is a little more complicated. Generally,
+   this is implemented with an occupancy threshold, but it is tricky to get this
+   shrink threshold perfect because an adversary can force a type of "thrashing"
+   where we repeatedly shrink and grow. Ignoring the resizing of
+   <span class="math">\(\boldsymbol{w}\)</span>, we can fake shrinking by replacing the old value with
+   <span class="math">\(\textsf{null}\)</span>. There's a better implementation when <span class="math">\(\oplus\)</span> is
+   commutative, where we swap the last element of the array into the deleted
+   position and replace the last element with <span class="math">\(\textsf{null}\)</span>.</p>
+</li>
+</ul>
+<h2>Application</h2>
+<p><strong>Sampling from an evolving distribution</strong>: Suppose that <span class="math">\(\boldsymbol{w}\)</span>
+corresponds to a categorical distributions over <span class="math">\(\{1, \ldots, n\}\)</span> and that we'd
+like to sample elements from in proportion to this (unnormalized) distribution.</p>
+<p>It turns out that the heap structure has yet another advantage for sampling!
+Namely, the intermediate sums allow us to perform binary search of the sampled
+element!</p>
+<p>Other methods like the <a href="http://www.keithschwarz.com/darts-dice-coins/">alias</a> or
+inverse CDF methods are efficient after a somewhat costly initialization
+step. But! they are not as efficient as the heap sampler when the distribution
+is being updated. (I'm not sure about whether variants of alias that support
+updates.)</p>
+<p><center></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Sample</th>
+<th>Update</th>
+<th>Init</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alias</td>
+<td>O(1)</td>
+<td>O(n)?</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>i-CDF</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>heap</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+</tr>
+</tbody>
+</table>
+<p></center></p>
+<p>Use cases include</p>
+<ul>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/Gibbs_sampling">Gibbs sampling</a>, where
+  distributions are constantly modified and sampled from (changes may not be
+  sparse so YMMV)</p>
+</li>
+<li>
+<p><a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/">EXP3</a>
+  (<a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">mutli-armed bandit algorithm</a>)
+  is an excellent example of an algorithm that samples and modifies a single
+  weight in the distribution.</p>
+</li>
+<li>
+<p><em>Stochastic priority queues</em> where we sample proportional to priority and the
+  weights on items in the queue may change, elements are possibly removed after
+  they are sampled (i.e., sampling without replacement), and elements are added.</p>
+</li>
+</ul>
+<p>Again, I won't spell out all of the details of these algorithm. Instead, I'll
+just give the code.</p>
+<p><strong>Inverse CDF sampling</strong></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="s2">&quot;Ordinary sampling method, O(n) init, O(log n) per sample.&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>            <span class="c1"># build cdf, O(n)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>     <span class="c1"># random probe, p ~ Uniform(0, z)</span>
+    <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>  <span class="c1"># binary search, O(log n)</span>
+</pre></div>
+
+
+<p><strong>Heap sampling</strong> is essentially the same, except the cdf is stored as heap,
+which is perfect for binary search!</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">hsample</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+    <span class="s2">&quot;Sample from sumheap, O(log n) per sample.&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span>     <span class="c1"># number of internal nodes.</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">S</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># random probe, p ~ Uniform(0, z)</span>
+    <span class="c1"># Use binary search to find the index of the largest CDF (represented as a</span>
+    <span class="c1"># heap) value that is less than a random probe.</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
+        <span class="c1"># Determine if the value is in the left or right subtree.</span>
+        <span class="n">i</span> <span class="o">*=</span> <span class="mi">2</span>         <span class="c1"># Point at left child</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    <span class="c1"># Probability mass under left subtree.</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="n">left</span><span class="p">:</span>   <span class="c1"># Value is in right subtree.</span>
+            <span class="n">p</span> <span class="o">-=</span> <span class="n">left</span>  <span class="c1"># Subtract mass from left subtree</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>     <span class="c1"># Point at right child</span>
+    <span class="k">return</span> <span class="n">i</span> <span class="o">-</span> <span class="n">d</span>
+</pre></div>
+
+
+<p><strong>Code</strong>: Complete code and test cases for heap sampling are available in this
+<a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515">gist</a>.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -12351,12 +12210,11 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
 }
 </script></div>
   <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Read On &crarr;</a>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
 
-    <a class="next" href="http://timvieira.github.io/blog/tag/sampling.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">
@@ -12365,18 +12223,6 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
     <ul id="recent_posts">
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </li>
     </ul>
   </section>
@@ -12463,7 +12309,7 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2016  - Tim Vieira -
+    Copyright &copy;  2016  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">

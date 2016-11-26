@@ -11829,6 +11829,393 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
+      </h1>
+      <p class="meta"><time datetime="2016-11-21T00:00:00-05:00" pubdate>Nov 21, 2016</time></p>
+</header>
+
+  <div class="entry-content"><p>In this post, I'll describe a neat trick for maintaining a summary quantity
+(e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
+changes to its inputs. The trick and it's implementation are inspired by the
+well-known max-heap datastructure. I'll also describe a really elegant
+application to fast sampling under an evolving categorical distribution.</p>
+<p><strong>Setup</strong>: Suppose we'd like to efficiently compute a summary quantity under
+changes to its <span class="math">\(n\)</span>-dimensional input vector <span class="math">\(\boldsymbol{w}\)</span>. The particular
+form of the quantity we're going to compute is <span class="math">\(z = \bigoplus_{i=1}^n w_i\)</span>,
+where <span class="math">\(\oplus\)</span> is some associative binary operator with identity element
+<span class="math">\(\boldsymbol{0}\)</span>.</p>
+<p><button class="toggle-button" onclick="toggle('#operator-mathy');">more formally...</button>
+<div id="operator-mathy" class="derivation" style="display:none"></p>
+<ul>
+<li>
+<p><span class="math">\(\boldsymbol{w} \in \boldsymbol{K}^n\)</span></p>
+</li>
+<li>
+<p><span class="math">\(\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}\)</span>.</p>
+</li>
+<li>
+<p>Associative: <span class="math">\((a \oplus b) \oplus c = a \oplus (b \oplus c)\)</span> for all <span class="math">\(a,b,c
+  \in \boldsymbol{K}\)</span>.</p>
+</li>
+<li>
+<p>Identity element: <span class="math">\(\boldsymbol{0} \in \boldsymbol{K}\)</span> such that <span class="math">\(k \oplus
+  \boldsymbol{0} = \boldsymbol{0} \oplus k = k\)</span>, for all <span class="math">\(k \in \boldsymbol{K}\)</span>.</p>
+</li>
+</ul>
+</div>
+
+<p><strong>The trick</strong>: Essentially, the trick boils down to <em>parenthesis placement</em> in
+the expression which computes <span class="math">\(z\)</span>. A freedom we assumed via the associative
+property.</p>
+<p>I'll demonstrate by example with <span class="math">\(n=8\)</span>.</p>
+<p>Linear structure: We generally compute something like <span class="math">\(z\)</span> with a simple
+loop. This looks like a right-branching binary tree when we think about the
+order of operations,</p>
+<div class="math">$$
+z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
+$$</div>
+<p><br/>
+Heap structure: Here the parentheses form a balance tree, which looks much more
+like a recursive implementation the does each half <span class="math">\(\boldsymbol{w}\)</span> and combines
+their results (divide-and-conquer style),</p>
+<div class="math">$$
+z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
+$$</div>
+<p><br/>
+The benefit of the heap structure is that there are <span class="math">\(\mathcal{O}(\log n)\)</span>
+intermediate quantities that depend on any input, whereas the linear structure
+has <span class="math">\(\mathcal{O}(n)\)</span>. The intermediate quantities correspond to the values of each of the
+parenthesized expressions.</p>
+<p>Since fewer intermediate quantities depend on a given input, fewer intermediates
+need to be adjusted upon a change to the input. Therefore, we get faster
+algorithms for <em>maintaining</em> the output quantity <span class="math">\(z\)</span> as the inputs change (we
+also maintain the values of the intermediate quantities).</p>
+<p><strong>Heap datastructure</strong>: We're going to maintain the values of the intermediates
+quantities by storing them in a heap datastructure, which is a <em>complete</em> binary
+tree. In our case, the tree has depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the
+values of <span class="math">\(\boldsymbol{w}\)</span> at it's leaves (aligned left) and padding with
+<span class="math">\(\boldsymbol{0}\)</span> for remaining leaves. Thus, <span class="math">\(\boldsymbol{S} &lt; 4 n\)</span>.</p>
+<p>This structure makes our implementation really nice and efficient because we
+don't need pointers to find the parent or children of a node (i.e., no need to
+wrap elements into a "node" class like in a general tree data structure). So, we
+can pack everything into an array, which means our implementation has great
+memory/cache locality and low storage overhead.</p>
+<p>Traversing the tree is pretty simple: Let <span class="math">\(d\)</span> be the number of internal nodes,
+nodes <span class="math">\(1 \le i \le d\)</span> are interal. For node <span class="math">\(i\)</span>, left child <span class="math">\(\rightarrow {2
+\cdot i},\)</span> right child <span class="math">\(\rightarrow {2 \cdot i + 1},\)</span> parent <span class="math">\(\rightarrow
+\lfloor i / 2 \rfloor.\)</span> (Note that these operations assume the array's indices
+start at <span class="math">\(1\)</span>. We generally fake this by adding a dummy node at position <span class="math">\(0\)</span>,
+which makes implementation simpler.)</p>
+<p><strong>Initializing the heap</strong>: Here's code that initializes the heap structure we
+  just described.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sumheap</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="s2">&quot;Create sumheap from weights `w` in O(n) time.&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>  <span class="c1"># number of intermediates</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>                <span class="c1"># intermediates + leaves</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">d</span><span class="p">:</span><span class="n">d</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>                     <span class="c1"># store `w` at leaves.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">)):</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">S</span>
+</pre></div>
+
+
+<p><strong>Updating <span class="math">\(w_k\)</span></strong> boils down to fixing intermediate sums that (transitively)
+  depend on <span class="math">\(w_k\)</span>. I won't go into all of the details here, instead I'll give
+  code (below). I'd like to quickly point out that the term "parents" is not
+  great for our purposes because they are the <em>dependents</em>: when an input
+  changes the value the parents, grand parents, great grand parents, etc, become
+  stale and need to be recomputed bottom up (from the leaves). The code below
+  implements the update method for changing the value of <span class="math">\(w_k\)</span> and runs in
+  <span class="math">\(\mathcal{O}(\log n)\)</span> time.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="s2">&quot;Update w[k] = v` in time O(log n).&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">d</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="n">k</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>   <span class="c1"># fix parents in the tree.</span>
+        <span class="n">i</span> <span class="o">//=</span> <span class="mi">2</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+
+<h2>Remarks</h2>
+<ul>
+<li>
+<p><strong>Numerical stability</strong>: If the operations are noisy (e.g., floating point
+   operator), then the heap version may be better behaved. For example, if
+   operations have an independent, additive noise rate <span class="math">\(\varepsilon\)</span> then noise
+   of <span class="math">\(z_{\text{heap}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot \log n)\)</span>, whereas
+   <span class="math">\(z_{\text{linear}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot n)\)</span>. (Without further
+   assumptions about the underlying operator, I don't believe you can do better
+   than that.)</p>
+</li>
+<li>
+<p><strong>Relationship to max-heap</strong>: In the case of a max or min heap, we can avoid
+   allocating extra space for intermediate quantities because all intermediates
+   values are equal to exactly one element of <span class="math">\(\boldsymbol{w}\)</span>.</p>
+</li>
+<li>
+<p><strong>Change propagation</strong>: The general idea of <em>adjusting</em> cached intermediate
+   quantities is a neat idea. In fact, we encounter it each time we type
+   <code>make</code> at the command line! The general technique goes by many
+   names&mdash;including change propagation, incremental maintenance, and
+   functional reactive programming&mdash;and applies to basically <em>any</em>
+   side-effect-free computation. However, most effective when the dependency
+   structure of the computation is sparsity and requires little overhead to find
+   and refresh stale values. In our example of computing <span class="math">\(z\)</span>, these
+   considerations manifest themselves as the heap vs linear structures and our
+   fast array implementation instead of a generic tree datastructure.</p>
+</li>
+</ul>
+<h2>Generalizations</h2>
+<ul>
+<li>
+<p>No zero? No problem. We don't <em>actually</em> require a zero element. So, it's
+   fair to augment <span class="math">\(\boldsymbol{K} \cup \{ \textsf{null} \}\)</span> where
+   <span class="math">\(\textsf{null}\)</span> is distinguished value (i.e., <span class="math">\(\textsf{null} \notin
+   \boldsymbol{K}\)</span>) that <em>acts</em> just like a zero after we overload <span class="math">\(\oplus\)</span> to
+   satisfy the definition of a zero (e.g., by adding an if-statement).</p>
+</li>
+<li>
+<p>Generalization to an arbitrary maps instead of fixed vectors is possible with
+   a "locator" map, which a bijective map from elements to indices in a dense
+   array.</p>
+</li>
+<li>
+<p>Support for growing and shrinking: We support <strong>growing</strong> by maintaining an
+   underlying array that is always slightly larger than we need&mdash;---which
+   we're <em>already</em> in heap datastructure. Doubling the size of the underlying
+   array (i.e., rounding up to the next power of two) has the added benefit of
+   allowing us to grow <span class="math">\(\boldsymbol{w}\)</span> at no asymptotic cost!  This is because
+   the resize operation, which requires an <span class="math">\(\mathcal{O}(n)\)</span> time to allocate a
+   new array and copying old values, happens so infrequently that they can be
+   completely amortized. <strong>Shrinking</strong> is a little more complicated. Generally,
+   this is implemented with an occupancy threshold, but it is tricky to get this
+   shrink threshold perfect because an adversary can force a type of "thrashing"
+   where we repeatedly shrink and grow. Ignoring the resizing of
+   <span class="math">\(\boldsymbol{w}\)</span>, we can fake shrinking by replacing the old value with
+   <span class="math">\(\textsf{null}\)</span>. There's a better implementation when <span class="math">\(\oplus\)</span> is
+   commutative, where we swap the last element of the array into the deleted
+   position and replace the last element with <span class="math">\(\textsf{null}\)</span>.</p>
+</li>
+</ul>
+<h2>Application</h2>
+<p><strong>Sampling from an evolving distribution</strong>: Suppose that <span class="math">\(\boldsymbol{w}\)</span>
+corresponds to a categorical distributions over <span class="math">\(\{1, \ldots, n\}\)</span> and that we'd
+like to sample elements from in proportion to this (unnormalized) distribution.</p>
+<p>It turns out that the heap structure has yet another advantage for sampling!
+Namely, the intermediate sums allow us to perform binary search of the sampled
+element!</p>
+<p>Other methods like the <a href="http://www.keithschwarz.com/darts-dice-coins/">alias</a> or
+inverse CDF methods are efficient after a somewhat costly initialization
+step. But! they are not as efficient as the heap sampler when the distribution
+is being updated. (I'm not sure about whether variants of alias that support
+updates.)</p>
+<p><center></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Sample</th>
+<th>Update</th>
+<th>Init</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alias</td>
+<td>O(1)</td>
+<td>O(n)?</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>i-CDF</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>heap</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+</tr>
+</tbody>
+</table>
+<p></center></p>
+<p>Use cases include</p>
+<ul>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/Gibbs_sampling">Gibbs sampling</a>, where
+  distributions are constantly modified and sampled from (changes may not be
+  sparse so YMMV)</p>
+</li>
+<li>
+<p><a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/">EXP3</a>
+  (<a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">mutli-armed bandit algorithm</a>)
+  is an excellent example of an algorithm that samples and modifies a single
+  weight in the distribution.</p>
+</li>
+<li>
+<p><em>Stochastic priority queues</em> where we sample proportional to priority and the
+  weights on items in the queue may change, elements are possibly removed after
+  they are sampled (i.e., sampling without replacement), and elements are added.</p>
+</li>
+</ul>
+<p>Again, I won't spell out all of the details of these algorithm. Instead, I'll
+just give the code.</p>
+<p><strong>Inverse CDF sampling</strong></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="s2">&quot;Ordinary sampling method, O(n) init, O(log n) per sample.&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>            <span class="c1"># build cdf, O(n)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>     <span class="c1"># random probe, p ~ Uniform(0, z)</span>
+    <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>  <span class="c1"># binary search, O(log n)</span>
+</pre></div>
+
+
+<p><strong>Heap sampling</strong> is essentially the same, except the cdf is stored as heap,
+which is perfect for binary search!</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">hsample</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+    <span class="s2">&quot;Sample from sumheap, O(log n) per sample.&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span>     <span class="c1"># number of internal nodes.</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">S</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># random probe, p ~ Uniform(0, z)</span>
+    <span class="c1"># Use binary search to find the index of the largest CDF (represented as a</span>
+    <span class="c1"># heap) value that is less than a random probe.</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
+        <span class="c1"># Determine if the value is in the left or right subtree.</span>
+        <span class="n">i</span> <span class="o">*=</span> <span class="mi">2</span>         <span class="c1"># Point at left child</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    <span class="c1"># Probability mass under left subtree.</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="n">left</span><span class="p">:</span>   <span class="c1"># Value is in right subtree.</span>
+            <span class="n">p</span> <span class="o">-=</span> <span class="n">left</span>  <span class="c1"># Subtract mass from left subtree</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>     <span class="c1"># Point at right child</span>
+    <span class="k">return</span> <span class="n">i</span> <span class="o">-</span> <span class="n">d</span>
+</pre></div>
+
+
+<p><strong>Code</strong>: Complete code and test cases for heap sampling are available in this
+<a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515">gist</a>.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
       </h1>
       <p class="meta"><time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time></p>
@@ -12750,149 +13137,6 @@ EckjSvoiInnk/wNpZz6pKB5khAAAAABJRU5ErkJggg==
 
 </div></p></div>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
-      </h1>
-      <p class="meta"><time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time></p>
-</header>
-
-  <div class="entry-content"><p>The following is a quick rant about
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
-(see that post for notation).</p>
-<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
-<blockquote>
-<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
-</blockquote>
-<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
-<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
-<p>With importance sampling, it is possible to achieve a variance reduction over
-Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
-for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
-variance</em> estimate <em>with a single sample</em>!</p>
-<p>Of course, this is an unreasonable distribution to use because the normalizing
-constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
-proposal distributions exist</em>.</p>
-<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
-"importance sampling for variance reduction" to learn more.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/tag/math2.html">&larr; Older</a>
 
@@ -12902,6 +13146,9 @@ proposal distributions exist</em>.</p>
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
       </li>
@@ -12913,9 +13160,6 @@ proposal distributions exist</em>.</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a>
       </li>
     </ul>
   </section>
@@ -12932,7 +13176,7 @@ proposal distributions exist</em>.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
 
 
 
