@@ -84,7 +84,7 @@ algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span cla
 quantities and inputs in a heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary
 tree. In our case, the tree has depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the
 values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's leaves (aligned left) and padding with
-&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining leaves. Thus, &lt;span class="math"&gt;\(\boldsymbol{S} &amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining leaves. Thus, the array's length is &lt;span class="math"&gt;\(&amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;This structure makes our implementation really nice and efficient because we
 don't need pointers to find the parent or children of a node (i.e., no need to
 wrap elements into a "node" class like in a general tree data structure). So, we
@@ -151,11 +151,11 @@ which makes implementation simpler.)&lt;/p&gt;
    &lt;code&gt;make&lt;/code&gt; at the command line! The general technique goes by many
    names&amp;mdash;including change propagation, incremental maintenance, and
    functional reactive programming&amp;mdash;and applies to basically &lt;em&gt;any&lt;/em&gt;
-   side-effect-free computation. However, most effective when the dependency
-   structure of the computation is sparsity and requires little overhead to find
-   and refresh stale values. In our example of computing &lt;span class="math"&gt;\(z\)&lt;/span&gt;, these
-   considerations manifest themselves as the heap vs linear structures and our
-   fast array implementation instead of a generic tree datastructure.&lt;/p&gt;
+   side-effect-free computation. However, it's most effective when the
+   dependency structure of the computation is sparse and requires little
+   overhead to find and refresh stale values. In our example of computing &lt;span class="math"&gt;\(z\)&lt;/span&gt;,
+   these considerations manifest themselves as the heap vs linear structures and
+   our fast array implementation instead of a generic tree datastructure.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2&gt;Generalizations&lt;/h2&gt;
@@ -174,8 +174,8 @@ which makes implementation simpler.)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Support for growing and shrinking: We support &lt;strong&gt;growing&lt;/strong&gt; by maintaining an
-   underlying array that is always slightly larger than we need&amp;mdash;---which
-   we're &lt;em&gt;already&lt;/em&gt; in heap datastructure. Doubling the size of the underlying
+   underlying array that is always slightly larger than we need&amp;mdash;which
+   we're &lt;em&gt;already&lt;/em&gt; doing in heap datastructure. Doubling the size of the underlying
    array (i.e., rounding up to the next power of two) has the added benefit of
    allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This is because
    the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to allocate a
@@ -198,7 +198,7 @@ like to sample elements from in proportion to this (unnormalized) distribution.&
 inverse CDF methods are efficient after a somewhat costly initialization
 step. But! they are not as efficient as the heap sampler when the distribution
 is being updated. (I'm not sure about whether variants of alias that support
-updates.)&lt;/p&gt;
+updates exist.)&lt;/p&gt;
 &lt;p&gt;&lt;center&gt;&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -250,7 +250,7 @@ updates.)&lt;/p&gt;
   they are sampled (i.e., sampling without replacement), and elements are added.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Again, I won't spell out all of the details of these algorithm. Instead, I'll
+&lt;p&gt;Again, I won't spell out all of the details of these algorithms. Instead, I'll
 just give the code.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Inverse CDF sampling&lt;/strong&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;

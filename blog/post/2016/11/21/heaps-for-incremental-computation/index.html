@@ -11917,7 +11917,7 @@ algorithms for <em>maintaining</em> the output quantity <span class="math">\(z\)
 quantities and inputs in a heap datastructure, which is a <em>complete</em> binary
 tree. In our case, the tree has depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the
 values of <span class="math">\(\boldsymbol{w}\)</span> at it's leaves (aligned left) and padding with
-<span class="math">\(\boldsymbol{0}\)</span> for remaining leaves. Thus, <span class="math">\(\boldsymbol{S} &lt; 4 n\)</span>.</p>
+<span class="math">\(\boldsymbol{0}\)</span> for remaining leaves. Thus, the array's length is <span class="math">\(&lt; 4 n\)</span>.</p>
 <p>This structure makes our implementation really nice and efficient because we
 don't need pointers to find the parent or children of a node (i.e., no need to
 wrap elements into a "node" class like in a general tree data structure). So, we
@@ -11984,11 +11984,11 @@ which makes implementation simpler.)</p>
    <code>make</code> at the command line! The general technique goes by many
    names&mdash;including change propagation, incremental maintenance, and
    functional reactive programming&mdash;and applies to basically <em>any</em>
-   side-effect-free computation. However, most effective when the dependency
-   structure of the computation is sparsity and requires little overhead to find
-   and refresh stale values. In our example of computing <span class="math">\(z\)</span>, these
-   considerations manifest themselves as the heap vs linear structures and our
-   fast array implementation instead of a generic tree datastructure.</p>
+   side-effect-free computation. However, it's most effective when the
+   dependency structure of the computation is sparse and requires little
+   overhead to find and refresh stale values. In our example of computing <span class="math">\(z\)</span>,
+   these considerations manifest themselves as the heap vs linear structures and
+   our fast array implementation instead of a generic tree datastructure.</p>
 </li>
 </ul>
 <h2>Generalizations</h2>
@@ -12007,8 +12007,8 @@ which makes implementation simpler.)</p>
 </li>
 <li>
 <p>Support for growing and shrinking: We support <strong>growing</strong> by maintaining an
-   underlying array that is always slightly larger than we need&mdash;---which
-   we're <em>already</em> in heap datastructure. Doubling the size of the underlying
+   underlying array that is always slightly larger than we need&mdash;which
+   we're <em>already</em> doing in heap datastructure. Doubling the size of the underlying
    array (i.e., rounding up to the next power of two) has the added benefit of
    allowing us to grow <span class="math">\(\boldsymbol{w}\)</span> at no asymptotic cost!  This is because
    the resize operation, which requires an <span class="math">\(\mathcal{O}(n)\)</span> time to allocate a
@@ -12031,7 +12031,7 @@ like to sample elements from in proportion to this (unnormalized) distribution.<
 inverse CDF methods are efficient after a somewhat costly initialization
 step. But! they are not as efficient as the heap sampler when the distribution
 is being updated. (I'm not sure about whether variants of alias that support
-updates.)</p>
+updates exist.)</p>
 <p><center></p>
 <table>
 <thead>
@@ -12083,7 +12083,7 @@ updates.)</p>
   they are sampled (i.e., sampling without replacement), and elements are added.</p>
 </li>
 </ul>
-<p>Again, I won't spell out all of the details of these algorithm. Instead, I'll
+<p>Again, I won't spell out all of the details of these algorithms. Instead, I'll
 just give the code.</p>
 <p><strong>Inverse CDF sampling</strong></p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
