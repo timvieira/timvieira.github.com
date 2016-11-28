@@ -175,19 +175,15 @@ which makes implementation simpler.)&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;Support for growing and shrinking: We support &lt;strong&gt;growing&lt;/strong&gt; by maintaining an
    underlying array that is always slightly larger than we need&amp;mdash;which
-   we're &lt;em&gt;already&lt;/em&gt; doing in the heap datastructure. Doubling the size of the underlying
-   array (i.e., rounding up to the next power of two) has the added benefit of
-   allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This is because
-   the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to allocate a
-   new array and copying old values, happens so infrequently that they can be
-   completely amortized. &lt;strong&gt;Shrinking&lt;/strong&gt; is a little more complicated. Generally,
-   this is implemented with an occupancy threshold, but it is tricky to get this
-   shrink threshold perfect because an adversary can force a type of "thrashing"
-   where we repeatedly shrink and grow. Ignoring the resizing of
-   &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;, we can fake shrinking by replacing the old value with
-   &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt;. There's a better implementation when &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; is
-   commutative, where we swap the last element of the array into the deleted
-   position and replace the last element with &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt;.&lt;/p&gt;
+   we're &lt;em&gt;already&lt;/em&gt; doing in the heap datastructure. Doubling the size of the
+   underlying array (i.e., rounding up to the next power of two) has the added
+   benefit of allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This
+   is because the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to
+   allocate a new array and copying old values, happens so infrequently that
+   they can be completely amortized. We get of effect of &lt;strong&gt;shrinking&lt;/strong&gt; by
+   replacing the old value with &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt; (or &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt;). We can
+   shrink the underlying array when the fraction of nonzeros dips below
+   &lt;span class="math"&gt;\(25\%\)&lt;/span&gt;. This prevents "thrashing" between shrinking and growing.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2&gt;Application&lt;/h2&gt;
