@@ -175,7 +175,7 @@ which makes implementation simpler.)&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;Support for growing and shrinking: We support &lt;strong&gt;growing&lt;/strong&gt; by maintaining an
    underlying array that is always slightly larger than we need&amp;mdash;which
-   we're &lt;em&gt;already&lt;/em&gt; doing in heap datastructure. Doubling the size of the underlying
+   we're &lt;em&gt;already&lt;/em&gt; doing in the heap datastructure. Doubling the size of the underlying
    array (i.e., rounding up to the next power of two) has the added benefit of
    allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This is because
    the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to allocate a

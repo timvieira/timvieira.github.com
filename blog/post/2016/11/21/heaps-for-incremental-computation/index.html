@@ -12008,7 +12008,7 @@ which makes implementation simpler.)</p>
 <li>
 <p>Support for growing and shrinking: We support <strong>growing</strong> by maintaining an
    underlying array that is always slightly larger than we need&mdash;which
-   we're <em>already</em> doing in heap datastructure. Doubling the size of the underlying
+   we're <em>already</em> doing in the heap datastructure. Doubling the size of the underlying
    array (i.e., rounding up to the next power of two) has the added benefit of
    allowing us to grow <span class="math">\(\boldsymbol{w}\)</span> at no asymptotic cost!  This is because
    the resize operation, which requires an <span class="math">\(\mathcal{O}(n)\)</span> time to allocate a
