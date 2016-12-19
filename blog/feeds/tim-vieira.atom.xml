@@ -109,8 +109,8 @@ course, we risk overfitting to the sample if we evaluate
 favor regions of &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, which are not well represented in the sample because
 the importance sampling estimator has high variance in these regions resulting
 from large importance weights (when &lt;span class="math"&gt;\(q(x)\)&lt;/span&gt; is small and &lt;span class="math"&gt;\(p_{\theta}(x)\)&lt;/span&gt; is
-large, &lt;span class="math"&gt;\(w(x)\)&lt;/span&gt; is large and consequently so is &lt;span class="math"&gt;\(\hat{J}_{\text{IS}}\)&lt;/span&gt; regardless of
-whether &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; is high!). Thus, we want some type of "regularization" to keep
+large, &lt;span class="math"&gt;\(w(x)\)&lt;/span&gt; is large and consequently so is &lt;span class="math"&gt;\(\hat{J}_{\!\text{IS}}\)&lt;/span&gt; regardless
+of whether &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; is high!). Thus, we want some type of "regularization" to keep
 the optimizer in regions which are sufficiently well-represented by the sample.&lt;/p&gt;
 &lt;!--
 **Visual example**: We can visualize this phenomena in a simple example. Let $q
