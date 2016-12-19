@@ -11915,11 +11915,13 @@ parenthesized expressions.</p>
 <p>Since fewer intermediate quantities depend on a given input, fewer intermediates
 need to be adjusted upon a change to the input. Therefore, we get faster
 algorithms for <em>maintaining</em> the output quantity <span class="math">\(z\)</span> as the inputs change.</p>
-<p><strong>Heap datastructure</strong>: We're going to store the values of the intermediates
-quantities and inputs in a heap datastructure, which is a <em>complete</em> binary
-tree. In our case, the tree has depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the
-values of <span class="math">\(\boldsymbol{w}\)</span> at it's leaves (aligned left) and padding with
-<span class="math">\(\boldsymbol{0}\)</span> for remaining leaves. Thus, the array's length is <span class="math">\(&lt; 4 n\)</span>.</p>
+<p><strong>Heap datastructure</strong> (aka
+<a href="https://en.wikipedia.org/wiki/Fenwick_tree">binary index tree or Fenwick tree</a>):
+We're going to store the values of the intermediates quantities and inputs in a
+heap datastructure, which is a <em>complete</em> binary tree. In our case, the tree has
+depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the values of <span class="math">\(\boldsymbol{w}\)</span> at it's
+leaves (aligned left) and padding with <span class="math">\(\boldsymbol{0}\)</span> for remaining
+leaves. Thus, the array's length is <span class="math">\(&lt; 4 n\)</span>.</p>
 <p>This structure makes our implementation really nice and efficient because we
 don't need pointers to find the parent or children of a node (i.e., no need to
 wrap elements into a "node" class like in a general tree data structure). So, we
@@ -12067,7 +12069,8 @@ updates exist.)</p>
 <li>
 <p><a href="https://en.wikipedia.org/wiki/Gibbs_sampling">Gibbs sampling</a>, where
   distributions are constantly modified and sampled from (changes may not be
-  sparse so YMMV)</p>
+  sparse so YMMV). The heap sampler is used in
+  <a href="https://arxiv.org/abs/1412.4986">this paper</a>.</p>
 </li>
 <li>
 <p><a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/">EXP3</a>

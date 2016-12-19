@@ -434,11 +434,13 @@ parenthesized expressions.&lt;/p&gt;
 &lt;p&gt;Since fewer intermediate quantities depend on a given input, fewer intermediates
 need to be adjusted upon a change to the input. Therefore, we get faster
 algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span class="math"&gt;\(z\)&lt;/span&gt; as the inputs change.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt;: We're going to store the values of the intermediates
-quantities and inputs in a heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary
-tree. In our case, the tree has depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the
-values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's leaves (aligned left) and padding with
-&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining leaves. Thus, the array's length is &lt;span class="math"&gt;\(&amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt; (aka
+&lt;a href="https://en.wikipedia.org/wiki/Fenwick_tree"&gt;binary index tree or Fenwick tree&lt;/a&gt;):
+We're going to store the values of the intermediates quantities and inputs in a
+heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary tree. In our case, the tree has
+depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's
+leaves (aligned left) and padding with &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining
+leaves. Thus, the array's length is &lt;span class="math"&gt;\(&amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;This structure makes our implementation really nice and efficient because we
 don't need pointers to find the parent or children of a node (i.e., no need to
 wrap elements into a "node" class like in a general tree data structure). So, we
@@ -586,7 +588,8 @@ updates exist.)&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Gibbs_sampling"&gt;Gibbs sampling&lt;/a&gt;, where
   distributions are constantly modified and sampled from (changes may not be
-  sparse so YMMV)&lt;/p&gt;
+  sparse so YMMV). The heap sampler is used in
+  &lt;a href="https://arxiv.org/abs/1412.4986"&gt;this paper&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/"&gt;EXP3&lt;/a&gt;
