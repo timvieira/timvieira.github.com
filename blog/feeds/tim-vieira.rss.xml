@@ -1,5 +1,359 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Mon, 21 Nov 2016 00:00:00 -0500</lastBuildDate><item><title>Heaps for incremental computation</title><link>http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</link><description>&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Thu, 15 Dec 2016 00:00:00 -0500</lastBuildDate><item><title>Counterfactual reasoning and learning from logged data</title><link>http://timvieira.github.io/blog/post/2016/12/15/counterfactual-reasoning-and-learning-from-logged-data/</link><description>&lt;style&gt; .toggle-button { background-color: #555555; border: none; color: white;
+padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
+none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
+background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
+margin-bottom: 10px; } &lt;/style&gt;
+
+&lt;script&gt;
+/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;Counterfactual reasoning is &lt;em&gt;reasoning about data that we did not observe&lt;/em&gt;. For
+example, reasoning about the expected reward of new policy given data collected
+from a older one.&lt;/p&gt;
+&lt;p&gt;In this post, I'll discuss some basic techniques for learning from logged
+data. For the large part, this post is based on things I learned from
+&lt;a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf"&gt;Peshkin &amp;amp; Shelton (2002)&lt;/a&gt;
+and &lt;a href="https://arxiv.org/abs/1209.2355"&gt;Bottou et al. (2013)&lt;/a&gt; (two of all-time
+favorite papers).&lt;/p&gt;
+&lt;p&gt;After reading this post, have a look at the
+&lt;a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9"&gt;Jupyter notebook&lt;/a&gt;
+accompanying this post!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt; (&lt;em&gt;off-line off-policy optimization&lt;/em&gt;): We're trying to optimize a
+function of the form,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt; But! We only have a &lt;em&gt;fixed&lt;/em&gt; sample of size &lt;span class="math"&gt;\(m\)&lt;/span&gt; from a data collection
+policy &lt;span class="math"&gt;\(q\)&lt;/span&gt;, &lt;span class="math"&gt;\(\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.\)&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Although, it's not &lt;em&gt;necessarily&lt;/em&gt; the case, you can think of &lt;span class="math"&gt;\(q = p_{\theta'}\)&lt;/span&gt;
+  for a &lt;em&gt;fixed&lt;/em&gt; value &lt;span class="math"&gt;\(\theta'.\)&lt;/span&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\mathcal{X}\)&lt;/span&gt; is an arbitrary multivariate space, which permits a mix of
+  continuous and discrete components, with appropriate densities, &lt;span class="math"&gt;\(p_{\theta}\)&lt;/span&gt;
+  and &lt;span class="math"&gt;\(q\)&lt;/span&gt; defined over it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(r: \mathcal{X} \mapsto \mathbb{R}\)&lt;/span&gt; is a black box that outputs a scalar
+  score.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;I've used the notation &lt;span class="math"&gt;\(r^{(j)}\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(r(x^{(j)})\)&lt;/span&gt; to emphasize that we
+  can't evaluate &lt;span class="math"&gt;\(r\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt; values other than those in the sample.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;We'll assume that &lt;span class="math"&gt;\(q\)&lt;/span&gt; assigns positive probability everywhere, &lt;span class="math"&gt;\(q(x) &amp;gt; 0\)&lt;/span&gt; for
+  all &lt;span class="math"&gt;\(x \in \mathcal{X}\)&lt;/span&gt;. This means is that the data collection process must
+  be randomized and eventually sample all possible configurations. Later, I
+  discuss relaxing this assumption.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Each distribution is a product of one or more factors of the following types:
+&lt;strong&gt;policy factors&lt;/strong&gt; (at least one), which directly depend on &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, and
+&lt;strong&gt;environment factors&lt;/strong&gt; (possibly none), which do not depend directly on
+&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;. Note that environment factors are &lt;em&gt;only&lt;/em&gt; accessible via sampling
+(i.e., we don't know the &lt;em&gt;value&lt;/em&gt; they assign to a sample). For example, a
+&lt;em&gt;contextual bandit problem&lt;/em&gt;, where &lt;span class="math"&gt;\(x\)&lt;/span&gt; is a context-action pair, &lt;span class="math"&gt;\(x =
+(s,a)\)&lt;/span&gt;. Here &lt;span class="math"&gt;\(q(x) = q(a|s) p(s)\)&lt;/span&gt; and &lt;span class="math"&gt;\(p_{\theta}(x) = p_{\theta}(a|s)
+p(s)\)&lt;/span&gt;. Note that &lt;span class="math"&gt;\(p_{\theta}\)&lt;/span&gt; and &lt;span class="math"&gt;\(q\)&lt;/span&gt; share the environment factor &lt;span class="math"&gt;\(p(s)\)&lt;/span&gt;, the
+distribution over contexts, and only differ in the action-given-context
+factor. For now, assume that we can evaluate all environment factors; later,
+I'll discuss how we cleverly work around it.&lt;/p&gt;
+&lt;!--
+(We can
+even extend it to a full-blown MDP or POMDP by taking $x$ to be a sequence of
+state-action pairs, often called "trajectories".)
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;The main challenge&lt;/strong&gt; of this setting is that we don't have controlled
+experiments to learn from because &lt;span class="math"&gt;\(q\)&lt;/span&gt; is not (completely) in our control. This
+manifests itself as high variance ("noise") in estimating &lt;span class="math"&gt;\(J(\theta)\)&lt;/span&gt;. Consider
+the contextual bandit setting, we receive a context &lt;span class="math"&gt;\(s\)&lt;/span&gt; and execute single
+action; we never get to rollback to that precise context and try an alternative
+action (to get a paired sample #yolo) because we do not control &lt;span class="math"&gt;\(p(s)\)&lt;/span&gt;. This is
+an important paradigm for many 'real world' problems, e.g., predicting medical
+treatments or ad selection.&lt;/p&gt;
+&lt;!--
+This is the crucial difference that makes counterfactual learning
+more difficult than (fully) supervised learning.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Estimating &lt;span class="math"&gt;\(J(\theta)\)&lt;/span&gt;&lt;/strong&gt; [V1]: We obtain an unbiased estimator of &lt;span class="math"&gt;\(J(\theta)\)&lt;/span&gt;
+with
+&lt;a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance sampling&lt;/a&gt;,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+J(\theta)
+\approx \hat{J}_{\!\text{IS}}(\theta)
+= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
+\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt; This estimator is remarkable: it uses importance sampling as a function
+approximator! We have an &lt;em&gt;unbiased&lt;/em&gt; estimate of &lt;span class="math"&gt;\(J(\theta)\)&lt;/span&gt; for any value of
+&lt;span class="math"&gt;\(\theta\)&lt;/span&gt; that we like. &lt;em&gt;The catch&lt;/em&gt; is that we have to pick &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; a priori,
+i.e., with no knowledge of the sample.&lt;/p&gt;
+&lt;!--
+We also require that the usual 'support
+conditions' for importance sampling conditions ($p_{\theta}(x)&gt;0 \Rightarrow
+q(x)&gt;0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
+--&gt;
+
+&lt;p&gt;After we've collected a (large) sample it's possible to optimize
+&lt;span class="math"&gt;\(\hat{J}_{\!\text{IS}}\)&lt;/span&gt; using any optimization algorithm (e.g., L-BFGS). Of
+course, we risk overfitting to the sample if we evaluate
+&lt;span class="math"&gt;\(\hat{J}_{\!\text{IS}}\)&lt;/span&gt;. Actually, it's a bit worse: this objective tends to
+favor regions of &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, which are not well represented in the sample because
+the importance sampling estimator has high variance in these regions resulting
+from large importance weights (when &lt;span class="math"&gt;\(q(x)\)&lt;/span&gt; is small and &lt;span class="math"&gt;\(p_{\theta}(x)\)&lt;/span&gt; is
+large, &lt;span class="math"&gt;\(w(x)\)&lt;/span&gt; is large and consequently so is &lt;span class="math"&gt;\(J_{\text{IS}}\)&lt;/span&gt; regardless of
+whether &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; is high!). Thus, we want some type of "regularization" to keep
+the optimizer in regions which are sufficiently well-represented by the sample.&lt;/p&gt;
+&lt;!--
+**Visual example**: We can visualize this phenomena in a simple example. Let $q
+= \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
+otherwise},$ and $p_\theta = \mathcal{N}(\theta, \sigma=1)$.  This example is
+nice because it let's us plot $x$ and $\theta$ in the same space. This is
+generally not the case, because $\mathcal{X}$ may have no connection to $\theta$
+space, e.g., $\mathcal{X}$ may be discrete.
+
+**TODO** add plot
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Better surrogate&lt;/strong&gt; [V2]: There are many ways to improve the variance of the
+estimator and &lt;em&gt;confidently&lt;/em&gt; obtain improvements to the system. One of my
+favorites is Bottou et al.'s lower bound on &lt;span class="math"&gt;\(J(\theta)\)&lt;/span&gt;, which we get by
+clipping importance weights, replace &lt;span class="math"&gt;\(w^{(j)}_{\theta}\)&lt;/span&gt; with &lt;span class="math"&gt;\(\min(R,
+w^{(j)}_{\theta})\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Confidence intervals&lt;/strong&gt; [V3]: We can augment the V2 lower bound with confidence
+intervals derived from the empirical Bernstein bound (EBB). We'll require that
+&lt;span class="math"&gt;\(r\)&lt;/span&gt; is bounded and that we know its max/min values. The EBB &lt;em&gt;penalizes&lt;/em&gt;
+hypotheses (values of &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) which have higher sample variance. (Note: a
+Hoeffding bound wouldn't change the &lt;em&gt;shape&lt;/em&gt; of the objective, but EBB does
+thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
+introduces an additional a "confidence" hyperparameter, &lt;span class="math"&gt;\((1-\delta)\)&lt;/span&gt;. Bottou et
+al. recommend maximizing the lower bound as it provides safer improvements. See
+the original paper for the derivation.&lt;/p&gt;
+&lt;!--
+An important benefit of having upper *and* lower is that the bounds tell
+us whether or not we should collect more data
+--&gt;
+
+&lt;p&gt;Both V2 and V3 are &lt;em&gt;biased&lt;/em&gt; (as they are lower bounds), but we can mitigate the
+bias by &lt;em&gt;tuning&lt;/em&gt; the hyperparameter &lt;span class="math"&gt;\(R\)&lt;/span&gt; on a heldout sample (we can even tune
+&lt;span class="math"&gt;\(\delta\)&lt;/span&gt;, if desired). Additionally, V2 and V3 are 'valid' when &lt;span class="math"&gt;\(q\)&lt;/span&gt; has limited
+support since they prevent the importance weights from exploding (of course, the
+bias can be arbitrarily bad, but probably unavoidable given the
+learning-from-only-logged data setup).&lt;/p&gt;
+&lt;h2&gt;Extensions&lt;/h2&gt;
+&lt;!--
+**Be warned**: This may be considered an idealized setting. Much of the research
+in counterfactual and causal reasoning targets (often subtle) deviations from
+these assumptions (and some different questions, of course). Some extensions and
+discussion appear towards the end of the post.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Unknown environment factors&lt;/strong&gt;: Consider the contextual bandit setting
+(mentioned above). Here &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(q\)&lt;/span&gt; share an &lt;em&gt;unknown&lt;/em&gt; environment factor: the
+distribution of contexts. Luckily, we do not need to know the value of this
+factor in order to apply any of our estimators because they are all based on
+likelihood &lt;em&gt;ratios&lt;/em&gt;, thus the shared unknown factors cancel out!  Some specific
+examples are given below. Of course, these factors do influence the estimators
+because they are crucial in &lt;em&gt;sampling&lt;/em&gt;, they just aren't necessary in
+&lt;em&gt;evaluation&lt;/em&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;In contextual bandit example, &lt;span class="math"&gt;\(x\)&lt;/span&gt; is a state-action pair, &lt;span class="math"&gt;\(w_{\theta}(x) =
+    \frac{p_{\theta}(x)}{q(x)} = \frac{ p_{\theta}(s,a) }{ q(s,a) } =
+    \frac{p_{\theta}(a|s) p(s)}{q(a|s) p(s)} = \frac{p_{\theta}(a|s) }{ q(a|s)
+    }\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In a Markov decision process, &lt;span class="math"&gt;\(x\)&lt;/span&gt; is a sequence of state-action pairs,
+    &lt;span class="math"&gt;\(w_{\theta}(x) = \frac{p_{\theta}(x)}{q(x)} = \frac{ p(s_0) \prod_{t=0}^T
+    p(s_{t+1}|s_t,a_t) p_\theta(a_t|s_t) } { p(s_0) \prod_{t=0}^T
+    p(s_{t+1}|s_t,a_t) q(a_t|s_t) } = \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
+    {\prod_{t=0}^T q(a_t|s_t)}.\)&lt;/span&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Variance reduction&lt;/strong&gt;: These estimators can all be improved with variance
+reduction techniques. Probably the most effective technique is using
+&lt;a href="https://en.wikipedia.org/wiki/Control_variates"&gt;control variates&lt;/a&gt; (of which
+baseline functions are a special case). These are random variables correlated
+with &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; for which we know their expectations (or at least they are estimated
+separately). A great example is how ad clicks depend strongly on time-of-day
+(fewer people are online late at night so we get fewer clicks), thus the
+time-of-day covariate explains a large part of the variation in &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Estimation instead of optimization&lt;/strong&gt;: You can use this general setup for
+estimation instead of optimization, in which case it's fine to let &lt;span class="math"&gt;\(r\)&lt;/span&gt; have
+real-valued multivariate output. The confidence intervals are probably useful in
+that setting too.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Unknown &lt;span class="math"&gt;\(q\)&lt;/span&gt;&lt;/strong&gt;: Often &lt;span class="math"&gt;\(q\)&lt;/span&gt; is an existing complex system, which does not record
+its probabilities. It is possible to use regression to estimate &lt;span class="math"&gt;\(q\)&lt;/span&gt; from the
+samples, which is called the &lt;strong&gt;propensity score&lt;/strong&gt; (PS). PS attempts to account
+for &lt;strong&gt;confounding variables&lt;/strong&gt;, which are hidden causes that control variation in
+the data. Failing to account for confounding variables may lead to
+&lt;a href="https://en.wikipedia.org/wiki/Simpson's_paradox"&gt;incorrect conclusions&lt;/a&gt;. Unfortunately,
+PS results in a biased estimator because we're using a 'ratio of expectations'
+(we'll divide by the PS estimate) instead of an 'expectation of ratios'. PS is
+only statistically consistent in the (unlikely) event that the density estimate
+is correctly specified (i.e., we can eventually get &lt;span class="math"&gt;\(q\)&lt;/span&gt; correct). In the unknown
+&lt;span class="math"&gt;\(q\)&lt;/span&gt; setting, it's often better to use the &lt;strong&gt;doubly-robust estimator&lt;/strong&gt; (DR) which
+combines &lt;em&gt;two&lt;/em&gt; estimators: a density estimator for &lt;span class="math"&gt;\(q\)&lt;/span&gt; and a function
+approximation for &lt;span class="math"&gt;\(r\)&lt;/span&gt;. A great explanation for the bandit case is in
+&lt;a href="https://arxiv.org/abs/1103.4601"&gt;Dudík et al. (2011)&lt;/a&gt;. The DR estimator is also
+biased, but it has a better bias-variance tradeoff than PS.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What if &lt;span class="math"&gt;\(q\)&lt;/span&gt; doesn't have support everywhere?&lt;/strong&gt; This is an especially important
+setting because it is often the case that data collection policies abide by some
+&lt;strong&gt;safety regulations&lt;/strong&gt;, which prevent known bad configurations. In many
+situations, evaluating &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; corresponds to executing an action &lt;span class="math"&gt;\(x\)&lt;/span&gt; in the real
+world so terrible outcomes could occur, such as, breaking a system, giving a
+patient a bad treatment, or losing money. V1 is ok to use as long as we satisfy
+the importance sampling support conditions, which might mean rejecting certain
+values for &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; (might be non-trivial to enforce) and consequently finding a
+less-optimal policy. V2 and V3 are ok to use without an explicit constraint, but
+additional care may be needed to ensure specific safety constraints are
+satisfied by the learned policy.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What if &lt;span class="math"&gt;\(q\)&lt;/span&gt; is deterministic?&lt;/strong&gt; This is related to the point above. This is a
+hard problem. Essentially, this trying to learn without any exploration /
+experimentation! In general, we need exploration to learn. Randomization isn't
+the only way to perform exploration, there are many systematic types of
+experimentation.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;There are some cases of systematic experimentation that are ok. For example,
+    enumerating all elements of &lt;span class="math"&gt;\(\mathcal{X}\)&lt;/span&gt; (almost certainly
+    infeasible). Another example is a contextual bandit where &lt;span class="math"&gt;\(q\)&lt;/span&gt; assigns
+    actions to contexts deterministically via a hash function (this setting is
+    fine because &lt;span class="math"&gt;\(q\)&lt;/span&gt; is essentially a uniform distribution over actions, which
+    is independent of the state). In other special cases, we &lt;em&gt;may&lt;/em&gt; be able to
+    characterize systematic exploration as
+    &lt;a href="https://en.wikipedia.org/wiki/Stratified_sampling"&gt;stratified sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A generic solution might be to apply the doubly-robust estimator, which
+    "smooths out" deterministic components (by pretending they are random) and
+    accounting for confounds (by explicitly modeling them in the propensity
+    score).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;What if we control data collection (&lt;span class="math"&gt;\(q\)&lt;/span&gt;)?&lt;/strong&gt; This is an interesting
+setting. Essentially, it asks "how do we explore/experiment optimally (and
+safely)?". In general, this is an open question and depends on many
+considerations, such as, how much control, exploration cost (safety constraints)
+and prior knowledge (of &lt;span class="math"&gt;\(r\)&lt;/span&gt; and unknown factors in the environment). I've seen
+some papers cleverly design &lt;span class="math"&gt;\(q\)&lt;/span&gt;. The first that comes to mind is
+&lt;a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf"&gt;Levine &amp;amp; Koltun (2013)&lt;/a&gt;. Another
+setting is &lt;em&gt;online&lt;/em&gt; contextual bandits, in which algorithms like
+&lt;a href="http://jmlr.org/proceedings/papers/v15/beygelzimer11a/beygelzimer11a.pdf"&gt;EXP4&lt;/a&gt;
+and
+&lt;a href="http://www.research.rutgers.edu/~lihong/pub/Chapelle12Empirical.pdf"&gt;Thompson sampling&lt;/a&gt;,
+prescribe certain types of exploration and work interactively (i.e., they don't
+have a fixed training sample). Lastly, I'll mention that there are many
+techniques for variance reduction by importance sampling, which may apply.&lt;/p&gt;
+&lt;h2&gt;Further reading&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Léon Bottou, Jonas Peters, Joaquin Quiñonero-Candela, Denis X. Charles, D. Max
+Chickering, Elon Portugaly, Dipankar Ray, Patrice Simard, Ed Snelson.
+&lt;a href="https://arxiv.org/abs/1209.2355"&gt;Counterfactual reasoning in learning systems&lt;/a&gt;.
+JMLR 2013.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The source for the majority of this post. It includes many other interesting
+ideas and goes more in depth into some of the details.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Miroslav Dudík, John Langford, Lihong Li.
+&lt;a href="https://arxiv.org/abs/1103.4601"&gt;Doubly robust policy evaluation and learning&lt;/a&gt;.
+ICML 2011.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Discussed in extensions section.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Philip S. Thomas.
+&lt;a href="http://psthomas.com/papers/Thomas2015c.pdf"&gt;Safe reinforcement learning&lt;/a&gt;.
+PhD Thesis 2015.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Covers confidence intervals for policy evaluation similar to Bottou et al., as
+well as learning algorithms for RL with safety guarantees (e.g., so we don't
+break the robot).&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Peshkin and Shelton.
+&lt;a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf"&gt;Learning from scarce experience&lt;/a&gt;.
+ICML 2002.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;An older RL paper, which covers learning from logged data. This is one of the
+earliest papers on learning from logged data that I could find.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Levine and Koltun.
+&lt;a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf"&gt;Guided policy search&lt;/a&gt;.
+ICML 2013.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Discusses clever choices for &lt;span class="math"&gt;\(q\)&lt;/span&gt; to better-guide learning in the RL setting.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Corinna Cortes, Yishay Mansour, Mehryar Mohri.
+&lt;a href="https://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf"&gt;Learning bounds for importance weighting&lt;/a&gt;.
+NIPS 2010.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Discusses &lt;em&gt;generalization bounds&lt;/em&gt; for the counterfactual objective. Includes an
+alternative weighting scheme to keep importance weights from exploding.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 15 Dec 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-12-15:blog/post/2016/12/15/counterfactual-reasoning-and-learning-from-logged-data/</guid><category>counterfactual-reasoning</category><category>importance-sampling</category><category>machine-learning</category></item><item><title>Heaps for incremental computation</title><link>http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</link><description>&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
 (e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
 changes to its inputs. The trick and it's implementation are inspired by the
 well-known max-heap datastructure. I'll also describe a really elegant
@@ -335,7 +689,7 @@ which is perfect for binary search!&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Nov 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-11-21:blog/post/2016/11/21/heaps-for-incremental-computation/</guid><category>math</category><category>sampling</category><category>datastructures</category></item><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Nov 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-11-21:blog/post/2016/11/21/heaps-for-incremental-computation/</guid><category>sampling</category><category>datastructures</category></item><item><title>Reversing a sequence with sublinear space</title><link>http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</link><description>&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
@@ -665,7 +1019,7 @@ vary with the input (e.g., sentence length).&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 25 Sep 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-09-25:blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</guid><category>math</category><category>calculus</category><category>autodiff</category><category>rant</category></item><item><title>Fast sigmoid sampling</title><link>http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</link><description>&lt;p&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 25 Sep 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-09-25:blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</guid><category>calculus</category><category>autodiff</category><category>rant</category></item><item><title>Fast sigmoid sampling</title><link>http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</link><description>&lt;p&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
 &lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
@@ -1401,7 +1755,7 @@ EckjSvoiInnk/wNpZz6pKB5khAAAAABJRU5ErkJggg==
 &lt;/div&gt;
 &lt;/div&gt;
 
-&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 04 Jul 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-07-04:blog/post/2016/07/04/fast-sigmoid-sampling/</guid><category>math</category><category>sampling</category><category>tricks</category><category>Gumbel</category></item><item><title>Sqrt-biased sampling</title><link>http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</link><description>&lt;p&gt;The following post is about instance of "sampling in proportion to &lt;span class="math"&gt;\(p\)&lt;/span&gt; is not
+&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 04 Jul 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-07-04:blog/post/2016/07/04/fast-sigmoid-sampling/</guid><category>sampling</category><category>Gumbel</category></item><item><title>Sqrt-biased sampling</title><link>http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</link><description>&lt;p&gt;The following post is about instance of "sampling in proportion to &lt;span class="math"&gt;\(p\)&lt;/span&gt; is not
 optimal, but you probably think it is." It's surprising how few people seem to
 know this trick. Myself included! It was brought to my attention recently by
 &lt;a href="http://lowrank.net/nikos/"&gt;Nikos Karampatziakis&lt;/a&gt;. (Thanks, Nikos!)&lt;/p&gt;
@@ -1779,7 +2133,7 @@ proposal distributions exist&lt;/em&gt;.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 28 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</guid><category>math</category><category>statistics</category><category>sampling</category><category>importance-sampling</category></item><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 28 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-28:blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/</guid><category>statistics</category><category>sampling</category><category>importance-sampling</category></item><item><title>Dimensional analysis of gradient ascent</title><link>http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</link><description>&lt;p&gt;In physical sciences, numbers are paired with units and called quantities. In
 this augmented number system, dimensional analysis provides a crucial sanity
 check, much like type checking in a programming language. There are simple rules
 for building up units and constraints on what operations are allowed. For
@@ -1901,7 +2255,7 @@ affect the values we should use for them.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 27 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-27:blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</guid><category>math</category><category>optimization</category></item><item><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link>http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</link><description>&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 27 May 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-05-27:blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/</guid><category>optimization</category></item><item><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link>http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</link><description>&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
 optimization---the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -2063,7 +2417,7 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 05 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-03-05:blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</guid><category>math</category><category>calculus</category></item><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sat, 05 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-03-05:blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</guid><category>calculus</category></item><item><title>Multidimensional array index</title><link>http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/</link><description>&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
 of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll look at
 both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;We'll assume each dimension &lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded
@@ -2414,7 +2768,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>math</category><category>calculus</category><category>numerical</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>calculus</category><category>numerical</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
@@ -2687,31 +3041,31 @@ essentially:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 01 Feb 2015 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</guid><category>math</category><category>numerical</category></item><item><title>Importance Sampling</title><link>http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/</link><description>&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 01 Feb 2015 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-02-01:blog/post/2015/02/01/log-real-number-class/</guid><category>numerical</category></item><item><title>Importance Sampling</title><link>http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/</link><description>&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
 random variable &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt; under distribution &lt;span class="math"&gt;\(p\)&lt;/span&gt; from samples of a different
-distribution &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+distribution &lt;span class="math"&gt;\(q.\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;The key observation is that &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; is can expressed as the expectation of a
-different random variable &lt;span class="math"&gt;\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)&lt;/span&gt; under &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+different random variable &lt;span class="math"&gt;\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)&lt;/span&gt; under &lt;span class="math"&gt;\(q.\)&lt;/span&gt;&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$&lt;/div&gt;
-&lt;p&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(p(x) &amp;gt; 0
-\Rightarrow q(x) &amp;gt; 0\)&lt;/span&gt;. Without this condition, the equation is biased! Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
+&lt;p&gt;&lt;br/&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(p(x) &amp;gt; 0
+\Rightarrow q(x) &amp;gt; 0.\)&lt;/span&gt; Without this condition, the equation is biased! Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
 can support things that &lt;span class="math"&gt;\(p\)&lt;/span&gt; doesn't.&lt;/p&gt;
 &lt;p&gt;Terminology: The quantity &lt;span class="math"&gt;\(w(x) = \frac{p(x)}{q(x)}\)&lt;/span&gt; is often referred to as the
 "importance weight" or "importance correction". We often refer to &lt;span class="math"&gt;\(p\)&lt;/span&gt; as the
 target density and &lt;span class="math"&gt;\(q\)&lt;/span&gt; the proposal density.&lt;/p&gt;
-&lt;p&gt;Now, given samples &lt;span class="math"&gt;\(\{ x^{(i)} \}_{i=1}^{n}\)&lt;/span&gt; from &lt;span class="math"&gt;\(q\)&lt;/span&gt;, we can use the Monte
-Carlo estimate, &lt;span class="math"&gt;\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)&lt;/span&gt;, as
-an unbiased estimator of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Now, given samples &lt;span class="math"&gt;\(\{ x^{(i)} \}_{i=1}^{n}\)&lt;/span&gt; from &lt;span class="math"&gt;\(q,\)&lt;/span&gt; we can use the Monte
+Carlo estimate, &lt;span class="math"&gt;\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)}),\)&lt;/span&gt; as
+an unbiased estimator of &lt;span class="math"&gt;\(\mu.\)&lt;/span&gt;&lt;/p&gt;
 &lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;p&gt;There are a few reasons we might want use importance sampling:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;strong&gt;Convenience&lt;/strong&gt;: It might be trickier to sample directly from &lt;span class="math"&gt;\(p\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Convenience&lt;/strong&gt;: It might be trickier to sample directly from &lt;span class="math"&gt;\(p.\)&lt;/span&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Bias-correction&lt;/strong&gt;: Suppose, we're developing an algorithm which requires
@@ -2721,14 +3075,16 @@ an unbiased estimator of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;.&lt;/p&gt
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Variance reduction&lt;/strong&gt;: It might be the case that sampling directly from
-     &lt;span class="math"&gt;\(p\)&lt;/span&gt; would require more samples to estimate &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;. Check out these
+     &lt;span class="math"&gt;\(p\)&lt;/span&gt; would require more samples to estimate &lt;span class="math"&gt;\(\mu.\)&lt;/span&gt; Check out these
      &lt;a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf"&gt;great notes&lt;/a&gt; for
      more.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Off-policy evaluation and learning&lt;/strong&gt;: We might want to collect some
      "exploratory data" from &lt;span class="math"&gt;\(q\)&lt;/span&gt; and evaluate different "policies", &lt;span class="math"&gt;\(p\)&lt;/span&gt; (e.g.,
-     to pick the best one). Some cool papers:
+     to pick the best one). Here's a link to a future post on
+     &lt;a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/"&gt;off-policy evaluation and counterfactual reasoning&lt;/a&gt;
+     and some cool papers:
      &lt;a href="http://arxiv.org/abs/1209.2355"&gt;counterfactual reasoning&lt;/a&gt;,
      &lt;a href="http://arxiv.org/abs/cs/0204043"&gt;reinforcement learning&lt;/a&gt;,
      &lt;a href="http://arxiv.org/abs/1103.4601"&gt;contextual bandits&lt;/a&gt;,
@@ -2740,7 +3096,7 @@ an unbiased estimator of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;.&lt;/p&gt
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Control over &lt;span class="math"&gt;\(q\)&lt;/span&gt;&lt;/strong&gt;: This is the case in experimental design, variance
      reduction, active learning and reinforcement learning. It's often difficult
-     to design &lt;span class="math"&gt;\(q\)&lt;/span&gt;, which results in an estimator with "reasonable" variance. A
+     to design &lt;span class="math"&gt;\(q,\)&lt;/span&gt; which results in an estimator with "reasonable" variance. A
      very difficult case is in off-policy evaluation because it (essentially)
      requires a good exploratory distribution for every possible policy. (I have
      much more to say on this topic.)&lt;/p&gt;
@@ -2764,8 +3120,9 @@ often the case that a biased estimator is preferred, e.g.,
 &lt;a href="http://arxiv.org/abs/1209.2355"&gt;clipping weights&lt;/a&gt;,
 &lt;a href="http://arxiv.org/abs/cs/0204043"&gt;indirect importance sampling&lt;/a&gt;. A secondary
 drawback is that both densities must be normalized, which is often intractable.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;What's next?&lt;/strong&gt; I plan to cover "variance reduction" and "off-policy
-evaluation" in more detail in future posts.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What's next?&lt;/strong&gt; I plan to cover "variance reduction" and
+&lt;a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/"&gt;off-policy evaluation&lt;/a&gt;
+in more detail in future posts.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -2822,7 +3179,7 @@ evaluation" in more detail in future posts.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>math</category><category>statistics</category><category>randomized</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>statistics</category><category>importance-sampling</category><category>sampling</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
@@ -2967,7 +3324,7 @@ the power of is one --- making it very difficult to overflow on the account of
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Nov 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</guid><category>math</category><category>numerical</category></item><item><title>KL-divergence as an objective function</title><link>http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</link><description>&lt;p&gt;It's well-known that
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Nov 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-11-10:blog/post/2014/11/10/numerically-stable-p-norms/</guid><category>numerical</category></item><item><title>KL-divergence as an objective function</title><link>http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</link><description>&lt;p&gt;It's well-known that
 &lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
 is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;First, which one is which?&lt;/p&gt;
@@ -3144,7 +3501,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 06 Oct 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</guid><category>math</category><category>statistics</category><category>machine-learning</category></item><item><title>Complex-step derivative</title><link>http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/</link><description>&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 06 Oct 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-10-06:blog/post/2014/10/06/kl-divergence-as-an-objective-function/</guid><category>statistics</category><category>machine-learning</category></item><item><title>Complex-step derivative</title><link>http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/</link><description>&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
@@ -3275,7 +3632,7 @@ function's value and the derivative.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 07 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</guid><category>math</category><category>calculus</category></item><item><title>Gumbel max trick and weighted reservoir sampling</title><link>http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</link><description>&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 07 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-07:blog/post/2014/08/07/complex-step-derivative/</guid><category>calculus</category></item><item><title>Gumbel max trick and weighted reservoir sampling</title><link>http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</link><description>&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -3412,7 +3769,7 @@ turning these connections into a
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -3522,7 +3879,7 @@ look at &lt;a href="/blog/tag/gumbel.html"&gt;posts tagged with Gumbel&lt;/a&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 31 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</guid><category>math</category><category>sampling</category><category>Gumbel</category></item><item><title>Rant against grid search</title><link>http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/</link><description>&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 31 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-31:blog/post/2014/07/31/gumbel-max-trick/</guid><category>sampling</category><category>Gumbel</category></item><item><title>Rant against grid search</title><link>http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/</link><description>&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
 the effects of parameters to a function. However, given its rigid definition
 grid search is susceptible to degenerate behavior. One type of unfortunate
 behavior occurs in the presence of unimportant parameters, which results in many
@@ -3712,7 +4069,7 @@ see &lt;a href="http://arxiv.org/pdf/1307.1493v2.pdf"&gt;(Wager+,'13)&lt;/a&gt; 
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</guid><category>math</category></item><item><title>Visualizing high-dimensional functions with cross-sections</title><link>http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</link><description>&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 21 Jul 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-07-21:blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/</guid><category>statistics</category></item><item><title>Visualizing high-dimensional functions with cross-sections</title><link>http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</link><description>&lt;p&gt;Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
 had inspired them to make similar plots. The plotting trick is really simple and
@@ -3833,7 +4190,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 12 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</guid><category>math</category><category>visualization</category></item><item><title>Exp-normalize trick</title><link>http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/</link><description>&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 12 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-12:blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/</guid><category>visualization</category></item><item><title>Exp-normalize trick</title><link>http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/</link><description>&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
 (&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
@@ -3948,7 +4305,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 11 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</guid><category>math</category><category>numerical</category></item><item><title>Gradient-vector product</title><link>http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/</link><description>&lt;p&gt;We've all written the following test for our gradient code (known as the
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Tue, 11 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-11:blog/post/2014/02/11/exp-normalize-trick/</guid><category>numerical</category></item><item><title>Gradient-vector product</title><link>http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/</link><description>&lt;p&gt;We've all written the following test for our gradient code (known as the
 finite-difference approximation).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
@@ -4076,4 +4433,4 @@ $$&lt;/div&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</guid><category>math</category><category>calculus</category></item></channel></rss>
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 10 Feb 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-02-10:blog/post/2014/02/10/gradient-vector-product/</guid><category>calculus</category></item></channel></rss>

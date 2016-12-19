@@ -11832,278 +11832,193 @@ jQuery(document).ready(function($) {
       <p class="meta"><time datetime="2016-06-09T00:00:00-04:00" pubdate>Jun 09, 2016</time></p>
 </header>
 
-  <div class="entry-content"><p>Policy search methods are a popular approach to reinforcement learning (RL)
-problems due to their ability to scale to large state spaces including
-continuous and partially observed domains. Policy search methods operate by
-directly searching the space of policies, as opposed to indirect methods, which
-learn a model of the environment and derive a policy from it. The most common
-policy search methods are based on stochastic gradient ascent, termed policy
-gradient methods
-(<a href="http://incompleteideas.net/sutton/williams-92.pdf">Williams,92</a>;
-<a href="https://webdocs.cs.ualberta.ca/~sutton/papers/SMSM-NIPS99.pdf">Sutton+,99</a>).</p>
-<p>Since we are in the RL setting, we will be searching for a good policy <em>without
-a priori knowledge of the dynamics model or the reward function</em>.</p>
-<p>A <strong>Markov Decision Process</strong> (MDP) over a state set <span class="math">\(\mathcal{S}\)</span> and action
-set <span class="math">\(\mathcal{A}\)</span> consists of:</p>
-<ul>
-<li>
-<p><span class="math">\(p(s_{t+1}|s_t,a_t)\)</span>: A <strong>dynamics model</strong> that specifies the probability of
-    transition to each state <span class="math">\(s_{t+1}\)</span> upon execution of action <span class="math">\(a_t\)</span> in state
-    <span class="math">\(s_t\)</span>.</p>
-</li>
-<li>
-<p><span class="math">\(R(s_t)\)</span>: A <strong>reward function</strong> that specifies a scalar value for being in
-    state <span class="math">\(s_t\)</span>.</p>
-</li>
-</ul>
-<p>We'll assume that periodically (after every <span class="math">\(H\)</span> steps) the environment will
-terminate the current <strong>episode</strong> and drop us in an initial state <span class="math">\(s_0\)</span>.</p>
-<p>Our goal is to attain a policy, <span class="math">\(\pi\)</span>, a mapping from states to action, such
-that the <strong>utility</strong> <span class="math">\(J(\pi)\)</span> is maximized,</p>
-<div class="math">\begin{equation}\label{def:policyperformance}
-  J(\pi) = \mathbb{E}\left[ R(s_0) + R(s_1) + \dots + R(s_H) \Biggr| \pi \right].
-\end{equation}</div>
-<p>Computing <span class="math">\(J(\pi)\)</span> is a common subroutine in many RL algorithms called <strong>policy
-evaluation</strong>.</p>
-<p>Given this definition it is natural to want to try to optimize <span class="math">\(J(\pi)\)</span> by
-gradient ascent. We'll get there in a minute; let's talk a little bit more about
-notation and assumptions.</p>
-<p>Policy gradient assumes that <span class="math">\(\pi\)</span> is a <strong>stochastic policy</strong>, i.e., actions are
-drawn randomly <span class="math">\(a \sim \pi(\cdot|s)\)</span>. Additionally, <span class="math">\(\pi\)</span> is parametrized by a
-vector, <span class="math">\(\theta \in \mathbb{R}^d\)</span>, and <span class="math">\(\frac{\partial
-\pi_\theta}{\partial\theta}\)</span> exists.</p>
-<p>A <strong>trajectory</strong> in an MDP, is a sequence of random variables representing
-states and actions drawn from environment <span class="math">\(\tau=[s_0,a_0,s_1,a_1\dots,s_H,a_H]\)</span>
-by following a policy, <span class="math">\(\pi_\theta\)</span> in the environment for <span class="math">\(H\)</span> steps (<span class="math">\(a_H\)</span> is a
-dummy action so we don't count it towards the trajectory length). Let
-<span class="math">\(p(\tau|\pi_\theta)\)</span> denote the distribution over trajectories in the
-environment given that we are following a particular policy.</p>
-<p>The conditional independence assumptions of the MDP imply the following
-factorization of <span class="math">\(p(\tau|\pi_\theta)\)</span>,</p>
-<div class="math">\begin{equation}\label{eq:mdp-prob}
-p(\tau|\pi_\theta) = p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t)
-\end{equation}</div>
-<p><strong>Deriving the policy gradient</strong>: Here we describe the a basic method for
-estimating <span class="math">\(\nabla_\theta J(\pi_\theta)\)</span>, known as the likelihood-ratio
-gradient.</p>
-<p>Let <span class="math">\(q(\tau)\)</span> be distribution over trajectories, which comes from following a
-policy <span class="math">\(q\)</span>. (See my earlier post on
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>.)</p>
-<div class="math">\begin{eqnarray}
-  \nabla_\theta J(\theta)
-  &amp;=&amp; \nabla_\theta \mathbb{E}_{\tau \sim p(\cdot|\pi_\theta) }\left[ \sum_{t=0}^H R(s_t) \Biggr| \pi_\theta \right]  \\
-  &amp;=&amp; \nabla_\theta \sum_\tau p(\tau|\pi_\theta) R(\tau) \\
-  &amp;=&amp; \sum_\tau \nabla_\theta p(\tau|\pi_\theta) R(\tau) \label{eq:requires-interchange} \\
-  &amp;=&amp; \sum_\tau q(\tau) \frac{\nabla_\theta p(\tau|\pi_\theta)}{q(\tau)} R(\tau) \label{eq:likelihoodratio-sum-version} \\
-  &amp;=&amp; \mathbb{E}_{\tau \sim q}\left[ \frac{\nabla_\theta p(\tau|\pi_\theta)}{q(\tau)} R(\tau) \Biggr| \pi_\theta \right] \label{eq:likelihoodratio}
-\end{eqnarray}</div>
-<p>A few notes on the derivation:</p>
-<ul>
-<li>
-<p>Note that even if <span class="math">\(q = p_\theta\)</span>, we still need to "correct" for the bias
-   via importance weights (i.e., we divide by <span class="math">\(q\)</span> in our sampled gradients even
-   if <span class="math">\(q=p_\theta\)</span>).</p>
-</li>
-<li>
-<p>Technical note: Line \ref{eq:requires-interchange} requires an interchange of
-   derivative and integral, which can be troublesome if any bits of the math can
-   explode. We're not going to worry about it.</p>
-</li>
-<li>
-<p>It's interesting that we can obtain unbiased gradient estimates for
-   <span class="math">\(\pi_\theta\)</span> by evaluating on samples from a completely different policy!
-   For example, <span class="math">\(q(\tau)=p(\tau|\pi_\theta)\)</span> ("on policy") is a valid choice, as
-   is <span class="math">\(p(\tau|\pi_{\theta'})\)</span> ("off policy") for a different set of
-   parameters. In fact, <em>any</em> distribution over trajectories, which has support
-   everywhere <span class="math">\(p(\tau|\pi_\theta)\)</span> does, is valid (a familiar requirement for
-   importance sampling).</p>
-</li>
-</ul>
-<p>Given the MDP conditional independence assumptions, we can further simplify the
-computation of the ratio term <span class="math">\(\nabla_\theta p(\tau|\pi_\theta)/q(\tau),\)</span>
+  <div class="entry-content"><p><strong>Setup</strong>: We're trying to optimize a function of the form</p>
+<div class="math">$$
+J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
+$$</div>
+<p>The problem is that it's too costly to evaluate <span class="math">\(r(x)\)</span> for all <span class="math">\(\mathcal{X}\)</span> and
+that <span class="math">\(p\)</span> times <span class="math">\(r\)</span> has no structure which we can exploit (e.g., for dynamic
+programming). We also do not assume full knowledge of <span class="math">\(r(x)\)</span> and evaluations of
+<span class="math">\(r(x)\)</span> might be noisy.</p>
+<p>Suppose we can sample <span class="math">\(x^{(j)} \sim p_\theta\)</span>. This opens up the following
+(unbiased) Monte Carlo estimators for <span class="math">\(J\)</span> and its gradient,</p>
+<div class="math">$$
+J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)})
+$$</div>
+<div class="math">$$
+\nabla_{\!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)}) \nabla_{\!\theta} \log p_{\theta}(x^{(j)}).
+$$</div>
+<style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><button class="toggle-button" onclick="toggle('#likelihood-ratio-derivation');">Derivation</button>
+<div id="likelihood-ratio-derivation" class="derivation">
+The derivation is pretty simple
 </p>
-<div class="math">\begin{eqnarray}
-\frac{\nabla_\theta p(\tau|\pi_\theta)}{{q(\tau)}}
-&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \frac{\nabla_\theta p(\tau|\pi_\theta)}{p(\tau|\pi_\theta)} \\
-&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \nabla_\theta \log p(\tau|\pi_\theta) \\
-&amp;=&amp; \frac{p(\tau|\pi_\theta)}{q(\tau)} \nabla_\theta \log \left( p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \cdot \pi_\theta(a_t|s_t)\right) \\
-&amp;=&amp; w(\tau) \cdot \nabla_\theta \left( \log p(s_0) + \sum_{t=0}^H \log p(s_{t+1}|s_t,a_t) + \log \pi_\theta(a_t|s_t) \right) \\
-&amp;=&amp; w(\tau) \cdot \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t|s_t) \label{eq:missingweights}.
-\end{eqnarray}</div>
-<p>Now, we expand the importance weight, <span class="math">\(w(\tau)\)</span>.
+<div class="math">$$
+\begin{eqnarray}
+  \nabla_{\!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
+  &amp;=&amp; \nabla_{\!\theta} \left[ \sum_x p_{\theta}(x) r(x) \right] \\
+  &amp;=&amp; \sum_x \nabla_{\!\theta} \left[ p_{\theta}(x) \right] r(x) \\
+  &amp;=&amp; \sum_x p_{\theta}(x) \frac{\nabla_{\!\theta} \left[ p_{\theta}(x) \right] }{ p_{\theta}(x) } r(x) \\
+  &amp;=&amp; \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\end{eqnarray}
+$$</div>
+<p><br/>
+We use the identity <span class="math">\(\nabla g = g\, \nabla \log g\)</span>, assuming <span class="math">\(g &gt; 0\)</span>.</p>
+<p>Importance-weighted version:
+</p>
+<div class="math">$$
+\begin{eqnarray}
+  \nabla_{\!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
+  &amp;=&amp; \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right] \\
+  &amp;=&amp; \sum_x p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x) \\
+  &amp;=&amp; \sum_x \frac{q(x)}{q(x)} p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x) \\
+  &amp;=&amp; \underset{q}{\mathbb{E}}\left[ \frac{p_{\theta}(x)}{q(x)} r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\end{eqnarray}
+$$</div>
+<p>
+</div></p>
+<p>Two use this estimator we need two things (1) the ability to sample a joint <span class="math">\(x
+\sim p_{\theta}\)</span>, (2) the ability to compute the probability of a sampled value,
+i.e., evaluate <span class="math">\(\log p_{\theta}(x)\)</span>.</p>
+<p>The real power of this method is when you have the ability to sample <span class="math">\(x\)</span>, but
+<em>not</em> the ability to compute probability of all factors of the joint probability
+of <span class="math">\(x\)</span> (i.e., you can't compute the complete score <span class="math">\(p_{\theta}(x)\)</span>). In other
+words, some components of the joint probability's <em>generative process</em> might
+pass through factors which are <em>only accessible through sampling</em>, e.g., because
+they require performing <em>actual experiments</em> in the real world or a complex
+simulation!</p>
+<p>The factors that we can only sample from are what make this a true stochastic
+optimization problem.</p>
+<p>A classic example is a Markov decision process (MDP). In this context, the
+random variable <span class="math">\(x\)</span> is an alternating sequence of states and actions, <span class="math">\(x = (s_0,
+a_0, s_1, a_1, \ldots a_{T-1}, s_T)\)</span> and the generative process consists of an
+unknown transition function <span class="math">\(p(s_{t+1}|s_t,a_t)\)</span> that is only accessible through
+sampling and a policy <span class="math">\(p_{\theta}(a_t|s_t)\)</span> which we in control of. So the
+probability of an entire sequence in an MDP is <span class="math">\(p_{\theta}(x) = p(s_0)
+\prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t)\)</span>. The likelihood-ratio
+method can be used to derive several "policy gradient" methods, which compute
+unbiased gradient estimates with no knowledge of the transition distribution.</p>
+<blockquote>
+<p>The beauty of the likelihood ratio is the cancellation of unknown terms.</p>
+</blockquote>
+<p>This wonderful cancellation occurs in many contexts, including the
+Metropolis-Hastings accept-reject criteria.</p>
+<p>To make this explicit, let's consider the importance weight, <span class="math">\(w(\tau)\)</span>.
 </p>
 <div class="math">\begin{eqnarray}
 w(\tau)
 = \frac{p(\tau|\pi_\theta)}{q(\tau)}
-= \frac{ p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) }
-       { p(s_0) \prod_{t=0}^H p(s_{t+1}|s_t,a_t) q(a_t|s_t) }
-= \frac{\prod_{t=0}^H \pi_\theta(a_t|s_t)}
-       {\prod_{t=0}^H q(a_t|s_t)}
+= \frac{ p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) }
+       { p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) q(a_t|s_t) }
+= \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
+       {\prod_{t=0}^T q(a_t|s_t)}
 \end{eqnarray}</div>
-<p>Now, plugging our simplified expression for <span class="math">\(w(\tau)\)</span> back into
-(\ref{eq:missingweights}) and (\ref{eq:likelihoodratio-sum-version}),</p>
-<div class="math">\begin{equation}\label{eq:LR-MDP}
- \nabla_\theta J(\theta) = \sum_{\tau} q(\tau)
-      \left( \prod_{t=0}^H \frac{\pi_\theta(a_t|s_t)}{q(a_t|s_t)} \right)
-      \cdot \left( \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t|s_t) \right)
-      \cdot \left( \sum_{t=0}^H R(s_t) \right).
-\end{equation}</div>
-<p>This equation shows that <em>no knowledge of the dynamics are needed to estimate
-the gradient</em> as long as we can sample from <span class="math">\(q(\tau)\)</span>. This method gets the name
-<strong>likelihood-ratio</strong> because of the division in the importance weight. It is
-applicable beyond RL! Specifically, in cases where there are factors in a joint
-probability model that we want to cancel out because we can't evaluate the
-probability directly (e.g., because it is the real world not a simulation), but
-we can sample from it (e.g., <a href="http://arxiv.org/abs/1209.2355">Bottou+,13</a>).</p>
-<p><strong>Computing the gradient</strong>: If the state space is managable in size and we know
-the parameters of the MDP, we can use dynamic programming to compute
-<span class="math">\(\nabla_\theta J(\pi_\theta)\)</span> <em>exactly</em>. This is because the sum over
-trajectories in Eq \ref{eq:LR-MDP} factors nicely due to the Markov assumptions.
-Evaluting <span class="math">\(J(\pi_\theta)\)</span> is equivalent to computing the value of a Markov
-reward process (an MDP with the policy fixed is a <strong>Markov reward process</strong>). To
-get the gradient, you can simply backpropagate through the policy evaluation
-procedure.</p>
-<p><strong>Estimating the gradient</strong>: In most cases, however, the state space is too big
-<em>and</em> we don't know the dynamics or rewards, thus dynamic programming is
-infeasible. So we use a <strong>Monte Carlo estimate</strong>. We can get an unbiased
-estimates by sampling a bunch of trajectories, <span class="math">\(\tau^{(1)} \dots \tau^{(m)}
-\overset{\text{i.i.d.}}{\sim} q\)</span> and computing</p>
-<div class="math">\begin{eqnarray}
-\hat{J}(\pi_\theta)
-&amp;=&amp; \frac{1}{m} \sum_{j=1}^m
-  w^{(j)}
-  \cdot \left( \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a^{(j)}_t|s^{(j)}_t) \right)
-  \cdot \left( \sum_{t=0}^H R(s^{(j)}_t) \right). \label{eq:LRMCestimate}
-\end{eqnarray}</div>
-<p>where</p>
-<div class="math">$$
-w^{(j)} = \frac{p(\tau^{(j)}|\pi_\theta)}{q(\tau^{(j)})} = \prod_{t=0}^H \frac{\pi_\theta(a^{(j)}_t|s^{(j)}_t)}{q(a^{(j)}_t|s^{(j)}_t)}
-$$</div>
-<p>This Monte Carlo estimate is unbiased, but is it any good?  Does it help us
-estimate a good policy? One might imagine that if the state spaces or action
-spaces is very large, far too many sample trajectories will be needed in order
-to obtain a precise estimate; this notion can be described mathematically as the
-variance of the estimate. Furthermore, if the sampling policy <span class="math">\(q\)</span> is too
-dissimilar to <span class="math">\(\pi_\theta\)</span> the samples will be a weak estimate of the true
-gradient.</p>
-<p><strong>When does policy gradient fail</strong>:</p>
+<p><br/>
+Common terms cancel! This implies that we don't need to compute them.</p>
+<p>But that's only talking about the importance-weighted version... Well, another
+interpretation of the log-probability is that related to cancellation.</p>
+<p>Also, note that the component <span class="math">\(\nabla_{\!\theta} \log p_{\theta}(x)\)</span> also
+simplifies because terms that do not depend on <span class="math">\(\theta\)</span> also disappear. Leaving
+you with just a sum of log-gradient terms you know.</p>
+<p>The general framework (along with a bunch of tricks and extensions) is presented
+in <a href="http://arxiv.org/abs/1209.2355">Bottou et. al (2013)</a>). This is one of the
+best papers I have ever read. It took mean about a year and several reads to
+really grokk it.</p>
+<p><hr/>
+<hr/>
+<hr/></p>
+<p>You can improve your data efficiency and algorithm stability using off-line
+optimization.</p>
 <ul>
-<li>
-<p>We need a strong signal from beginning to end when using policy
-   gradient. Thus, policy gradient works best when used with aggressive <strong>reward
-   shaping</strong>, that reward functions which aren't super "hands off" and "push
-   back" the reward signal to earlier states. This is not always easy to do.</p>
-</li>
-<li>
-<p>Stochastic policies tend to learn more conservative policies. (Although it is
-   the case that deterministic policies are a special case of stochastic
-   policies.) The classic example is Sutton and Barto's cliff problem where the
-   optimal policy walks a straight line across the edge of a cliff, but
-   stochastic policies tend to learn to move away from edge of the cliff because
-   during learning it tends to fall off.</p>
-</li>
-<li>
-<p>Kakade &amp; Langford (2002): the long corridor problem (I prefer "walking a
-   tight rope" since it's more like the cliff problem). In this case, it's
-   difficult to reach final state and thus we never get a reward. It may take
-   exponential time in <span class="math">\(H\)</span> to reach the final state even once when we're just
-   sampling random stuff.</p>
-</li>
-<li>
-<p>Long trajectories (for example the visual attention paper uses <span class="math">\(5\)</span>
-   steps. Jacob Andreas' recent best paper at NAACL uses <span class="math">\(H=1\)</span>). Of course,
-   there is a tradeoff between number of actions and trajectory length
-   (otherwise we could say trivially say that we just have each trajectory as a
-   single action making <span class="math">\(H=1\)</span> (in a trivial sense).</p>
-</li>
-<li>
-<p>State spaces with sparse rewards. We need a strong reward signal to leads
-   policy gradient in the right direction.</p>
-</li>
-<li>
-<p>Another case, where it'd be tempting to apply policy gradient is in
-   structured predication where you try to minimize the risk (expected loss
-   under the model). In this situation, normalization constants and samples are
-   often too slow get.</p>
-</li>
-</ul>
-<p><strong>Misc tricks</strong>:</p>
-<ul>
-<li>
-<p><strong>How big should we set <span class="math">\(m\)</span>?</strong> I like to set the minibatch size <span class="math">\(m\)</span> in any
-  finicky SGD setup to ensure that the inner product between the current
-  gradient and previous gradient is positive. This prevents excessive
-  oscillation. Monitoring this quantity is pretty easy.</p>
-</li>
-<li>
-<p><strong>Gradient clipping</strong> is sometimes useful because we may have exploding
-  gradients. (It seems like every one uses the magic value <span class="math">\(5\)</span>. I'd prefer to
-  use something with appropriate units for the given problem. Maybe something
-  based on the norms of previous gradients.)</p>
-</li>
-<li>
-<p><strong>Reward normalization</strong>: I'm not crazy about normalizing rewards (e.g.,
-  subtract mean and divide by variance; or possibly the rank transform used in
-  CMA-ES).</p>
-</li>
-<li>
-<p><strong>Natural gradient</strong>: Seems to work if the additional computation is faster
-  than collecting more samples. I recommend analytic Fisher matrix-vector
-  products instead of the empirical Fisher matrix and the truncated conjugate
-  gradient trick to avoid ever materializing the Fisher matrix. Natural gradient
-  is (approximately) parameterization invariant.</p>
-</li>
-<li>
-<p><strong>Self-normalized importance sampling</strong> (divide by <span class="math">\(\sum_{j=1}^m w^{(j)}\)</span>
-  instead of <span class="math">\(m\)</span> in the MC estimate). Introduces bias which decreases with <span class="math">\(m\)</span>
-  (eventually the bias vanishes). Often works better than the vaniila REINFORCE
-  algorithm.</p>
-</li>
-<li>
-<p><strong>Off-line optimization</strong>: After you've collected a large sample (big <span class="math">\(m\)</span>) you
+<li><strong>Off-line optimization</strong>: After you've collected a large sample (big <span class="math">\(m\)</span>) you
   can optimze <span class="math">\(\hat{J}\)</span> using your favorite deterministic optimization algorithm
   (e.g., L-BFGS). You'll definitely want some type of "regularization" which
   prefers policies in places with sufficient samples. You can measure this type
-  of thing in many ways (e.g., Bottou, Levine &amp; Koltun, ; Philip Thomas; Tang &amp;
-  Abbeel, 2010). The original paper on this topic is (probably) "learning from
+  of thing in many ways (e.g., Bottou; Levine &amp; Koltun, ; Philip Thomas, ; Tang &amp;
+  Abbeel, 2010). The original paper on this topic is (probably) "Learning from
   scarce experience" (Peshkin &amp; Shelton, 2002) or Shelton's thesis. A similar
-  deterministic approximation appears in PEGASUS (Ng &amp; Jordan, 2000)</p>
-</li>
-<li>
-<p><strong>Variance reduction</strong></p>
-</li>
-<li>
-<p>The baseline trick: always recommended, not described here.</p>
-<p><strong>TODO</strong>: Explain why the baseline "is a thing"... it looked totally
-arbitrary to me when I first saw it.</p>
-</li>
-<li>
-<p>Control variate: generalization of optimal baseline to other available
-    quantities with known exact expectations.</p>
-<p>(The optimal baseline uses the gradient-of-log-policy as a control
-variate. It's correct because the expected value of this quantity is
-zero. It can't hurt variance unless the coefficients are poorly estimated
-(actually, there are more precise conditions).)</p>
-</li>
-<li>
-<p>Actor-critic (i.e., using a value function approximator in addition to
-    policy learning)</p>
-<p>Introduces bias (unless we have a "compatible" parameterization between the
-policy and value function).</p>
-<p>There are many bias-variance tradeoffs available under this general scheme.</p>
-</li>
-<li>
-<p>Past rewards are independent of future actions. This let's us rewrite the
-    MC estimate to obtain a variance reduction. (not described here)</p>
-</li>
+  deterministic approximation appears in PEGASUS (Ng &amp; Jordan, 2000).</li>
 </ul>
+<p>Another case where its tempting to apply policy gradient is in minimum risk
+training of structured prediction models. Unfortunately, the likelihood-ratio
+trick doesn't help us with the usual computation problems in structure
+prediction, which have to do with computing normalization constants, but
+assuming we can obtain good sample&mdash;preferably exact samples, but MCMC
+samples might be ok&mdash;the likelihood ratio can help us with complicated
+blackbox cost functions like human annotators or impenetrable perl scripts. I
+had this idea back in 2012, but never got around to pushing it out. There appear
+to be some recent papers that picked up on, including
+<a href="http://www.cl.uni-heidelberg.de/~riezler/publications/papers/ACL2016.pdf">Sokolov+,2016</a>
+and a few papers using it for variational inference.</p>
+<p>I'd like to stress an important point. Although the likelihood-ratio gives us an
+unbiased estimate of the gradient, don't be fooled.</p>
+<p>The particular gradient estimate used in the method has an impractical
+signal-to-noise ratio, which make it very hard use in optimization.</p>
+<p>this does not mean that you get the convergence rate that you might be used to
+with your stochastic gradient method! In particular, the gradient estimates will
+have high variance as it depends on variation in <span class="math">\(r(x)\)</span>, which might be
+crazy-large if, for example, <span class="math">\(r(x)\)</span> is sparse corresponding to winning the
+lottery, completing a maze, winning at Go, finding some poor sap to click on
+your ad. Compare this to the benign amount of noisy you get from subsampling the
+data, which is the sgd that people are familiar with.</p>
+<p>This gradient estimate is "zero order" it is essentially probing the function in
+<span class="math">\(x\)</span> space, which might be higher dimensional that <span class="math">\(\theta\)</span>. As a result, you
+might be better off with gradient estimators that are based on perturbing
+<span class="math">\(\theta\)</span> directly, e.g., zeroth-order methods (sometimes called <em>direct search</em>
+or <em>gradient-free</em> optimization methods) like Nelder-Mead simplex, FDSA, SPSA,
+and CMA-ES (related to the Cross Entropy method).</p>
+<p>One way to combat this is to average together many samples per estimate (i.e.,
+use large <span class="math">\(m\)</span>).</p>
+<h1>Importance sampling version</h1>
+<p>Let's look at a more general version based on
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
+because it will give us some interesting freedom later on. Here <span class="math">\(x^{(j)} \sim q\)</span>
+instead of <span class="math">\(p_\theta\)</span>. Note that we need the following condition on <span class="math">\(q\)</span> to hold
+for all <span class="math">\(x\)</span>, <span class="math">\(p(x) &gt; 0 \Rightarrow q(x) &gt; 0\)</span>.</p>
+<div class="math">$$
+J(\theta) \approx \frac{1}{m} \sum_{j=1}^m w^{(j)}_{\theta} r(x^{(j)})
+$$</div>
+<div class="math">$$
+\nabla_{\!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m w^{(j)}_{\theta} r(x^{(j)}) \nabla_{\!\theta} \log p_{\theta}(x^{(j)}).
+$$</div>
+<p>where <span class="math">\(w^{(j)}_{\theta} = p_{\theta}(x^{(j)}) / q(x^{(j)})\)</span></p>
 <p><strong>Remarks</strong></p>
 <ul>
 <li>
 <p><strong>Relaxing discrete actions into stochastic ones</strong>: A common way to handle
-   discrete (i.e., nondifferentiable) structures/decisions is to put a
-   differentiable density over the structure. (Note: this shouldn't be
-   surprising -- it's what we do in structured prediction, e.g. with CRFs!)</p>
+   discrete decisions is to put a <em>differentiable</em> parametric density (like
+   <span class="math">\(p_\theta\)</span>) over the space of possible executions (paths <span class="math">\(x\)</span>). (Note: this
+   shouldn't be surprising -- it's what we do in structured prediction,
+   e.g. with CRFs!)  The likelihood-ratio method describe here can be used to
+   estimate gradients in this setting. In a number of settings the <span class="math">\(p_\theta\)</span>
+   and <span class="math">\(r\)</span> decompose algebraically into a nice structure that is amenable to
+   dynamic programming.</p>
 </li>
 <li>
 <p><strong>Unknown environments</strong>: Dynamics cancel out! Note that we need to be able
@@ -12200,10 +12115,9 @@ policy and value function).</p>
     Posted by <span class="fn">Tim Vieira</span>
   </span>
 <time datetime="2016-06-09T00:00:00-04:00" pubdate>Jun 09, 2016</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/math.html">math</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>
     <a class="category" href="http://timvieira.github.io/blog/tag/rl.html">rl</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/policy-gradient.html">policy-gradient</a>
+    <a class="category" href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>
   </span>
 </p><div class="sharing">
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://timvieira.github.io/blog/drafts/likelihood-ratio-gradient.html" data-via="xtimv" data-counturl="http://timvieira.github.io/blog/drafts/likelihood-ratio-gradient.html" >Tweet</a>
@@ -12216,6 +12130,9 @@ policy and value function).</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/12/15/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
       </li>
       <li class="post">
@@ -12226,9 +12143,6 @@ policy and value function).</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a>
       </li>
     </ul>
   </section>
@@ -12245,7 +12159,7 @@ policy and value function).</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
 
 
 
