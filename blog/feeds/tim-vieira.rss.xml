@@ -109,7 +109,7 @@ course, we risk overfitting to the sample if we evaluate
 favor regions of &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, which are not well represented in the sample because
 the importance sampling estimator has high variance in these regions resulting
 from large importance weights (when &lt;span class="math"&gt;\(q(x)\)&lt;/span&gt; is small and &lt;span class="math"&gt;\(p_{\theta}(x)\)&lt;/span&gt; is
-large, &lt;span class="math"&gt;\(w(x)\)&lt;/span&gt; is large and consequently so is &lt;span class="math"&gt;\(J_{\text{IS}}\)&lt;/span&gt; regardless of
+large, &lt;span class="math"&gt;\(w(x)\)&lt;/span&gt; is large and consequently so is &lt;span class="math"&gt;\(\hat{J}_{\text{IS}}\)&lt;/span&gt; regardless of
 whether &lt;span class="math"&gt;\(r(x)\)&lt;/span&gt; is high!). Thus, we want some type of "regularization" to keep
 the optimizer in regions which are sufficiently well-represented by the sample.&lt;/p&gt;
 &lt;!--
@@ -134,7 +134,7 @@ intervals derived from the empirical Bernstein bound (EBB). We'll require that
 hypotheses (values of &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) which have higher sample variance. (Note: a
 Hoeffding bound wouldn't change the &lt;em&gt;shape&lt;/em&gt; of the objective, but EBB does
 thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
-introduces an additional a "confidence" hyperparameter, &lt;span class="math"&gt;\((1-\delta)\)&lt;/span&gt;. Bottou et
+introduces an additional "confidence" hyperparameter, &lt;span class="math"&gt;\((1-\delta)\)&lt;/span&gt;. Bottou et
 al. recommend maximizing the lower bound as it provides safer improvements. See
 the original paper for the derivation.&lt;/p&gt;
 &lt;!--

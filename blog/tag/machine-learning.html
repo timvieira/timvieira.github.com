@@ -11944,7 +11944,7 @@ course, we risk overfitting to the sample if we evaluate
 favor regions of <span class="math">\(\theta\)</span>, which are not well represented in the sample because
 the importance sampling estimator has high variance in these regions resulting
 from large importance weights (when <span class="math">\(q(x)\)</span> is small and <span class="math">\(p_{\theta}(x)\)</span> is
-large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(J_{\text{IS}}\)</span> regardless of
+large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(\hat{J}_{\text{IS}}\)</span> regardless of
 whether <span class="math">\(r(x)\)</span> is high!). Thus, we want some type of "regularization" to keep
 the optimizer in regions which are sufficiently well-represented by the sample.</p>
 <!--
@@ -11969,7 +11969,7 @@ intervals derived from the empirical Bernstein bound (EBB). We'll require that
 hypotheses (values of <span class="math">\(\theta\)</span>) which have higher sample variance. (Note: a
 Hoeffding bound wouldn't change the <em>shape</em> of the objective, but EBB does
 thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
-introduces an additional a "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
+introduces an additional "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
 al. recommend maximizing the lower bound as it provides safer improvements. See
 the original paper for the derivation.</p>
 <!--
