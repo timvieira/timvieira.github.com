@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Thu, 15 Dec 2016 00:00:00 -0500</lastBuildDate><item><title>Counterfactual reasoning and learning from logged data</title><link>http://timvieira.github.io/blog/post/2016/12/15/counterfactual-reasoning-and-learning-from-logged-data/</link><description>&lt;style&gt; .toggle-button { background-color: #555555; border: none; color: white;
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Mon, 19 Dec 2016 00:00:00 -0500</lastBuildDate><item><title>Counterfactual reasoning and learning from logged data</title><link>http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/</link><description>&lt;style&gt; .toggle-button { background-color: #555555; border: none; color: white;
 padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
 none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
 background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
@@ -353,7 +353,7 @@ alternative weighting scheme to keep importance weights from exploding.&lt;/p&gt
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Thu, 15 Dec 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-12-15:blog/post/2016/12/15/counterfactual-reasoning-and-learning-from-logged-data/</guid><category>counterfactual-reasoning</category><category>importance-sampling</category><category>machine-learning</category></item><item><title>Heaps for incremental computation</title><link>http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</link><description>&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Mon, 19 Dec 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-12-19:blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/</guid><category>counterfactual-reasoning</category><category>importance-sampling</category><category>machine-learning</category></item><item><title>Heaps for incremental computation</title><link>http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</link><description>&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
 (e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
 changes to its inputs. The trick and it's implementation are inspired by the
 well-known max-heap datastructure. I'll also describe a really elegant
