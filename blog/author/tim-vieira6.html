@@ -12298,7 +12298,7 @@ instead of an exact estimate (often called "observed feature counts").</p>
 <div class="math">$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$</div>
-<p>Recall, the centered-difference approximation is a fairly accurate method for
+<p><br/>Recall, the centered-difference approximation is a fairly accurate method for
 approximating derivatives of a univariate function <span class="math">\(f\)</span>, which only requires two
 function evaluations. A similar derivation, based on the Taylor series expansion
 with a complex perturbation, gives us a similarly-accurate approximation with a
@@ -12306,7 +12306,7 @@ single (complex) function evaluation instead of two (real-valued) function
 evaluations. Note: <span class="math">\(f\)</span> must support complex inputs (in frameworks, such as numpy
 or matlab, this often requires no modification to source code).</p>
 <p>This post is based on
-<a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf">Martins+'03</a></p>
+<a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf">Martins+'03</a>.</p>
 <p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
 <div class="math">$$
 f(x + i \cdot \varepsilon) =
@@ -12316,22 +12316,22 @@ f(x + i \cdot \varepsilon) =
 + \frac{i^3 \varepsilon^3}{3!} f'''(x)
 + \cdots
 $$</div>
-<p>Take the imaginary part of both sides and solve for <span class="math">\(f'(x)\)</span>. Note: the <span class="math">\(f\)</span> and
+<p><br/>Take the imaginary part of both sides and solve for <span class="math">\(f'(x)\)</span>. Note: the <span class="math">\(f\)</span> and
 <span class="math">\(f''\)</span> term disappear because <span class="math">\(i^0\)</span> and <span class="math">\(i^2\)</span> are real-valued.</p>
 <div class="math">$$
 f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
 $$</div>
-<p>As usual, using a small <span class="math">\(\varepsilon\)</span> let's us throw out higher-order
+<p><br/>As usual, using a small <span class="math">\(\varepsilon\)</span> let's us throw out higher-order
 terms. And, we arrive at the following approximation:</p>
 <div class="math">$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$</div>
-<p>If instead, we take the real part and solve for <span class="math">\(f(x)\)</span>, we get an approximation
+<p><br/>If instead, we take the real part and solve for <span class="math">\(f(x)\)</span>, we get an approximation
 to the function's value at <span class="math">\(x\)</span>:</p>
 <div class="math">$$
 f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$</div>
-<p>In other words, a single (complex) function evaluations computes both the
+<p><br/>In other words, a single (complex) function evaluations computes both the
 function's value and the derivative.</p>
 <p><strong>Code</strong>:</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
@@ -12369,6 +12369,8 @@ function's value and the derivative.</p>
   or doubles.</p>
 </li>
 </ul>
+<p><strong>Code</strong>: Check out the
+<a href="https://gist.github.com/timvieira/3d3db3e5e78e17cdd103">gist</a> for this post.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

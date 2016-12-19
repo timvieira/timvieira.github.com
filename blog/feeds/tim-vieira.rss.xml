@@ -3505,7 +3505,7 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;p&gt;Recall, the centered-difference approximation is a fairly accurate method for
+&lt;p&gt;&lt;br/&gt;Recall, the centered-difference approximation is a fairly accurate method for
 approximating derivatives of a univariate function &lt;span class="math"&gt;\(f\)&lt;/span&gt;, which only requires two
 function evaluations. A similar derivation, based on the Taylor series expansion
 with a complex perturbation, gives us a similarly-accurate approximation with a
@@ -3513,7 +3513,7 @@ single (complex) function evaluation instead of two (real-valued) function
 evaluations. Note: &lt;span class="math"&gt;\(f\)&lt;/span&gt; must support complex inputs (in frameworks, such as numpy
 or matlab, this often requires no modification to source code).&lt;/p&gt;
 &lt;p&gt;This post is based on
-&lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;&lt;/p&gt;
+&lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f(x + i \cdot \varepsilon) =
@@ -3523,22 +3523,22 @@ f(x + i \cdot \varepsilon) =
 + \frac{i^3 \varepsilon^3}{3!} f'''(x)
 + \cdots
 $$&lt;/div&gt;
-&lt;p&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
+&lt;p&gt;&lt;br/&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(f''\)&lt;/span&gt; term disappear because &lt;span class="math"&gt;\(i^0\)&lt;/span&gt; and &lt;span class="math"&gt;\(i^2\)&lt;/span&gt; are real-valued.&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
 $$&lt;/div&gt;
-&lt;p&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
+&lt;p&gt;&lt;br/&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
 terms. And, we arrive at the following approximation:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;p&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
+&lt;p&gt;&lt;br/&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
 to the function's value at &lt;span class="math"&gt;\(x\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
-&lt;p&gt;In other words, a single (complex) function evaluations computes both the
+&lt;p&gt;&lt;br/&gt;In other words, a single (complex) function evaluations computes both the
 function's value and the derivative.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;complex_step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;1e-10&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -3576,6 +3576,8 @@ function's value and the derivative.&lt;/p&gt;
   or doubles.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Check out the
+&lt;a href="https://gist.github.com/timvieira/3d3db3e5e78e17cdd103"&gt;gist&lt;/a&gt; for this post.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
