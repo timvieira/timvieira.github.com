@@ -18,7 +18,7 @@ data. For the large part, this post is based on things I learned from
 &lt;a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf"&gt;Peshkin &amp;amp; Shelton (2002)&lt;/a&gt;
 and &lt;a href="https://arxiv.org/abs/1209.2355"&gt;Bottou et al. (2013)&lt;/a&gt; (two of all-time
 favorite papers).&lt;/p&gt;
-&lt;p&gt;After reading this post, have a look at the
+&lt;p&gt;After reading, have a look at the
 &lt;a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9"&gt;Jupyter notebook&lt;/a&gt;
 accompanying this post!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt; (&lt;em&gt;off-line off-policy optimization&lt;/em&gt;): We're trying to optimize a
