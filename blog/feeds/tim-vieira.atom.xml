@@ -3205,14 +3205,14 @@ $$&lt;/div&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;This fails because we can't square big&lt;/p&gt;
+&lt;p&gt;This fails because we can't square &lt;code&gt;big&lt;/code&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
 &lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="n"&gt;inf&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;A little math&lt;/h2&gt;
-&lt;p&gt;There is a way to avoid overflow on the account of a few large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;There is a way to avoid overflowing because of a few large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;Here's a little fact about p-norms: for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;
 &lt;/p&gt;
 &lt;div class="math"&gt;$$

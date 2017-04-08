@@ -11857,14 +11857,14 @@ $$</div>
 </pre></div>
 
 
-<p>This fails because we can't square big</p>
+<p>This fails because we can't square <code>big</code></p>
 <div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
 <span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
 </pre></div>
 
 
 <h2>A little math</h2>
-<p>There is a way to avoid overflow on the account of a few large <span class="math">\(x_i\)</span>.</p>
+<p>There is a way to avoid overflowing because of a few large <span class="math">\(x_i\)</span>.</p>
 <p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
 </p>
 <div class="math">$$
