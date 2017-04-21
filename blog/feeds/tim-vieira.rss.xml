@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Fri, 21 Apr 2017 00:00:00 -0400</lastBuildDate><item><title>How to test gradient computation</title><link>http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-computation/</link><description>&lt;!--
+<rss version="2.0"><channel><title>Graduate Descent</title><link>http://timvieira.github.io/blog/</link><description></description><lastBuildDate>Fri, 21 Apr 2017 00:00:00 -0400</lastBuildDate><item><title>How to test gradient implementations</title><link>http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/</link><description>&lt;!--
 **Who should read this?** Nowadays, you're probably just using automatic
 differentiation to compute the gradient of whatever function you're using. If
 that's you and you trust your software package wholeheartedly, then you probably
@@ -221,7 +221,7 @@ learning how automatic differentiation works, I learned it from
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 21 Apr 2017 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2017-04-21:blog/post/2017/04/21/how-to-test-gradient-computation/</guid><category>testing</category><category>calculus</category></item><item><title>Counterfactual reasoning and learning from logged data</title><link>http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/</link><description>&lt;style&gt; .toggle-button { background-color: #555555; border: none; color: white;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 21 Apr 2017 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2017-04-21:blog/post/2017/04/21/how-to-test-gradient-implementations/</guid><category>testing</category><category>calculus</category></item><item><title>Counterfactual reasoning and learning from logged data</title><link>http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/</link><description>&lt;style&gt; .toggle-button { background-color: #555555; border: none; color: white;
 padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
 none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
 background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
