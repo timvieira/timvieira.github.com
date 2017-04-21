@@ -11974,9 +11974,10 @@ make sure that your model and learning procedure can (over)fit small
 datasets.</p>
 <p><strong>Test that batch = minibatch</strong> (if applicable). It's very easy to get this bit
 wrong. Broadcasting rules (in numpy, for example) makes it easy to hide matrix
-conformability mishaps so make sure you get the same results manual minibatching
-(Of course, you should only do minibatching if are get a speed-up from
-vectorization. You should probably test that it's minibatch actually faster.)</p>
+conformability mishaps. So make sure you get the same results as manual
+minibatching (Of course, you should only do minibatching if are get a speed-up
+from vectorization. You should probably test that it's minibatch actually
+faster.)</p>
 <!--
 Other common sources of bugs
 
