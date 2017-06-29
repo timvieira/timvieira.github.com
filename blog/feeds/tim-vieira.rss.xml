@@ -61,7 +61,7 @@ approximation instead of rolling code to compute the gradient. (Take &lt;span cl
 axis-aligned unit vectors for &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;.) The FD approximation is very
 accurate. Of course, specialized code is probably a little more accurate, but
 that's not &lt;em&gt;really&lt;/em&gt; why we bother to do it! The reason why we write specialized
-gradient code is &lt;em&gt;not&lt;/em&gt; improve numerical accuracy, it's to improve
+gradient code is &lt;em&gt;not&lt;/em&gt; to improve numerical accuracy, it's to improve
 &lt;em&gt;efficiency&lt;/em&gt;. As I've
 &lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;ranted&lt;/a&gt;
 before, automatic differentiation techniques guarantee that evaluating &lt;span class="math"&gt;\(\nabla
@@ -3995,7 +3995,7 @@ turning these connections into a
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>sampling</category><category>Gumbel</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 01 Aug 2014 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-08-01:blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</guid><category>sampling</category><category>Gumbel</category><category>reservoir-sampling</category></item><item><title>Gumbel max trick</title><link>http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/</link><description>&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
