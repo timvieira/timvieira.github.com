@@ -12025,7 +12025,7 @@ $$</div>
 <p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
    -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
    sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>),
-   known as probability proportional to size without replacement distribution (PPSWOR).
+   known as probability proportional to size without replacement (PPSWOR).
    To we can then adjust our estimator
    <div class="math">$$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)

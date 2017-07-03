@@ -190,7 +190,7 @@ $$&lt;/div&gt;
 &lt;p&gt;If we instead sample &lt;span class="math"&gt;\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
    -\textrm{Exponential}(1)\)&lt;/span&gt;, then &lt;span class="math"&gt;\(S\)&lt;/span&gt; will be sampled according to the &lt;em&gt;de facto&lt;/em&gt;
    sampling without replacement scheme (e.g., &lt;code&gt;numpy.random.sample(..., replace=False)&lt;/code&gt;),
-   known as probability proportional to size without replacement distribution (PPSWOR).
+   known as probability proportional to size without replacement (PPSWOR).
    To we can then adjust our estimator
    &lt;div class="math"&gt;$$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
