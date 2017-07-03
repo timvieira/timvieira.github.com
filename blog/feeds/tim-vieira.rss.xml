@@ -3903,7 +3903,7 @@ reservior sampling&lt;/p&gt;
 &lt;dl&gt;
 &lt;dt&gt;&lt;span class="math"&gt;\(a = -\infty; b = \text{null}\)&lt;/span&gt;&lt;/dt&gt;
 &lt;dt&gt;for &lt;span class="math"&gt;\(i=1,2,\cdots;\)&lt;/span&gt; do:&lt;/dt&gt;
-&lt;dd&gt;# Additively perturb each weight by a Gumbel random variate,&lt;/dd&gt;
+&lt;dd&gt;# compute randomized key&lt;/dd&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(u_i \sim \text{Uniform}(0,1)\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(e_i = u_i^{(\frac{1}{x_i})}\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;# Keep around the largest &lt;span class="math"&gt;\(e_i\)&lt;/span&gt;&lt;/dd&gt;
@@ -3911,7 +3911,19 @@ reservior sampling&lt;/p&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;/dl&gt;
-&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
+that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute pow (which is nice
+because pow is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
+\log(u_i)/x_i\)&lt;/span&gt; because &lt;span class="math"&gt;\(\log\)&lt;/span&gt; is monotonic. (Note that &lt;span class="math"&gt;\(-e'_i \sim
+\textrm{Exponential}(x_i)\)&lt;/span&gt;.)&lt;/p&gt;
+&lt;!--
+I find this version of the algorithm more intuitive, since it's well-known that
+$\left(\underset{{i=1 \ldots t}}{\min} \textrm{Exponential}(x_i) \right) =
+\textrm{Exponential}\left(\sum_{i=1}^t x_i \right)$. This version makes it clear
+that minimizing is actually summing. However, we want the argmin, which is
+distributed according to $\pi_t$.
+--&gt;
+
 &lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
 algorithms compute a randomized key and take an argmax. What's the relationship
 between the keys?&lt;/p&gt;

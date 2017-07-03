@@ -12625,7 +12625,7 @@ reservior sampling</p>
 <dl>
 <dt><span class="math">\(a = -\infty; b = \text{null}\)</span></dt>
 <dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
-<dd># Additively perturb each weight by a Gumbel random variate,</dd>
+<dd># compute randomized key</dd>
 <dd><span class="math">\(u_i \sim \text{Uniform}(0,1)\)</span></dd>
 <dd><span class="math">\(e_i = u_i^{(\frac{1}{x_i})}\)</span></dd>
 <dd># Keep around the largest <span class="math">\(e_i\)</span></dd>
@@ -12633,7 +12633,19 @@ reservior sampling</p>
 <dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
 <dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
 </dl>
-<p>Again, if interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>.</p>
+<p>Again, if interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>. Note
+that you can simplify <span class="math">\(e_i\)</span> so that you don't have to compute pow (which is nice
+because pow is pretty slow). It's equivalent to use <span class="math">\(e'_i = \log(e_i) =
+\log(u_i)/x_i\)</span> because <span class="math">\(\log\)</span> is monotonic. (Note that <span class="math">\(-e'_i \sim
+\textrm{Exponential}(x_i)\)</span>.)</p>
+<!--
+I find this version of the algorithm more intuitive, since it's well-known that
+$\left(\underset{{i=1 \ldots t}}{\min} \textrm{Exponential}(x_i) \right) =
+\textrm{Exponential}\left(\sum_{i=1}^t x_i \right)$. This version makes it clear
+that minimizing is actually summing. However, we want the argmin, which is
+distributed according to $\pi_t$.
+-->
+
 <p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
 algorithms compute a randomized key and take an argmax. What's the relationship
 between the keys?</p>
