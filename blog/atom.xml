@@ -75,7 +75,7 @@ Remarks
 the same elements multiple times by sampling &lt;span class="math"&gt;\(m\)&lt;/span&gt; distinct elements. This is
 called a sampling &lt;em&gt;without replacement&lt;/em&gt; (SWOR) scheme. Note that there is no
 unique sampling without replacement scheme; although, there does seem to be a
-&lt;em&gt;de facto&lt;/em&gt; method (more on that later). There are lots of ways to do sample
+&lt;em&gt;de facto&lt;/em&gt; method (more on that later). There are lots of ways to do sampling
 without replacement, e.g., any point process over the universe will do as long
 as we can control the size.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;An alternative formulation:&lt;/strong&gt; We can also formulate our estimation problem as
@@ -129,12 +129,13 @@ importance-weighting correction that comes from the Horvitz-Thompson estimator
 &lt;span class="math"&gt;\(\tau\)&lt;/span&gt; that makes computing &lt;span class="math"&gt;\(q_i\)&lt;/span&gt; easy. Thus, for priority sampling, we can use
 &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;. This auxillary variable adds a tiny bit extra noise
 in our estimator, which is tantamount to one extra sample.&lt;/p&gt;
-&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Proof of unbiasedness&lt;/button&gt;
-&lt;div id="ps-unbiased" class="derivation" style="display:none;"&gt;
-&lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a little different from that
-in the priority sampling papers. I think it's more more straightforward. More
-importantly, it shows how we can extend the method to sample from slightly
-different distributions without replacement distributions.&lt;/p&gt;
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Proof of
+unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
+style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
+little different from that in the priority sampling papers. I think it's more
+more straightforward. More importantly, it shows how we can extend the method to
+sample from slightly different distributions without replacement distributions
+(as long as we can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray}
 \mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
@@ -149,7 +150,7 @@ different distributions without replacement distributions.&lt;/p&gt;
 $$&lt;/div&gt;
 &lt;p&gt;
 &lt;/div&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Properties&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Remarks&lt;/strong&gt;:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Priority sampling satisfies our task criteria: it is both unbiased and sparse
@@ -188,8 +189,8 @@ $$&lt;/div&gt;
 &lt;li&gt;
 &lt;p&gt;If we instead sample &lt;span class="math"&gt;\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
    -\textrm{Exponential}(1)\)&lt;/span&gt;, then &lt;span class="math"&gt;\(S\)&lt;/span&gt; will be sampled according to the &lt;em&gt;de facto&lt;/em&gt;
-   sampling without replacement scheme (e.g., &lt;code&gt;numpy.random.sample(..., replace=False)&lt;/code&gt;), 
-   known as probability proportional to size without replacement distribution (PPSWOR). 
+   sampling without replacement scheme (e.g., &lt;code&gt;numpy.random.sample(..., replace=False)&lt;/code&gt;),
+   known as probability proportional to size without replacement distribution (PPSWOR).
    To we can then adjust our estimator
    &lt;div class="math"&gt;$$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
