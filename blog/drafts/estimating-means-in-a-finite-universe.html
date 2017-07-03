@@ -12038,13 +12038,18 @@ $$</div>
    variates; this means we can't rely on symmetry to make summing over
    permutations efficient.</p>
 </li>
+<li>
+<p>The one downside of this method is that sampling seems to require looking at
+   all <span class="math">\(n\)</span> items.</p>
+</li>
 </ul>
 <h2>Experiments</h2>
 <p>You can get the Jupyter notebook for replicating this experiment
 <a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb">here</a>.
 So download the notebook and play with it!</p>
-<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty nice,
-check it out:</p>
+<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!</p>
 <p><center>
 <img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png" />
 </center></p>
@@ -12054,9 +12059,27 @@ x-axis is the sampling budget, <span class="math">\(m \le n\)</span>.</p>
 <p>The plot shows a small example with <span class="math">\(n=50\)</span>. We see that PS's variability
 actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
 at <span class="math">\(m=n\)</span>. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
-<p><strong>Further reading:</strong> If you liked this post, you might like my other posts tagged with
-<a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> or
+<p><strong>Further reading:</strong> If you liked this post, you might like my other posts
+tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> and
 <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>.</p>
+<ul>
+<li>
+<p>Edith Cohen, "The Magic of Random Sampling"
+   (<a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf">slides</a>,
+   <a href="https://www.youtube.com/watch?v=jp83HyDs8fs">talk</a>)</p>
+</li>
+<li>
+<p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
+   has plenty good stuff that I didn't cover.</p>
+</li>
+<li>
+<p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
+</li>
+<li>
+<p>Suresh Venkatasubramanian's
+   <a href="http://blog.geomblog.org/2005/10/priority-sampling.html">post</a></p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
