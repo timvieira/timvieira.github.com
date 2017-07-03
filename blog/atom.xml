@@ -144,7 +144,7 @@ sample from slightly different without replacement distributions
 &amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
 &amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
 &amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
-&amp;amp;=&amp;amp; \sum_{i=1}^n p_i \cdot f(i) \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \mu \right] \\
 &amp;amp;=&amp;amp; \mu
 \end{eqnarray}
 $$&lt;/div&gt;
