@@ -11860,7 +11860,7 @@ function toggle(x) { $(x).toggle(); }
 </script>
 
 <p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
-to estimating the mean of a random variable that can only take on finitely many
+to estimating the mean of a random variable that takes on only finitely many
 values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
 for finite domains. I'll describe some lesser-known algorithms based on sampling
 without replacement that can be adapted to estimating means.</p>
@@ -11998,7 +11998,7 @@ $$</div>
    <span class="math">\(\sum_{i \in I} x_i\)</span> for some <span class="math">\(I \subseteq \{1,\ldots,n\}\)</span>. In this setting,
    the set of sampled items <span class="math">\(S\)</span> is chosen to be "representative" of the
    population, albeit much smaller. In the subset sum setting, priority sampling
-   has been show to have near-optimal variance
+   has been shown to have near-optimal variance
    <a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf">(Szegedy, 2005)</a>.
    Specifically, priority sampling with <span class="math">\(m\)</span> samples is no worse than the best
    possible <span class="math">\((m-1)\)</span>-sparse estimator in terms of variance. Of course, when
@@ -12016,14 +12016,14 @@ $$</div>
 <li>
 <p>Components of the estimate <span class="math">\(\boldsymbol{s}\)</span> are uncorrelated, i.e.,
    <span class="math">\(\textrm{Cov}[s_i, s_j] = 0\)</span> for <span class="math">\(i \ne j\)</span> and <span class="math">\(m \ge 2\)</span>. This is surprising
-   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>, but these effects
-   seem to cancel each other out.</p>
+   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>.</p>
 </li>
 <li>
 <p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
-   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the canonical
-   sampling without replacement scheme (i.e., <code>numpy.random.sample(..., replace=False)</code>), known as probability proportional to
-   size without replacement distribution (PPSWOR). To we can then adjust our estimator
+   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>), 
+   known as probability proportional to size without replacement distribution (PPSWOR). 
+   To we can then adjust our estimator
    <div class="math">$$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
    $$</div>
