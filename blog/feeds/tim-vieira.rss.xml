@@ -133,7 +133,7 @@ in our estimator, which is tantamount to one extra sample.&lt;/p&gt;
 unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
 style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
 little different from that in the priority sampling papers. I think it's more
-more straightforward. More importantly, it shows how we can extend the method to
+straightforward. More importantly, it shows how we can extend the method to
 sample from slightly different without replacement distributions
 (as long as we can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
