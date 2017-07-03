@@ -206,11 +206,12 @@ $$&lt;/div&gt;
    variates; this means we can't rely on symmetry to make summing over
    permutations efficient.&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;The one downside of this method is that sampling seems to require looking at
-   all &lt;span class="math"&gt;\(n\)&lt;/span&gt; items.&lt;/p&gt;
-&lt;/li&gt;
 &lt;/ul&gt;
+&lt;!--
+ - The one downside of this method is that sampling seems to require looking at
+   all $n$ items.
+--&gt;
+
 &lt;h2&gt;Experiments&lt;/h2&gt;
 &lt;p&gt;You can get the Jupyter notebook for replicating this experiment
 &lt;a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb"&gt;here&lt;/a&gt;.
