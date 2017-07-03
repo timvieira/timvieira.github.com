@@ -11829,6 +11829,379 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </h1>
+      <p class="meta"><time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time></p>
+</header>
+
+  <div class="entry-content"><style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.</p>
+<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a derministic function
+<span class="math">\(f\)</span> over a (large) finite universe of <span class="math">\(n\)</span> elements where each element <span class="math">\(i\)</span> has
+probability <span class="math">\(p_i\)</span>:</p>
+<div class="math">$$
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
+$$</div>
+<p>However, <span class="math">\(f\)</span> is too expensive to evaluate <span class="math">\(n\)</span> times. So let's say that we have
+<span class="math">\(m \le n\)</span> evaluations to form our estimate. (Obviously, if we're happy
+evaluating <span class="math">\(f\)</span> a total of <span class="math">\(n\)</span> times, then we should just compute <span class="math">\(\mu\)</span> exactly
+with the definition above.)</p>
+<!--
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
+-->
+
+<p><strong>Monte Carlo:</strong> The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample <span class="math">\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)</span>, return <span class="math">\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)</span>. <em>Remarks</em>: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&mdash;measured in <span class="math">\(f\)</span> evaluations&mdash;somewhat by
+caching past evaluations of <span class="math">\(f\)</span>. However, this introduces a serious <em>runtime</em>
+inefficiency and requires modifying the method to account for the fact that <span class="math">\(m\)</span>
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+<em>zero</em> error; it only converges in an <span class="math">\(\epsilon\)</span>-<span class="math">\(\delta\)</span> sense.</p>
+<!---
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
+-->
+
+<p><strong>Sampling without replacement:</strong> We can get around the problem of resampling
+the same elements multiple times by sampling <span class="math">\(m\)</span> distinct elements. This is
+called a sampling <em>without replacement</em> (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+<em>de facto</em> method (more on that later). There are lots of ways to do sample
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.</p>
+<p><strong>An alternative formulation:</strong> We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector <span class="math">\(\boldsymbol{x}\)</span>. We want
+our approximation, <span class="math">\(\boldsymbol{s}\)</span> to satisfy <span class="math">\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)</span> and while <span class="math">\(|| \boldsymbol{s} ||_0 \le m\)</span>. This will suffice for
+estimating <span class="math">\(\mu\)</span> (above) when <span class="math">\(\boldsymbol{x}=\boldsymbol{p}\)</span>, the vector of
+probabillties, because <span class="math">\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)</span> where <span class="math">\(\boldsymbol{f}\)</span> is a vector of all <span class="math">\(n\)</span> values of
+the function <span class="math">\(f\)</span>. Obviously, we don't need to evaluate <span class="math">\(f\)</span> in places where
+<span class="math">\(\boldsymbol{s}\)</span> is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not <em>necessary</em> for unbiased
+estimation of <span class="math">\(\mu\)</span> alone. However, this characterization is a good model for
+when we have zero knowledge of <span class="math">\(f\)</span>. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).</p>
+<p><strong>Priority sampling</strong>: Priority sampling (Duffield et al., 2005;
+<a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., 2007</a>)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseudocode for priority sampling
+(PS), based on the alternative formulation.</p>
+<div class="math">$$
+\begin{align*}
+&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp; k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;\tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp; s_i = \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp; \text{ if } i \in S \\
+  0                               &amp; \text{ otherwise}
+\end{cases} \\
+&amp;\textbf{return }\boldsymbol{s}
+\end{align*}
+$$</div>
+<p>For estimating <span class="math">\(\mu\)</span>, use the following:
+</p>
+<div class="math">$$
+\widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+$$</div>
+<p>The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i \in S)\)</span> case,
+it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
+\cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S | \tau)\)</span> is an
+importance-weighting correction that comes from the Horvitz-Thompson estimator
+(modified slightly from its usual presentation to accomodate estimating means),
+<span class="math">\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)</span>, where
+<span class="math">\(S\)</span> is sampled according to some process with inclusion probabilities <span class="math">\(q_i = p(i
+\in S)\)</span>. In the case of priority sampling, we have an auxiliary variable for
+<span class="math">\(\tau\)</span> that makes computing <span class="math">\(q_i\)</span> easy. Thus, for priority sampling, we can use
+<span class="math">\(q_i = p(i \in S | \tau)\)</span>. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.</p>
+<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Proof of unbiasedness</button>
+<div id="ps-unbiased" class="derivation" style="display:none;">
+<strong>Proof of unbiasedness</strong>. The following proof is a little different from that
+in the priority sampling papers. I think it's more more straightforward. More
+importantly, it shows how we can extend the method to sample from slightly
+different distributions without replacement distributions.</p>
+<div class="math">$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;=&amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
+&amp;=&amp; \sum_{i=1}^n p_i \cdot f(i) \\
+&amp;=&amp; \mu
+\end{eqnarray}
+$$</div>
+<p>
+</div></p>
+<p><strong>Properties</strong>:</p>
+<ul>
+<li>
+<p>Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).</p>
+</li>
+<li>
+<p>Priority sampling can be straighforwardly generalized to support streaming
+   <span class="math">\(x_i\)</span>, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.</p>
+</li>
+<li>
+<p>Priority sampling was designed for estimating subset sums, i.e., estimating
+   <span class="math">\(\sum_{i \in I} x_i\)</span> for some <span class="math">\(I \subseteq \{1,\ldots,n\}\)</span>. In this setting,
+   the set of sampled items <span class="math">\(S\)</span> is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   <a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf">(Szegedy, 2005)</a>.
+   Specifically, priority sampling with <span class="math">\(m\)</span> samples is no worse than the best
+   possible <span class="math">\((m-1)\)</span>-sparse estimator in terms of variance. Of course, when
+   estimating <span class="math">\(\mu\)</span> some knowledge about <span class="math">\(f\)</span>, we can obviously be used to beat
+   PS. <!-- We can relate subset sums to estimating <span class="math">\(\mu\)</span> by interpreting
+   <span class="math">\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)</span> for some <span class="math">\(\alpha\)</span>, scaling
+   <span class="math">\(f\)</span> appropriately by <span class="math">\(\alpha\)</span>, and encoding the subset via indicators in
+   <span class="math">\(f\)</span>'s dimensions. -->
+   <!-- (e.g.,. via
+   <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">importance sampling</a>
+   or by modifying PS to sample proportional to <span class="math">\(x_i = p_i \!\cdot\! |f_i|\)</span> (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for <span class="math">\(f_i\)</span> because we don't want to evaluate it). --></p>
+</li>
+<li>
+<p>Components of the estimate <span class="math">\(\boldsymbol{s}\)</span> are uncorrelated, i.e.,
+   <span class="math">\(\textrm{Cov}[s_i, s_j] = 0\)</span> for <span class="math">\(i \ne j\)</span> and <span class="math">\(m \ge 2\)</span>. This is surprising
+   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>.</p>
+</li>
+<li>
+<p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>), 
+   known as probability proportional to size without replacement distribution (PPSWOR). 
+   To we can then adjust our estimator
+   <div class="math">$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$</div>
+   where <span class="math">\(q_i = p(i \in S|\tau) = p(k_i &gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)</span>. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).</p>
+</li>
+<li>
+<p><span class="math">\(\tau\)</span> is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing <span class="math">\(\tau\)</span>'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.</p>
+</li>
+<li>
+<p>The one downside of this method is that sampling seems to require looking at
+   all <span class="math">\(n\)</span> items.</p>
+</li>
+</ul>
+<h2>Experiments</h2>
+<p>You can get the Jupyter notebook for replicating this experiment
+<a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb">here</a>.
+So download the notebook and play with it!</p>
+<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!</p>
+<p><center>
+<img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png" />
+</center></p>
+<p>The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, <span class="math">\(m \le n\)</span>.</p>
+<p>The plot shows a small example with <span class="math">\(n=50\)</span>. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at <span class="math">\(m=n\)</span>. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
+<p><strong>Further reading:</strong> If you liked this post, you might like my other posts
+tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> and
+<a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>.</p>
+<ul>
+<li>
+<p>Edith Cohen, "The Magic of Random Sampling"
+   (<a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf">slides</a>,
+   <a href="https://www.youtube.com/watch?v=jp83HyDs8fs">talk</a>)</p>
+</li>
+<li>
+<p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
+   has plenty good stuff that I didn't cover.</p>
+</li>
+<li>
+<p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
+</li>
+<li>
+<p>Suresh Venkatasubramanian's
+   <a href="http://blog.geomblog.org/2005/10/priority-sampling.html">post</a></p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </h1>
       <p class="meta"><time datetime="2014-08-01T00:00:00-04:00" pubdate>Aug 01, 2014</time></p>
@@ -12053,6 +12426,9 @@ turning these connections into a
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a>
       </li>
     </ul>
@@ -12070,7 +12446,7 @@ turning these connections into a
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
 
 
 
@@ -12140,7 +12516,7 @@ turning these connections into a
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2017  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">

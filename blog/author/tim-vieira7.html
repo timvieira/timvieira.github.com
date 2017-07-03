@@ -11829,6 +11829,252 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
+      </h1>
+      <p class="meta"><time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>It's well-known that
+<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
+is not symmetric, but which direction is right for fitting your model?</p>
+<p>First, which one is which?</p>
+<p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(q || p)\)</span>
+  - mode-seeking, exclusive
+  - no normalization wrt <span class="math">\(p\)</span></p>
+<p><span class="math">\(\textbf{KL}(p || q)\)</span>
+  - mean-seeking, inclusive
+  - results in a moment-matching problem when <span class="math">\(q\)</span> is in the exponential family
+  - requires normalization wrt <span class="math">\(p\)</span> </p>
+<p><strong>How I remember which is which</strong>: The KL notation is a little strange with the
+"<span class="math">\(||\)</span>". I pretend it's a division symbol. This happens to correspond nicely to a
+division symbol in the corresponding equation (I'm not sure it's
+intentional). It helps to remember that you always normalize wrt the "numerator"
+(and <span class="math">\(q\)</span>).</p>
+<h2>Computational perspecive</h2>
+<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.</p>
+<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
+where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</div>
+<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+</p>
+<div class="math">\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</div>
+<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
+we're optimizing.</p>
+<p>This leaves us with the following optimization problem:
+</p>
+<div class="math">\begin{align*}
+&amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</div>
+<p>Let's work out the gradient
+</p>
+<div class="math">\begin{align*}
+&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</div>
+<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
+<p>This direction is convenient because we don't need to normalize
+<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
+"hard" direction, which is convex.</p>
+<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</div>
+<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+</p>
+<div class="math">\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
+\end{align*}</div>
+<p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
+story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
+normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
+expectation propagation, variational decoding and maximum likelihood
+estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need to sample from it (which can be just as hard).</p>
+<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
+<div class="math">\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</div>
+<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential families ---
+i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
+method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
+the true data distribution! The first term in the gradient is based on a sample
+instead of an exact estimate (often called "observed feature counts").</p>
+<p>Downside: computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
+<h2>Remarks</h2>
+<ul>
+<li>
+<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
+  account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
+<li>
+<p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
+</li>
+<li>
+<p>Exclusive divergences will often favor a single mode.</p>
+</li>
+<li>
+<p>Computing the value of KL (not just the gradient) in either direction requires
+  normalization. However, in the "easy" direction, using unnormalized <span class="math">\(p\)</span>
+  results in only an additive constant difference. So, it's still just as
+  useful, if all you care about is optimization (fitting the model).</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
       </h1>
       <p class="meta"><time datetime="2014-08-07T00:00:00-04:00" pubdate>Aug 07, 2014</time></p>
@@ -12246,185 +12492,6 @@ turning these connections into a
     <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Read On &crarr;</a>
   </footer>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
-      </h1>
-      <p class="meta"><time datetime="2014-07-31T00:00:00-04:00" pubdate>Jul 31, 2014</time></p>
-</header>
-
-  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
-log-probabilities:</p>
-<div class="math">$$
-\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
-$$</div>
-<p><strong>The usual way</strong>: Exponentiate and normalize (using the
-<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
-an algorithm for sampling from a discrete distribution (aka categorical):</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">usual</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>     <span class="c1"># the exp-normalize trick</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cdf</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>The Gumbel max trick</strong>:</p>
-<div class="math">$$
-y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
-$$</div>
-<p>where <span class="math">\(z_1 \cdots z_K\)</span> are i.i.d. <span class="math">\(\text{Gumbel}(0,1)\)</span> random variates. It
-turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
-in this
-<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
-<p>Implementing the Gumbel max trick is remarkable easy:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-
-
-<p>If you don't have access to a Gumbel random variate generator, you can use
-<span class="math">\(-\log(-\log(\text{Uniform}(0,1))\)</span></p>
-<p><strong>Comparison</strong>:</p>
-<ol>
-<li>
-<p>Gumbel max requires <span class="math">\(K\)</span> samples from a uniform. Usual requires only <span class="math">\(1\)</span>.</p>
-</li>
-<li>
-<p>Gumbel is one-pass because it does not require normalization (or a pass to
-     compute the max for use in the exp-normalize trick). More on this in a
-     later post!</p>
-</li>
-<li>
-<p>The Gumbel max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>, whereas ordinary
-     requires <span class="math">\(K\)</span> calls to <span class="math">\(\exp\)</span>. Since <span class="math">\(\exp\)</span> and <span class="math">\(\log\)</span> are expensive
-     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is
-     handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy.</p>
-</li>
-</ol>
-<p><strong>Further reading</strong>: I have a few posts relating to the Gumbel-max trick. Have a
-look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/author/tim-vieira8.html">&larr; Older</a>
 
@@ -12436,6 +12503,9 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
           <a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
       </li>
       <li class="post">
@@ -12446,9 +12516,6 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
       </li>
     </ul>
   </section>
@@ -12465,7 +12532,7 @@ look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
 
 
 

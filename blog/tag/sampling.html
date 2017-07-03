@@ -11829,6 +11829,379 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </h1>
+      <p class="meta"><time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time></p>
+</header>
+
+  <div class="entry-content"><style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.</p>
+<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a derministic function
+<span class="math">\(f\)</span> over a (large) finite universe of <span class="math">\(n\)</span> elements where each element <span class="math">\(i\)</span> has
+probability <span class="math">\(p_i\)</span>:</p>
+<div class="math">$$
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
+$$</div>
+<p>However, <span class="math">\(f\)</span> is too expensive to evaluate <span class="math">\(n\)</span> times. So let's say that we have
+<span class="math">\(m \le n\)</span> evaluations to form our estimate. (Obviously, if we're happy
+evaluating <span class="math">\(f\)</span> a total of <span class="math">\(n\)</span> times, then we should just compute <span class="math">\(\mu\)</span> exactly
+with the definition above.)</p>
+<!--
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
+-->
+
+<p><strong>Monte Carlo:</strong> The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample <span class="math">\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)</span>, return <span class="math">\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)</span>. <em>Remarks</em>: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&mdash;measured in <span class="math">\(f\)</span> evaluations&mdash;somewhat by
+caching past evaluations of <span class="math">\(f\)</span>. However, this introduces a serious <em>runtime</em>
+inefficiency and requires modifying the method to account for the fact that <span class="math">\(m\)</span>
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+<em>zero</em> error; it only converges in an <span class="math">\(\epsilon\)</span>-<span class="math">\(\delta\)</span> sense.</p>
+<!---
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
+-->
+
+<p><strong>Sampling without replacement:</strong> We can get around the problem of resampling
+the same elements multiple times by sampling <span class="math">\(m\)</span> distinct elements. This is
+called a sampling <em>without replacement</em> (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+<em>de facto</em> method (more on that later). There are lots of ways to do sample
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.</p>
+<p><strong>An alternative formulation:</strong> We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector <span class="math">\(\boldsymbol{x}\)</span>. We want
+our approximation, <span class="math">\(\boldsymbol{s}\)</span> to satisfy <span class="math">\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)</span> and while <span class="math">\(|| \boldsymbol{s} ||_0 \le m\)</span>. This will suffice for
+estimating <span class="math">\(\mu\)</span> (above) when <span class="math">\(\boldsymbol{x}=\boldsymbol{p}\)</span>, the vector of
+probabillties, because <span class="math">\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)</span> where <span class="math">\(\boldsymbol{f}\)</span> is a vector of all <span class="math">\(n\)</span> values of
+the function <span class="math">\(f\)</span>. Obviously, we don't need to evaluate <span class="math">\(f\)</span> in places where
+<span class="math">\(\boldsymbol{s}\)</span> is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not <em>necessary</em> for unbiased
+estimation of <span class="math">\(\mu\)</span> alone. However, this characterization is a good model for
+when we have zero knowledge of <span class="math">\(f\)</span>. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).</p>
+<p><strong>Priority sampling</strong>: Priority sampling (Duffield et al., 2005;
+<a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., 2007</a>)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseudocode for priority sampling
+(PS), based on the alternative formulation.</p>
+<div class="math">$$
+\begin{align*}
+&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp; k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;\tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp; s_i = \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp; \text{ if } i \in S \\
+  0                               &amp; \text{ otherwise}
+\end{cases} \\
+&amp;\textbf{return }\boldsymbol{s}
+\end{align*}
+$$</div>
+<p>For estimating <span class="math">\(\mu\)</span>, use the following:
+</p>
+<div class="math">$$
+\widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+$$</div>
+<p>The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i \in S)\)</span> case,
+it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
+\cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S | \tau)\)</span> is an
+importance-weighting correction that comes from the Horvitz-Thompson estimator
+(modified slightly from its usual presentation to accomodate estimating means),
+<span class="math">\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)</span>, where
+<span class="math">\(S\)</span> is sampled according to some process with inclusion probabilities <span class="math">\(q_i = p(i
+\in S)\)</span>. In the case of priority sampling, we have an auxiliary variable for
+<span class="math">\(\tau\)</span> that makes computing <span class="math">\(q_i\)</span> easy. Thus, for priority sampling, we can use
+<span class="math">\(q_i = p(i \in S | \tau)\)</span>. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.</p>
+<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Proof of unbiasedness</button>
+<div id="ps-unbiased" class="derivation" style="display:none;">
+<strong>Proof of unbiasedness</strong>. The following proof is a little different from that
+in the priority sampling papers. I think it's more more straightforward. More
+importantly, it shows how we can extend the method to sample from slightly
+different distributions without replacement distributions.</p>
+<div class="math">$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;=&amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
+&amp;=&amp; \sum_{i=1}^n p_i \cdot f(i) \\
+&amp;=&amp; \mu
+\end{eqnarray}
+$$</div>
+<p>
+</div></p>
+<p><strong>Properties</strong>:</p>
+<ul>
+<li>
+<p>Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).</p>
+</li>
+<li>
+<p>Priority sampling can be straighforwardly generalized to support streaming
+   <span class="math">\(x_i\)</span>, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.</p>
+</li>
+<li>
+<p>Priority sampling was designed for estimating subset sums, i.e., estimating
+   <span class="math">\(\sum_{i \in I} x_i\)</span> for some <span class="math">\(I \subseteq \{1,\ldots,n\}\)</span>. In this setting,
+   the set of sampled items <span class="math">\(S\)</span> is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   <a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf">(Szegedy, 2005)</a>.
+   Specifically, priority sampling with <span class="math">\(m\)</span> samples is no worse than the best
+   possible <span class="math">\((m-1)\)</span>-sparse estimator in terms of variance. Of course, when
+   estimating <span class="math">\(\mu\)</span> some knowledge about <span class="math">\(f\)</span>, we can obviously be used to beat
+   PS. <!-- We can relate subset sums to estimating <span class="math">\(\mu\)</span> by interpreting
+   <span class="math">\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)</span> for some <span class="math">\(\alpha\)</span>, scaling
+   <span class="math">\(f\)</span> appropriately by <span class="math">\(\alpha\)</span>, and encoding the subset via indicators in
+   <span class="math">\(f\)</span>'s dimensions. -->
+   <!-- (e.g.,. via
+   <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">importance sampling</a>
+   or by modifying PS to sample proportional to <span class="math">\(x_i = p_i \!\cdot\! |f_i|\)</span> (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for <span class="math">\(f_i\)</span> because we don't want to evaluate it). --></p>
+</li>
+<li>
+<p>Components of the estimate <span class="math">\(\boldsymbol{s}\)</span> are uncorrelated, i.e.,
+   <span class="math">\(\textrm{Cov}[s_i, s_j] = 0\)</span> for <span class="math">\(i \ne j\)</span> and <span class="math">\(m \ge 2\)</span>. This is surprising
+   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>.</p>
+</li>
+<li>
+<p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>), 
+   known as probability proportional to size without replacement distribution (PPSWOR). 
+   To we can then adjust our estimator
+   <div class="math">$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$</div>
+   where <span class="math">\(q_i = p(i \in S|\tau) = p(k_i &gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)</span>. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).</p>
+</li>
+<li>
+<p><span class="math">\(\tau\)</span> is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing <span class="math">\(\tau\)</span>'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.</p>
+</li>
+<li>
+<p>The one downside of this method is that sampling seems to require looking at
+   all <span class="math">\(n\)</span> items.</p>
+</li>
+</ul>
+<h2>Experiments</h2>
+<p>You can get the Jupyter notebook for replicating this experiment
+<a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb">here</a>.
+So download the notebook and play with it!</p>
+<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!</p>
+<p><center>
+<img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png" />
+</center></p>
+<p>The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, <span class="math">\(m \le n\)</span>.</p>
+<p>The plot shows a small example with <span class="math">\(n=50\)</span>. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at <span class="math">\(m=n\)</span>. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
+<p><strong>Further reading:</strong> If you liked this post, you might like my other posts
+tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> and
+<a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>.</p>
+<ul>
+<li>
+<p>Edith Cohen, "The Magic of Random Sampling"
+   (<a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf">slides</a>,
+   <a href="https://www.youtube.com/watch?v=jp83HyDs8fs">talk</a>)</p>
+</li>
+<li>
+<p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
+   has plenty good stuff that I didn't cover.</p>
+</li>
+<li>
+<p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
+</li>
+<li>
+<p>Suresh Venkatasubramanian's
+   <a href="http://blog.geomblog.org/2005/10/priority-sampling.html">post</a></p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
       </h1>
       <p class="meta"><time datetime="2016-11-21T00:00:00-05:00" pubdate>Nov 21, 2016</time></p>
@@ -12980,379 +13353,6 @@ EckjSvoiInnk/wNpZz6pKB5khAAAAABJRU5ErkJggg==
 
 </div></p></div>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a>
-      </h1>
-      <p class="meta"><time datetime="2016-06-28T00:00:00-04:00" pubdate>Jun 28, 2016</time></p>
-</header>
-
-  <div class="entry-content"><p>The following post is about instance of "sampling in proportion to <span class="math">\(p\)</span> is not
-optimal, but you probably think it is." It's surprising how few people seem to
-know this trick. Myself included! It was brought to my attention recently by
-<a href="http://lowrank.net/nikos/">Nikos Karampatziakis</a>. (Thanks, Nikos!)</p>
-<p>The paper credited for this trick is
-<a href="http://www.pnas.org/content/106/6/1716.full.pdf">Press (2008)</a>. I'm borrowing
-heavily from that paper as well as an email exchange from Nikos.</p>
-<p><strong>Setting</strong>: Suppose you're an aspiring chef with a severe head injury affecting
-  your long- and short- term memory trying to find a special recipe from a
-  cookbook that you made one time but just can't remember exactly which recipe
-  it was. So, based on the ingredients of each recipe, you come up with a prior
-  probability <span class="math">\(p_i\)</span> that recipe <span class="math">\(i\)</span> is the one you're looking for. In total, the
-  cookbook has <span class="math">\(n\)</span> recipes and <span class="math">\(\sum_{i=1}^n p_i = 1.\)</span></p>
-<p>A good strategy would be to sort recipes by <span class="math">\(p_i\)</span> and cook the most promising
-ones first. Unfortunately, you're not a great chef so there is some probability
-that you'll mess-up the recipe. So, it's a good idea to try recipes multiple
-times. Also, you have no short term memory...</p>
-<p>This suggests a <em>sampling with replacement</em> strategy, where we sample a recipe
-from the cookbook to try <em>independently</em> of whether we've tried it before
-(called a <em>memoryless</em> strategy). Let's give this strategy the name
-<span class="math">\(\boldsymbol{q}.\)</span> Note that <span class="math">\(\boldsymbol{q}\)</span> is a probability distribution over
-the recipes in the cookbook, just like <span class="math">\(\boldsymbol{p}.\)</span></p>
-<p><strong>How many recipes until we find the special one?</strong> To start, suppose the
-special recipe is <span class="math">\(j.\)</span> Then, the expected number of recipes we have to make
-until we find <span class="math">\(j\)</span> under the strategy <span class="math">\(\boldsymbol{q}\)</span> is</p>
-<div class="math">$$
-\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
-$$</div>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
-
-<script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p><button onclick="toggle('#derivation-series')" class="toggle-button">Derivation</button>
-<div id="derivation-series" style="display:none;" class="derivation">
-<strong>Derivation</strong>:</p>
-<p>We start with
-</p>
-<div class="math">$$
-\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j},
-$$</div>
-<p>Let <span class="math">\(a = (1-q_j)\)</span>, to clean up notation.
-</p>
-<div class="math">$$
-= q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
-$$</div>
-<p>Use the identity <span class="math">\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)</span>,
-</p>
-<div class="math">$$
-= q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
-$$</div>
-<p>Fish the gradient out of the sum and tweak summation index,
-</p>
-<div class="math">$$
-= q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
-= q_{j} \nabla_a\left[ -1 + \sum_{t=0}^\infty a^{t}\right]
-$$</div>
-<p>Plugin in the solution to the geometric series,
-</p>
-<div class="math">$$
-= q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
-$$</div>
-<p>Take derivative, expand <span class="math">\(a\)</span> and simplify,
-</p>
-<div class="math">$$
-= q_{j} \frac{1}{(1-a)^2}
-= \frac{1}{q_j}
-$$</div>
-</div>
-
-<p>The equation says that expected time it takes to sample <span class="math">\(j\)</span> for <em>the first time</em>
-is the probability we didn't sample for <span class="math">\((t-1)\)</span> steps times the probability we
-sample it at time <span class="math">\(t.\)</span> We multiply this probability by the time <span class="math">\(t\)</span> to get the
-<em>expected</em> time.</p>
-<p>Note that this equation assumes that we known <span class="math">\(j\)</span> is the special recipe <em>with
-certainty</em> when we sample it. We'll revisit this assumption later when we
-consider potential errors in executing the recipe.</p>
-<p>Since we don't known which <span class="math">\(j\)</span> is the right one, we take an expectation over it
-according to the prior distribution, which yields the following equation,
-</p>
-<div class="math">$$
-f(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{q_i}.
-$$</div>
-<p><strong>The first surprising thing</strong>: Uniform is just as good as <span class="math">\(\boldsymbol{p}\)</span>,
-  yikes! <span class="math">\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)</span> and
-  <span class="math">\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n.\)</span> (Assume, without
-  loss of generality, that <span class="math">\(p_i &gt; 0\)</span> since we can just drop these elements from
-  <span class="math">\(\boldsymbol{p}.\)</span>)</p>
-<p><strong>What's the <em>optimal</em> <span class="math">\(\boldsymbol{q}\)</span>?</strong> We can address this question by
-solving the following optimization (which will have a nice closed form
-solution),</p>
-<div class="math">$$
-\begin{eqnarray*}
-&amp;&amp; \boldsymbol{q}^* = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
-&amp;&amp; \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \\
-&amp;&amp; \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
-\end{eqnarray*}
-$$</div>
-<p>The optimization problem says minimize the expected time to find the special
-recipe. The constraints enforce that <span class="math">\(\boldsymbol{q}\)</span> be a valid probability
-distribution.</p>
-<p>The optimal strategy, which we get via Lagrange multipliers, turns out to be,
-</p>
-<div class="math">$$
-q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
-$$</div>
-<p><button onclick="toggle('#Lagrange')" class="toggle-button">Derivation</button>
-<div id="Lagrange" style="display:none;" class="derivation">
-To solve this constrained optimization problem, we form the
-Lagrangian,</p>
-<div class="math">$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$</div>
-<p>and solve for <span class="math">\(\boldsymbol{q}\)</span> and multiplier <span class="math">\(\lambda\)</span> such that partial
-derivatives are all equal to zero. This gives us the following system of
-nonlinear equations,</p>
-<div class="math">$$
-\begin{eqnarray*}
-&amp;&amp; \lambda - \frac{p_i}{q_i^2} = 0 \ \ \ \text{for } 1 \le i \le n \\
-&amp;&amp; \lambda \cdot \left(1 - \sum_{i=1}^n q_i \right) = 0.
-\end{eqnarray*}
-$$</div>
-<p>We see that <span class="math">\(q_i = \pm \sqrt{\frac{p_i}{\lambda}}\)</span> works for the first set of
-equations, but since we need <span class="math">\(q_i \ge 0\)</span>, we take the positive one. Solving for
-<span class="math">\(\lambda\)</span> and plugging it in, we get a normalized distribution,</p>
-<div class="math">$$
-q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
-$$</div>
-</div>
-
-<p><strong>How much better is <span class="math">\(q^*\)</span>?</strong>
-</p>
-<div class="math">$$
-f(q^*) = \sum_i \frac{p_i}{q^*_i}
-= \sum_i \frac{p_i}{ \frac{\sqrt{p_i} }{ \sum_j \sqrt{p_j}} }
-= \left( \sum_i \frac{p_i}{ \sqrt{p_i} } \right) \left( \sum_j \sqrt{p_j} \right)
-= \left( \sum_i \sqrt{p_i} \right)^2
-$$</div>
-<p>which sometimes equals <span class="math">\(n\)</span>, e.g., when <span class="math">\(\boldsymbol{p}\)</span> is uniform, but is never
-bigger than <span class="math">\(n.\)</span></p>
-<p><strong>What's the intuition?</strong> The reason why the <span class="math">\(\sqrt{p}\)</span>-scheme is preferred is
-because we save on <em>additional</em> cooking experiments. For example, if a recipe
-has <span class="math">\(k\)</span> times higher prior probability than the average recipe, then we will try
-that recipe <span class="math">\(\sqrt{k}\)</span> times more often; compared to <span class="math">\(k\)</span>, which we'd get under
-<span class="math">\(\boldsymbol{p}.\)</span> Additional cooking experiments are not so advantageous.</p>
-<p><strong>Allowing for noise in the cooking process</strong>: Suppose that for each recipe we
-  had a prior belief about how hard that recipe is for us to cook. Denote that
-  belief <span class="math">\(s_i\)</span>, these belief are between zero (never get it right) and one
-  (perfect every time) and do not sum to one over the cookbook.</p>
-<p>Following a similar derivation to before, the time to cook the special recipe
-<span class="math">\(j\)</span> and cook it correctly is,
-</p>
-<div class="math">$$
-\sum_{t=1}^\infty t \cdot (1 - \color{red}{s_j} q_j)^{t-1} q_{j} \color{red}{s_j} = \frac{1}{s_j \cdot q_j}
-$$</div>
-<p>
-That gives rise to a modified objective,
-</p>
-<div class="math">$$
-f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
-$$</div>
-<p>This is exactly the same as the previous objective, except we've replaced <span class="math">\(p_i\)</span>
-with <span class="math">\(p_i/s_i.\)</span> Thus, we can reuse our previous derivation to get the optimal
-strategy, <span class="math">\(q^*_i \propto \sqrt{p_i / s_i}.\)</span> If noise is constant, then we
-recover the original solution, <span class="math">\(q^*_i \propto \sqrt{p_i}.\)</span></p>
-<p><strong>Extension to finding multiple tasty recipes</strong>: Suppose we're trying to find
-  several tasty recipes, not just a single special one. Now, <span class="math">\(p_i\)</span> is our prior
-  belief that we'll like the recipe at all. How do we minimize the time until we
-  find a tasty one? It turns out the same trick works without modification
-  because all derivations apply to each recipe independently. The same trick
-  works if <span class="math">\(p_i\)</span> does not sums to one over <span class="math">\(n.\)</span> For example, if <span class="math">\(p_i\)</span> is the
-  independent probability that you'll like recipe <span class="math">\(i\)</span> at all, not the
-  probability that it's the special one.</p>
-<p><strong>Beyond memoryless policies</strong>: Clearly, our choice of a memoryless policy can
-  be beat by a policy family that balances exploration (trying new recipes) and
-  exploitation (trying our best guess).</p>
-<ul>
-<li>
-<p>Overall, the problem we've posed is similar to a
-    <a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">multi-armed bandit</a>. In
-    our case, the arms are the recipes, pulling the arm is trying the recipe and
-    the reward is whether or not we liked the recipe (possibly noisy). The key
-    difference between our setup and multi-armed bandits is that we trust our
-    prior distribution <span class="math">\(\boldsymbol{p}\)</span> and noise model <span class="math">\(\boldsymbol{s}.\)</span></p>
-</li>
-<li>
-<p>If the amount of noise <span class="math">\(s_i\)</span> is known and we trust the prior <span class="math">\(p_i\)</span> then
-    there is an optimal deterministic (without-replacement) strategy that we can
-    get by sorting the recipes by <span class="math">\(p_i\)</span> accounting for the error rates
-    <span class="math">\(s_i.\)</span> This approach is described in the original paper.</p>
-</li>
-</ul>
-<p><strong>A more realistic application</strong>: In certain language modeling applications, we
-  avoid computing normalization constants (which require summing over a massive
-  vocabulary) by using importance sampling, negative sampling or noise
-  contrastive estimation techniques (e.g.,
-  <a href="https://arxiv.org/pdf/1511.06909.pdf">Ji+,16</a>;
-  <a href="http://www.aclweb.org/anthology/Q15-1016">Levy+,15</a>). These techniques depend
-  on a proposal distribution, which folks often take to be the unigram
-  distribution. Unfortunately, this gives too many samples of stop words (e.g.,
-  "the", "an", "a"), so practitioners "anneal" the unigram distribution (to
-  increase the entropy), that is sample from <span class="math">\(q_i \propto
-  p_{\text{unigram},i}^\alpha.\)</span> Typically, <span class="math">\(\alpha\)</span> is set by grid search and
-  (no surprise) <span class="math">\(\alpha \approx 1/2\)</span> tends to work best! The <span class="math">\(\sqrt{p}\)</span>-sampling
-  trick is possibly a reverse-engineered justification in favor of annealing as
-  "the right thing to do" (e.g., why not do additive smoothing?) and it even
-  tells us how to set the annealing parameter <span class="math">\(\alpha.\)</span> The key assumption is
-  that we want to sample the actual word at a given position as often as
-  possible while still being diverse thanks to the coverage of unigram
-  prior. (Furthermore, memoryless sampling leads to simpler algorithms.)</p>
-<!--
-Actually, many word2vec papers use $\alpha=3/4$, which was suggested in
-[Levy+,15](http://www.aclweb.org/anthology/Q15-1016), including the default
-value in
-[gensim](https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/models/word2vec.py#L462). So,
-[Ryan Cotterell](https://ryancotterell.github.io/) ran a quick experiment with
-gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
-
-    Word similarity accuracy (avg of 10 runs)
-    | alpha | accuracy |
-    +==================+
-    |  0.00 |    0.354 |
-    |  0.25 |    0.403 |
-    |  0.50 |    0.414 |
-    |  0.75 |    0.395 |
-    |  1.00 |    0.345 |
--->
-
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/tag/sampling2.html">&larr; Older</a>
 
@@ -13362,6 +13362,9 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
       </li>
@@ -13373,9 +13376,6 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
       </li>
     </ul>
   </section>
@@ -13392,7 +13392,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
 
 
 
@@ -13462,7 +13462,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2016  - Tim Vieira -
+    Copyright &copy;  2014-2017  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">

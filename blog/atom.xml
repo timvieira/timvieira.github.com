@@ -1,5 +1,309 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2017-04-21T00:00:00-04:00</updated><entry><title>How to test gradient implementations</title><link href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"></link><published>2017-04-21T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-04-21:blog/post/2017/04/21/how-to-test-gradient-implementations/</id><summary type="html">&lt;!--
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2017-07-03T00:00:00-04:00</updated><entry><title>Estimating means in a finite universe</title><link href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><summary type="html">&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;strong&gt;Introduction&lt;/strong&gt;: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: Suppose we want to estimate an expectation of a derministic function
+&lt;span class="math"&gt;\(f\)&lt;/span&gt; over a (large) finite universe of &lt;span class="math"&gt;\(n\)&lt;/span&gt; elements where each element &lt;span class="math"&gt;\(i\)&lt;/span&gt; has
+probability &lt;span class="math"&gt;\(p_i\)&lt;/span&gt;:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
+$$&lt;/div&gt;
+&lt;p&gt;However, &lt;span class="math"&gt;\(f\)&lt;/span&gt; is too expensive to evaluate &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. So let's say that we have
+&lt;span class="math"&gt;\(m \le n\)&lt;/span&gt; evaluations to form our estimate. (Obviously, if we're happy
+evaluating &lt;span class="math"&gt;\(f\)&lt;/span&gt; a total of &lt;span class="math"&gt;\(n\)&lt;/span&gt; times, then we should just compute &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; exactly
+with the definition above.)&lt;/p&gt;
+&lt;!--
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Monte Carlo:&lt;/strong&gt; The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample &lt;span class="math"&gt;\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)&lt;/span&gt;, return &lt;span class="math"&gt;\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)&lt;/span&gt;. &lt;em&gt;Remarks&lt;/em&gt;: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&amp;mdash;measured in &lt;span class="math"&gt;\(f\)&lt;/span&gt; evaluations&amp;mdash;somewhat by
+caching past evaluations of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. However, this introduces a serious &lt;em&gt;runtime&lt;/em&gt;
+inefficiency and requires modifying the method to account for the fact that &lt;span class="math"&gt;\(m\)&lt;/span&gt;
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+&lt;em&gt;zero&lt;/em&gt; error; it only converges in an &lt;span class="math"&gt;\(\epsilon\)&lt;/span&gt;-&lt;span class="math"&gt;\(\delta\)&lt;/span&gt; sense.&lt;/p&gt;
+&lt;!---
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Sampling without replacement:&lt;/strong&gt; We can get around the problem of resampling
+the same elements multiple times by sampling &lt;span class="math"&gt;\(m\)&lt;/span&gt; distinct elements. This is
+called a sampling &lt;em&gt;without replacement&lt;/em&gt; (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+&lt;em&gt;de facto&lt;/em&gt; method (more on that later). There are lots of ways to do sample
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;An alternative formulation:&lt;/strong&gt; We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. We want
+our approximation, &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; to satisfy &lt;span class="math"&gt;\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)&lt;/span&gt; and while &lt;span class="math"&gt;\(|| \boldsymbol{s} ||_0 \le m\)&lt;/span&gt;. This will suffice for
+estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; (above) when &lt;span class="math"&gt;\(\boldsymbol{x}=\boldsymbol{p}\)&lt;/span&gt;, the vector of
+probabillties, because &lt;span class="math"&gt;\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)&lt;/span&gt; where &lt;span class="math"&gt;\(\boldsymbol{f}\)&lt;/span&gt; is a vector of all &lt;span class="math"&gt;\(n\)&lt;/span&gt; values of
+the function &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Obviously, we don't need to evaluate &lt;span class="math"&gt;\(f\)&lt;/span&gt; in places where
+&lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not &lt;em&gt;necessary&lt;/em&gt; for unbiased
+estimation of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; alone. However, this characterization is a good model for
+when we have zero knowledge of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Priority sampling&lt;/strong&gt;: Priority sampling (Duffield et al., 2005;
+&lt;a href="http://nickduffield.net/download/papers/priority.pdf"&gt;Duffield et al., 2007&lt;/a&gt;)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Here is pseudocode for priority sampling
+(PS), based on the alternative formulation.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{align*}
+&amp;amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;amp;u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;amp; k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;amp;S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;amp;\tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;amp; s_i = \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp;amp; \text{ if } i \in S \\
+  0                               &amp;amp; \text{ otherwise}
+\end{cases} \\
+&amp;amp;\textbf{return }\boldsymbol{s}
+\end{align*}
+$$&lt;/div&gt;
+&lt;p&gt;For estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;, use the following:
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+$$&lt;/div&gt;
+&lt;p&gt;The definition of &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; might look a little mysterious. In the &lt;span class="math"&gt;\((i \in S)\)&lt;/span&gt; case,
+it comes from &lt;span class="math"&gt;\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
+\cdot \tau)} = \max(x_i,\ 1/\tau)\)&lt;/span&gt;. The factor &lt;span class="math"&gt;\(p(i \in S | \tau)\)&lt;/span&gt; is an
+importance-weighting correction that comes from the Horvitz-Thompson estimator
+(modified slightly from its usual presentation to accomodate estimating means),
+&lt;span class="math"&gt;\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)&lt;/span&gt;, where
+&lt;span class="math"&gt;\(S\)&lt;/span&gt; is sampled according to some process with inclusion probabilities &lt;span class="math"&gt;\(q_i = p(i
+\in S)\)&lt;/span&gt;. In the case of priority sampling, we have an auxiliary variable for
+&lt;span class="math"&gt;\(\tau\)&lt;/span&gt; that makes computing &lt;span class="math"&gt;\(q_i\)&lt;/span&gt; easy. Thus, for priority sampling, we can use
+&lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.&lt;/p&gt;
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Proof of unbiasedness&lt;/button&gt;
+&lt;div id="ps-unbiased" class="derivation" style="display:none;"&gt;
+&lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a little different from that
+in the priority sampling papers. I think it's more more straightforward. More
+importantly, it shows how we can extend the method to sample from slightly
+different distributions without replacement distributions.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
+&amp;amp;=&amp;amp; \sum_{i=1}^n p_i \cdot f(i) \\
+&amp;amp;=&amp;amp; \mu
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;
+&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Properties&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling can be straighforwardly generalized to support streaming
+   &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling was designed for estimating subset sums, i.e., estimating
+   &lt;span class="math"&gt;\(\sum_{i \in I} x_i\)&lt;/span&gt; for some &lt;span class="math"&gt;\(I \subseteq \{1,\ldots,n\}\)&lt;/span&gt;. In this setting,
+   the set of sampled items &lt;span class="math"&gt;\(S\)&lt;/span&gt; is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   &lt;a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf"&gt;(Szegedy, 2005)&lt;/a&gt;.
+   Specifically, priority sampling with &lt;span class="math"&gt;\(m\)&lt;/span&gt; samples is no worse than the best
+   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course, when
+   estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we can obviously be used to beat
+   PS. &lt;!-- We can relate subset sums to estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; by interpreting
+   &lt;span class="math"&gt;\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)&lt;/span&gt; for some &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, scaling
+   &lt;span class="math"&gt;\(f\)&lt;/span&gt; appropriately by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, and encoding the subset via indicators in
+   &lt;span class="math"&gt;\(f\)&lt;/span&gt;'s dimensions. --&gt;
+   &lt;!-- (e.g.,. via
+   &lt;a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/"&gt;importance sampling&lt;/a&gt;
+   or by modifying PS to sample proportional to &lt;span class="math"&gt;\(x_i = p_i \!\cdot\! |f_i|\)&lt;/span&gt; (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for &lt;span class="math"&gt;\(f_i\)&lt;/span&gt; because we don't want to evaluate it). --&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Components of the estimate &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; are uncorrelated, i.e.,
+   &lt;span class="math"&gt;\(\textrm{Cov}[s_i, s_j] = 0\)&lt;/span&gt; for &lt;span class="math"&gt;\(i \ne j\)&lt;/span&gt; and &lt;span class="math"&gt;\(m \ge 2\)&lt;/span&gt;. This is surprising
+   since &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_j\)&lt;/span&gt; are related via the threshold &lt;span class="math"&gt;\(\tau\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If we instead sample &lt;span class="math"&gt;\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)&lt;/span&gt;, then &lt;span class="math"&gt;\(S\)&lt;/span&gt; will be sampled according to the &lt;em&gt;de facto&lt;/em&gt;
+   sampling without replacement scheme (e.g., &lt;code&gt;numpy.random.sample(..., replace=False)&lt;/code&gt;), 
+   known as probability proportional to size without replacement distribution (PPSWOR). 
+   To we can then adjust our estimator
+   &lt;div class="math"&gt;$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$&lt;/div&gt;
+   where &lt;span class="math"&gt;\(q_i = p(i \in S|\tau) = p(k_i &amp;gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)&lt;/span&gt;. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\tau\)&lt;/span&gt; is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing &lt;span class="math"&gt;\(\tau\)&lt;/span&gt;'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The one downside of this method is that sampling seems to require looking at
+   all &lt;span class="math"&gt;\(n\)&lt;/span&gt; items.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Experiments&lt;/h2&gt;
+&lt;p&gt;You can get the Jupyter notebook for replicating this experiment
+&lt;a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb"&gt;here&lt;/a&gt;.
+So download the notebook and play with it!&lt;/p&gt;
+&lt;p&gt;The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;
+&lt;img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png" /&gt;
+&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, &lt;span class="math"&gt;\(m \le n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;The plot shows a small example with &lt;span class="math"&gt;\(n=50\)&lt;/span&gt;. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at &lt;span class="math"&gt;\(m=n\)&lt;/span&gt;. (Note that MC's x-axis measures raw evaluations, not distinct ones.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading:&lt;/strong&gt; If you liked this post, you might like my other posts
+tagged with &lt;a href="http://timvieira.github.io/blog/tag/sampling.html"&gt;sampling&lt;/a&gt; and
+&lt;a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html"&gt;reservoir sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Edith Cohen, "The Magic of Random Sampling"
+   (&lt;a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf"&gt;slides&lt;/a&gt;,
+   &lt;a href="https://www.youtube.com/watch?v=jp83HyDs8fs"&gt;talk&lt;/a&gt;)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://nickduffield.net/download/papers/priority.pdf"&gt;Duffield et al., (2007)&lt;/a&gt;
+   has plenty good stuff that I didn't cover.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Alex Smola's &lt;a href="http://blog.smola.org/post/1078486350/priority-sampling"&gt;post&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Suresh Venkatasubramanian's
+   &lt;a href="http://blog.geomblog.org/2005/10/priority-sampling.html"&gt;post&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="sampling"></category><category term="statistics"></category><category term="reservoir-sampling"></category></entry><entry><title>How to test gradient implementations</title><link href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"></link><published>2017-04-21T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-04-21:blog/post/2017/04/21/how-to-test-gradient-implementations/</id><summary type="html">&lt;!--
 **Who should read this?** Nowadays, you're probably just using automatic
 differentiation to compute the gradient of whatever function you're using. If
 that's you and you trust your software package wholeheartedly, then you probably
