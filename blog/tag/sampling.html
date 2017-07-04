@@ -11933,25 +11933,30 @@ vector can lead to more efficient computations).</p>
 <a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., 2007</a>)
 is a remarkably simple algorithm, which is essentially optimal for our task, if
 we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseudocode for priority sampling
-(PS), based on the alternative formulation.</p>
+(PS), based on the <em>alternative formulation</em>.</p>
 <div class="math">$$
 \begin{align*}
+&amp;\textbf{procedure } \textrm{PrioritySample} \\
 &amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
-&amp;u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
-&amp; k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
-&amp;S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
-&amp;\tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
-&amp; s_i = \begin{cases}
+&amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
+&amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;\quad  s_i \gets \begin{cases}
   \max\left( x_i, 1/\tau \right)  &amp; \text{ if } i \in S \\
   0                               &amp; \text{ otherwise}
 \end{cases} \\
-&amp;\textbf{return }\boldsymbol{s}
+&amp;\quad \textbf{return }\boldsymbol{s}
 \end{align*}
 $$</div>
 <p>For estimating <span class="math">\(\mu\)</span>, use the following:
 </p>
 <div class="math">$$
-\widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\begin{align*}
+&amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
+&amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\end{align*}
 $$</div>
 <p>The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i \in S)\)</span> case,
 it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i

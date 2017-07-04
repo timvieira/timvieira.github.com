@@ -98,25 +98,30 @@ vector can lead to more efficient computations).&lt;/p&gt;
 &lt;a href="http://nickduffield.net/download/papers/priority.pdf"&gt;Duffield et al., 2007&lt;/a&gt;)
 is a remarkably simple algorithm, which is essentially optimal for our task, if
 we assume no prior knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Here is pseudocode for priority sampling
-(PS), based on the alternative formulation.&lt;/p&gt;
+(PS), based on the &lt;em&gt;alternative formulation&lt;/em&gt;.&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{align*}
+&amp;amp;\textbf{procedure } \textrm{PrioritySample} \\
 &amp;amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
-&amp;amp;u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
-&amp;amp; k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
-&amp;amp;S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
-&amp;amp;\tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
-&amp;amp; s_i = \begin{cases}
+&amp;amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
+&amp;amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;amp;\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;amp;\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;amp;\quad  s_i \gets \begin{cases}
   \max\left( x_i, 1/\tau \right)  &amp;amp; \text{ if } i \in S \\
   0                               &amp;amp; \text{ otherwise}
 \end{cases} \\
-&amp;amp;\textbf{return }\boldsymbol{s}
+&amp;amp;\quad \textbf{return }\boldsymbol{s}
 \end{align*}
 $$&lt;/div&gt;
 &lt;p&gt;For estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;, use the following:
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
-\widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\begin{align*}
+&amp;amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
+&amp;amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\end{align*}
 $$&lt;/div&gt;
 &lt;p&gt;The definition of &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; might look a little mysterious. In the &lt;span class="math"&gt;\((i \in S)\)&lt;/span&gt; case,
 it comes from &lt;span class="math"&gt;\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
