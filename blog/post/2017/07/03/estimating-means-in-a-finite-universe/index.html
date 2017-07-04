@@ -11948,18 +11948,21 @@ we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseu
 &amp;\quad \textbf{return }\boldsymbol{s}
 \end{align*}
 $$</div>
-<p>For estimating <span class="math">\(\mu\)</span>, use the following:
-</p>
+<p><span class="math">\(\textrm{PrioritySample}\)</span> can be applied to obtain a sparse and unbiased
+representation of any vector in <span class="math">\(\mathbb{R}^n\)</span>. We make use of such a
+representation for our original problem of budgeted mean estimation (<span class="math">\(\mu\)</span>) as
+follows:</p>
 <div class="math">$$
 \begin{align*}
 &amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
 &amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
 \end{align*}
 $$</div>
-<p>The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i \in S)\)</span> case,
-it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
-\cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S | \tau)\)</span> is an
-importance-weighting correction that comes from the <a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator">Horvitz-Thompson estimator</a>
+<p>Explanation: The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i
+\in S)\)</span> case, it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} =
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S
+| \tau)\)</span> is an importance-weighting correction that comes from the
+<a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator">Horvitz-Thompson estimator</a>
 (modified slightly from its usual presentation to accomodate estimating means),
 <span class="math">\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)</span>, where
 <span class="math">\(S\)</span> is sampled according to some process with inclusion probabilities <span class="math">\(q_i = p(i
@@ -11967,7 +11970,7 @@ importance-weighting correction that comes from the <a href="https://en.wikipedi
 <span class="math">\(\tau\)</span> that makes computing <span class="math">\(q_i\)</span> easy. Thus, for priority sampling, we can use
 <span class="math">\(q_i = p(i \in S | \tau)\)</span>. This auxillary variable adds a tiny bit extra noise
 in our estimator, which is tantamount to one extra sample.</p>
-<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Proof of
+<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Show proof of
 unbiasedness</button> <div id="ps-unbiased" class="derivation"
 style="display:none;"> <strong>Proof of unbiasedness</strong>. The following proof is a
 little different from that in the priority sampling papers. I think it's more

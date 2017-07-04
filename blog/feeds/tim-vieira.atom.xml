@@ -115,18 +115,21 @@ we assume no prior knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;. 
 &amp;amp;\quad \textbf{return }\boldsymbol{s}
 \end{align*}
 $$&lt;/div&gt;
-&lt;p&gt;For estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt;, use the following:
-&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textrm{PrioritySample}\)&lt;/span&gt; can be applied to obtain a sparse and unbiased
+representation of any vector in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt;. We make use of such a
+representation for our original problem of budgeted mean estimation (&lt;span class="math"&gt;\(\mu\)&lt;/span&gt;) as
+follows:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{align*}
 &amp;amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
 &amp;amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
 \end{align*}
 $$&lt;/div&gt;
-&lt;p&gt;The definition of &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; might look a little mysterious. In the &lt;span class="math"&gt;\((i \in S)\)&lt;/span&gt; case,
-it comes from &lt;span class="math"&gt;\(s_i = \frac{p_i}{p(i \in S | \tau)} = \frac{p_i}{\min(1, x_i
-\cdot \tau)} = \max(x_i,\ 1/\tau)\)&lt;/span&gt;. The factor &lt;span class="math"&gt;\(p(i \in S | \tau)\)&lt;/span&gt; is an
-importance-weighting correction that comes from the &lt;a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator"&gt;Horvitz-Thompson estimator&lt;/a&gt;
+&lt;p&gt;Explanation: The definition of &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; might look a little mysterious. In the &lt;span class="math"&gt;\((i
+\in S)\)&lt;/span&gt; case, it comes from &lt;span class="math"&gt;\(s_i = \frac{p_i}{p(i \in S | \tau)} =
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)&lt;/span&gt;. The factor &lt;span class="math"&gt;\(p(i \in S
+| \tau)\)&lt;/span&gt; is an importance-weighting correction that comes from the
+&lt;a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator"&gt;Horvitz-Thompson estimator&lt;/a&gt;
 (modified slightly from its usual presentation to accomodate estimating means),
 &lt;span class="math"&gt;\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)&lt;/span&gt;, where
 &lt;span class="math"&gt;\(S\)&lt;/span&gt; is sampled according to some process with inclusion probabilities &lt;span class="math"&gt;\(q_i = p(i
@@ -134,7 +137,7 @@ importance-weighting correction that comes from the &lt;a href="https://en.wikip
 &lt;span class="math"&gt;\(\tau\)&lt;/span&gt; that makes computing &lt;span class="math"&gt;\(q_i\)&lt;/span&gt; easy. Thus, for priority sampling, we can use
 &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;. This auxillary variable adds a tiny bit extra noise
 in our estimator, which is tantamount to one extra sample.&lt;/p&gt;
-&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Proof of
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Show proof of
 unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
 style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
 little different from that in the priority sampling papers. I think it's more
