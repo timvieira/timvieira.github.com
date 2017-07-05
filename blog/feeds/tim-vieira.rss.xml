@@ -130,7 +130,7 @@ $$&lt;/div&gt;
 \frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)&lt;/span&gt;. The factor &lt;span class="math"&gt;\(p(i \in S
 | \tau)\)&lt;/span&gt; is an importance-weighting correction that comes from the
 &lt;a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator"&gt;Horvitz-Thompson estimator&lt;/a&gt;
-(modified slightly from its usual presentation to accomodate estimating means),
+(modified slightly from its usual presentation to estimate means),
 &lt;span class="math"&gt;\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)&lt;/span&gt;, where
 &lt;span class="math"&gt;\(S\)&lt;/span&gt; is sampled according to some process with inclusion probabilities &lt;span class="math"&gt;\(q_i = p(i
 \in S)\)&lt;/span&gt;. In the case of priority sampling, we have an auxiliary variable for
