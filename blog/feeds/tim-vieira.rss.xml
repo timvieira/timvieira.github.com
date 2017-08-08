@@ -3885,12 +3885,10 @@ is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., computationally convenient)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;:
-&lt;a href="https://www.umiacs.umd.edu/~resnik/"&gt;Philip Resnik&lt;/a&gt; has an excellent
-mantra/mnemonic: "the truth comes first." This&amp;mdash;combined with the fact that
-inclusive KL is the more principled choice for fitting a
-distribution&amp;mdash;makes the order really easy to remember! (Alternatively, why
-would your model be "the truth"?)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;: mnemonic: "When the truth comes first, you
+get the whole truth" (h/t
+&lt;a href="https://www.umiacs.umd.edu/~resnik/"&gt;Philip Resnik&lt;/a&gt;). Here "whole truth"
+corresponds to the &lt;em&gt;inclusiveness&lt;/em&gt; of &lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;As far as remembering the equation, I pretend that "&lt;span class="math"&gt;\(||\)&lt;/span&gt;" is a division symbol,
 which happens to correspond nicely to a division symbol in the equation (I'm not
 sure it's intentional).&lt;/p&gt;
