@@ -1396,7 +1396,7 @@ been used in a number of place, including&lt;/p&gt;
   Simple implementation complete with test cases.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0e"&gt;Memory-efficient backprop in an RNN&lt;/a&gt;:
+&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0ea"&gt;Memory-efficient backprop in an RNN&lt;/a&gt;:
   A simple application with test cases, of course.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
