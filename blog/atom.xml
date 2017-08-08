@@ -1379,9 +1379,9 @@ been used in a number of place, including&lt;/p&gt;
   under a tight budget on &lt;em&gt;additional&lt;/em&gt; memory.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Backpropagation for computing gradients in sequence models, including HMMs
-  (&lt;a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf"&gt;Zweig &amp;amp; Padmanabhan, 2000&lt;/a&gt;)
-  and RNNs (&lt;a href="https://arxiv.org/abs/1604.06174v2"&gt;Chen et al., 2016&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Backpropagation for computing gradients in sequence models, including HMMs (&lt;a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf"&gt;Zweig &amp;amp; Padmanabhan, 2000&lt;/a&gt;)
+  and RNNs (&lt;a href="https://arxiv.org/abs/1604.06174v2"&gt;Chen et al., 2016&lt;/a&gt;). I have
+  sample code that illustrates the basic idea below.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Memory-efficient &lt;a href="https://arxiv.org/pdf/cs/0310016v1"&gt;omniscient debugging&lt;/a&gt;,
@@ -1389,9 +1389,17 @@ been used in a number of place, including&lt;/p&gt;
   backward&lt;/em&gt; in time.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Here's the
-&lt;a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2"&gt;code gist&lt;/a&gt;,
-complete with test cases.&lt;/p&gt;
+&lt;h2&gt;Sample code&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2"&gt;The basics&lt;/a&gt;:
+  Simple implementation complete with test cases.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0e"&gt;Memory-efficient backprop in an RNN&lt;/a&gt;:
+  A simple application with test cases, of course.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

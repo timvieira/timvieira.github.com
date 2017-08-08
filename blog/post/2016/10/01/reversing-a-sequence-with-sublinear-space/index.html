@@ -11984,9 +11984,9 @@ been used in a number of place, including</p>
   under a tight budget on <em>additional</em> memory.</p>
 </li>
 <li>
-<p>Backpropagation for computing gradients in sequence models, including HMMs
-  (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
-  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>).</p>
+<p>Backpropagation for computing gradients in sequence models, including HMMs (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
+  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>). I have
+  sample code that illustrates the basic idea below.</p>
 </li>
 <li>
 <p>Memory-efficient <a href="https://arxiv.org/pdf/cs/0310016v1">omniscient debugging</a>,
@@ -11994,9 +11994,17 @@ been used in a number of place, including</p>
   backward</em> in time.</p>
 </li>
 </ul>
-<p>Here's the
-<a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">code gist</a>,
-complete with test cases.</p>
+<h2>Sample code</h2>
+<ul>
+<li>
+<p><a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">The basics</a>:
+  Simple implementation complete with test cases.</p>
+</li>
+<li>
+<p><a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0e">Memory-efficient backprop in an RNN</a>:
+  A simple application with test cases, of course.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
