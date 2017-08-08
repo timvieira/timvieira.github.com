@@ -3867,18 +3867,32 @@ the power of is one --- making it very difficult to overflow on the account of
 is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;First, which one is which?&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Cheat sheet&lt;/strong&gt;: If we're fitting &lt;span class="math"&gt;\(q\)&lt;/span&gt; to &lt;span class="math"&gt;\(p\)&lt;/span&gt; using&lt;/p&gt;
-&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(q || p)\)&lt;/span&gt;
-  - mode-seeking, exclusive
-  - no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;
-  - mean-seeking, inclusive
-  - results in a moment-matching problem when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family
-  - requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; &lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;: The KL notation is a little strange with the
-"&lt;span class="math"&gt;\(||\)&lt;/span&gt;". I pretend it's a division symbol. This happens to correspond nicely to a
-division symbol in the corresponding equation (I'm not sure it's
-intentional). It helps to remember that you always normalize wrt the "numerator"
-(and &lt;span class="math"&gt;\(q\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;mean-seeking, inclusive (more principled because approximates the &lt;em&gt;full&lt;/em&gt; distribution)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., often &lt;em&gt;not&lt;/em&gt; computationally convenient)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(q || p)\)&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;mode-seeking, exclusive&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., computationally convenient)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;:
+&lt;a href="https://www.umiacs.umd.edu/~resnik/"&gt;Philip Resnik&lt;/a&gt; has an excellent
+mantra/mnemonic: "the truth comes first." This&amp;mdash;combined with the fact that
+inclusive KL is the more principled choice for fitting a
+distribution&amp;mdash;makes the order really easy to remember!&lt;/p&gt;
+&lt;p&gt;As far as remembering the equation, I pretend that "&lt;span class="math"&gt;\(||\)&lt;/span&gt;" is a division symbol,
+which happens to correspond nicely to a division symbol in the equation (I'm not
+sure it's intentional).&lt;/p&gt;
 &lt;h2&gt;Computational perspecive&lt;/h2&gt;
 &lt;p&gt;Let's look at what's involved in fitting a model &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; in each
 direction. In this section, I'll describe the gradient and pay special attention
