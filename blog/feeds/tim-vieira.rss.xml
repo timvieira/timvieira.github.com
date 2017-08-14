@@ -3893,7 +3893,7 @@ is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., computationally convenient)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img alt="illustration of inclusive vs. exclusive KL divergence" src="/blog/images/KL-inclusive-exclusive.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="illustration of inclusive vs. exclusive KL divergence" src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" /&gt;&lt;/p&gt;
 &lt;p&gt;(Figure by &lt;a href="http://www.johnwinn.org/"&gt;John Winn&lt;/a&gt; (hence the spelling
 "minimising"). Thanks to &lt;a href="https://twitter.com/sjmielke"&gt;@sjmielke&lt;/a&gt; for the
 suggestion to add the image.)&lt;/p&gt;
