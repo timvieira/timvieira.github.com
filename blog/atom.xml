@@ -3893,6 +3893,10 @@ is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
 &lt;p&gt;no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., computationally convenient)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;img alt="illustration of inclusive vs. exclusive KL divergence" src="/blog/images/KL-inclusive-exclusive.png" /&gt;&lt;/p&gt;
+&lt;p&gt;(Figure by &lt;a href="http://www.johnwinn.org/"&gt;John Winn&lt;/a&gt; (hence the spelling
+"minimising"). Thanks to &lt;a href="https://twitter.com/sjmielke"&gt;@sjmielke&lt;/a&gt; for the
+suggestion to add the image.)&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How I remember which is which&lt;/strong&gt;: mnemonic: "When the truth comes first, you
 get the whole truth" (h/t
 &lt;a href="https://www.umiacs.umd.edu/~resnik/"&gt;Philip Resnik&lt;/a&gt;). Here "whole truth"
@@ -3958,11 +3962,10 @@ we're optimizing.&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \sum_d p(d) \log q(d)
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
-&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
-&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q \\
-&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \frac{1}{Z_p} \sum_d \bar{p}(d) \\
-&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
 \end{align*}&lt;/div&gt;
 &lt;p&gt;Unfortunately the &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; factor is unavoidable. The usual "approximate inference
 story" is that &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is hard to compute, while the approximating distributions
@@ -3979,7 +3982,7 @@ but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}&lt;/div&gt;
-&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential families ---
+&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential family ---
 i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood estimation as a
 method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is
 the true data distribution! The first term in the gradient is based on a sample
@@ -4002,6 +4005,11 @@ instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
   normalization. However, in the "easy" direction, using unnormalized &lt;span class="math"&gt;\(p\)&lt;/span&gt;
   results in only an additive constant difference. So, it's still just as
   useful, if all you care about is optimization (fitting the model).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When &lt;span class="math"&gt;\(q\)&lt;/span&gt; is an exponential family, &lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt; will be convex
+  in &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, no matter how complicated &lt;span class="math"&gt;\(p\)&lt;/span&gt; is, whereas &lt;span class="math"&gt;\(\textbf{KL}(q_\theta
+  || p)\)&lt;/span&gt; is in general nonconvex (e.g., if &lt;span class="math"&gt;\(p\)&lt;/span&gt; is multimodal).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
