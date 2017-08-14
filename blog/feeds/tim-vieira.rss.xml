@@ -3987,11 +3987,12 @@ but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}&lt;/div&gt;
-&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential family ---
-i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood estimation as a
-method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is
-the true data distribution! The first term in the gradient is based on a sample
-instead of an exact estimate (often called "observed feature counts").&lt;/p&gt;
+&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential
+family&amp;mdash;i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood
+estimation as a method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In
+this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data distribution! The first term in the gradient is
+based on a sample instead of an exact estimate (often called "observed feature
+counts").&lt;/p&gt;
 &lt;p&gt;Downside: computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be tractable.&lt;/p&gt;
 &lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;ul&gt;

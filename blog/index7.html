@@ -11951,11 +11951,12 @@ but you do need to sample from it (which can be just as hard).</p>
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}</div>
-<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential family ---
-i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood estimation as a
-method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is
-the true data distribution! The first term in the gradient is based on a sample
-instead of an exact estimate (often called "observed feature counts").</p>
+<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential
+family&mdash;i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood
+estimation as a method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In
+this case, <span class="math">\(p\)</span> is the true data distribution! The first term in the gradient is
+based on a sample instead of an exact estimate (often called "observed feature
+counts").</p>
 <p>Downside: computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
 <h2>Remarks</h2>
 <ul>
