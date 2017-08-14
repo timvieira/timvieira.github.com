@@ -11835,37 +11835,42 @@ jQuery(document).ready(function($) {
   <div class="entry-content"><p>It's well-known that
 <a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
 is not symmetric, but which direction is right for fitting your model?</p>
-<p>First, which one is which?</p>
-<p><strong>Cheat sheet</strong>: If we're fitting <span class="math">\(q\)</span> to <span class="math">\(p\)</span> using</p>
-<p><span class="math">\(\textbf{KL}(p || q)\)</span></p>
+<h4>Which KL is which? A cheat sheet</h4>
+<p>If we're fitting <span class="math">\(q_\theta\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(p || q_\theta)\)</span></p>
 <ul>
 <li>
-<p>mean-seeking, inclusive (more principled because approximates the <em>full</em> distribution)</p>
+<p>mean-seeking, <em>inclusive</em> (more principled because approximates the <em>full</em> distribution)</p>
 </li>
 <li>
 <p>requires normalization wrt <span class="math">\(p\)</span> (i.e., often <em>not</em> computationally convenient)</p>
 </li>
 </ul>
-<p><span class="math">\(\textbf{KL}(q || p)\)</span></p>
+<p><span class="math">\(\textbf{KL}(q_\theta || p)\)</span></p>
 <ul>
 <li>
-<p>mode-seeking, exclusive</p>
+<p>mode-seeking, <em>exclusive</em></p>
 </li>
 <li>
 <p>no normalization wrt <span class="math">\(p\)</span> (i.e., computationally convenient)</p>
 </li>
 </ul>
-<p><img alt="illustration of inclusive vs. exclusive KL divergence" src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" /></p>
-<p>(Figure by <a href="http://www.johnwinn.org/">John Winn</a> (hence the spelling
-"minimising"). Thanks to <a href="https://twitter.com/sjmielke">@sjmielke</a> for the
-suggestion to add the image.)</p>
-<p><strong>How I remember which is which</strong>: mnemonic: "When the truth comes first, you
-get the whole truth" (h/t
+<p><strong>Mnemonic</strong>: "When the truth comes first, you get the whole truth" (h/t
 <a href="https://www.umiacs.umd.edu/~resnik/">Philip Resnik</a>). Here "whole truth"
 corresponds to the <em>inclusiveness</em> of <span class="math">\(\textbf{KL}(p || q)\)</span>.</p>
 <p>As far as remembering the equation, I pretend that "<span class="math">\(||\)</span>" is a division symbol,
 which happens to correspond nicely to a division symbol in the equation (I'm not
 sure it's intentional).</p>
+<h2>Inclusive vs. exclusive divergence</h2>
+<div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
+
+<img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" />
+Figure by <a href="http://www.johnwinn.org/">John Winn</a>. Thanks to <a
+href="https://twitter.com/sjmielke">@sjmielke</a> for the suggestion to add this
+image.
+</div>
+
+<p><br/></p>
 <h2>Computational perspecive</h2>
 <p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
 direction. In this section, I'll describe the gradient and pay special attention
@@ -11893,8 +11898,8 @@ we're optimizing.</p>
 <p>This leaves us with the following optimization problem:
 </p>
 <div class="math">\begin{align*}
-&amp; \text{argmin}_\theta \textbf{KL}(q_\theta || p) \\
-&amp;\qquad = \text{argmin}_\theta \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+&amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
 \end{align*}</div>
 <p>Let's work out the gradient
 </p>
@@ -11909,8 +11914,8 @@ we're optimizing.</p>
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
 <p>This direction is convenient because we don't need to normalize
-<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general --- unlike the
-"hard" direction, which is convex.</p>
+<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
+the "hard" direction, which (as we'll see shortly) is convex.</p>
 <h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
 <div class="math">\begin{align*}
 \textbf{KL}(p || q_\theta)
@@ -11953,25 +11958,31 @@ instead of an exact estimate (often called "observed feature counts").</p>
 <h2>Remarks</h2>
 <ul>
 <li>
-<p>Both directions of KL are special cases of <span class="math">\(\alpha\)</span>-divergence. For a unified
-  account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+<p>In many ways, optimizing exclusive KL makes no sense at all! Except for the
+  fact that it's computable when inclusive KL is often not. Exclusive KL is
+  generally regarded as "an approximation" to inclusive KL. This bias in this
+  approximation can be quite large.</p>
 </li>
 <li>
-<p>Inclusive divergences require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span>. No "false negatives".</p>
-</li>
-<li>
-<p>Exclusive divergences will often favor a single mode.</p>
-</li>
-<li>
-<p>Computing the value of KL (not just the gradient) in either direction requires
-  normalization. However, in the "easy" direction, using unnormalized <span class="math">\(p\)</span>
-  results in only an additive constant difference. So, it's still just as
-  useful, if all you care about is optimization (fitting the model).</p>
+<p>Inclusive vs. exclusive is an important distinction: Inclusive divergences
+  require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span> (i.e., no "false negatives"), whereas
+  exclusive divergences favor a single mode (i.e., only a good fit around a that
+  mode).</p>
 </li>
 <li>
 <p>When <span class="math">\(q\)</span> is an exponential family, <span class="math">\(\textbf{KL}(p || q_\theta)\)</span> will be convex
   in <span class="math">\(\theta\)</span>, no matter how complicated <span class="math">\(p\)</span> is, whereas <span class="math">\(\textbf{KL}(q_\theta
-  || p)\)</span> is in general nonconvex (e.g., if <span class="math">\(p\)</span> is multimodal).</p>
+  || p)\)</span> is generally nonconvex (e.g., if <span class="math">\(p\)</span> is multimodal).</p>
+</li>
+<li>
+<p>Computing the value of either KL divergence requires normalization. However,
+  in the "easy" (exclusive) direction, we can optimize KL without computing
+  <span class="math">\(Z_p\)</span> (as it results in only an additive constant difference).</p>
+</li>
+<li>
+<p>Both directions of KL are special cases of
+  <a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"><span class="math">\(\alpha\)</span>-divergence</a>. For a
+  unified account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
