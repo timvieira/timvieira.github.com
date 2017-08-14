@@ -11865,9 +11865,7 @@ sure it's intentional).</p>
 <div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
 
 <img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" />
-Figure by <a href="http://www.johnwinn.org/">John Winn</a>. Thanks to <a
-href="https://twitter.com/sjmielke">@sjmielke</a> for the suggestion to add this
-image.
+Figure by <a href="http://www.johnwinn.org/">John Winn</a>.
 </div>
 
 <p><br/></p>
@@ -11934,14 +11932,6 @@ the "hard" direction, which (as we'll see shortly) is convex.</p>
 &amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
 &amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
 \end{align*}</div>
-<p>Unfortunately the <span class="math">\(Z_p\)</span> factor is unavoidable. The usual "approximate inference
-story" is that <span class="math">\(Z_p\)</span> is hard to compute, while the approximating distributions
-normalization constant <span class="math">\(Z_q\)</span> is easy.</p>
-<p>Nonetheless, optimizing KL in this direction is still useful. Examples include,
-expectation propagation, variational decoding and maximum likelihood
-estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
-distribution, so technically you don't have to compute its normalizing constant,
-but you do need to sample from it (which can be just as hard).</p>
 <p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
 <div class="math">\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
@@ -11949,13 +11939,26 @@ but you do need to sample from it (which can be just as hard).</p>
 &amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}</div>
-<p>Optimization problem is convex when <span class="math">\(q_\theta\)</span> is an exponential
-family&mdash;i.e., <span class="math">\(p\)</span> can be arbitrary. You can think of maximum likelihood
-estimation as a method which minimizes KL divergence from samples of <span class="math">\(p\)</span>. In
-this case, <span class="math">\(p\)</span> is the true data distribution! The first term in the gradient is
-based on a sample instead of an exact estimate (often called "observed feature
-counts").</p>
-<p>Downside: computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be tractable.</p>
+<p>Why do we say this is hard to compute? Well, for most interesting models, we
+can't compute <span class="math">\(Z_p = \sum_d \bar{p}(d)\)</span>. This is because <span class="math">\(p\)</span> is presumed to be a
+complex model (e.g., the real world, an intricate factor graph, a complicated
+Bayesian posterior). If we can't compute <span class="math">\(Z_p\)</span>, it's highly unlikely that we can
+compute another (nontrivial) integral under <span class="math">\(\bar{p}\)</span>, e.g., <span class="math">\(\sum_d \bar{p}(d)
+\log \bar{q}(d)\)</span>.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include:
+expectation propagation, variational decoding, and maximum likelihood
+estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need samples from it, which can be just as hard to get as computing a
+normalization constant.</p>
+<p>Optimization problem is <em>convex</em> when <span class="math">\(q_\theta\)</span> is an exponential
+family&mdash;i.e., for any <span class="math">\(p\)</span> the <em>optimization</em> problem is "easy." You can
+think of maximum likelihood estimation (MLE) as a method which minimizes KL
+divergence based on samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data
+distribution! The first term in the gradient is based on a sample instead of an
+exact estimate (often called "observed feature counts"). The downside, of
+course, is that computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be
+tractable or, for MLE, require tons of samples.</p>
 <h2>Remarks</h2>
 <ul>
 <li>
@@ -11984,6 +11987,26 @@ counts").</p>
 <p>Both directions of KL are special cases of
   <a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"><span class="math">\(\alpha\)</span>-divergence</a>. For a
   unified account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
+</ul>
+<h3>Acknowledgments</h3>
+<p>I'd like to thank the following people:</p>
+<ul>
+<li>
+<p><a href="https://twitter.com/_shrdlu_">Ryan Cotterell</a> for an email exchange which
+  spawned this article.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/adveisner">Jason Eisner</a> for teaching me all this stuff.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/florian_shkurti">Florian Shkurti</a> for a useful email
+  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
+  compute/optimize.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/sjmielke">Sebastian Mielke</a> for the suggesting the
+  "inclusive vs. exclusive" figure.</p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {

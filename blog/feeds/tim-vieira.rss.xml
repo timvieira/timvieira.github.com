@@ -3903,9 +3903,7 @@ sure it's intentional).&lt;/p&gt;
 &lt;div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;"&gt;
 
 &lt;img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" /&gt;
-Figure by &lt;a href="http://www.johnwinn.org/"&gt;John Winn&lt;/a&gt;. Thanks to &lt;a
-href="https://twitter.com/sjmielke"&gt;@sjmielke&lt;/a&gt; for the suggestion to add this
-image.
+Figure by &lt;a href="http://www.johnwinn.org/"&gt;John Winn&lt;/a&gt;.
 &lt;/div&gt;
 
 &lt;p&gt;&lt;br/&gt;&lt;/p&gt;
@@ -3972,14 +3970,6 @@ the "hard" direction, which (as we'll see shortly) is convex.&lt;/p&gt;
 &amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
 &amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
 \end{align*}&lt;/div&gt;
-&lt;p&gt;Unfortunately the &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; factor is unavoidable. The usual "approximate inference
-story" is that &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is hard to compute, while the approximating distributions
-normalization constant &lt;span class="math"&gt;\(Z_q\)&lt;/span&gt; is easy.&lt;/p&gt;
-&lt;p&gt;Nonetheless, optimizing KL in this direction is still useful. Examples include,
-expectation propagation, variational decoding and maximum likelihood
-estimation. In the case of maximum likelihood estimation, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical
-distribution, so technically you don't have to compute its normalizing constant,
-but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &lt;p&gt;The gradient, when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family, is intuitive:&lt;/p&gt;
 &lt;div class="math"&gt;\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
@@ -3987,13 +3977,26 @@ but you do need to sample from it (which can be just as hard).&lt;/p&gt;
 &amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
 &amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
 \end{align*}&lt;/div&gt;
-&lt;p&gt;Optimization problem is convex when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential
-family&amp;mdash;i.e., &lt;span class="math"&gt;\(p\)&lt;/span&gt; can be arbitrary. You can think of maximum likelihood
-estimation as a method which minimizes KL divergence from samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In
-this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data distribution! The first term in the gradient is
-based on a sample instead of an exact estimate (often called "observed feature
-counts").&lt;/p&gt;
-&lt;p&gt;Downside: computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be tractable.&lt;/p&gt;
+&lt;p&gt;Why do we say this is hard to compute? Well, for most interesting models, we
+can't compute &lt;span class="math"&gt;\(Z_p = \sum_d \bar{p}(d)\)&lt;/span&gt;. This is because &lt;span class="math"&gt;\(p\)&lt;/span&gt; is presumed to be a
+complex model (e.g., the real world, an intricate factor graph, a complicated
+Bayesian posterior). If we can't compute &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt;, it's highly unlikely that we can
+compute another (nontrivial) integral under &lt;span class="math"&gt;\(\bar{p}\)&lt;/span&gt;, e.g., &lt;span class="math"&gt;\(\sum_d \bar{p}(d)
+\log \bar{q}(d)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Nonetheless, optimizing KL in this direction is still useful. Examples include:
+expectation propagation, variational decoding, and maximum likelihood
+estimation. In the case of maximum likelihood estimation, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need samples from it, which can be just as hard to get as computing a
+normalization constant.&lt;/p&gt;
+&lt;p&gt;Optimization problem is &lt;em&gt;convex&lt;/em&gt; when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential
+family&amp;mdash;i.e., for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; the &lt;em&gt;optimization&lt;/em&gt; problem is "easy." You can
+think of maximum likelihood estimation (MLE) as a method which minimizes KL
+divergence based on samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data
+distribution! The first term in the gradient is based on a sample instead of an
+exact estimate (often called "observed feature counts"). The downside, of
+course, is that computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be
+tractable or, for MLE, require tons of samples.&lt;/p&gt;
 &lt;h2&gt;Remarks&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -4022,6 +4025,26 @@ counts").&lt;/p&gt;
 &lt;p&gt;Both directions of KL are special cases of
   &lt;a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"&gt;&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence&lt;/a&gt;. For a
   unified account of both directions consider looking into &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Acknowledgments&lt;/h3&gt;
+&lt;p&gt;I'd like to thank the following people:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/_shrdlu_"&gt;Ryan Cotterell&lt;/a&gt; for an email exchange which
+  spawned this article.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/adveisner"&gt;Jason Eisner&lt;/a&gt; for teaching me all this stuff.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/florian_shkurti"&gt;Florian Shkurti&lt;/a&gt; for a useful email
+  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
+  compute/optimize.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/sjmielke"&gt;Sebastian Mielke&lt;/a&gt; for the suggesting the
+  "inclusive vs. exclusive" figure.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
