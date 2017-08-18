@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - randomized</title>
+  <title>Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -11829,90 +11829,83 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
+        <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
-      <p class="meta"><time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time></p>
+      <p class="meta"><time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time></p>
 </header>
 
-  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
-learning and randomized algorithms.</p>
-<h2>Basics</h2>
-<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
-random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
-distribution <span class="math">\(q\)</span>.</p>
-<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
-different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q\)</span>.</p>
+  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
+finite-difference approximation).</p>
 <div class="math">$$
-\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
+ \frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
+ \Big)
 $$</div>
-<p>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
-\Rightarrow q(x) &gt; 0\)</span>. Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
-can support things that <span class="math">\(p\)</span> doesn't.</p>
-<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
-"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
-target density and <span class="math">\(q\)</span> the proposal density.</p>
-<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q\)</span>, we can use the Monte
-Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)})\)</span>, as
-an unbiased estimator of <span class="math">\(\mu\)</span>.</p>
-<h2>Remarks</h2>
-<p>There are a few reasons we might want use importance sampling:</p>
+<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
+<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
+<span class="math">\(o(\varepsilon^2)\)</span> additive error.</p>
+<p>This is a specific instance of a more general approximation! The dot product of
+the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
+with the following formula,</p>
+<div class="math">$$
+\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+ \Big)
+$$</div>
+<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
+exact in the limit and just as accurate.</p>
+<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
+  approximating a high-dimensional gradient because the number of function
+  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
+  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
+  function evaluations is probably faster than specialized code for computing
+  the gradient.</p>
+<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
+  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
+  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
+  is available. Andrei (2009) reccommends</p>
+<div class="math">$$
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
+$$</div>
+<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
+<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
+<code>numpy.finfo(x.dtype).eps</code>).</p>
+<h2>Why do I care?</h2>
 <ol>
 <li>
-<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p\)</span>.</p>
+<p>Well, I tend to work on sparse, but high-dimensional problems where
+   finite-difference would be too slow. Thus, my usual solution is to only test
+   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
+   which should be nonzero. With the new trick, I can effectively test more
+   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
+   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
+   the angle of the vector.</p>
 </li>
 <li>
-<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
-     samples to satisfy some "safety" condition (e.g., a minimum support
-     threshold) and be unbiased. Importance sampling can be used to remove bias,
-     while satisfying the condition.</p>
-</li>
-<li>
-<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
-     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu\)</span>. Check out these
-     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
-     more.</p>
-</li>
-<li>
-<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
-     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
-     to pick the best one). Some cool papers:
-     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
-     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
-     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
-     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+<p>Sometimes the gradient-vector dot product is the end goal. This is the case
+   with Hessian-vector products, which arises in many optimization algorithms,
+   such as stochastic meta descent. Hessian-vector products are an instance of
+   the gradient-vector dot product because the Hessian is just the gradient of
+   the gradient.</p>
 </li>
 </ol>
-<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
-<ol>
-<li>
-<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
-     reduction, active learning and reinforcement learning. It's often difficult
-     to design <span class="math">\(q\)</span>, which results in an estimator with "reasonable" variance. A
-     very difficult case is in off-policy evaluation because it (essentially)
-     requires a good exploratory distribution for every possible policy. (I have
-     much more to say on this topic.)</p>
-</li>
-<li>
-<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
-     (e.g., new articles) and you want to estimate performance on a different
-     dataset (e.g., Twitter).</p>
-</li>
-<li>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
-     to as the propensity score) and use it in the importance sampling
-     estimator. This technique, as far as I can tell, is widely used to remove
-     selection bias when estimating effects of different treatments.</p>
-</li>
-</ol>
-<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
-samples with large weights can drastically throw off the estimator. Thus, it's
-often the case that a biased estimator is preferred, e.g.,
-<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
-<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
-<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
-drawback is that both densities must be normalized, which is often intractable.</p>
-<p><strong>What's next?</strong> I plan to cover "variance reduction" and "off-policy
-evaluation" in more detail in future posts.</p>
+<h2>Hessian-vector product</h2>
+<p>Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!</p>
+<div class="math">$$
+H(\boldsymbol{x})\, \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+\Big)
+$$</div>
+<p>With this trick you never have to actually compute the gnarly Hessian! More on
+<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -12027,11 +12020,12 @@ evaluation" in more detail in future posts.</p>
 }
 </script></div>
   <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Read On &crarr;</a>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Read On &crarr;</a>
   </footer>
   		</article>
 <div class="pagination">
 
+    <a class="next" href="http://timvieira.github.io/blog/index9.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">
@@ -12039,7 +12033,19 @@ evaluation" in more detail in future posts.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a>
+          <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
       </li>
     </ul>
   </section>
@@ -12056,7 +12062,7 @@ evaluation" in more detail in future posts.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/tricks.html">tricks</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/randomized.html">randomized</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/math.html">math</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>  </section>
 
 
 
@@ -12126,7 +12132,7 @@ evaluation" in more detail in future posts.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014  - Tim Vieira -
+    Copyright &copy;  2014-2017  - Tim Vieira -
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
 	<script type="text/javascript">
