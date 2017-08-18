@@ -160,8 +160,7 @@ variables. Thus, &lt;span class="math"&gt;\(\alpha(i)\)&lt;/span&gt; is the list
 we'll assume that the dependency graph given by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is ① acyclic: no &lt;span class="math"&gt;\(z_i\)&lt;/span&gt;
 can transitively depend on itself.  ② single-assignment: each &lt;span class="math"&gt;\(z_i\)&lt;/span&gt; appears on
 the left-hand side of &lt;em&gt;exactly one&lt;/em&gt; equation.  We'll discuss relaxing these
-assumptions in &lt;a href="#lagrange-backprop-generalization"&gt;§
-Generalizations&lt;/a&gt;.&lt;/p&gt;
+assumptions in &lt;a href="#lagrange-backprop-generalization"&gt;§ Generalizations&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;The standard way to solve a constrained optimization is to use the method
 Lagrange multipliers, which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into
 an &lt;em&gt;unconstrained&lt;/em&gt; problem with a few more variables &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; (one
@@ -174,7 +173,7 @@ one. The unconstrained version is called "the Lagrangian" of the constrained
 problem. Here is its form for our task,&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right)
-= z_n - \sum_{i=d+1}^n \lambda_i\cdot \left( z_i - f_i(z_{\alpha(i)}) \right).
+= z_n - \sum_{i=d+1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right).
 $$&lt;/div&gt;
 &lt;p&gt;Optimizing the Lagrangian amounts to solving the following nonlinear system of
 equations, which give necessary, but not sufficient, conditions for optimality,&lt;/p&gt;
@@ -210,9 +209,9 @@ and an acyclic program.)
 &lt;div class="math"&gt;\begin{eqnarray*}
 0 &amp;amp;=&amp;amp; \nabla_{\! z_j} \mathcal{L} \\
 &amp;amp;=&amp;amp; \nabla_{\! z_j}\! \left[ z_n - \sum_{i=d+1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
-&amp;amp;=&amp;amp; - \sum_{i=d+1}^n \lambda_i \cdot \nabla_{\! z_j}\! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&amp;amp;=&amp;amp; - \sum_{i=d+1}^n \lambda_i \nabla_{\! z_j}\! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
 &amp;amp;=&amp;amp; - \left( \sum_{i=d+1}^n \lambda_i \nabla_{\! z_j}\! \left[ z_i \right] \right) + \left( \sum_{i=d+1}^n \lambda_i \nabla_{\! z_j}\! \left[ f_i(z_{\alpha(i)}) \right] \right) \\
-&amp;amp;=&amp;amp; - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \cdot \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+&amp;amp;=&amp;amp; - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
 &amp;amp;\Updownarrow&amp;amp; \\
 \lambda_j &amp;amp;=&amp;amp; \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
 \end{eqnarray*}&lt;/div&gt;
