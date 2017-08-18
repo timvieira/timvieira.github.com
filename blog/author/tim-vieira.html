@@ -11829,6 +11829,490 @@ jQuery(document).ready(function($) {
   		<article>
 <header>
       <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </h1>
+      <p class="meta"><time datetime="2017-08-18T00:00:00-04:00" pubdate>Aug 18, 2017</time></p>
+</header>
+
+  <div class="entry-content"><p>Almost everyone I know says that "backprop is just the chain rule." Although
+that's <em>basically true</em>, there are some subtle and beautiful things about
+automatic differentiation techniques (including backprop) that will not be
+appreciated with this <em>dismissive</em> attitude.</p>
+<p>This leads to a poor understanding. As
+<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">I have ranted before</a>:
+people do not understand basic facts about autodiff.</p>
+<ul>
+<li>Evaluating <span class="math">\(f(x)\)</span> is provably as fast as evaluating <span class="math">\(\nabla f(x)\)</span>.</li>
+</ul>
+<!-- Let that sink in. Computing the gradient&mdash;an essential incredient to
+efficient optimization&mdash;is no slower to compute than the function
+itself. Contrast that with the finite-difference gradient approximation, which
+is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
+evaluating $f$
+([discussed here](http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/))!
+-->
+
+<ul>
+<li>Code for <span class="math">\(\nabla f(x)\)</span> can be derived by a rote program transformation, even
+  if the code has control flow structures like loops and intermediate variables
+  (as long as the control flow is independent of <span class="math">\(x\)</span>). You can even do this
+  "automatic" transformation by hand!</li>
+</ul>
+<h3>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</h3>
+<p>Let's try to understand the difference between autodiff and the type of
+differentiation that you learned in calculus, which is called <em>symbolic</em>
+differentiation.</p>
+<p>I'm going to use an example from
+<a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's notes</a>,
+</p>
+<div class="math">$$
+f(x) = \exp(\exp(x) + \exp(x)^2) + \sin(\exp(x) + \exp(x)^2).
+$$</div>
+<!--
+If we plug-and-chug with the chain rule, we get a correct expression for the
+derivative,
+$$\small
+\frac{\partial f}{\partial x} =
+\exp(\exp(x) + \exp(x)^2) (\exp(x) + 2 \exp(x) \exp(x)) \\
+\quad\quad\small+ \cos(\exp(x) + \exp(x)^2) (\exp(x) + 2 \exp(x) \exp(x)).
+$$
+
+However, this expression leaves something to be desired because it has lot of
+repeated evaluations of the same function. This is clearly bad, if we want to
+turn it into source code.
+-->
+
+<p>If we were writing <em>a program</em> (e.g., in Python) to compute <span class="math">\(f\)</span>, we'd definitely
+take advantage of the fact that it has a lot of repeated evaluations for
+efficiency.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span> <span class="o">+</span> <span class="n">e</span>
+</pre></div>
+
+
+<p>Symbolic differentiation would have to use the "flat" version of this function,
+so no intermediate variable <span class="math">\(\Rightarrow\)</span> slow.</p>
+<p>Automatic differentiation let's us differentiate a program with <em>intermediate</em>
+variables.</p>
+<ul>
+<li>
+<p>The rules for transforming the code for a function into code for the gradient
+  are really minimal (fewer things to memorize!). Additionally, the rules are
+  more general than in symbolic case because they handle as superset of
+  programs.</p>
+</li>
+<li>
+<p>Quite <a href="http://conal.net/papers/beautiful-differentiation/">beautifully</a>, the
+  program for the gradient <em>has exactly the same structure</em> as the function,
+  which implies that we get the same runtime (up to some constants factors).</p>
+</li>
+</ul>
+<p>I won't give the details of how to execute the backpropagation transform to the
+program. You can get that from
+<a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's notes</a>
+and many other good
+resources. <a href="https://gist.github.com/timvieira/39e27756e1226c2dbd6c36e83b648ec2">Here's some code</a>
+that I wrote that accompanies to the <code>f(x)</code> example, which has a bunch of
+comments describing the manual "automatic" differentiation process on <code>f(x)</code>.</p>
+<!--
+Caveat: You might have seen some *limited* cases where an input variable was
+reused, but chances are that it was something really simple like multiplication
+or division, e.g., $\nabla\! \left[ f(x) \cdot g(x) \right] = f(x) \cdot g'(x)
++ f'(x) \cdot g(x)$, and you just memorized a rule. The rules of autodiff are
+simpler and actually explains why there is a sum in the product rule. You can
+also rederive the quotient rule without a hitch. I'm all about having fewer
+things to memorize!
+-->
+
+<!--
+You might hope that something like common subexpression elimination would save
+the symbolic approach. Indeed that could be leveraged to improve any chunk of
+code, but to match efficiency it's not needed! If we had needed to blow up the
+computation to then shrink it down that would be much less efficient! The "flat"
+version of a program can be exponentially larger than a version with reuse.
+-->
+
+<!-- Only sort of related: think of the exponential blow up in converting a
+Boolean expression from conjunctive normal form to and disjunction normal.  -->
+
+<h2>Autodiff by the method of Lagrange multipliers</h2>
+<p>Let's view the intermediate variables in our optimization problem as simple
+equality constraints in an equivalent <em>constrained</em> optimization problem. It
+turns out that the de facto method for handling constraints, the method Lagrange
+multipliers, recovers <em>exactly</em> the adjoints (intermediate derivatives) in the
+backprop algorithm!</p>
+<p>Here's our example from earlier written in this constraint form:</p>
+<div class="math">$$
+\begin{align*}
+\underset{x}{\text{argmax}}\ &amp; f \\
+\text{s.t.} \quad
+a &amp;= \exp(x) \\
+b &amp;= a^2     \\
+c &amp;= a + b   \\
+d &amp;= \exp(c) \\
+e &amp;= \sin(c) \\
+f &amp;= d + e
+\end{align*}
+$$</div>
+<h4>The general formuation</h4>
+<div class="math">\begin{align*}
+  &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp; \\
+  &amp; \text{s.t.}\quad z_i = x_i                          &amp;\text{ for $1 \le i \le d$} \\
+  &amp; \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &amp;\text{ for $d &lt; i \le n$} \\
+  \end{align*}</div>
+<p>The first set of constraint (<span class="math">\(1, \ldots, d\)</span>) are a little silly. They are only
+there to keep our formulation tidy. The variables in the program fall into three
+categories:</p>
+<ul>
+<li>
+<p><strong>input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): <span class="math">\(x_1, \ldots, x_d\)</span></p>
+</li>
+<li>
+<p><strong>intermediate variables</strong>: (<span class="math">\(\boldsymbol{z}\)</span>): <span class="math">\(z_i = f_i(z_{\alpha(i)})\)</span> for
+  <span class="math">\(1 \le i \le n\)</span>, where <span class="math">\(\alpha(i)\)</span> is a list of indices from <span class="math">\(\{1, \ldots,
+  n-1\}\)</span> and <span class="math">\(z_{\alpha(i)}\)</span> is the subvector of variables needed to evaluate
+  <span class="math">\(f_i(\cdot)\)</span>. Minor detail: take <span class="math">\(f_{1:d}\)</span> to be the identity function.</p>
+</li>
+<li>
+<p><strong>output variable</strong> (<span class="math">\(z_n\)</span>): We assume that our programs has a singled scalar
+  output variable, <span class="math">\(z_n\)</span>, which represents the quantity we'd like to maximize.</p>
+</li>
+</ul>
+<!-- (It is possible to generalize this story to compute Jacobians of functions
+with multi-variate outputs by "scalarizing" the objective, e.g., multiply the
+outputs by a vector. This Gives an efficient program for computing Jacobian
+vector products that can be used to extra Jacobians.)  -->
+
+<p>The relation <span class="math">\(\alpha\)</span> is a
+<a href="https://en.wikipedia.org/wiki/Dependency_graph">dependency graph</a> among
+variables. Thus, <span class="math">\(\alpha(i)\)</span> is the list of <em>incoming</em> edges to node <span class="math">\(i\)</span> and
+<span class="math">\(\beta(j) = \{ i: j \in \alpha(i) \}\)</span> is the set of <em>outgoing</em> edges. For now,
+we'll assume that the dependency graph given by <span class="math">\(\alpha\)</span> is ① acyclic: no <span class="math">\(z_i\)</span>
+can transitively depend on itself.  ② single-assignment: each <span class="math">\(z_i\)</span> appears on
+the left-hand side of <em>exactly one</em> equation.  We'll discuss relaxing these
+assumptions in <a href="#lagrange-backprop-generalization">§
+Generalizations</a>.</p>
+<p>The standard way to solve a constrained optimization is to use the method
+Lagrange multipliers, which converts a <em>constrained</em> optimization problem into
+an <em>unconstrained</em> problem with a few more variables <span class="math">\(\boldsymbol{\lambda}\)</span> (one
+per <span class="math">\(x_i\)</span> variable), called Lagrange multipliers.</p>
+<h4>The Lagrangian</h4>
+<p>To handle constaints, let's dig up a tool from our calculus class,
+<a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">the method of Lagrange multipliers</a>,
+which converts a <em>constrained</em> optimization probelm into an <em>unconstrainted</em>
+one. The unconstrained version is called "the Lagrangian" of the constrained
+problem. Here is its form for our task,</p>
+<div class="math">$$
+\mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right)
+= z_n - \sum_{i=d+1}^n \lambda_i\cdot \left( z_i - f_i(z_{\alpha(i)}) \right).
+$$</div>
+<p>Optimizing the Lagrangian amounts to solving the following nonlinear system of
+equations, which give necessary, but not sufficient, conditions for optimality,</p>
+<div class="math">$$
+\nabla \mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right) = 0.
+$$</div>
+<p>Let's look a little closer at the Lagrangian conditions by breaking up the
+system of equations into salient parts, corresponding to which variable types
+are affected.</p>
+<p><strong>Intermediate variables</strong> (<span class="math">\(\boldsymbol{z}\)</span>): Optimizing the
+multipliers&mdash;i.e., setting the gradient of Lagrangian
+w.r.t. <span class="math">\(\boldsymbol{\lambda}\)</span> to zero&mdash;ensures that the constraints on
+intermediate variables are satisfied.</p>
+<div class="math">$$
+\begin{eqnarray*}
+\nabla_{\! \lambda_i} \mathcal{L}
+= z_i - f_i(z_{\alpha(i)}) = 0
+\quad\Leftrightarrow\quad z_i = f_i(z_{\alpha(i)})
+\end{eqnarray*}
+$$</div>
+<p>We can use forward propagation to satisfy these equations, which we may regard
+as a block-coordinate step in the context of optimizing the <span class="math">\(\mathcal{L}\)</span>.</p>
+<!--GENERALIZATION:
+However, if they are cyclic dependencies we may need to
+solve a nonlinear system of equations. (TODO: it's unclear what the more general
+cyclic setting is. Perhaps I should having a running example of a cyclic program
+and an acyclic program.)
+-->
+
+<p><strong>Lagrange multipliers</strong> (<span class="math">\(\boldsymbol{\lambda}\)</span>, excluding <span class="math">\(\lambda_n\)</span>):
+  Setting the gradient of the <span class="math">\(\mathcal{L}\)</span> w.r.t. the intermediate variables
+  equal to zeros tells us what to do with the intermediate multipliers.</p>
+<div class="math">\begin{eqnarray*}
+0 &amp;=&amp; \nabla_{\! z_j} \mathcal{L} \\
+&amp;=&amp; \nabla_{\! z_j}\! \left[ z_n - \sum_{i=d+1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&amp;=&amp; - \sum_{i=d+1}^n \lambda_i \cdot \nabla_{\! z_j}\! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&amp;=&amp; - \left( \sum_{i=d+1}^n \lambda_i \nabla_{\! z_j}\! \left[ z_i \right] \right) + \left( \sum_{i=d+1}^n \lambda_i \nabla_{\! z_j}\! \left[ f_i(z_{\alpha(i)}) \right] \right) \\
+&amp;=&amp; - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \cdot \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+&amp;\Updownarrow&amp; \\
+\lambda_j &amp;=&amp; \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+\end{eqnarray*}</div>
+<p>Clearly, <span class="math">\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} = 0\)</span> for <span class="math">\(j \notin
+\alpha(i)\)</span>, which is why the <span class="math">\(\beta(j)\)</span> notation came in handy. By assumption,
+the local derivatives, <span class="math">\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j}\)</span> for <span class="math">\(j
+\in \alpha(i)\)</span>, are easy to calculate&mdash;we don't even need the chain rule to
+compute them because they are simple function applications without
+composition. Similar to the equations for <span class="math">\(\boldsymbol{z}\)</span>, solving this linear
+system is another block-coordinate step.</p>
+<p><em>Key observation</em>: The last equation for <span class="math">\(\lambda_j\)</span> should look very familiar:
+It is exactly the equation used in backpropagation! It says that we sum
+<span class="math">\(\lambda_i\)</span> of nodes that immediately depend on <span class="math">\(j\)</span> where we scaled each
+<span class="math">\(\lambda_i\)</span> by the derivative of the function that directly relates <span class="math">\(i\)</span> and
+<span class="math">\(j\)</span>. You should think of the scaling as a "unit conversion" from derivatives of
+type <span class="math">\(i\)</span> to derivatives of type <span class="math">\(j\)</span>.</p>
+<p><strong>Output mutliplier</strong> (<span class="math">\(\lambda_n\)</span>): Here we follow the same pattern as for
+  intermediate multipliers.</p>
+<div class="math">$$
+\begin{eqnarray*}
+0 &amp;=&amp; \nabla_{\! z_n}\! \left[ z_n - \sum_{i=d+1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] &amp;=&amp; 1 - \lambda_n \\
+ &amp;\Updownarrow&amp; \\
+ \lambda_n &amp;=&amp; 1
+\end{eqnarray*}
+$$</div>
+<p><strong>Input multipliers</strong> <span class="math">\((\boldsymbol{\lambda}_{1:d})\)</span>: Our dummy constraints
+  gives us <span class="math">\(\boldsymbol{\lambda}_{1:d}\)</span>, which are conveniently equal to the
+  gradient of the function we're optimizing:</p>
+<div class="math">$$
+\nabla_{\!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
+$$</div>
+<p>Of course, this interpretation is only precise when ① the constraints are
+satisfied (<span class="math">\(\boldsymbol{z}\)</span> equations) and ② the linear system on multipliers is
+satisfied (<span class="math">\(\boldsymbol{\lambda}\)</span> equations).</p>
+<p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): Unforunately, the there is no
+  closed-form solution to how to set <span class="math">\(\boldsymbol{x}\)</span>. For this we resort to
+  something like gradient ascent. Conveniently, <span class="math">\(\nabla_{\!\boldsymbol{x}}
+  f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)</span>, which we can use to optimize
+  <span class="math">\(\boldsymbol{x}\)</span>!</p>
+<div id="lagrange-backprop-generalization"></div>
+
+<h3>Generalizations</h3>
+<p>We can think of these equations for <span class="math">\(\boldsymbol{\lambda}\)</span> as a simple <em>linear</em>
+system of equations, which we are solving by back-substitution when we use the
+backpropagation method. The reason why back-substitution is sufficient for the
+linear system (i.e., we don't need a <em>full</em> linear system solver) is that the
+dependency graph induced by the <span class="math">\(\alpha\)</span> relation is acyclic. If we had needed a
+full linear system solver, the solution would take <span class="math">\(\mathcal{O}(n^3)\)</span> time
+instead of linear time, seriously blowing-up our nice runtime!</p>
+<p>This connection to linear systems is interesting: It tells us that we <em>could</em>
+compute gradients in cyclic graphs. All we'd need is to run a linear system
+solver to stich together our gradients! That is exactly what the
+<a href="https://en.wikipedia.org/wiki/Implicit_function_theorem">implicit function theorem</a>
+says!</p>
+<p>Cyclic constraints add some expressive powerful to "constraint language" and
+it's interesting that we can still efficiently compute gradients in this
+setting. An example of what a general type of cyclic constraint looks like is</p>
+<div class="math">$$
+\begin{align*}
+&amp; \underset{\boldsymbol{x}}{\text{argmax}}\, z_n \\
+&amp; \text{s.t.}\quad g(\boldsymbol{z}) = \boldsymbol{0} \\
+&amp; \text{and}\quad \boldsymbol{z}_{1:d} = \boldsymbol{x}
+\end{align*}
+$$</div>
+<p>where <span class="math">\(g\)</span> can be an any smooth multivariate function of the intermediate
+variables! Of course, allowing cyclic constraints come at the cost of a
+more-difficult analogue of "the forward pass" to satisfy the <span class="math">\(\boldsymbol{z}\)</span>
+equations (if we want to keep it a block-coordinate step). The
+<span class="math">\(\boldsymbol{\lambda}\)</span> equations are now a linear system that requres a linear
+solver (e.g., Guassian elimination).</p>
+<p>Example use cases:</p>
+<ul>
+<li>
+<p>Bi-level optimization: Solving an optimization problem with another one inside
+  it. For example,
+  <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">gradient-based hyperparameter optimization</a>
+  in machine learning. The implicit function theorem manages to get gradients of
+  hyperparameters without needing to store any of intermediate states of the
+  optimization algorithm used in the inner optimzation! This is a <em>huge</em> memory
+  saver since direct backprop on the inner gradient decent algorithm would
+  require caching all intermediate states. Yikes!</p>
+</li>
+<li>
+<p>Cyclic constraints are useful in many graph algorithms. For example, computing
+  gradients of edge weights in a general finite-state machine or, similarly,
+  computing the value function in a Markov decision process.</p>
+</li>
+</ul>
+<h3>Other methods for optimization?</h3>
+<p>The connection to Lagrangians brings tons of algorithms for constrained
+optimization into the mix! We can imagine using more general algorithms for
+optimizing our function and other ways of enforcing the constraints. We see
+immediately that we could run optimization with adjoints set to values other
+than those that backprop would set them to (i.e., we can optimize them like we'd
+do in other algorithms for optimizing general Langrangians).</p>
+<h2>Summary</h2>
+<p>Backprop is does not directly fall out of the the rules for differentiation
+that you learned in calculus (e.g., the chain rule).</p>
+<ul>
+<li>This is because it operates on a more general family of functions: <em>programs</em>
+  which have <em>intermediate variables</em>. Supporting intermediate variables is
+  crucial for implementing both functions and their gradients efficiently.</li>
+</ul>
+<p>I described how we could use something we did learn from calculus 101, the
+method of Lagrange multipliers, to support optimization with intermediate
+variables.</p>
+<ul>
+<li>
+<p>It turned out that backprop is a <em>particular instantiation</em> of the method of
+  Lagrange multipliers, involving block-coordinate steps for solving for the
+  intermediates and multipliers.</p>
+</li>
+<li>
+<p>I also described a neat generalization to support <em>cyclic</em> programs and I
+  hinted at ideas for doing optimization a little differently, deviating from
+  the de facto block-coordinate strategy.</p>
+</li>
+</ul>
+<h2>Further reading</h2>
+<ul>
+<li>After working out the connection between backprop and the method of Lagrange
+  multipliers, I discovered following paper, which beat me to it. I don't think
+  my version is too redundant.</li>
+</ul>
+<blockquote>
+<p>Yann LeCun. (1988)
+<a href="http://yann.lecun.com/exdb/publis/pdf/lecun-88.pdf">A Theoretical Framework from Back-Propagation</a>.</p>
+</blockquote>
+<ul>
+<li>The backpropagation algorithm can be cleanly generalized from values to
+  functionals!</li>
+</ul>
+<blockquote>
+<p>Alexander Grubb and J. Andrew Bagnell. (2010)
+<a href="https://t.co/5OW5xBT4Y1">Boosted Backpropagation Learning for Training Deep Modular Networks</a>.</p>
+</blockquote>
+<ul>
+<li>A great blog post that uses the implicit function theorem to <em>derive</em> the
+  method of Lagrange multipliers. He also touches on the connection to
+  backpropgation.</li>
+</ul>
+<blockquote>
+<p>Ben Recht. (2016)
+<a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a>.</p>
+</blockquote>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  <footer>
+    <a rel="full-article" href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Read On &crarr;</a>
+  </footer>
+  		</article>
+  		<article>
+<header>
+      <h1 class="entry-title">
         <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </h1>
       <p class="meta"><time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time></p>
@@ -12499,429 +12983,6 @@ learning how automatic differentiation works, I learned it from
     <a rel="full-article" href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">Read On &crarr;</a>
   </footer>
   		</article>
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
-      </h1>
-      <p class="meta"><time datetime="2016-12-19T00:00:00-05:00" pubdate>Dec 19, 2016</time></p>
-</header>
-
-  <div class="entry-content"><style> .toggle-button { background-color: #555555; border: none; color: white;
-padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
-none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
-background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
-margin-bottom: 10px; } </style>
-
-<script>
-/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
-example, reasoning about the expected reward of new policy given data collected
-from a older one.</p>
-<p>In this post, I'll discuss some basic techniques for learning from logged
-data. For the large part, this post is based on things I learned from
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Peshkin &amp; Shelton (2002)</a>
-and <a href="https://arxiv.org/abs/1209.2355">Bottou et al. (2013)</a> (two of all-time
-favorite papers).</p>
-<p>After reading, have a look at the
-<a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9">Jupyter notebook</a>
-accompanying this post!</p>
-<p><strong>Setup</strong> (<em>off-line off-policy optimization</em>): We're trying to optimize a
-function of the form,</p>
-<div class="math">$$
-J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
-$$</div>
-<p><br/> But! We only have a <em>fixed</em> sample of size <span class="math">\(m\)</span> from a data collection
-policy <span class="math">\(q\)</span>, <span class="math">\(\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.\)</span></p>
-<ul>
-<li>
-<p>Although, it's not <em>necessarily</em> the case, you can think of <span class="math">\(q = p_{\theta'}\)</span>
-  for a <em>fixed</em> value <span class="math">\(\theta'.\)</span></p>
-</li>
-<li>
-<p><span class="math">\(\mathcal{X}\)</span> is an arbitrary multivariate space, which permits a mix of
-  continuous and discrete components, with appropriate densities, <span class="math">\(p_{\theta}\)</span>
-  and <span class="math">\(q\)</span> defined over it.</p>
-</li>
-<li>
-<p><span class="math">\(r: \mathcal{X} \mapsto \mathbb{R}\)</span> is a black box that outputs a scalar
-  score.</p>
-</li>
-<li>
-<p>I've used the notation <span class="math">\(r^{(j)}\)</span> instead of <span class="math">\(r(x^{(j)})\)</span> to emphasize that we
-  can't evaluate <span class="math">\(r\)</span> at <span class="math">\(x\)</span> values other than those in the sample.</p>
-</li>
-<li>
-<p>We'll assume that <span class="math">\(q\)</span> assigns positive probability everywhere, <span class="math">\(q(x) &gt; 0\)</span> for
-  all <span class="math">\(x \in \mathcal{X}\)</span>. This means is that the data collection process must
-  be randomized and eventually sample all possible configurations. Later, I
-  discuss relaxing this assumption.</p>
-</li>
-</ul>
-<p>Each distribution is a product of one or more factors of the following types:
-<strong>policy factors</strong> (at least one), which directly depend on <span class="math">\(\theta\)</span>, and
-<strong>environment factors</strong> (possibly none), which do not depend directly on
-<span class="math">\(\theta\)</span>. Note that environment factors are <em>only</em> accessible via sampling
-(i.e., we don't know the <em>value</em> they assign to a sample). For example, a
-<em>contextual bandit problem</em>, where <span class="math">\(x\)</span> is a context-action pair, <span class="math">\(x =
-(s,a)\)</span>. Here <span class="math">\(q(x) = q(a|s) p(s)\)</span> and <span class="math">\(p_{\theta}(x) = p_{\theta}(a|s)
-p(s)\)</span>. Note that <span class="math">\(p_{\theta}\)</span> and <span class="math">\(q\)</span> share the environment factor <span class="math">\(p(s)\)</span>, the
-distribution over contexts, and only differ in the action-given-context
-factor. For now, assume that we can evaluate all environment factors; later,
-I'll discuss how we cleverly work around it.</p>
-<!--
-(We can
-even extend it to a full-blown MDP or POMDP by taking $x$ to be a sequence of
-state-action pairs, often called "trajectories".)
--->
-
-<p><strong>The main challenge</strong> of this setting is that we don't have controlled
-experiments to learn from because <span class="math">\(q\)</span> is not (completely) in our control. This
-manifests itself as high variance ("noise") in estimating <span class="math">\(J(\theta)\)</span>. Consider
-the contextual bandit setting, we receive a context <span class="math">\(s\)</span> and execute single
-action; we never get to rollback to that precise context and try an alternative
-action (to get a paired sample #yolo) because we do not control <span class="math">\(p(s)\)</span>. This is
-an important paradigm for many 'real world' problems, e.g., predicting medical
-treatments or ad selection.</p>
-<!--
-This is the crucial difference that makes counterfactual learning
-more difficult than (fully) supervised learning.
--->
-
-<p><strong>Estimating <span class="math">\(J(\theta)\)</span></strong> [V1]: We obtain an unbiased estimator of <span class="math">\(J(\theta)\)</span>
-with
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>,</p>
-<div class="math">$$
-J(\theta)
-\approx \hat{J}_{\!\text{IS}}(\theta)
-= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
-\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
-$$</div>
-<p><br/> This estimator is remarkable: it uses importance sampling as a function
-approximator! We have an <em>unbiased</em> estimate of <span class="math">\(J(\theta)\)</span> for any value of
-<span class="math">\(\theta\)</span> that we like. <em>The catch</em> is that we have to pick <span class="math">\(\theta\)</span> a priori,
-i.e., with no knowledge of the sample.</p>
-<!--
-We also require that the usual 'support
-conditions' for importance sampling conditions ($p_{\theta}(x)>0 \Rightarrow
-q(x)>0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
--->
-
-<p>After we've collected a (large) sample it's possible to optimize
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span> using any optimization algorithm (e.g., L-BFGS). Of
-course, we risk overfitting to the sample if we evaluate
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span>. Actually, it's a bit worse: this objective tends to
-favor regions of <span class="math">\(\theta\)</span>, which are not well represented in the sample because
-the importance sampling estimator has high variance in these regions resulting
-from large importance weights (when <span class="math">\(q(x)\)</span> is small and <span class="math">\(p_{\theta}(x)\)</span> is
-large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(\hat{J}_{\!\text{IS}}\)</span> regardless
-of whether <span class="math">\(r(x)\)</span> is high!). Thus, we want some type of "regularization" to keep
-the optimizer in regions which are sufficiently well-represented by the sample.</p>
-<!--
-**Visual example**: We can visualize this phenomena in a simple example. Let $q
-= \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
-otherwise},$ and $p_\theta = \mathcal{N}(\theta, \sigma=1)$.  This example is
-nice because it let's us plot $x$ and $\theta$ in the same space. This is
-generally not the case, because $\mathcal{X}$ may have no connection to $\theta$
-space, e.g., $\mathcal{X}$ may be discrete.
-
-**TODO** add plot
--->
-
-<p><strong>Better surrogate</strong> [V2]: There are many ways to improve the variance of the
-estimator and <em>confidently</em> obtain improvements to the system. One of my
-favorites is Bottou et al.'s lower bound on <span class="math">\(J(\theta)\)</span>, which we get by
-clipping importance weights, replace <span class="math">\(w^{(j)}_{\theta}\)</span> with <span class="math">\(\min(R,
-w^{(j)}_{\theta})\)</span>.</p>
-<p><strong>Confidence intervals</strong> [V3]: We can augment the V2 lower bound with confidence
-intervals derived from the empirical Bernstein bound (EBB). We'll require that
-<span class="math">\(r\)</span> is bounded and that we know its max/min values. The EBB <em>penalizes</em>
-hypotheses (values of <span class="math">\(\theta\)</span>) which have higher sample variance. (Note: a
-Hoeffding bound wouldn't change the <em>shape</em> of the objective, but EBB does
-thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
-introduces an additional "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
-al. recommend maximizing the lower bound as it provides safer improvements. See
-the original paper for the derivation.</p>
-<!--
-An important benefit of having upper *and* lower is that the bounds tell
-us whether or not we should collect more data
--->
-
-<p>Both V2 and V3 are <em>biased</em> (as they are lower bounds), but we can mitigate the
-bias by <em>tuning</em> the hyperparameter <span class="math">\(R\)</span> on a heldout sample (we can even tune
-<span class="math">\(\delta\)</span>, if desired). Additionally, V2 and V3 are 'valid' when <span class="math">\(q\)</span> has limited
-support since they prevent the importance weights from exploding (of course, the
-bias can be arbitrarily bad, but probably unavoidable given the
-learning-from-only-logged data setup).</p>
-<h2>Extensions</h2>
-<!--
-**Be warned**: This may be considered an idealized setting. Much of the research
-in counterfactual and causal reasoning targets (often subtle) deviations from
-these assumptions (and some different questions, of course). Some extensions and
-discussion appear towards the end of the post.
--->
-
-<p><strong>Unknown environment factors</strong>: Consider the contextual bandit setting
-(mentioned above). Here <span class="math">\(p\)</span> and <span class="math">\(q\)</span> share an <em>unknown</em> environment factor: the
-distribution of contexts. Luckily, we do not need to know the value of this
-factor in order to apply any of our estimators because they are all based on
-likelihood <em>ratios</em>, thus the shared unknown factors cancel out!  Some specific
-examples are given below. Of course, these factors do influence the estimators
-because they are crucial in <em>sampling</em>, they just aren't necessary in
-<em>evaluation</em>.</p>
-<ul>
-<li>
-<p>In contextual bandit example, <span class="math">\(x\)</span> is a state-action pair, <span class="math">\(w_{\theta}(x) =
-    \frac{p_{\theta}(x)}{q(x)} = \frac{ p_{\theta}(s,a) }{ q(s,a) } =
-    \frac{p_{\theta}(a|s) p(s)}{q(a|s) p(s)} = \frac{p_{\theta}(a|s) }{ q(a|s)
-    }\)</span>.</p>
-</li>
-<li>
-<p>In a Markov decision process, <span class="math">\(x\)</span> is a sequence of state-action pairs,
-    <span class="math">\(w_{\theta}(x) = \frac{p_{\theta}(x)}{q(x)} = \frac{ p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) p_\theta(a_t|s_t) } { p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) q(a_t|s_t) } = \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
-    {\prod_{t=0}^T q(a_t|s_t)}.\)</span></p>
-</li>
-</ul>
-<p><strong>Variance reduction</strong>: These estimators can all be improved with variance
-reduction techniques. Probably the most effective technique is using
-<a href="https://en.wikipedia.org/wiki/Control_variates">control variates</a> (of which
-baseline functions are a special case). These are random variables correlated
-with <span class="math">\(r(x)\)</span> for which we know their expectations (or at least they are estimated
-separately). A great example is how ad clicks depend strongly on time-of-day
-(fewer people are online late at night so we get fewer clicks), thus the
-time-of-day covariate explains a large part of the variation in <span class="math">\(r(x)\)</span>.</p>
-<p><strong>Estimation instead of optimization</strong>: You can use this general setup for
-estimation instead of optimization, in which case it's fine to let <span class="math">\(r\)</span> have
-real-valued multivariate output. The confidence intervals are probably useful in
-that setting too.</p>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: Often <span class="math">\(q\)</span> is an existing complex system, which does not record
-its probabilities. It is possible to use regression to estimate <span class="math">\(q\)</span> from the
-samples, which is called the <strong>propensity score</strong> (PS). PS attempts to account
-for <strong>confounding variables</strong>, which are hidden causes that control variation in
-the data. Failing to account for confounding variables may lead to
-<a href="https://en.wikipedia.org/wiki/Simpson's_paradox">incorrect conclusions</a>. Unfortunately,
-PS results in a biased estimator because we're using a 'ratio of expectations'
-(we'll divide by the PS estimate) instead of an 'expectation of ratios'. PS is
-only statistically consistent in the (unlikely) event that the density estimate
-is correctly specified (i.e., we can eventually get <span class="math">\(q\)</span> correct). In the unknown
-<span class="math">\(q\)</span> setting, it's often better to use the <strong>doubly-robust estimator</strong> (DR) which
-combines <em>two</em> estimators: a density estimator for <span class="math">\(q\)</span> and a function
-approximation for <span class="math">\(r\)</span>. A great explanation for the bandit case is in
-<a href="https://arxiv.org/abs/1103.4601">Dudík et al. (2011)</a>. The DR estimator is also
-biased, but it has a better bias-variance tradeoff than PS.</p>
-<p><strong>What if <span class="math">\(q\)</span> doesn't have support everywhere?</strong> This is an especially important
-setting because it is often the case that data collection policies abide by some
-<strong>safety regulations</strong>, which prevent known bad configurations. In many
-situations, evaluating <span class="math">\(r(x)\)</span> corresponds to executing an action <span class="math">\(x\)</span> in the real
-world so terrible outcomes could occur, such as, breaking a system, giving a
-patient a bad treatment, or losing money. V1 is ok to use as long as we satisfy
-the importance sampling support conditions, which might mean rejecting certain
-values for <span class="math">\(\theta\)</span> (might be non-trivial to enforce) and consequently finding a
-less-optimal policy. V2 and V3 are ok to use without an explicit constraint, but
-additional care may be needed to ensure specific safety constraints are
-satisfied by the learned policy.</p>
-<p><strong>What if <span class="math">\(q\)</span> is deterministic?</strong> This is related to the point above. This is a
-hard problem. Essentially, this trying to learn without any exploration /
-experimentation! In general, we need exploration to learn. Randomization isn't
-the only way to perform exploration, there are many systematic types of
-experimentation.</p>
-<ul>
-<li>
-<p>There are some cases of systematic experimentation that are ok. For example,
-    enumerating all elements of <span class="math">\(\mathcal{X}\)</span> (almost certainly
-    infeasible). Another example is a contextual bandit where <span class="math">\(q\)</span> assigns
-    actions to contexts deterministically via a hash function (this setting is
-    fine because <span class="math">\(q\)</span> is essentially a uniform distribution over actions, which
-    is independent of the state). In other special cases, we <em>may</em> be able to
-    characterize systematic exploration as
-    <a href="https://en.wikipedia.org/wiki/Stratified_sampling">stratified sampling</a>.</p>
-</li>
-<li>
-<p>A generic solution might be to apply the doubly-robust estimator, which
-    "smooths out" deterministic components (by pretending they are random) and
-    accounting for confounds (by explicitly modeling them in the propensity
-    score).</p>
-</li>
-</ul>
-<p><strong>What if we control data collection (<span class="math">\(q\)</span>)?</strong> This is an interesting
-setting. Essentially, it asks "how do we explore/experiment optimally (and
-safely)?". In general, this is an open question and depends on many
-considerations, such as, how much control, exploration cost (safety constraints)
-and prior knowledge (of <span class="math">\(r\)</span> and unknown factors in the environment). I've seen
-some papers cleverly design <span class="math">\(q\)</span>. The first that comes to mind is
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Levine &amp; Koltun (2013)</a>. Another
-setting is <em>online</em> contextual bandits, in which algorithms like
-<a href="http://jmlr.org/proceedings/papers/v15/beygelzimer11a/beygelzimer11a.pdf">EXP4</a>
-and
-<a href="http://www.research.rutgers.edu/~lihong/pub/Chapelle12Empirical.pdf">Thompson sampling</a>,
-prescribe certain types of exploration and work interactively (i.e., they don't
-have a fixed training sample). Lastly, I'll mention that there are many
-techniques for variance reduction by importance sampling, which may apply.</p>
-<h2>Further reading</h2>
-<blockquote>
-<p>Léon Bottou, Jonas Peters, Joaquin Quiñonero-Candela, Denis X. Charles, D. Max
-Chickering, Elon Portugaly, Dipankar Ray, Patrice Simard, Ed Snelson.
-<a href="https://arxiv.org/abs/1209.2355">Counterfactual reasoning in learning systems</a>.
-JMLR 2013.</p>
-</blockquote>
-<p>The source for the majority of this post. It includes many other interesting
-ideas and goes more in depth into some of the details.</p>
-<blockquote>
-<p>Miroslav Dudík, John Langford, Lihong Li.
-<a href="https://arxiv.org/abs/1103.4601">Doubly robust policy evaluation and learning</a>.
-ICML 2011.</p>
-</blockquote>
-<p>Discussed in extensions section.</p>
-<blockquote>
-<p>Philip S. Thomas.
-<a href="http://psthomas.com/papers/Thomas2015c.pdf">Safe reinforcement learning</a>.
-PhD Thesis 2015.</p>
-</blockquote>
-<p>Covers confidence intervals for policy evaluation similar to Bottou et al., as
-well as learning algorithms for RL with safety guarantees (e.g., so we don't
-break the robot).</p>
-<blockquote>
-<p>Peshkin and Shelton.
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Learning from scarce experience</a>.
-ICML 2002.</p>
-</blockquote>
-<p>An older RL paper, which covers learning from logged data. This is one of the
-earliest papers on learning from logged data that I could find.</p>
-<blockquote>
-<p>Levine and Koltun.
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Guided policy search</a>.
-ICML 2013.</p>
-</blockquote>
-<p>Discusses clever choices for <span class="math">\(q\)</span> to better-guide learning in the RL setting.</p>
-<blockquote>
-<p>Corinna Cortes, Yishay Mansour, Mehryar Mohri.
-<a href="https://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">Learning bounds for importance weighting</a>.
-NIPS 2010.</p>
-</blockquote>
-<p>Discusses <em>generalization bounds</em> for the counterfactual objective. Includes an
-alternative weighting scheme to keep importance weights from exploding.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  <footer>
-    <a rel="full-article" href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Read On &crarr;</a>
-  </footer>
-  		</article>
 <div class="pagination">
     <a class="prev" href="http://timvieira.github.io/blog/author/tim-vieira2.html">&larr; Older</a>
 
@@ -12931,6 +12992,9 @@ alternative weighting scheme to keep importance weights from exploding.</p>
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </li>
@@ -12942,9 +13006,6 @@ alternative weighting scheme to keep importance weights from exploding.</p>
       </li>
       <li class="post">
           <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
-      </li>
-      <li class="post">
-          <a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a>
       </li>
     </ul>
   </section>
@@ -12961,7 +13022,7 @@ alternative weighting scheme to keep importance weights from exploding.</p>
 
   <section>
   <h1>Tags</h1>
-    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/autodiff.html">autodiff</a>,    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>  </section>
 
 
 
