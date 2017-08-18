@@ -414,7 +414,7 @@ variables.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="automatic-differentiation"></category></entry><entry><title>Estimating means in a finite universe</title><link href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><summary type="html">&lt;style&gt;
+&lt;/script&gt;</summary><category term="calculus"></category><category term="automatic-differentiation"></category></entry><entry><title>Estimating means in a finite universe</title><link href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><summary type="html">&lt;style&gt;
 .toggle-button {
     background-color: #555555;
     border: none;
@@ -1980,7 +1980,7 @@ vary with the input (e.g., sentence length).&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="calculus"></category><category term="autodiff"></category><category term="rant"></category></entry><entry><title>Fast sigmoid sampling</title><link href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/" rel="alternate"></link><published>2016-07-04T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-07-04:blog/post/2016/07/04/fast-sigmoid-sampling/</id><summary type="html">&lt;p&gt;
+&lt;/script&gt;</summary><category term="calculus"></category><category term="automatic-differentiation"></category><category term="rant"></category></entry><entry><title>Fast sigmoid sampling</title><link href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/" rel="alternate"></link><published>2016-07-04T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-07-04:blog/post/2016/07/04/fast-sigmoid-sampling/</id><summary type="html">&lt;p&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
 &lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
@@ -3729,7 +3729,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="calculus"></category><category term="numerical"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</summary><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct

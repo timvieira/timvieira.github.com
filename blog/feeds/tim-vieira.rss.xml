@@ -414,7 +414,7 @@ variables.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 18 Aug 2017 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2017-08-18:blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</guid><category>automatic-differentiation</category></item><item><title>Estimating means in a finite universe</title><link>http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</link><description>&lt;style&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Fri, 18 Aug 2017 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2017-08-18:blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</guid><category>calculus</category><category>automatic-differentiation</category></item><item><title>Estimating means in a finite universe</title><link>http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</link><description>&lt;style&gt;
 .toggle-button {
     background-color: #555555;
     border: none;
@@ -1980,7 +1980,7 @@ vary with the input (e.g., sentence length).&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 25 Sep 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-09-25:blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</guid><category>calculus</category><category>autodiff</category><category>rant</category></item><item><title>Fast sigmoid sampling</title><link>http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</link><description>&lt;p&gt;
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 25 Sep 2016 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2016-09-25:blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</guid><category>calculus</category><category>automatic-differentiation</category><category>rant</category></item><item><title>Fast sigmoid sampling</title><link>http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</link><description>&lt;p&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
 &lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
@@ -3729,7 +3729,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>calculus</category><category>numerical</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Wed, 29 Jul 2015 00:00:00 -0400</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2015-07-29:blog/post/2015/07/29/gradient-of-a-product/</guid><category>calculus</category><category>numerical</category><category>automatic-differentiation</category></item><item><title>Multiclass logistic regression and conditional random fields are the same thing</title><link>http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</link><description>&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
