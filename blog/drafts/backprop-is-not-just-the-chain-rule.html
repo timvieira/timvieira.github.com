@@ -11836,26 +11836,26 @@ jQuery(document).ready(function($) {
 that's <em>basically true</em>, there are some subtle and beautiful things about
 automatic differentiation techniques (including backprop) that will not be
 appreciated with this <em>dismissive</em> attitude.</p>
-<p>This leads to a poor understanding. As I have ranted before: people do not
-understand basic facts about autodiff.</p>
-<ol>
-<li>
-<p>Evaluating <span class="math">\(f(x)\)</span> is provably as fast as evaluating <span class="math">\(\nabla f(x)\)</span>
-   (<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">see previous post</a>). Let
-   that sink in. Computing the gradient&mdash;an essential incredient to
-   efficient optimization&mdash;is no slower to compute than the function
-   itself. Contrast that with the finite-difference gradient approximation,
-   which is quite accurate, but its runtime is <span class="math">\(\textrm{dim}(x)\)</span> times slower
-   than evaluating <span class="math">\(f\)</span>
-   (<a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">discussed here</a>)!</p>
-</li>
-<li>
-<p>Code for <span class="math">\(\nabla f(x)\)</span> can be derived by a rote program transformation, even
-   if the code has control flow structures like loops and intermediate variables
-   (as long as the control flow is independent of <span class="math">\(x\)</span>). You can even do this
-   "automatic" transformation by hand!</p>
-</li>
-</ol>
+<p>This leads to a poor understanding. As
+<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">I have ranted before</a>:
+people do not understand basic facts about autodiff.</p>
+<ul>
+<li>Evaluating <span class="math">\(f(x)\)</span> is provably as fast as evaluating <span class="math">\(\nabla f(x)\)</span>.</li>
+</ul>
+<!-- Let that sink in. Computing the gradient&mdash;an essential incredient to
+efficient optimization&mdash;is no slower to compute than the function
+itself. Contrast that with the finite-difference gradient approximation, which
+is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
+evaluating $f$
+([discussed here](http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/))!
+-->
+
+<ul>
+<li>Code for <span class="math">\(\nabla f(x)\)</span> can be derived by a rote program transformation, even
+  if the code has control flow structures like loops and intermediate variables
+  (as long as the control flow is independent of <span class="math">\(x\)</span>). You can even do this
+  "automatic" transformation by hand!</li>
+</ul>
 <h3>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</h3>
 <p>Let's try to understand the difference between autodiff and the type of
 differentiation that you learned in calculus, which is called <em>symbolic</em>
@@ -12014,9 +12014,9 @@ equations, which give necessary, but not sufficient, conditions for optimality,<
 <div class="math">$$
 \nabla \mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right) = 0.
 $$</div>
-<p>Let's look a little closer at the gradient of the Lagrangian system. by breaking
-up the system into salient parts, corresponding to the different types of
-variables: multipliers, output, intermediate and input variables.</p>
+<p>Let's look a little closer at the Lagrangian conditions by breaking up the
+system of equations into salient parts, corresponding to which variable types
+are affected.</p>
 <p><strong>Intermediate variables</strong> (<span class="math">\(\boldsymbol{z}\)</span>): Optimizing the
 multipliers&mdash;i.e., setting the gradient of Lagrangian
 w.r.t. <span class="math">\(\boldsymbol{\lambda}\)</span> to zero&mdash;ensures that the constraints on
@@ -12053,9 +12053,9 @@ and an acyclic program.)
 \alpha(i)\)</span>, which is why the <span class="math">\(\beta(j)\)</span> notation came in handy. By assumption,
 the local derivatives, <span class="math">\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j}\)</span> for <span class="math">\(j
 \in \alpha(i)\)</span>, are easy to calculate&mdash;we don't even need the chain rule to
-compute them because they are simple function applications without composition.</p>
-<p>Similar to the equations for <span class="math">\(\boldsymbol{z}\)</span>, solving this linear system is
-another block-coordinate step.</p>
+compute them because they are simple function applications without
+composition. Similar to the equations for <span class="math">\(\boldsymbol{z}\)</span>, solving this linear
+system is another block-coordinate step.</p>
 <p><em>Key observation</em>: The last equation for <span class="math">\(\lambda_j\)</span> should look very familiar:
 It is exactly the equation used in backpropagation! It says that we sum
 <span class="math">\(\lambda_i\)</span> of nodes that immediately depend on <span class="math">\(j\)</span> where we scaled each
@@ -12160,8 +12160,8 @@ variables.</p>
 </li>
 <li>
 <p>I also described a neat generalization to support <em>cyclic</em> programs and I
-  hinted at ideas doing our overall optimization a little differently by
-  deviating from the de facto block-coordinate strategy.</p>
+  hinted at ideas for doing optimization a little differently, deviating from
+  the de facto block-coordinate strategy.</p>
 </li>
 </ul>
 <h2>Further reading</h2>
