@@ -11856,7 +11856,9 @@ understand basic facts about autodiff.</p>
    program transformation by hand!</p>
 </li>
 </ol>
-<h2>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</h2>
+<blockquote>
+<p>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</p>
+</blockquote>
 <p>Let's try to understand the difference between autodiff and the type of
 differentiation that you learned in calculus, which is called <em>symbolic</em>
 differentiation.</p>
@@ -12008,33 +12010,40 @@ $$</div>
 <p>We can describe our programs in a general form</p>
 <ul>
 <li>
-<p><strong>input variables</strong> <span class="math">\(x_1, \ldots, x_d\)</span></p>
+<p><strong>input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): <span class="math">\(x_1, \ldots, x_d\)</span></p>
 </li>
 <li>
-<p><strong>intermediate variables</strong> <span class="math">\(z_i = f_i(z_{\alpha(i)})\)</span> for <span class="math">\(d &lt; i &lt; n\)</span>, where
-  <span class="math">\(\alpha(i)\)</span> is a subset of indices <span class="math">\(\{1, \ldots, n-1\}\)</span> and <span class="math">\(z_{\alpha(i)}\)</span> is
-  the subset of variables needed to evaluate <span class="math">\(f_i(\cdot)\)</span>.</p>
+<p><strong>intermediate variables</strong>: (<span class="math">\(\boldsymbol{z}\)</span>): <span class="math">\(z_i = f_i(z_{\alpha(i)})\)</span> for
+  <span class="math">\(1 \le i \le n\)</span>, where <span class="math">\(\alpha(i)\)</span> is a subset of indices <span class="math">\(\{1, \ldots, n-1\}\)</span>
+  and <span class="math">\(z_{\alpha(i)}\)</span> is the subset of variables needed to evaluate
+  <span class="math">\(f_i(\cdot)\)</span>.</p>
 </li>
 <li>
-<p><strong>output variable</strong> <span class="math">\(z_n\)</span> represents the quantity we'd like to maximize.</p>
+<p><strong>output variable</strong> (<span class="math">\(z_n\)</span>): We assume that our programs has a singled scalar
+  variable, <span class="math">\(z_n\)</span>, which represents the quantity we'd like to maximize.</p>
 </li>
 </ul>
+<!-- (It is possible to generalize this story to a gradients of multi-variate
+outputs by "scalarizing" the objective, e.g., multiply the outputs by a
+vector. This Gives an efficient program for computing Jacobian vector products
+that can be used to extra Jacobians.)  -->
+
 <p>We can regard the relationship given by <span class="math">\(\alpha\)</span> as a dependency graph among
 variables. Thus, <span class="math">\(\alpha(i)\)</span> is the set of <em>incoming</em> edges to node <span class="math">\(i\)</span> and
-<span class="math">\(\beta(j) = \{ i: j \in \alpha(i) \}\)</span>$ is the set of <em>outgoing</em> edges.</p>
-<p>For now, we'll assume that the dependency graph given by <span class="math">\(\alpha\)</span> is (1)
-acyclic: no <span class="math">\(x_i\)</span> can transitively depend on itself. (2) single-assignment: each
-<span class="math">\(x_i\)</span> for <span class="math">\(i &gt; d\)</span> appears on the left-hand side of exactly one equation. We'll
-discuss relaxing these assumptions in the section "generalizations."</p>
+<span class="math">\(\beta(j) = \{ i: j \in \alpha(i) \}\)</span> is the set of <em>outgoing</em> edges.</p>
+<p>For now, we'll assume that the dependency graph given by <span class="math">\(\alpha\)</span> is
+① acyclic: no <span class="math">\(z_i\)</span> can transitively depend on itself.
+② single-assignment: each <span class="math">\(z_i\)</span> appears on the left-hand side of <em>exactly one</em> equation.
+We'll discuss relaxing these assumptions in <a href="#lagrange-backprop-generalization">§ generalizations</a>.</p>
 <p>As a mathematical program, our optimization problem looks like this:
 </p>
 <div class="math">\begin{align*}
-  &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n \\
-  &amp; \text{s.t.}\quad z_i = f_i(z_{\alpha(i)}) \text{ for $d &lt; i \le n$} \\
-  &amp; \text{and }\quad z_i = x_i \text{ for $1 \le i \le d$}
+  &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp; \\
+  &amp; \text{s.t.}\quad z_i = x_i                          &amp;\text{ for $1 \le i \le d$} \\
+  &amp; \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &amp;\text{ for $d &lt; i \le n$} \\
   \end{align*}</div>
-<p>The second set of constraints are a little silly, but help keep our formulation
-nice n' tidy.</p>
+<p>The first set of constraint (<span class="math">\(1, \ldots, d\)</span>) are a little silly. They are only
+there to keep our formulation tidy.</p>
 <p>The standard way to solve a constrained optimization is to use the method
 Lagrange multipliers, which converts a <em>constrained</em> optimization problem into
 an <em>unconstrained</em> problem with a few more variables <span class="math">\(\boldsymbol{\lambda}\)</span> (one
@@ -12047,7 +12056,7 @@ one. The unconstrained version is called "the Lagrangian" of the constrained
 problem. Here is its form for our task,</p>
 <div class="math">$$
 \mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right)
-= z_n - \sum_{i=d+1}^n \lambda_i \left( z_i - f_i(z_{\alpha(i)}) \right).
+= z_n - \sum_{i=d+1}^n \lambda_i\cdot \left( z_i - f_i(z_{\alpha(i)}) \right).
 $$</div>
 <p>Optimizing the Lagrangian amounts to solving the following nonlinear system of
 equations, which give necessary, but not sufficient, conditions for optimality,</p>
@@ -12094,11 +12103,14 @@ and an acyclic program.)
 the local derivatives, <span class="math">\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j}\)</span> for <span class="math">\(j
 \in \alpha(i)\)</span>, are easy to calculate&mdash;we don't even need the chain rule to
 compute them because they are simple function applications without composition.</p>
-<p>This final above equation should look familiar: It's exactly the equation used
-in backpropagation! It's says that we sum <span class="math">\(\lambda_i\)</span> of nodes that immediately
-depend on <span class="math">\(j\)</span> where we scaled each <span class="math">\(\lambda_i\)</span> by the derivative of the function
-that directly relates <span class="math">\(i\)</span> and <span class="math">\(j\)</span>. You should think of the scaling as a "unit
-conversion" from derivatives of type <span class="math">\(i\)</span> to derivatives of type <span class="math">\(j\)</span>.</p>
+<p>Similar to the equations for <span class="math">\(\boldsymbol{z}\)</span>, solving this linear system is
+another block-coordinate step.</p>
+<p><em>Key observation</em>: The last equation for <span class="math">\(lambda_j\)</span> should look very familiar:
+It is exactly the equation used in backpropagation! It says that we sum
+<span class="math">\(\lambda_i\)</span> of nodes that immediately depend on <span class="math">\(j\)</span> where we scaled each
+<span class="math">\(\lambda_i\)</span> by the derivative of the function that directly relates <span class="math">\(i\)</span> and
+<span class="math">\(j\)</span>. You should think of the scaling as a "unit conversion" from derivatives of
+type <span class="math">\(i\)</span> to derivatives of type <span class="math">\(j\)</span>.</p>
 <p><strong>Output mutliplier</strong> (<span class="math">\(\lambda_n\)</span>): Here we follow the same pattern as for
   intermediate multipliers.</p>
 <div class="math">$$
@@ -12110,12 +12122,18 @@ conversion" from derivatives of type <span class="math">\(i\)</span> to derivati
 $$</div>
 <p><strong>Input multipliers</strong> <span class="math">\((\boldsymbol{\lambda}_{1:d})\)</span>: Our dummy constraints
   gives us <span class="math">\(\boldsymbol{\lambda}_{1:d}\)</span>, which are conveniently equal to the
-  gradient of the function we're optimizing, assuming the constraints are
-  satisfied and multipliers are optimized.</p>
-<p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>) Unforunately the there is no closed-form
-  solution to how to set <span class="math">\(\boldsymbol{x}\)</span>. For this we resort to something like
-  gradient ascent. Conveniently, the gradient of <span class="math">\(\boldsymbol{x}\)</span> is equal to
-  <span class="math">\(\boldsymbol{\lambda}_{1:d}\)</span> so we can use that in our optimization!</p>
+  gradient of the function we're optimizing:</p>
+<div class="math">$$
+\nabla_{\!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
+$$</div>
+<p>Of course, this interpretation is only precise when ① the constraints are
+satisfied (<span class="math">\(\boldsymbol{z}\)</span> equations) and ② the linear system on multipliers is
+satisfied (<span class="math">\(\boldsymbol{\lambda}\)</span> equations).</p>
+<p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): Unforunately, the there is no
+  closed-form solution to how to set <span class="math">\(\boldsymbol{x}\)</span>. For this we resort to
+  something like gradient ascent. Conveniently, <span class="math">\(\nabla_{\!\boldsymbol{x}}
+  f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)</span>, which we can use in our
+  optimization!</p>
 <!--
 <div class="example">
 $$
@@ -12159,6 +12177,8 @@ $$
 </div>
 -->
 
+<div id="lagrange-backprop-generalization"></div>
+
 <h2>Generalizations</h2>
 <p>We can think of these equations for <span class="math">\(\boldsymbol{\lambda}\)</span> as a simple <em>linear</em>
 system of equations, which we are solving by back-substitution when we use the
@@ -12195,10 +12215,10 @@ solver (e.g., Guassian elimination).</p>
    df/dz * dg(\boldsymbol{z})^-1 = \boldsymbol{\lambda} = dz
 -->
 
-<p>Use cases:</p>
+<p>Example use cases:</p>
 <ul>
 <li>
-<p>Bi-level optimization: Solving an optimization problem with another on inside
+<p>Bi-level optimization: Solving an optimization problem with another one inside
   it. For example,
   <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">gradient-based hyperparameter optimization</a>
   in machine learning. The implicit function theorem manages to get gradients of
@@ -12220,10 +12240,34 @@ optimizing our function and other ways of enforcing the constraints. We see
 immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
 do in other algorithms for optimizing general Langrangians).</p>
+<h2>Summary</h2>
+<p>Backprop is does not directly fall out of the the rules for differentiation
+that you learned in calculus (e.g., the chain rule).</p>
+<ul>
+<li>This is because it operates on a more general family of functions: <em>programs</em>
+  which have <em>intermediate variables</em>. Supporting intermediate variables is
+  crucial for implementing both functions and their gradients efficiently.</li>
+</ul>
+<p>I described how we could use something we did learn from calculus 101, the
+method of Lagrange multipliers, to support optimization with intermediate
+variables.</p>
+<ul>
+<li>
+<p>It turned out that backprop is a <em>particular instantiation</em> of the method of
+  Lagrange multipliers, involving block-coordinate steps for solving for the
+  intermediates and multipliers.</p>
+</li>
+<li>
+<p>I also described a neat generalization to support <em>cyclic</em> programs and I
+  hinted at ideas doing our overall optimization a little differently by
+  deviating from the de facto block-coordinate strategy.</p>
+</li>
+</ul>
 <h2>Further reading</h2>
 <ul>
-<li>The theoretical view of backpropagation as an instance of the method of
-  Lagrange multipliers was first presented in</li>
+<li>After working out the connection between backprop and the method of Lagrange
+  multipliers, I discovered following paper, which beat me to it. I don't think
+  my version is too redundant.</li>
 </ul>
 <blockquote>
 <p>Yann LeCun. (1988)
@@ -12244,7 +12288,7 @@ do in other algorithms for optimizing general Langrangians).</p>
 </ul>
 <blockquote>
 <p>Ben Recht. (2016)
-<a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a>/</p>
+<a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a></p>
 </blockquote>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
