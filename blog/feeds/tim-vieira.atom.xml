@@ -165,7 +165,7 @@ Generalizations&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;The standard way to solve a constrained optimization is to use the method
 Lagrange multipliers, which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into
 an &lt;em&gt;unconstrained&lt;/em&gt; problem with a few more variables &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; (one
-per &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; variable), called Lagrange multipliers.&lt;/p&gt;
+per &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; constraint), called Lagrange multipliers.&lt;/p&gt;
 &lt;h4&gt;The Lagrangian&lt;/h4&gt;
 &lt;p&gt;To handle constaints, let's dig up a tool from our calculus class,
 &lt;a href="https://en.wikipedia.org/wiki/Lagrange_multiplier"&gt;the method of Lagrange multipliers&lt;/a&gt;,
