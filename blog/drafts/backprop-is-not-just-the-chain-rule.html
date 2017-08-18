@@ -11834,8 +11834,8 @@ jQuery(document).ready(function($) {
 
   <div class="entry-content"><p>Almost everyone I know says that "backprop is just the chain rule." Although
 that's <em>basically true</em>, there are some subtle and beautiful things about
-automatic differentiation (including backprop) that will not be appreciated with
-this almost <em>dismissive</em> view.</p>
+automatic differentiation techniques (including backprop) that will not be
+appreciated with this <em>dismissive</em> attitude.</p>
 <p>This leads to a poor understanding. As I have ranted before: people do not
 understand basic facts about autodiff.</p>
 <ol>
@@ -11845,20 +11845,18 @@ understand basic facts about autodiff.</p>
    that sink in. Computing the gradient&mdash;an essential incredient to
    efficient optimization&mdash;is no slower to compute than the function
    itself. Contrast that with the finite-difference gradient approximation,
-   which is quite accurate, but its runtime scales with the dimensionality of
-   <span class="math">\(x\)</span> slower than evaluating <span class="math">\(f\)</span>
-   (<a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">discussed here</a>).</p>
+   which is quite accurate, but its runtime is <span class="math">\(\textrm{dim}(x)\)</span> times slower
+   than evaluating <span class="math">\(f\)</span>
+   (<a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">discussed here</a>)!</p>
 </li>
 <li>
 <p>Code for <span class="math">\(\nabla f(x)\)</span> can be derived by a rote program transformation, even
    if the code has control flow structures like loops and intermediate variables
    (as long as the control flow is independent of <span class="math">\(x\)</span>). You can even do this
-   program transformation by hand!</p>
+   "automatic" transformation by hand!</p>
 </li>
 </ol>
-<blockquote>
-<p>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</p>
-</blockquote>
+<h3>Autodiff <span class="math">\(\ne\)</span> what you learned in calculus</h3>
 <p>Let's try to understand the difference between autodiff and the type of
 differentiation that you learned in calculus, which is called <em>symbolic</em>
 differentiation.</p>
@@ -11920,21 +11918,6 @@ resources. <a href="https://gist.github.com/timvieira/39e27756e1226c2dbd6c36e83b
 that I wrote that accompanies to the <code>f(x)</code> example, which has a bunch of
 comments describing the manual "automatic" differentiation process on <code>f(x)</code>.</p>
 <!--
-$$
-\begin{align*}
-&\textbf{def }f(x): \\
-&\quad a = \exp(x) \\
-&\quad b = a^2     \\
-&\quad c = a + b   \\
-&\quad d = \exp(c) \\
-&\quad e = \sin(c) \\
-&\quad f = d + e   \\
-&\quad \textbf{return } f
-\end{align*}
-$$
--->
-
-<!--
 Caveat: You might have seen some *limited* cases where an input variable was
 reused, but chances are that it was something really simple like multiplication
 or division, e.g., $\nabla\! \left[ f(x) \cdot g(x) \right] = f(x) \cdot g'(x)
@@ -11942,20 +11925,6 @@ or division, e.g., $\nabla\! \left[ f(x) \cdot g(x) \right] = f(x) \cdot g'(x)
 simpler and actually explains why there is a sum in the product rule. You can
 also rederive the quotient rule without a hitch. I'm all about having fewer
 things to memorize!
--->
-
-<!--
-$$
-\begin{align*}
-& \textbf{return } f & \Rightarrow & \frac{df}{df} \texttt{ += } 1 \\
-& f = d + e     & \Rightarrow & \frac{df}{dd} \texttt{ += } \frac{df}{df} \cdot \frac{df}{dd} ; \frac{df}{de} \texttt{ += } \frac{df}{df} \cdot \frac{df}{de} \\
-& e = \sin(c)   & \Rightarrow & \frac{df}{dc} \texttt{ += } \frac{df}{de} \cdot \frac{de}{dc} \\
-& d = \exp(c)   & \Rightarrow & \frac{df}{dc} \texttt{ += } \frac{df}{dd} \cdot \frac{dd}{dc} \\
-& c = a + b     & \Rightarrow & \frac{df}{da} \texttt{ += } \frac{df}{dc} \cdot \frac{dc}{da} ; \frac{df}{db} \texttt{ += } \frac{df}{dc} \cdot \frac{dc}{db} \\
-& b = a^2       & \Rightarrow & \frac{df}{da} \texttt{ += } \frac{df}{db} \cdot \frac{db}{da} \\
-& a = \exp(x)   & \Rightarrow & \frac{df}{dx} \texttt{ += } \frac{df}{da} \cdot \frac{da}{dx}
-\end{align*}
-$$
 -->
 
 <!--
@@ -11968,25 +11937,6 @@ version of a program can be exponentially larger than a version with reuse.
 
 <!-- Only sort of related: think of the exponential blow up in converting a
 Boolean expression from conjunctive normal form to and disjunction normal.  -->
-
-<!--
-So how the heck do we take derivatives of programs? Well, it's basically the
-same as with ordinary gradients, we apply the chain rule *locally* to each edge
-in the computation graph (instead of globally to the entire expression). There
-is a simple rule to stich together gradients:
-
-1. When you use a variable more than once in a program, its adjoints add.
-
-2. When you work backwards you multiply&mdash;like a unit conversion!
-  $\frac{\partial\, \text{output}}{\partial\, \text{edge.input}} \texttt{ += } \frac{\partial\, \text{output}}{\partial\, \text{edge.output}} \cdot \frac{\partial\, \text{edge.output}}{\partial\, \text{edge.input}}$
-
-Why is this correct? Correctness can be checked inductively in a similar manner
-to proving the correctness of a dynamic programming algorithm. I won't go
-through that, instead I'll describe an interesting connection that I stubled
-upon in a few places in the literature (CITATIONS?). So rather than a computer
-science type of explanation, this is a mathematical explanation based on basic
-calculus.
--->
 
 <h2>Autodiff by the method of Lagrange multipliers</h2>
 <p>Let's view the intermediate variables in our optimization problem as simple
@@ -12007,49 +11957,50 @@ e &amp;= \sin(c) \\
 f &amp;= d + e
 \end{align*}
 $$</div>
-<p>We can describe our programs in a general form</p>
-<ul>
-<li>
-<p><strong>input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): <span class="math">\(x_1, \ldots, x_d\)</span></p>
-</li>
-<li>
-<p><strong>intermediate variables</strong>: (<span class="math">\(\boldsymbol{z}\)</span>): <span class="math">\(z_i = f_i(z_{\alpha(i)})\)</span> for
-  <span class="math">\(1 \le i \le n\)</span>, where <span class="math">\(\alpha(i)\)</span> is a subset of indices <span class="math">\(\{1, \ldots, n-1\}\)</span>
-  and <span class="math">\(z_{\alpha(i)}\)</span> is the subset of variables needed to evaluate
-  <span class="math">\(f_i(\cdot)\)</span>.</p>
-</li>
-<li>
-<p><strong>output variable</strong> (<span class="math">\(z_n\)</span>): We assume that our programs has a singled scalar
-  variable, <span class="math">\(z_n\)</span>, which represents the quantity we'd like to maximize.</p>
-</li>
-</ul>
-<!-- (It is possible to generalize this story to a gradients of multi-variate
-outputs by "scalarizing" the objective, e.g., multiply the outputs by a
-vector. This Gives an efficient program for computing Jacobian vector products
-that can be used to extra Jacobians.)  -->
-
-<p>We can regard the relationship given by <span class="math">\(\alpha\)</span> as a dependency graph among
-variables. Thus, <span class="math">\(\alpha(i)\)</span> is the set of <em>incoming</em> edges to node <span class="math">\(i\)</span> and
-<span class="math">\(\beta(j) = \{ i: j \in \alpha(i) \}\)</span> is the set of <em>outgoing</em> edges.</p>
-<p>For now, we'll assume that the dependency graph given by <span class="math">\(\alpha\)</span> is
-① acyclic: no <span class="math">\(z_i\)</span> can transitively depend on itself.
-② single-assignment: each <span class="math">\(z_i\)</span> appears on the left-hand side of <em>exactly one</em> equation.
-We'll discuss relaxing these assumptions in <a href="#lagrange-backprop-generalization">§ generalizations</a>.</p>
-<p>As a mathematical program, our optimization problem looks like this:
-</p>
+<h4>The general formuation</h4>
 <div class="math">\begin{align*}
   &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp; \\
   &amp; \text{s.t.}\quad z_i = x_i                          &amp;\text{ for $1 \le i \le d$} \\
   &amp; \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &amp;\text{ for $d &lt; i \le n$} \\
   \end{align*}</div>
 <p>The first set of constraint (<span class="math">\(1, \ldots, d\)</span>) are a little silly. They are only
-there to keep our formulation tidy.</p>
+there to keep our formulation tidy. The variables in the program fall into three
+categories:</p>
+<ul>
+<li>
+<p><strong>input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): <span class="math">\(x_1, \ldots, x_d\)</span></p>
+</li>
+<li>
+<p><strong>intermediate variables</strong>: (<span class="math">\(\boldsymbol{z}\)</span>): <span class="math">\(z_i = f_i(z_{\alpha(i)})\)</span> for
+  <span class="math">\(1 \le i \le n\)</span>, where <span class="math">\(\alpha(i)\)</span> is a list of indices from <span class="math">\(\{1, \ldots,
+  n-1\}\)</span> and <span class="math">\(z_{\alpha(i)}\)</span> is the subvector of variables needed to evaluate
+  <span class="math">\(f_i(\cdot)\)</span>. Minor detail: take <span class="math">\(f_{1:d}\)</span> to be the identity function.</p>
+</li>
+<li>
+<p><strong>output variable</strong> (<span class="math">\(z_n\)</span>): We assume that our programs has a singled scalar
+  output variable, <span class="math">\(z_n\)</span>, which represents the quantity we'd like to maximize.</p>
+</li>
+</ul>
+<!-- (It is possible to generalize this story to compute Jacobians of functions
+with multi-variate outputs by "scalarizing" the objective, e.g., multiply the
+outputs by a vector. This Gives an efficient program for computing Jacobian
+vector products that can be used to extra Jacobians.)  -->
+
+<p>The relation <span class="math">\(\alpha\)</span> is a
+<a href="https://en.wikipedia.org/wiki/Dependency_graph">dependency graph</a> among
+variables. Thus, <span class="math">\(\alpha(i)\)</span> is the list of <em>incoming</em> edges to node <span class="math">\(i\)</span> and
+<span class="math">\(\beta(j) = \{ i: j \in \alpha(i) \}\)</span> is the set of <em>outgoing</em> edges. For now,
+we'll assume that the dependency graph given by <span class="math">\(\alpha\)</span> is ① acyclic: no <span class="math">\(z_i\)</span>
+can transitively depend on itself.  ② single-assignment: each <span class="math">\(z_i\)</span> appears on
+the left-hand side of <em>exactly one</em> equation.  We'll discuss relaxing these
+assumptions in <a href="#lagrange-backprop-generalization">§
+Generalizations</a>.</p>
 <p>The standard way to solve a constrained optimization is to use the method
 Lagrange multipliers, which converts a <em>constrained</em> optimization problem into
 an <em>unconstrained</em> problem with a few more variables <span class="math">\(\boldsymbol{\lambda}\)</span> (one
 per <span class="math">\(x_i\)</span> variable), called Lagrange multipliers.</p>
-<p><strong>The Lagrangian</strong>: To handle constaints, let's dig up a tool from our calculus
-class,
+<h4>The Lagrangian</h4>
+<p>To handle constaints, let's dig up a tool from our calculus class,
 <a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">the method of Lagrange multipliers</a>,
 which converts a <em>constrained</em> optimization probelm into an <em>unconstrainted</em>
 one. The unconstrained version is called "the Lagrangian" of the constrained
@@ -12105,7 +12056,7 @@ the local derivatives, <span class="math">\(\frac{\partial f_i(z_{\alpha(i)})}{\
 compute them because they are simple function applications without composition.</p>
 <p>Similar to the equations for <span class="math">\(\boldsymbol{z}\)</span>, solving this linear system is
 another block-coordinate step.</p>
-<p><em>Key observation</em>: The last equation for <span class="math">\(lambda_j\)</span> should look very familiar:
+<p><em>Key observation</em>: The last equation for <span class="math">\(\lambda_j\)</span> should look very familiar:
 It is exactly the equation used in backpropagation! It says that we sum
 <span class="math">\(\lambda_i\)</span> of nodes that immediately depend on <span class="math">\(j\)</span> where we scaled each
 <span class="math">\(\lambda_i\)</span> by the derivative of the function that directly relates <span class="math">\(i\)</span> and
@@ -12132,54 +12083,11 @@ satisfied (<span class="math">\(\boldsymbol{\lambda}\)</span> equations).</p>
 <p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): Unforunately, the there is no
   closed-form solution to how to set <span class="math">\(\boldsymbol{x}\)</span>. For this we resort to
   something like gradient ascent. Conveniently, <span class="math">\(\nabla_{\!\boldsymbol{x}}
-  f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)</span>, which we can use in our
-  optimization!</p>
-<!--
-<div class="example">
-$$
-\begin{align*}
-\frac{\partial a}{\partial x} &= \exp(x) \\
-\frac{\partial b}{\partial a} &= 2 a     \\
-\frac{\partial c}{\partial a} &= 1   \\
-\frac{\partial c}{\partial b} &= 1   \\
-\frac{\partial d}{\partial c} &= \exp(c) \\
-\frac{\partial e}{\partial c} &= \cos(c) \\
-\frac{\partial f}{\partial d} &= 1 \\
-\frac{\partial f}{\partial e} &= 1 \\
-\frac{\partial f}{\partial f} &= 1
-\end{align*}
-$$
-</div>
--->
-
-<!--
-<div class="example">
-$$
-\begin{align*}
-% line 0
-\lambda_f &= \frac{\partial f}{\partial f} \\
-% line -1
-\lambda_d &= \frac{\partial f}{\partial d} \cdot\lambda_f \\
-\lambda_e &= \frac{\partial f}{\partial e} \cdot\lambda_f \\
-% line -2
-\lambda_c &+= \frac{\partial e}{\partial c} \cdot\lambda_e \\
-% line -3
-\lambda_c &+= \frac{\partial d}{\partial c} \cdot\lambda_d \\
-% line -4
-\lambda_a &+= \frac{\partial c}{\partial a} \cdot\lambda_c \\
-\lambda_b &= \frac{\partial c}{\partial b} \cdot\lambda_c \\
-% line -5
-\lambda_a &+= \frac{\partial b}{\partial a} \cdot\lambda_b \\
-% line -6
-\lambda_x &= \frac{\partial a}{\partial x} \cdot\lambda_a \\
-\end{align*}
-$$
-</div>
--->
-
+  f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)</span>, which we can use to optimize
+  <span class="math">\(\boldsymbol{x}\)</span>!</p>
 <div id="lagrange-backprop-generalization"></div>
 
-<h2>Generalizations</h2>
+<h3>Generalizations</h3>
 <p>We can think of these equations for <span class="math">\(\boldsymbol{\lambda}\)</span> as a simple <em>linear</em>
 system of equations, which we are solving by back-substitution when we use the
 backpropagation method. The reason why back-substitution is sufficient for the
@@ -12188,7 +12096,7 @@ dependency graph induced by the <span class="math">\(\alpha\)</span> relation is
 full linear system solver, the solution would take <span class="math">\(\mathcal{O}(n^3)\)</span> time
 instead of linear time, seriously blowing-up our nice runtime!</p>
 <p>This connection to linear systems is interesting: It tells us that we <em>could</em>
-compute gradients with cyclic graphs. All we'd need is to run a linear system
+compute gradients in cyclic graphs. All we'd need is to run a linear system
 solver to stich together our gradients! That is exactly what the
 <a href="https://en.wikipedia.org/wiki/Implicit_function_theorem">implicit function theorem</a>
 says!</p>
@@ -12208,13 +12116,6 @@ more-difficult analogue of "the forward pass" to satisfy the <span class="math">
 equations (if we want to keep it a block-coordinate step). The
 <span class="math">\(\boldsymbol{\lambda}\)</span> equations are now a linear system that requres a linear
 solver (e.g., Guassian elimination).</p>
-<!--
-   IFT would give us
-   0 = dL/dz = d/dz(f(z) - lambda*g(z))
-   0 = df/dz - \boldsymbol{\lambda} * dg(\boldsymbol{z})
-   df/dz * dg(\boldsymbol{z})^-1 = \boldsymbol{\lambda} = dz
--->
-
 <p>Example use cases:</p>
 <ul>
 <li>
@@ -12233,7 +12134,7 @@ solver (e.g., Guassian elimination).</p>
   computing the value function in a Markov decision process.</p>
 </li>
 </ul>
-<h2>Other methods for optimization?</h2>
+<h3>Other methods for optimization?</h3>
 <p>The connection to Lagrangians brings tons of algorithms for constrained
 optimization into the mix! We can imagine using more general algorithms for
 optimizing our function and other ways of enforcing the constraints. We see
@@ -12288,7 +12189,7 @@ variables.</p>
 </ul>
 <blockquote>
 <p>Ben Recht. (2016)
-<a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a></p>
+<a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a>.</p>
 </blockquote>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
