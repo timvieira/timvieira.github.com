@@ -12475,13 +12475,29 @@ Other common sources of bugs
   work, you can trick almost any test.
 -->
 
-<p><strong>Further reading</strong>: I've written about gradient approximations before, you
-might like these articles:
-<a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">gradient-vector products</a>,
-<a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">complex-step method</a>. I
-<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">strongly recommend</a>
-learning how automatic differentiation works, I learned it from
-<a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's course notes</a>.</p>
+<p><strong>Further reading</strong>:</p>
+<ul>
+<li>
+<p>I've written about gradient approximations before, you might like these
+  articles:
+  <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector products</a>,
+  <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step method</a>.</p>
+</li>
+<li>
+<p>The foundations of backprop:
+  <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>.</p>
+</li>
+<li>
+<p><a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">I strongly recommend</a>
+  learning how automatic differentiation works, I learned it from
+  <a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's course notes</a>.</p>
+</li>
+<li>
+<p><a href="https://justindomke.wordpress.com/2017/04/22/you-deserve-better-than-two-sided-finite-differences/">Justin Domke post</a>:
+  Explains why we need bespoke finite-difference stencils (i.e., more than
+  two-sided differences) to prevent numerical demons from destroying our results!</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

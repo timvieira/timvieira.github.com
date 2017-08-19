@@ -885,13 +885,29 @@ Other common sources of bugs
   work, you can trick almost any test.
 --&gt;
 
-&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;: I've written about gradient approximations before, you
-might like these articles:
-&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;gradient-vector products&lt;/a&gt;,
-&lt;a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/"&gt;complex-step method&lt;/a&gt;. I
-&lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;strongly recommend&lt;/a&gt;
-learning how automatic differentiation works, I learned it from
-&lt;a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf"&gt;Justin Domke's course notes&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I've written about gradient approximations before, you might like these
+  articles:
+  &lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;Gradient-vector products&lt;/a&gt;,
+  &lt;a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/"&gt;Complex-step method&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The foundations of backprop:
+  &lt;a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/"&gt;Backprop is not just the chain rule&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;I strongly recommend&lt;/a&gt;
+  learning how automatic differentiation works, I learned it from
+  &lt;a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf"&gt;Justin Domke's course notes&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://justindomke.wordpress.com/2017/04/22/you-deserve-better-than-two-sided-finite-differences/"&gt;Justin Domke post&lt;/a&gt;:
+  Explains why we need bespoke finite-difference stencils (i.e., more than
+  two-sided differences) to prevent numerical demons from destroying our results!&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
