@@ -7,7 +7,7 @@ appreciated with this &lt;em&gt;dismissive&lt;/em&gt; attitude.&lt;/p&gt;
 &lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;I have ranted before&lt;/a&gt;:
 people do not understand basic facts about autodiff.&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Evaluating &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt; is provably as fast as evaluating &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt;.&lt;/li&gt;
+&lt;li&gt;Evaluating &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; is provably as fast as evaluating &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential incredient to
 efficient optimization&amp;mdash;is no slower to compute than the function
