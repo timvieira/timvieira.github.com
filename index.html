@@ -154,8 +154,8 @@
               </a>
               <div class="blurb">
                 <i>The Big Bad Baby Blue Buick</i> - hydraulics on the back this
-                time. You can't tell in this video, but the car was scraping the
-                ground.
+                time and gold spinning wheels. You can't tell in this video, but
+                the car was scraping the ground.
               </div>
             </div>
           </div>
@@ -166,7 +166,7 @@
       <div id="column-2">
 
         <div id="mugshot" class="box">
-          <img src="img/mug.jpg" alt="mugshot" />
+          <img id="mug" src="img/mug.jpg" alt="mugshot" />
         </div>
 
         <div id="publications" class="box">
@@ -343,12 +343,9 @@ $(function() {
   });
 });
 
-
 function preload(arrayOfImages) {
     $(arrayOfImages).each(function(){
         $('<img/>')[0].src = this;
-        // Alternatively you could use:
-        // (new Image()).src = this;
     });
 }
 
