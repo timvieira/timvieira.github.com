@@ -3336,6 +3336,13 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href="http://arxiv.org/abs/1502.03492"&gt;Gradient-based Hyperparameter Optimization through Reversible Learning&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://fa.bianp.net/blog/2016/hyperparameter-optimization-with-approximate-gradient/"&gt;Hyperparameter optimization with approximate gradient&lt;/a&gt;
+   (&lt;a href="https://arxiv.org/pdf/1602.02355.pdf"&gt;paper&lt;/a&gt;): This paper looks at the implicit
+   differentiation approach where you have an &lt;em&gt;approximate&lt;/em&gt;
+   solution to the inner optimization problem. They are able to provide error bounds and
+   convergence guarantees under some reasonable conditions.&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
