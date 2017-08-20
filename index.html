@@ -343,6 +343,25 @@ $(function() {
   });
 });
 
+
+function preload(arrayOfImages) {
+    $(arrayOfImages).each(function(){
+        $('<img/>')[0].src = this;
+        // Alternatively you could use:
+        // (new Image()).src = this;
+    });
+}
+
+// Usage:
+
+preload([
+    'img/derby-pwnd.gif',
+    'img/double-kong.gif',
+    'img/rail.gif',
+    'img/dyno.gif',
+    'img/table-bail.gif',
+]);
+
 </script>
 
 
