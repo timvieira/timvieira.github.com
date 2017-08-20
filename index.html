@@ -16,7 +16,6 @@
     <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
             rel="stylesheet" type="text/css">
 -->
-
     <link rel="stylesheet" type="text/css" href="css/default.css"/>
 
     <!--[if IE]>
@@ -46,7 +45,7 @@
             | <a id="facebook" href="http://www.facebook.com/tim.vieira">Facebook</a>
             | <a id="github" href="http://github.com/timvieira">Github</a>
             | <a id="twitter" href="http://twitter.com/xtimv">Twitter</a>
-            | <a id="blog" href="http://timvieira.github.io/blog">Blog</a>
+            | <a id="blog" href="blog/">Blog</a>
           </div>
         </div>
 
@@ -62,8 +61,8 @@
              I'm
              probably <a href="https://www.instagram.com/p/BCmaClQTQO4/?taken-by=tim.vieira">climbing
              things</a>, <a href="https://www.youtube.com/watch?v=fMwk8XgqCc8">walking
-             around on my hands</a>, eating delicious vegan food, or hanging out
-             with <a href="http://dirichlet.net">Hanna Wallach</a>.
+             around on my hands</a>, eating delicious vegetarian food, or
+             hanging out with <a href="http://dirichlet.net">Hanna Wallach</a>.
           </p>
 
           <p>
@@ -83,47 +82,65 @@
             Roth</a> on Textual Entailment.
           </p>
 
-<!--
-          <p>
-            <b>keywords</b>: machine learning, natural language processing,
-            information extraction, (approximate) inferenence, parsing, weighted
-            logic-programs, graphical models, automatic differentiation,
-            hypergraphs, reinforcement learning, Dyna.
-          </p>
--->
         </div>
 
         <div id="fun" class="box">
 
           <div class="project clearfix">
-            <h3>Roller Derby</h3>
-            <img class="thumbnail"
-                 style="background-color:black;"
-                 src="img/rambo-v-cider.jpg" alt="" />
+            <h3>Movement</h3>
+            <div style="float: left; height: 90px;" id="movement-div">
+              <a href="https://www.instagram.com/tim.vieira/">
+                <img class="thumbnail"
+                     id="movement"
+                     style="background-color:black;"
+                     src="img/climb-kneepit.png" alt="" />
+              </a>
+            </div>
             <div class="blurb">
-              My alter ego, Mr. Sprinkles, used to play roller derby with Harm City.
+              I move: jump, climb, balance, invert, you name it. <br/><br/>
+              Follow my
+              antics <a href="https://www.instagram.com/tim.vieira/">Instagram</a>.
+            </div>
+          </div>
+
+          <hr style="margin: 10px 0 10px 0; border: 1px solid #ddd;"/>
+
+          <div class="project clearfix">
+            <h3>Roller Derby</h3>
+            <div style="height: 88px; overflow: hidden; float: left;" id="derby-div">
+              <img class="thumbnail"
+                   id="derby"
+                   style="background-color:black;"
+                   src="img/rambo-v-cider.jpg" alt="" />
+            </div>
+            <div class="blurb">
+              My alter ego, Mr. Sprinkles, played roller derby for 3 years.
             </div>
           </div>
 
           <div class="project clearfix">
             <h3>Snakeboarding</h3>
 
+            <div style="height: 88px; overflow: hidden; float: left;">
             <a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">
-              <img class="thumbnail" src="img/skate-and-break/TIM_bonertobs180.jpg" alt="" />
+              <img id="snakeboard" class="thumbnail" src="img/skate-and-break/TIM_bonertobs180.jpg" alt="" />
             </a>
+            </div>
 
             <div class="blurb">
-              In high school I was big
+              In high school, I was big
               into <a href="http://streetboarding.com/">snakeboarding</a>.
             </div>
           </div>
+
+          <hr style="margin: 10px 0 10px 0; border: 1px solid #ddd;"/>
 
           <div class="project clearfix">
             <h3>Cars</h3>
             <div class="project clearfix">
               <a title="My bouncing '84 Fifth Ave."
                  href="http://www.youtube.com/watch?v=iIXSJnfQK68">
-                <img class="thumbnail" src="img/fifth-avenue.jpg" alt="" />
+                <img id="car-bounce" class="thumbnail" src="img/fifth-avenue.jpg" alt="" />
               </a>
               <div class="blurb">
                 <i>The 5th Ave</i> - my gorgeous '84 Fifth Ave purchased for a
@@ -153,6 +170,15 @@
         </div>
 
         <div id="publications" class="box">
+
+          <h2>Blog</h2>
+
+          Technical blog: <a href="blog/">Graduate Descent</a> and Twitter: <a href="http://twitter.com/xtimv">@xtimv</a>.
+
+          <br/>
+
+          <hr style="margin: 10px 0 10px 0; border: 1px solid #ddd;"/>
+
           <h2>Publications</h2>
           <ul>
 
@@ -170,7 +196,6 @@
               Tim Vieira and Jason Eisner.
               <br/>
               <a href="doc/2017-tacl-pruning.pdf">Learning to Prune: Exploring the Frontier of Fast and Accurate Parsing</a>.
-              <strong>[PREPRINT]</strong>
               <br/>
               TACL 2017. (oral presentation at ACL 2017)
               <br/>
@@ -279,6 +304,48 @@
       </div>
 
     </div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+
+$(function() {
+  $('#car-bounce').hover(function() {
+    $(this).attr('src', 'img/lowrider1.gif');
+  }, function() {
+    $(this).attr('src', 'img/fifth-avenue.jpg');
+  });
+});
+
+$(function() {
+  $('#snakeboard').hover(function() {
+    $(this).attr('src', 'img/table-bail.gif');
+    //$(this).attr('src', 'img/rail.gif');
+  }, function() {
+    $(this).attr('src', 'img/skate-and-break/bonertobs180.jpg');
+  });
+});
+
+$(function() {
+  $('#movement-div').hover(function() {
+    //$("#movement").attr('src', 'img/dyno.gif');
+    $("#movement").attr('src', 'img/double-kong.gif');
+  }, function() {
+    $("#movement").attr('src', 'img/climb-kneepit.png');
+  });
+});
+
+$(function() {
+  $('#derby-div').hover(function() {
+    $('#derby').attr('src', 'img/derby-pwnd.gif');
+  }, function() {
+    $('#derby').attr('src', 'img/rambo-v-cider.jpg');
+  });
+});
+
+</script>
+
+
     <script type="text/javascript">
       var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
