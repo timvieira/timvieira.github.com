@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-git push
-ssh loki.cs.umass.edu "cd public_html && git pull"
