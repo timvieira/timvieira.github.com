@@ -48,7 +48,7 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a>
+        <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a>
       </h1>
     <p class="meta">
 <time datetime="2014-07-31T00:00:00-04:00" pubdate>Jul 31, 2014</time>    </p>
@@ -70,7 +70,7 @@ an algorithm for sampling from a discrete distribution (aka categorical):</p>
 </pre></div>
 
 
-<p><strong>The Gumbel max trick</strong>:</p>
+<p><strong>The Gumbel-max trick</strong>:</p>
 <div class="math">$$
 y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
 $$</div>
@@ -78,7 +78,7 @@ $$</div>
 turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
 in this
 <a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
-<p>Implementing the Gumbel max trick is remarkable easy:</p>
+<p>Implementing the Gumbel-max trick is remarkable easy:</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -90,7 +90,7 @@ in this
 <p><strong>Comparison</strong>:</p>
 <ol>
 <li>
-<p>Gumbel max requires <span class="math">\(K\)</span> samples from a uniform. Usual requires only <span class="math">\(1\)</span>.</p>
+<p>Gumbel-max requires <span class="math">\(K\)</span> samples from a uniform. Usual requires only <span class="math">\(1\)</span>.</p>
 </li>
 <li>
 <p>Gumbel is one-pass because it does not require normalization (or a pass to
@@ -98,7 +98,7 @@ in this
      later post!</p>
 </li>
 <li>
-<p>The Gumbel max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>, whereas ordinary
+<p>The Gumbel-max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>, whereas ordinary
      requires <span class="math">\(K\)</span> calls to <span class="math">\(\exp\)</span>. Since <span class="math">\(\exp\)</span> and <span class="math">\(\log\)</span> are expensive
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to <span class="math">\(\log\)</span> do not depend on the data so they can be precomputed; this is

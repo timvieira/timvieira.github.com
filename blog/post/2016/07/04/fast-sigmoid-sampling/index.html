@@ -1385,7 +1385,7 @@ $$$$
 Y = x > Z_0 - Z_1
 $$<p>Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate <em>two</em> Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a <a href="https://en.wikipedia.org/wiki/Logistic_distribution">logistic</a> RV (specifically $\textrm{Logistic}(0,1)$).</p>
 <p>It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.</p>
-<p>Voila! Our fast sampling trick and the Gumbel max trick are connected!</p>
+<p>Voila! Our fast sampling trick and the Gumbel-max trick are connected!</p>
 <h2 id="Related-tricks">Related tricks<a class="anchor-link" href="#Related-tricks">¶</a></h2><p>Another trick is Justin Domke's <a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">trick</a> to reduce calls to $\exp$ by $\approx 88\%$. The <em>disadvantage</em> of this approach is that it's harder to implement with vectorization. The <em>advantage</em> is that we don't need to precompute any expensive things.</p>
 </div>
 </div>

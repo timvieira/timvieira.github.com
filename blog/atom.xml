@@ -5294,7 +5294,7 @@ $$$$
 Y = x &gt; Z_0 - Z_1
 $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
 &lt;p&gt;It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.&lt;/p&gt;
-&lt;p&gt;Voila! Our fast sampling trick and the Gumbel max trick are connected!&lt;/p&gt;
+&lt;p&gt;Voila! Our fast sampling trick and the Gumbel-max trick are connected!&lt;/p&gt;
 &lt;h2 id="Related-tricks"&gt;Related tricks&lt;a class="anchor-link" href="#Related-tricks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Another trick is Justin Domke's &lt;a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;trick&lt;/a&gt; to reduce calls to $\exp$ by $\approx 88\%$. The &lt;em&gt;disadvantage&lt;/em&gt; of this approach is that it's harder to implement with vectorization. The &lt;em&gt;advantage&lt;/em&gt; is that we don't need to precompute any expensive things.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -7052,7 +7052,7 @@ $$$$
 Y = x &gt; Z_0 - Z_1
 $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
 &lt;p&gt;It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.&lt;/p&gt;
-&lt;p&gt;Voila! Our fast sampling trick and the Gumbel max trick are connected!&lt;/p&gt;
+&lt;p&gt;Voila! Our fast sampling trick and the Gumbel-max trick are connected!&lt;/p&gt;
 &lt;h2 id="Related-tricks"&gt;Related tricks&lt;a class="anchor-link" href="#Related-tricks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Another trick is Justin Domke's &lt;a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;trick&lt;/a&gt; to reduce calls to $\exp$ by $\approx 88\%$. The &lt;em&gt;disadvantage&lt;/em&gt; of this approach is that it's harder to implement with vectorization. The &lt;em&gt;advantage&lt;/em&gt; is that we don't need to precompute any expensive things.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -11319,7 +11319,7 @@ function's value and the derivative.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category></entry><entry><title>Gumbel max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><published>2014-08-01T00:00:00-04:00</published><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</content><category term="calculus"></category></entry><entry><title>Gumbel-max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><published>2014-08-01T00:00:00-04:00</published><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservior sampling.&lt;/p&gt;
@@ -11330,7 +11330,7 @@ perturb-and-MAP
 which is inspired by the
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;
 (see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent
-similarity between weighted reservior sampling and the Gumbel max trick lead us
+similarity between weighted reservior sampling and the Gumbel-max trick lead us
 to make some cute connections, which I'll describe in this post.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, &lt;span class="math"&gt;\(x_1,
 x_2, \cdots\)&lt;/span&gt;. At any point in time &lt;span class="math"&gt;\(t\)&lt;/span&gt; we'd like to have a sampled index &lt;span class="math"&gt;\(i\)&lt;/span&gt;
@@ -11477,7 +11477,7 @@ perturb-and-MAP
 which is inspired by the
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;
 (see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent
-similarity between weighted reservior sampling and the Gumbel max trick lead us
+similarity between weighted reservior sampling and the Gumbel-max trick lead us
 to make some cute connections, which I'll describe in this post.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, &lt;span class="math"&gt;\(x_1,
 x_2, \cdots\)&lt;/span&gt;. At any point in time &lt;span class="math"&gt;\(t\)&lt;/span&gt; we'd like to have a sampled index &lt;span class="math"&gt;\(i\)&lt;/span&gt;
@@ -11613,7 +11613,7 @@ turning these connections into a
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="sampling"></category><category term="Gumbel"></category><category term="reservoir-sampling"></category></entry><entry><title>Gumbel max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><published>2014-07-31T00:00:00-04:00</published><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:/blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</content><category term="sampling"></category><category term="Gumbel"></category><category term="reservoir-sampling"></category></entry><entry><title>Gumbel-max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><published>2014-07-31T00:00:00-04:00</published><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:/blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
@@ -11629,7 +11629,7 @@ an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;strong&gt;The Gumbel max trick&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Gumbel-max trick&lt;/strong&gt;:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
 $$&lt;/div&gt;
@@ -11637,7 +11637,7 @@ $$&lt;/div&gt;
 turns out that &lt;span class="math"&gt;\(y\)&lt;/span&gt; is distributed according to &lt;span class="math"&gt;\(\pi\)&lt;/span&gt;. (See the short derivations
 in this
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;blog post&lt;/a&gt;.)&lt;/p&gt;
-&lt;p&gt;Implementing the Gumbel max trick is remarkable easy:&lt;/p&gt;
+&lt;p&gt;Implementing the Gumbel-max trick is remarkable easy:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gumbel_max_sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gumbel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;loc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scale&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argmax&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -11649,7 +11649,7 @@ in this
 &lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
@@ -11657,7 +11657,7 @@ in this
      later post!&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The Gumbel max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
+&lt;p&gt;The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
      requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are expensive
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
@@ -11737,7 +11737,7 @@ an algorithm for sampling from a discrete distribution (aka categorical):&lt;/p&
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;strong&gt;The Gumbel max trick&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Gumbel-max trick&lt;/strong&gt;:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
 $$&lt;/div&gt;
@@ -11745,7 +11745,7 @@ $$&lt;/div&gt;
 turns out that &lt;span class="math"&gt;\(y\)&lt;/span&gt; is distributed according to &lt;span class="math"&gt;\(\pi\)&lt;/span&gt;. (See the short derivations
 in this
 &lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;blog post&lt;/a&gt;.)&lt;/p&gt;
-&lt;p&gt;Implementing the Gumbel max trick is remarkable easy:&lt;/p&gt;
+&lt;p&gt;Implementing the Gumbel-max trick is remarkable easy:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gumbel_max_sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gumbel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;loc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scale&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argmax&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -11757,7 +11757,7 @@ in this
 &lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
@@ -11765,7 +11765,7 @@ in this
      later post!&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The Gumbel max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
+&lt;p&gt;The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
      requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are expensive
      function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
      to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
