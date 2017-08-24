@@ -4,11 +4,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - numerical</title>
+  <title>Tag: numerical &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
         title="Graduate Descent Atom Feed" />
+
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,12 +17,11 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
+    <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
   <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
         rel="stylesheet" type="text/css">
-  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
 
   <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
         rel="stylesheet" type="text/css">
@@ -38,130 +38,76 @@
 </ul>
 
 
-
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a>
-      </h1>
-      <p class="meta"><time datetime="2015-02-01T00:00:00-05:00" pubdate>Feb 01, 2015</time></p>
-</header>
+<div>
+	<article role="article">
+    	<header>
+    		<h1 class="entry-title">Tag: numerical</h1>
+    	</header>
 
-  <div class="entry-content"><p>Most people know how to avoid numerical underflow in probability computations by
-representing intermediate quantities in the log-domain. This trick turns
-"multiplication" into "addition", "addition" into "logsumexp", "0" into
-<span class="math">\(-\infty\)</span> and "1" into <span class="math">\(0\)</span>. Most importantly, it turns really small numbers into
-reasonable-size numbers.</p>
-<p>Unfortunately, without modification, this trick is limited to positive numbers
-because <code>log</code> of a negative number is <code>NaN</code>.</p>
-<p>Well, there is good news! For the cost of an extra bit, we can extend this trick
-to the negative reals and furthermore, we get a bonafide ring instead of a mere
-semiring.</p>
-<p>I first saw this trick in
-<a href="http://www.aclweb.org/anthology/D09-1005">Li and Eisner (2009)</a>. The trick is
-nicely summarized in Table 3 of that paper, which I've pasted below.</p>
-<div style="text-align:center">
-<img src="/blog/images/logreal.png"/>
+    	<div id="blog-archives">
+            <h2>2015</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/">Gradient of a product</a></h1>
+                        <time datetime="2015-07-29 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a></h1>
+                        <time datetime="2015-02-01 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">01</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2014</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a></h1>
+                        <time datetime="2014-11-10 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">10</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a></h1>
+                        <time datetime="2014-02-11 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">11</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+	    </div>
+    </article>
 </div>
-
-<p><strong>Why do I care?</strong> When computing gradients (e.g., gradient of risk),
-intermediate values are rarely all positive. Furthermore, we're often
-multiplying small things together. I've recently found log-reals to be effective
-at squeaking a bit more numerical accuracy.</p>
-<p>This trick is useful for almost all backprop computations because backprop is
-essentially:</p>
-<div class="highlight"><pre><span></span>adjoint(u) += adjoint(v) * dv/du.
-</pre></div>
-
-
-<p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
-<p>Implementation:</p>
-<ul>
-<li>
-<p>This trick is better suited to programming languages with structs. Using
-  objects will probably in an horrible slow down and using parallel arrays to
-  store the sign bit and double is probably too tedious and error prone. (Sorry
-  java folks.)</p>
-</li>
-<li>
-<p>Here's a <a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h">C++ implementation</a>
-  with operator overloading from Andre Martins</p>
-</li>
-<li>
-<p>Note that log-real <code>+=</code> involves calls to <code>log</code> and <code>exp</code>, which will
-  definitely slow your code down a bit (these functions are much slower than
-  addition).</p>
-</li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="http://timvieira.github.io/blog/tag/numerical3.html">&larr; Older</a>
-
-    <a class="next" href="http://timvieira.github.io/blog/tag/numerical.html">Newer &rarr;</a>
-  <br />
-</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -180,16 +126,14 @@ essentially:</p>
       </li>
     </ul>
   </section>
-
-<!--      
   <section>
+      
     <h1>Categories</h1>
     <ul id="recent_posts">
         <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
     </ul>
   </section>
  
--->
 
   <section>
   <h1>Tags</h1>
@@ -200,16 +144,19 @@ essentially:</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2015  - Tim Vieira -
+    Copyright &copy;  2014&ndash;2015  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
-	<script type="text/javascript">
-	  var disqus_shortname = 'graduatedescent';
-	  (function() {
-	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
-	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	   })();
-	</script>
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
 </body>
 </html>

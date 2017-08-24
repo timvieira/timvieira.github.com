@@ -4,11 +4,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - sampling</title>
+  <title>Tag: sampling &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
         title="Graduate Descent Atom Feed" />
+
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,12 +17,11 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
+    <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
   <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
         rel="stylesheet" type="text/css">
-  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
 
   <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
         rel="stylesheet" type="text/css">
@@ -38,102 +38,129 @@
 </ul>
 
 
-
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
-      </h1>
-      <p class="meta"><time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time></p>
-</header>
+<div>
+	<article role="article">
+    	<header>
+    		<h1 class="entry-title">Tag: sampling</h1>
+    	</header>
 
-  <div class="entry-content"><p>The following is a quick rant about
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
-(see that post for notation).</p>
-<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
-<blockquote>
-<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
-</blockquote>
-<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
-<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
-<p>With importance sampling, it is possible to achieve a variance reduction over
-Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
-for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
-variance</em> estimate <em>with a single sample</em>!</p>
-<p>Of course, this is an unreasonable distribution to use because the normalizing
-constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
-proposal distributions exist</em>.</p>
-<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
-"importance sampling for variance reduction" to learn more.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="http://timvieira.github.io/blog/tag/sampling6.html">&larr; Older</a>
-
-    <a class="next" href="http://timvieira.github.io/blog/tag/sampling4.html">Newer &rarr;</a>
-  <br />
-</div></div>
+    	<div id="blog-archives">
+            <h2>2017</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a></h1>
+                        <time datetime="2017-07-03 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">03</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2016</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a></h1>
+                        <time datetime="2016-11-21 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">21</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a></h1>
+                        <time datetime="2016-07-04 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">04</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a></h1>
+                        <time datetime="2016-06-28 00:00:00-04:00" pubdate>
+                            <span class="month">Jun</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a></h1>
+                        <time datetime="2016-05-28 00:00:00-04:00" pubdate>
+                            <span class="month">May</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2014</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a></h1>
+                        <time datetime="2014-12-21 00:00:00-05:00" pubdate>
+                            <span class="month">Dec</span>
+                            <span class="day">21</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a></h1>
+                        <time datetime="2014-08-01 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">01</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a></h1>
+                        <time datetime="2014-07-31 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">31</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+	    </div>
+    </article>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -155,16 +182,14 @@ proposal distributions exist</em>.</p>
       </li>
     </ul>
   </section>
-
-<!--      
   <section>
+      
     <h1>Categories</h1>
     <ul id="recent_posts">
         <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
     </ul>
   </section>
  
--->
 
   <section>
   <h1>Tags</h1>
@@ -175,16 +200,19 @@ proposal distributions exist</em>.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2017  - Tim Vieira -
+    Copyright &copy;  2014&ndash;2017  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
-	<script type="text/javascript">
-	  var disqus_shortname = 'graduatedescent';
-	  (function() {
-	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
-	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	   })();
-	</script>
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
 </body>
 </html>

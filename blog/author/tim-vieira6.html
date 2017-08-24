@@ -4,11 +4,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - Articles by Tim Vieira</title>
+  <title>Author: Tim Vieira &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
         title="Graduate Descent Atom Feed" />
+
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,12 +17,11 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
+    <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
   <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
         rel="stylesheet" type="text/css">
-  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
 
   <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
         rel="stylesheet" type="text/css">
@@ -38,257 +38,390 @@
 </ul>
 
 
-
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a>
-      </h1>
-      <p class="meta"><time datetime="2016-10-01T00:00:00-04:00" pubdate>Oct 01, 2016</time></p>
-</header>
+<div>
+	<article role="article">
+    	<header>
+    		<h1 class="entry-title">Author: Tim Vieira</h1>
+    	</header>
 
-  <div class="entry-content"><p>Suppose we have a computation which generates sequence of states <span class="math">\(s_1 \ldots
-s_n\)</span> according to <span class="math">\(s_{t} = f(s_{t-1})\)</span> where <span class="math">\(s_0\)</span> is given.</p>
-<p>We'd like to devise an algorithm, which can reconstruct each point in the
-sequence efficiently as we traverse it backwards. You can think of this as
-"hitting undo" from the end of the sequence or reversing a singly-liked list.</p>
-<p>Obviously, we <em>could</em> just record the entire sequence, but if <span class="math">\(n\)</span> is large <em>or</em>
-the size of each state is large, this will be infeasible.</p>
-<p><strong>Idea 0</strong>: Rerun the forward pass <span class="math">\(n\)</span> times. Runtime <span class="math">\(\mathcal{O}(n^2)\)</span>, space
-  <span class="math">\(\mathcal{O}(1)\)</span>.</p>
-<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(0 &lt; k \le n\)</span> evenly spaced "checkpoint" states.
-Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to the
-runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation from
-the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus, the
-overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
-<p><strong>Idea 2</strong>: <em>Idea 1</em> did something kind of silly, within a chunk of size <span class="math">\(n/k\)</span>,
-it does each computation multiple times! Suppose we increase the memory
-requirement <em>just a little bit</em> to remember the current chunk we're working on,
-making it now <span class="math">\(\mathcal{O}(k + n/k)\)</span>. Now, we compute each state at most <span class="math">\(2\)</span>
-times: once in the initial sequence and once in the reverse. This implies a
-<em>linear</em> runtime.  Now, the question: how should we set <span class="math">\(k\)</span> so that we minimize
-extra space? Easy! Solve the following little optimization problem:</p>
-<div class="math">$$
-\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
-$$</div>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
-
-<script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p><button onclick="toggle('#derivation-optimal-space')" class="toggle-button">Derivation</button>
-<div id="derivation-optimal-space" style="display:none;" class="derivation">
-To get the minimum, we solve for <span class="math">\(k\)</span> that sets the derivative to zero.
-</p>
-<div class="math">$$
-\begin{eqnarray}
-    0 &amp;=&amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
-      &amp;=&amp; 1-n/k^2 \\
-n/k^2 &amp;=&amp; 1 \\
-  k^2 &amp;=&amp; n \\
-    k &amp;=&amp; \sqrt{n}
-\end{eqnarray}
-$$</div>
-<p>
-<br/></p>
-<p>Since it's safe to assume that <span class="math">\(n,k \ge 1\)</span> and <span class="math">\(\frac{\partial^2}{\partial k\,
-\partial k} = 2 n / k^3 &gt; 0\)</span> this is indeed a minimum. It's also global minimum
-because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\)</span> when <span class="math">\(n,k &gt; 0\)</span>.</p>
+    	<div id="blog-archives">
+            <h2>2017</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a></h1>
+                        <time datetime="2017-08-18 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">18</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a></h1>
+                        <time datetime="2017-07-03 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">03</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a></h1>
+                        <time datetime="2017-04-21 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">21</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2016</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a></h1>
+                        <time datetime="2016-12-19 00:00:00-05:00" pubdate>
+                            <span class="month">Dec</span>
+                            <span class="day">19</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a></h1>
+                        <time datetime="2016-11-21 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">21</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a></h1>
+                        <time datetime="2016-10-01 00:00:00-04:00" pubdate>
+                            <span class="month">Oct</span>
+                            <span class="day">01</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a></h1>
+                        <time datetime="2016-09-25 00:00:00-04:00" pubdate>
+                            <span class="month">Sep</span>
+                            <span class="day">25</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a></h1>
+                        <time datetime="2016-07-04 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">04</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a></h1>
+                        <time datetime="2016-06-28 00:00:00-04:00" pubdate>
+                            <span class="month">Jun</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a></h1>
+                        <time datetime="2016-05-28 00:00:00-04:00" pubdate>
+                            <span class="month">May</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a></h1>
+                        <time datetime="2016-05-27 00:00:00-04:00" pubdate>
+                            <span class="month">May</span>
+                            <span class="day">27</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</a></h1>
+                        <time datetime="2016-03-05 00:00:00-05:00" pubdate>
+                            <span class="month">Mar</span>
+                            <span class="day">05</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a></h1>
+                        <time datetime="2016-01-17 00:00:00-05:00" pubdate>
+                            <span class="month">Jan</span>
+                            <span class="day">17</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2015</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/">Gradient of a product</a></h1>
+                        <time datetime="2015-07-29 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a></h1>
+                        <time datetime="2015-04-29 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a></h1>
+                        <time datetime="2015-02-05 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">05</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">Log-Real number class</a></h1>
+                        <time datetime="2015-02-01 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">01</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2014</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance Sampling</a></h1>
+                        <time datetime="2014-12-21 00:00:00-05:00" pubdate>
+                            <span class="month">Dec</span>
+                            <span class="day">21</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a></h1>
+                        <time datetime="2014-11-10 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">10</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a></h1>
+                        <time datetime="2014-10-06 00:00:00-04:00" pubdate>
+                            <span class="month">Oct</span>
+                            <span class="day">06</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step derivative</a></h1>
+                        <time datetime="2014-08-07 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">07</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel max trick and weighted reservoir sampling</a></h1>
+                        <time datetime="2014-08-01 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">01</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel max trick</a></h1>
+                        <time datetime="2014-07-31 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">31</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a></h1>
+                        <time datetime="2014-07-22 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">22</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a></h1>
+                        <time datetime="2014-07-21 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">21</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a></h1>
+                        <time datetime="2014-02-12 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">12</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a></h1>
+                        <time datetime="2014-02-11 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">11</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a></h1>
+                        <time datetime="2014-02-10 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">10</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+	    </div>
+    </article>
 </div>
-
-<p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
-only blow up our runtime by a factor of 2. Also, I really love the "introduce a
-parameter then optimize it out" trick.</p>
-<p><button onclick="toggle('#code-sqrt-space')">Code</button>
-<div id="code-sqrt-space" style="display:none;"></p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
-    <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
-    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-        <span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">n</span>
-    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">:</span>
-        <span class="c1"># last chunk may be shorter than k.</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="n">k</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">memory</span><span class="p">[</span><span class="n">b</span><span class="o">-</span><span class="n">c</span><span class="p">],</span> <span class="n">c</span><span class="p">)):</span>
-            <span class="k">yield</span> <span class="n">s</span>
-            <span class="n">b</span> <span class="o">-=</span> <span class="mi">1</span>
-
-<span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-    <span class="s2">&quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&quot;</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[]</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">B</span>
-</pre></div>
-
-
-</div>
-
-<p><strong>Idea 3</strong>: What if we apply "the remember <span class="math">\(k\)</span> states" trick <em>recursively</em>? I'm
-going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
-matter).</p>
-<p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
-\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>.
-We hit the base case when the width of the interval is
-one.</p>
-<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
-frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
-a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
-<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
-\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
-mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
-like in the case of sorting, the branching factor doesn't matter so we're happy
-with or initial assumption that <span class="math">\(k=2\)</span>.</p>
-<p><button onclick="toggle('#code-recursive')">Code</button>
-<div id="code-recursive" style="display:none;"></p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">s0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># do O(n/2) work to find the midpoint with O(1) space.</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">s</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">s</span>
-</pre></div>
-
-
-</div>
-
-<h2>Remarks</h2>
-<p>The algorithms describe in this post are generic algorithmic tricks, which has
-been used in a number of place, including</p>
-<ul>
-<li>
-<p>The classic computer science interview problem of reversing a singly-linked list
-  under a tight budget on <em>additional</em> memory.</p>
-</li>
-<li>
-<p>Backpropagation for computing gradients in sequence models, including HMMs (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
-  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>). I have
-  sample code that illustrates the basic idea below.</p>
-</li>
-<li>
-<p>Memory-efficient <a href="https://arxiv.org/pdf/cs/0310016v1">omniscient debugging</a>,
-  which allows a user to inspect program state while moving forward <em>and
-  backward</em> in time.</p>
-</li>
-</ul>
-<h2>Sample code</h2>
-<ul>
-<li>
-<p><a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">The basics</a>:
-  Simple implementation complete with test cases.</p>
-</li>
-<li>
-<p><a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0ea">Memory-efficient backprop in an RNN</a>:
-  A simple application with test cases, of course.</p>
-</li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="http://timvieira.github.io/blog/author/tim-vieira7.html">&larr; Older</a>
-
-    <a class="next" href="http://timvieira.github.io/blog/author/tim-vieira5.html">Newer &rarr;</a>
-  <br />
-</div></div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -310,16 +443,14 @@ been used in a number of place, including</p>
       </li>
     </ul>
   </section>
-
-<!--      
   <section>
+      
     <h1>Categories</h1>
     <ul id="recent_posts">
         <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
     </ul>
   </section>
  
--->
 
   <section>
   <h1>Tags</h1>
@@ -330,16 +461,19 @@ been used in a number of place, including</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2017  - Tim Vieira -
+    Copyright &copy;  2014&ndash;2017  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
-	<script type="text/javascript">
-	  var disqus_shortname = 'graduatedescent';
-	  (function() {
-	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
-	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	   })();
-	</script>
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
 </body>
 </html>

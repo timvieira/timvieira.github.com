@@ -4,11 +4,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent - rant</title>
+  <title>Tag: rant &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
         title="Graduate Descent Atom Feed" />
+
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,12 +17,11 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
+    <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
   <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
         rel="stylesheet" type="text/css">
-  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
 
   <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
         rel="stylesheet" type="text/css">
@@ -38,146 +38,50 @@
 </ul>
 
 
-
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
-      </h1>
-      <p class="meta"><time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time></p>
-</header>
+<div>
+	<article role="article">
+    	<header>
+    		<h1 class="entry-title">Tag: rant</h1>
+    	</header>
 
-  <div class="entry-content"><p>A short rant: multiclass logistic regression and conditional random fields (CRF)
-are the same thing. This comes to a surprise to many people because CRFs tend to
-be surrounded by additional "stuff."</p>
-<p>Multiclass logistic regression is simple. The goal is to predict the correct
-label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
-on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
-gradient:</p>
-<div class="math">$$
-\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
-$$</div>
-<p>where
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
-Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
-\end{eqnarray*}
-$$</div>
-<p>At test-time, we often take the highest-scoring label under the model.</p>
-<div class="math">$$
-\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
-$$</div>
-<p>A conditional random field is exactly multiclass logistic regression. The only
-difference is that the sum and argmax are inefficient to compute naively (i.e.,
-by enumeration). This point is often lost when people first learn about
-CRFs. Some people never make this connection.</p>
-<p>Here's some stuff you'll see once we start talking about CRFs:</p>
-<ol>
-<li>
-<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
-   tree)</p>
-</li>
-<li>
-<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
-</li>
-<li>
-<p>Model templates (i.e., repeated feature functions)</p>
-</li>
-</ol>
-<p>In the logistic regression case, we'd never use the term "inference" to describe
-the "sum" and "max" over a handful of categories. Once we move to a structured
-label space, this term gets throw around. (BTW, this isn't "statistical
-inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
-<p>Graphical models establish a notation and structural properties which allow
-efficient inference -- things like cycles and treewidth.</p>
-<p>Model templating is the only essential trick to move from logistic regression to
-a CRF. Templating "solves" the problem that not all training examples have the
-same "size" -- the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
-template specifies how to compute the features for an entire output, by looking
-at interactions between subsets of variables.</p>
-<div class="math">$$
-\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
-\boldsymbol{y}_\alpha)
-$$</div>
-<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
-<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
-<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
-the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
-at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
-<p>Anywho, it's often useful to take a step back and think about what you are
-trying to compute instead of how you're computing it. In this post, this allowed
-us see the similarity between logistic regression and CRFs even though they seem
-quite different.</p>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-
-    <a class="next" href="http://timvieira.github.io/blog/tag/rant.html">Newer &rarr;</a>
-  <br />
-</div></div>
+    	<div id="blog-archives">
+            <h2>2016</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a></h1>
+                        <time datetime="2016-09-25 00:00:00-04:00" pubdate>
+                            <span class="month">Sep</span>
+                            <span class="day">25</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+            <h2>2015</h2>
+                    <article>
+                        <h1><a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a></h1>
+                        <time datetime="2015-04-29 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                            <span class="categories">posted in
+                                <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
+                            </span>
+                        </footer>
+                    </article>
+	    </div>
+    </article>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -190,16 +94,14 @@ quite different.</p>
       </li>
     </ul>
   </section>
-
-<!--      
   <section>
+      
     <h1>Categories</h1>
     <ul id="recent_posts">
         <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
     </ul>
   </section>
  
--->
 
   <section>
   <h1>Tags</h1>
@@ -210,16 +112,19 @@ quite different.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2015-2016  - Tim Vieira -
+    Copyright &copy;  2015&ndash;2016  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
-	<script type="text/javascript">
-	  var disqus_shortname = 'graduatedescent';
-	  (function() {
-	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
-	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	   })();
-	</script>
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
 </body>
 </html>

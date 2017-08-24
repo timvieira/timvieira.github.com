@@ -4,11 +4,14 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Evaluating ∇f(x) is as fast as f(x)</title>
+  <title>Evaluating ∇f(x) is as fast as f(x) &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
         title="Graduate Descent Atom Feed" />
+
+
+
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,12 +19,11 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
+    <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+
   <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
         rel="stylesheet" type="text/css">
-  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
-  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
 
   <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
         rel="stylesheet" type="text/css">
@@ -38,7 +40,6 @@
 </ul>
 
 
-
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
     <li><a href="/blog/archives.html">Archive</a></li>
@@ -49,7 +50,8 @@
   <article class="hentry" role="article">
 <header>
       <h1 class="entry-title">Evaluating ∇f(x) is as fast as f(x)</h1>
-      <p class="meta"><time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time></p>
+    <p class="meta">
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>    </p>
 </header>
 
   <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
@@ -163,13 +165,15 @@ vary with the input (e.g., sentence length).</p>
     <footer>
 <p class="meta">
   <span class="byline author vcard">
-    Posted by <span class="fn">Tim Vieira</span>
+    Posted by <span class="fn">
+        Tim Vieira
+    </span>
   </span>
 <time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="categories">
-    <a class="category" href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>
-    <a class="category" href="http://timvieira.github.io/blog/tag/rant.html">rant</a>
+    <a class='category' href='http://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
+  <span class="categories">
+    <a class="category" href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a class="category" href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a class="category" href="http://timvieira.github.io/blog/tag/rant.html">rant</a>  </span>
 </p><div class="sharing">
 </div>    </footer>
   </article>
@@ -200,16 +204,14 @@ vary with the input (e.g., sentence length).</p>
       </li>
     </ul>
   </section>
-
-<!--      
   <section>
+      
     <h1>Categories</h1>
     <ul id="recent_posts">
         <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
     </ul>
   </section>
  
--->
 
   <section>
   <h1>Tags</h1>
@@ -220,19 +222,22 @@ vary with the input (e.g., sentence length).</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014-2017  - Tim Vieira -
+    Copyright &copy;  2014&ndash;2017  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
-	<script type="text/javascript">
-	  var disqus_shortname = 'graduatedescent';
-          var disqus_identifier = '/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
-          var disqus_url = 'http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
-          var disqus_title = 'Evaluating ∇f(x) is as fast as f(x)';
-	  (function() {
-	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
-	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	   })();
-	</script>
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    var disqus_identifier = '/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
+    var disqus_url = 'http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/';
+    var disqus_title = 'Evaluating ∇f(x) is as fast as f(x)';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
 </body>
 </html>

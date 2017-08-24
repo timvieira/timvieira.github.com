@@ -887,7 +887,7 @@ caching past evaluations of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. However
 inefficiency and requires modifying the method to account for the fact that &lt;span class="math"&gt;\(m\)&lt;/span&gt;
 is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
 &lt;em&gt;zero&lt;/em&gt; error; it only converges in an &lt;span class="math"&gt;\(\epsilon\)&lt;/span&gt;-&lt;span class="math"&gt;\(\delta\)&lt;/span&gt; sense.&lt;/p&gt;
-&lt;!---
+&lt;!--
 Remarks
 
  - We saw a similar problem where we kept sampling the same individuals over and
@@ -1199,7 +1199,7 @@ caching past evaluations of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. However
 inefficiency and requires modifying the method to account for the fact that &lt;span class="math"&gt;\(m\)&lt;/span&gt;
 is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
 &lt;em&gt;zero&lt;/em&gt; error; it only converges in an &lt;span class="math"&gt;\(\epsilon\)&lt;/span&gt;-&lt;span class="math"&gt;\(\delta\)&lt;/span&gt; sense.&lt;/p&gt;
-&lt;!---
+&lt;!--
 Remarks
 
  - We saw a similar problem where we kept sampling the same individuals over and
@@ -8468,7 +8468,7 @@ affect the values we should use for them.&lt;/p&gt;
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</content><category term="optimization"></category></entry><entry><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><summary type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
-optimization---the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
+optimization&amp;mdash;the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \lambda^* = \underset{\lambda}{\textbf{argmin}}\
@@ -8496,7 +8496,7 @@ where &lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt; is the solution 
 $$&lt;/div&gt;
 &lt;p&gt;Now how does &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; change as the result of an infinitesimal change to
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;?&lt;/p&gt;
-&lt;p&gt;The constraint on the derivative implies a type of "equilibrium"---the inner
+&lt;p&gt;The constraint on the derivative implies a type of "equilibrium"&amp;mdash;the inner
 optimization process will continue to optimize regardless of how we change
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
 optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
@@ -8549,7 +8549,7 @@ $$&lt;/div&gt;
 = -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
 \lambda^\top}\)&lt;/span&gt;. When the Hessian is positive definite, the linear system can be
 solved with conjugate gradient, which conveniently only requires matrix-vector
-products---i.e., you never have to materialize the Hessian. (Apparently,
+products&amp;mdash;i.e., you never have to materialize the Hessian. (Apparently,
 &lt;a href="https://en.wikipedia.org/wiki/Matrix-free_methods"&gt;matrix-free linear algebra&lt;/a&gt;
 is a thing.) In fact, you don't even have to implement the Hessian-vector and
 Jacobian-vector products because they are accurately and efficiently
@@ -8635,7 +8635,7 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><content type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
-optimization---the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
+optimization&amp;mdash;the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \lambda^* = \underset{\lambda}{\textbf{argmin}}\
@@ -8663,7 +8663,7 @@ where &lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt; is the solution 
 $$&lt;/div&gt;
 &lt;p&gt;Now how does &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; change as the result of an infinitesimal change to
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;?&lt;/p&gt;
-&lt;p&gt;The constraint on the derivative implies a type of "equilibrium"---the inner
+&lt;p&gt;The constraint on the derivative implies a type of "equilibrium"&amp;mdash;the inner
 optimization process will continue to optimize regardless of how we change
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
 optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
@@ -8716,7 +8716,7 @@ $$&lt;/div&gt;
 = -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
 \lambda^\top}\)&lt;/span&gt;. When the Hessian is positive definite, the linear system can be
 solved with conjugate gradient, which conveniently only requires matrix-vector
-products---i.e., you never have to materialize the Hessian. (Apparently,
+products&amp;mdash;i.e., you never have to materialize the Hessian. (Apparently,
 &lt;a href="https://en.wikipedia.org/wiki/Matrix-free_methods"&gt;matrix-free linear algebra&lt;/a&gt;
 is a thing.) In fact, you don't even have to implement the Hessian-vector and
 Jacobian-vector products because they are accurately and efficiently
@@ -9130,7 +9130,7 @@ $$&lt;/div&gt;
 &lt;p&gt;As you can see in the equation above, the gradient takes the form of a
 "leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
 &lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
-from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)---resulting in a overall runtime of
+from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)&amp;mdash;resulting in a overall runtime of
 &lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
 computing this efficiently.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Division trick&lt;/strong&gt;: Before going down the dynamic programming rabbit hole, let's
@@ -9235,7 +9235,7 @@ need more space. That's exactly what we did here: We started with a naive
 algorithm for computing the gradient with &lt;span class="math"&gt;\(\bigo(n^2)\)&lt;/span&gt; time and &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt; space
 (other than the space to store the &lt;span class="math"&gt;\(n\)&lt;/span&gt; functions) and ended up with a &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt;
 time &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space algorithm with a little clever thinking. What I'm saying
-is autodiff---even if you don't use a magical package---tells us that an
+is autodiff&amp;mdash;even if you don't use a magical package&amp;mdash;tells us that an
 efficient algorithm for the gradient always exists. Furthermore, it tells you
 how to derive it manually, if you are so inclined. The key is to reuse
 intermediate quantities (hence the increase in space).&lt;/p&gt;
@@ -9326,7 +9326,7 @@ $$&lt;/div&gt;
 &lt;p&gt;As you can see in the equation above, the gradient takes the form of a
 "leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
 &lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
-from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)---resulting in a overall runtime of
+from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)&amp;mdash;resulting in a overall runtime of
 &lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
 computing this efficiently.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Division trick&lt;/strong&gt;: Before going down the dynamic programming rabbit hole, let's
@@ -9431,7 +9431,7 @@ need more space. That's exactly what we did here: We started with a naive
 algorithm for computing the gradient with &lt;span class="math"&gt;\(\bigo(n^2)\)&lt;/span&gt; time and &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt; space
 (other than the space to store the &lt;span class="math"&gt;\(n\)&lt;/span&gt; functions) and ended up with a &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt;
 time &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space algorithm with a little clever thinking. What I'm saying
-is autodiff---even if you don't use a magical package---tells us that an
+is autodiff&amp;mdash;even if you don't use a magical package&amp;mdash;tells us that an
 efficient algorithm for the gradient always exists. Furthermore, it tells you
 how to derive it manually, if you are so inclined. The key is to reuse
 intermediate quantities (hence the increase in space).&lt;/p&gt;
@@ -10319,7 +10319,7 @@ $$&lt;/div&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;---even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;&amp;mdash;even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
 &lt;p&gt;For example:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
@@ -10360,7 +10360,7 @@ $$&lt;/div&gt;
 $$&lt;/div&gt;
 &lt;h2&gt;Back to numerical stability&lt;/h2&gt;
 &lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take
-the power of is one --- making it very difficult to overflow on the account of
+the power of is one&amp;mdash;making it very difficult to overflow on the account of
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -10380,7 +10380,7 @@ the power of is one --- making it very difficult to overflow on the account of
 &lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain&amp;mdash;a trick you might have seen before.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;arsenal.math&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;
@@ -10462,7 +10462,7 @@ $$&lt;/div&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;---even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;&amp;mdash;even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
 &lt;p&gt;For example:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
@@ -10503,7 +10503,7 @@ $$&lt;/div&gt;
 $$&lt;/div&gt;
 &lt;h2&gt;Back to numerical stability&lt;/h2&gt;
 &lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take
-the power of is one --- making it very difficult to overflow on the account of
+the power of is one&amp;mdash;making it very difficult to overflow on the account of
 &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -10523,7 +10523,7 @@ the power of is one --- making it very difficult to overflow on the account of
 &lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain---a trick you might have seen before.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain&amp;mdash;a trick you might have seen before.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;arsenal.math&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;
