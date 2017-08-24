@@ -4162,7 +4162,7 @@ in more detail in future posts.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>statistics</category><category>importance-sampling</category><category>sampling</category></item><item><title>Numerically-stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
+&lt;/script&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tim Vieira</dc:creator><pubDate>Sun, 21 Dec 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:timvieira.github.io,2014-12-21:blog/post/2014/12/21/importance-sampling/</guid><category>statistics</category><category>importance-sampling</category><category>sampling</category></item><item><title>Numerically stable p-norms</title><link>http://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/</link><description>&lt;p&gt;Consider the p-norm
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 || \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
