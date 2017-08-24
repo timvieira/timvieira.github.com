@@ -9768,11 +9768,13 @@ differentiation (backprop) to train the end-to-end system. This idea appears in
 a few publications, including a handful of papers by Justin Domke, and a few by
 Stoyanov &amp;amp; Eisner.&lt;/p&gt;
 &lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
-&lt;p&gt;I first saw this idea in Stoyanov &amp;amp; Eisner (2011). They use loopy belief
-propagation as their approximate inference algorithm. At the end of the day,
-their model is essentially a deep recurrent network, which came from unrolling
-inference in a graphical model. This idea really struck me because it's clearly
-right in the middle between graphical models and deep learning.&lt;/p&gt;
+&lt;p&gt;I first saw this idea in
+&lt;a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov &amp;amp; Eisner (2011)&lt;/a&gt;. They
+use loopy belief propagation as their approximate inference algorithm. At the
+end of the day, their model is essentially a deep recurrent network, which came
+from unrolling inference in a graphical model. This idea really struck me
+because it's clearly right in the middle between graphical models and deep
+learning.&lt;/p&gt;
 &lt;p&gt;You can immediately imagine swapping in other approximate inference algorithms
 in place of loopy BP.&lt;/p&gt;
 &lt;p&gt;Deep learning approaches get a bad reputation because there are a lot of
@@ -9820,11 +9822,13 @@ differentiation (backprop) to train the end-to-end system. This idea appears in
 a few publications, including a handful of papers by Justin Domke, and a few by
 Stoyanov &amp;amp; Eisner.&lt;/p&gt;
 &lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
-&lt;p&gt;I first saw this idea in Stoyanov &amp;amp; Eisner (2011). They use loopy belief
-propagation as their approximate inference algorithm. At the end of the day,
-their model is essentially a deep recurrent network, which came from unrolling
-inference in a graphical model. This idea really struck me because it's clearly
-right in the middle between graphical models and deep learning.&lt;/p&gt;
+&lt;p&gt;I first saw this idea in
+&lt;a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov &amp;amp; Eisner (2011)&lt;/a&gt;. They
+use loopy belief propagation as their approximate inference algorithm. At the
+end of the day, their model is essentially a deep recurrent network, which came
+from unrolling inference in a graphical model. This idea really struck me
+because it's clearly right in the middle between graphical models and deep
+learning.&lt;/p&gt;
 &lt;p&gt;You can immediately imagine swapping in other approximate inference algorithms
 in place of loopy BP.&lt;/p&gt;
 &lt;p&gt;Deep learning approaches get a bad reputation because there are a lot of
