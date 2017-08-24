@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Graduate Descent - machine-learning</title>
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+  <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="http://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Atom</a></li>
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li><a href="http://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/archives.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div class="blog-index">
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
+      </h1>
+      <p class="meta"><time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time></p>
+</header>
+
+  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.</p>
+<p>In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:</p>
+<ol>
+<li>
+<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
+</li>
+<li>
+<p>Change the training objective</p>
+</li>
+<li>
+<p>Approximate inference</p>
+</li>
+</ol>
+<p>Approximate inference is tricky. Things can easily go awry.</p>
+<p>For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
+approximations work fine.)</p>
+<p>It looks like using approximate inference during training changes the training
+objective.</p>
+<p>So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.</p>
+<p>Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handful of papers by Justin Domke, and a few by
+Stoyanov &amp; Eisner.</p>
+<p>Unsuprisingly, it works pretty well.</p>
+<p>I first saw this idea in Stoyanov &amp; Eisner (2011). They use loopy belief
+propagation as their approximate inference algorithm. At the end of the day,
+their model is essentially a deep recurrent network, which came from unrolling
+inference in a graphical model. This idea really struck me because it's clearly
+right in the middle between graphical models and deep learning.</p>
+<p>You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.</p>
+<p>Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.</p></div>
+  		</article>
+<div class="pagination">
+    <a class="prev" href="http://timvieira.github.io/blog/tag/machine-learning4.html">&larr; Older</a>
+
+    <a class="next" href="http://timvieira.github.io/blog/tag/machine-learning2.html">Newer &rarr;</a>
+  <br />
+</div></div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as Deep learning models?</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
+      </li>
+    </ul>
+  </section>
+
+<!--      
+  <section>
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
+    </ul>
+  </section>
+ 
+-->
+
+  <section>
+  <h1>Tags</h1>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+
+
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014-2016  - Tim Vieira -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+	<script type="text/javascript">
+	  var disqus_shortname = 'graduatedescent';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>

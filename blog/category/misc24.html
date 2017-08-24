@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Graduate Descent</title>
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+  <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="http://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Atom</a></li>
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li><a href="http://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/archives.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div class="blog-index">
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+      </h1>
+      <p class="meta"><time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.</p>
+<p>This is a very simple point, but nonetheless I'll illustrate with a simple
+example.</p>
+<p>Consider the following simple example, let's find the argmax of <span class="math">\(f(x,y) = -x^2\)</span>.</p>
+<p>Suppose we search over a <span class="math">\(10\)</span>-by-<span class="math">\(10\)</span> grid, resulting in a total of <span class="math">\(100\)</span>
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the <span class="math">\(x\)</span>-dimension, which is only <span class="math">\(10\)</span> samples! On
+the other hand, randomly sampling points over the same space results in <span class="math">\(100\)</span>
+samples in every dimension.</p>
+<p>In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.</p>
+<p>This type of problem is common on hyperparameter optimizations. For futher
+reading see
+<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
+<p><strong>Other thoughts</strong>:</p>
+<ol>
+<li>
+<p>Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+</li>
+<li>
+<p>Grid search tends to produce nicer-looking plots.</p>
+</li>
+<li>
+<p>What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.</p>
+</li>
+</ol>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+<div class="pagination">
+    <a class="prev" href="http://timvieira.github.io/blog/category/misc25.html">&larr; Older</a>
+
+    <a class="next" href="http://timvieira.github.io/blog/category/misc23.html">Newer &rarr;</a>
+  <br />
+</div></div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
+      </li>
+    </ul>
+  </section>
+
+<!--      
+  <section>
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
+    </ul>
+  </section>
+ 
+-->
+
+  <section>
+  <h1>Tags</h1>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+
+
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014-2017  - Tim Vieira -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+	<script type="text/javascript">
+	  var disqus_shortname = 'graduatedescent';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>

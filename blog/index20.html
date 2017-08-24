@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Graduate Descent</title>
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="http://timvieira.github.io/blog/favicon.png" rel="icon">
+  <link href="http://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="http://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="http://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="http://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Atom</a></li>
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li><a href="http://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/archives.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div class="blog-index">
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="http://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
+      </h1>
+      <p class="meta"><time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>It's well-known that
+<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
+is not symmetric, but which direction is right for fitting your model?</p>
+<h4>Which KL is which? A cheat sheet</h4>
+<p>If we're fitting <span class="math">\(q_\theta\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(p || q_\theta)\)</span></p>
+<ul>
+<li>
+<p>mean-seeking, <em>inclusive</em> (more principled because approximates the <em>full</em> distribution)</p>
+</li>
+<li>
+<p>requires normalization wrt <span class="math">\(p\)</span> (i.e., often <em>not</em> computationally convenient)</p>
+</li>
+</ul>
+<p><span class="math">\(\textbf{KL}(q_\theta || p)\)</span></p>
+<ul>
+<li>
+<p>mode-seeking, <em>exclusive</em></p>
+</li>
+<li>
+<p>no normalization wrt <span class="math">\(p\)</span> (i.e., computationally convenient)</p>
+</li>
+</ul>
+<p><strong>Mnemonic</strong>: "When the truth comes first, you get the whole truth" (h/t
+<a href="https://www.umiacs.umd.edu/~resnik/">Philip Resnik</a>). Here "whole truth"
+corresponds to the <em>inclusiveness</em> of <span class="math">\(\textbf{KL}(p || q)\)</span>.</p>
+<p>As far as remembering the equation, I pretend that "<span class="math">\(||\)</span>" is a division symbol,
+which happens to correspond nicely to a division symbol in the equation (I'm not
+sure it's intentional).</p>
+<h2>Inclusive vs. exclusive divergence</h2>
+<div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
+
+<img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" />
+Figure by <a href="http://www.johnwinn.org/">John Winn</a>.
+</div>
+
+<p><br/></p>
+<h2>Computational perspecive</h2>
+<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.</p>
+<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
+where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</div>
+<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+</p>
+<div class="math">\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</div>
+<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
+we're optimizing.</p>
+<p>This leaves us with the following optimization problem:
+</p>
+<div class="math">\begin{align*}
+&amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</div>
+<p>Let's work out the gradient
+</p>
+<div class="math">\begin{align*}
+&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</div>
+<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
+<p>This direction is convenient because we don't need to normalize
+<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
+the "hard" direction, which (as we'll see shortly) is convex.</p>
+<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</div>
+<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+</p>
+<div class="math">\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
+\end{align*}</div>
+<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
+<div class="math">\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</div>
+<p>Why do we say this is hard to compute? Well, for most interesting models, we
+can't compute <span class="math">\(Z_p = \sum_d \bar{p}(d)\)</span>. This is because <span class="math">\(p\)</span> is presumed to be a
+complex model (e.g., the real world, an intricate factor graph, a complicated
+Bayesian posterior). If we can't compute <span class="math">\(Z_p\)</span>, it's highly unlikely that we can
+compute another (nontrivial) integral under <span class="math">\(\bar{p}\)</span>, e.g., <span class="math">\(\sum_d \bar{p}(d)
+\log \bar{q}(d)\)</span>.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include:
+expectation propagation, variational decoding, and maximum likelihood
+estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need samples from it, which can be just as hard to get as computing a
+normalization constant.</p>
+<p>Optimization problem is <em>convex</em> when <span class="math">\(q_\theta\)</span> is an exponential
+family&mdash;i.e., for any <span class="math">\(p\)</span> the <em>optimization</em> problem is "easy." You can
+think of maximum likelihood estimation (MLE) as a method which minimizes KL
+divergence based on samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data
+distribution! The first term in the gradient is based on a sample instead of an
+exact estimate (often called "observed feature counts"). The downside, of
+course, is that computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be
+tractable or, for MLE, require tons of samples.</p>
+<h2>Remarks</h2>
+<ul>
+<li>
+<p>In many ways, optimizing exclusive KL makes no sense at all! Except for the
+  fact that it's computable when inclusive KL is often not. Exclusive KL is
+  generally regarded as "an approximation" to inclusive KL. This bias in this
+  approximation can be quite large.</p>
+</li>
+<li>
+<p>Inclusive vs. exclusive is an important distinction: Inclusive divergences
+  require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span> (i.e., no "false negatives"), whereas
+  exclusive divergences favor a single mode (i.e., only a good fit around a that
+  mode).</p>
+</li>
+<li>
+<p>When <span class="math">\(q\)</span> is an exponential family, <span class="math">\(\textbf{KL}(p || q_\theta)\)</span> will be convex
+  in <span class="math">\(\theta\)</span>, no matter how complicated <span class="math">\(p\)</span> is, whereas <span class="math">\(\textbf{KL}(q_\theta
+  || p)\)</span> is generally nonconvex (e.g., if <span class="math">\(p\)</span> is multimodal).</p>
+</li>
+<li>
+<p>Computing the value of either KL divergence requires normalization. However,
+  in the "easy" (exclusive) direction, we can optimize KL without computing
+  <span class="math">\(Z_p\)</span> (as it results in only an additive constant difference).</p>
+</li>
+<li>
+<p>Both directions of KL are special cases of
+  <a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"><span class="math">\(\alpha\)</span>-divergence</a>. For a
+  unified account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
+</ul>
+<h3>Acknowledgments</h3>
+<p>I'd like to thank the following people:</p>
+<ul>
+<li>
+<p><a href="https://twitter.com/_shrdlu_">Ryan Cotterell</a> for an email exchange which
+  spawned this article.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/adveisner">Jason Eisner</a> for teaching me all this stuff.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/florian_shkurti">Florian Shkurti</a> for a useful email
+  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
+  compute/optimize.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/sjmielke">Sebastian Mielke</a> for the suggesting the
+  "inclusive vs. exclusive" figure.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+<div class="pagination">
+    <a class="prev" href="http://timvieira.github.io/blog/index21.html">&larr; Older</a>
+
+    <a class="next" href="http://timvieira.github.io/blog/index19.html">Newer &rarr;</a>
+  <br />
+</div></div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+      <li class="post">
+          <a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
+      </li>
+    </ul>
+  </section>
+
+<!--      
+  <section>
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="http://timvieira.github.io/blog/category/misc.html">misc</a></li>
+    </ul>
+  </section>
+ 
+-->
+
+  <section>
+  <h1>Tags</h1>
+    <a href="http://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="http://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="http://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="http://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="http://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="http://timvieira.github.io/blog/tag/misc.html">misc</a>,    <a href="http://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="http://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="http://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="http://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="http://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="http://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="http://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="http://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="http://timvieira.github.io/blog/tag/visualization.html">visualization</a>,    <a href="http://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="http://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>  </section>
+
+
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014-2017  - Tim Vieira -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+	<script type="text/javascript">
+	  var disqus_shortname = 'graduatedescent';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>
