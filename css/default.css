@@ -189,8 +189,13 @@ h2 {
     color: #fff !important;
     border-radius: 6px;
     padding: 1px 5px 2px 5px;
+    margin-top: 10px;
 }
 
 .extra:hover {
     background-color: #73AD21 !important;
+}
+
+.paper-extras {
+    margin-top: 5px;
 }
