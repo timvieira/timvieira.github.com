@@ -8467,7 +8467,7 @@ affect the values we should use for them.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="optimization"></category></entry><entry><title>Gradient-based Hyperparameter Optimization and the Implicit Function Theorem</title><link href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><summary type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
+&lt;/script&gt;</content><category term="optimization"></category></entry><entry><title>Gradient-based hyperparameter optimization and the implicit function theorem</title><link href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><summary type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
 optimization&amp;mdash;the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -9729,7 +9729,7 @@ quite different.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry><entry><title>Conditional random fields as Deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><published>2015-02-05T00:00:00-05:00</published><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+&lt;/script&gt;</content><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry><entry><title>Conditional random fields as deep learning models?</title><link href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><published>2015-02-05T00:00:00-05:00</published><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><summary type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
 deep learning might not be as crazy as it seems. And maybe even convince some
 deep learning lovers that the graphical models might have interesting things to
 offer.&lt;/p&gt;
@@ -10037,7 +10037,7 @@ essentially:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="numerical"></category></entry><entry><title>Importance Sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><published>2014-12-21T00:00:00-05:00</published><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:/blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</content><category term="numerical"></category></entry><entry><title>Importance sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><published>2014-12-21T00:00:00-05:00</published><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:/blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
