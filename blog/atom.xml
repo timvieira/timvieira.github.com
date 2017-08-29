@@ -360,6 +360,12 @@ variables.&lt;/p&gt;
 &lt;p&gt;Ben Recht. (2016)
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;h2&gt;Code&lt;/h2&gt;
+&lt;p&gt;I have coded up and tested the Lagrangian perspective on automatic
+differentiation that I presented in this article. The code is available in this
+&lt;a href="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;script src="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185.js"&gt;&lt;/script&gt;
+
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -775,6 +781,12 @@ variables.&lt;/p&gt;
 &lt;p&gt;Ben Recht. (2016)
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;h2&gt;Code&lt;/h2&gt;
+&lt;p&gt;I have coded up and tested the Lagrangian perspective on automatic
+differentiation that I presented in this article. The code is available in this
+&lt;a href="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;script src="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185.js"&gt;&lt;/script&gt;
+
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
