@@ -86,7 +86,7 @@
             I've also worked with
             <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a>
             on <a href="http://rexa.info">Rexa</a>
-            and <a href="http://factorie.cs.umass.edu/">FACTORIE</a>; <a href="http://l2r.cs.uiuc.edu/">Dan
+            and <a href="http://factorie.cs.umass.edu/">Factorie</a>; <a href="http://l2r.cs.uiuc.edu/">Dan
             Roth</a> on Textual Entailment.
           </p>
 
@@ -96,10 +96,9 @@
 
           <div class="project clearfix">
             <h3>Movement</h3>
-            <div style="float: left; height: 90px;" id="movement-div">
+            <div id="movement-div" class="thumbnail clearfix">
               <a href="https://www.instagram.com/tim.vieira/">
-                <img class="thumbnail"
-                     id="movement"
+                <img id="movement"
                      style="background-color:black;"
                      src="img/climb-kneepit.png" alt="" />
               </a>
@@ -111,13 +110,10 @@
             </div>
           </div>
 
-          <hr style="margin: 10px 0 10px 0; border: 1px solid #ddd;"/>
-
           <div class="project clearfix">
             <h3>Roller Derby</h3>
-            <div style="height: 88px; overflow: hidden; float: left;" id="derby-div">
-              <img class="thumbnail"
-                   id="derby"
+            <div id="derby-div" class="thumbnail clearfix">
+              <img id="derby"
                    style="background-color:black;"
                    src="img/rambo-v-cider.jpg" alt="" />
             </div>
@@ -129,44 +125,64 @@
           <div class="project clearfix">
             <h3>Snakeboarding</h3>
 
-            <div style="height: 88px; overflow: hidden; float: left;">
-            <a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">
-              <img id="snakeboard" class="thumbnail" src="img/skate-and-break/TIM_bonertobs180.jpg" alt="" />
-            </a>
+            <div id="snakeboard-div" class="thumbnail clearfix">
+              <a href="http://www.youtube.com/watch?v=BFVBQBDtxUw">
+                <img id="snakeboard" src="img/skate-and-break/TIM_bonertobs180.jpg" alt="" />
+              </a>
             </div>
-
             <div class="blurb">
               In high school, I was big
               into <a href="http://streetboarding.com/">snakeboarding</a>.
             </div>
-          </div>
 
-          <hr style="margin: 10px 0 10px 0; border: 1px solid #ddd;"/>
+          </div>
 
           <div class="project clearfix">
-            <h3>Cars</h3>
-            <div class="project clearfix">
+            <h3>Lowriders</h3>
+
+            <div id="lowrider-1-div" class="thumbnail clearfix">
               <a title="My bouncing '84 Fifth Ave."
                  href="http://www.youtube.com/watch?v=iIXSJnfQK68">
-                <img id="car-bounce" class="thumbnail" src="img/fifth-avenue.jpg" alt="" />
+                <img id="lowrider-1" class="thumbnail" src="img/fifth-avenue.jpg" alt="" />
               </a>
-              <div class="blurb">
-                <i>The 5th Ave</i> - my gorgeous '84 Fifth Ave purchased for a
-                mere $900 - installed the hydraulics myself!
-              </div>
             </div>
-            <div class="project clearfix">
+            <div class="blurb">
+              <i>The 5th Ave</i> - my gorgeous '84 Fifth Ave purchased -
+              installed the hydraulics myself!
+            </div>
+
+            <div id="lowrider-2-div" class="thumbnail clearfix">
               <a title="The Big Bad Baby Blue Buick"
                  href="http://www.youtube.com/watch?v=HDZezucXcZg">
-                <img class="thumbnail" src="img/rimz0rz-thumbnail.png" alt="" />
+                <img id="lowrider-2" class="thumbnail" src="img/rimz0rz.jpg" alt="" />
               </a>
-              <div class="blurb">
-                <i>The Big Bad Baby Blue Buick</i> - hydraulics on the back this
-                time and gold spinning wheels. You can't tell in this video, but
-                the car was scraping the ground.
-              </div>
+            </div>
+            <div class="blurb">
+              <i>The Big Bad Baby Blue Buick</i> - hydraulics and gold spinning
+              wheels.
             </div>
           </div>
+
+<!--
+<object width="100" height="100">
+    <param name="movie" value="img/skate-and-break/mctwist.swf">
+    <embed src="img/skate-and-break/mctwist.swf" width="100" height="100">
+    </embed>
+</object>
+
+<object width="100" height="100">
+    <param name="movie" value="img/skate-and-break/handspin.swf">
+    <embed src="img/skate-and-break/handspin.swf" width="100" height="100">
+    </embed>
+</object>
+
+<object width="100" height="100">
+    <param name="movie" value="img/skate-and-break/rodeo.swf">
+    <embed src="img/skate-and-break/rodeo.swf" width="100" height="100">
+    </embed>
+</object>
+    -->
+
         </div>
 
       </div>
@@ -223,9 +239,9 @@
 
             <li>
               <div class="paper">
-                Tim Vieira*, Ryan Cotterell*, and Jason Eisner.
+                Tim Vieira,* Ryan Cotterell,* and Jason Eisner.
                 <a href="doc/2016-emnlp-vocrf.pdf">Speed-Accuracy Tradeoffs in Tagging with Variable-Order CRFs and Structured Sparsity</a>.
-                EMNLP 2016. (* equal contribution)
+                EMNLP 2016.
               </div>
               <div class="paper-extras">
                 <a class="extra code" href="http://github.com/timvieira/vocrf">code</a>
@@ -294,46 +310,6 @@
           </ul>
         </div>
 
-        <!--
-        <div id="code" class="box">
-          <h2>Code &amp; Resources</h2>
-
-          <div style="margin-bottom: 10px;">
-            Check out my technical blog (<a href="http://timvieira.github.io/blog">Graduate
-              Descent</a>) and <a href="http://github.com/timvieira">github</a> for more!
-          </div>
-
-          <div style="cursor: pointer;" onclick="window.location='http://factorie.cs.umass.edu/';">
-            <div class="project clearfix">
-              <img class="thumbnail" src="img/factorie.png" alt="" />
-              <div class="blurb">
-                <h3>Factorie</h3>
-                <p>
-                  FACTORIE is a probabilistic programming framework implemented as
-                  a software library in <a href="http://www.scala-lang.org/">Scala</a>. Providing
-                  users with a succinct framework for creating <em>abritrary</em> factor graphs with
-                  tied parameters, estimating parameters, and performing inference.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div style="cursor: pointer;" onclick="window.location='https://github.com/timvieira/arsenal/';">
-            <div class="project clearfix">
-              <img class="thumbnail" src="img/python-hackin.gif" alt="" />
-              <div class="blurb">
-                <h3>The Arsenal</h3>
-                <p>
-                  My personal arsenal of python utilities, recipes, scripts, and
-                  "gutted" components of other projects.
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        -->
-
       </div>
 
     </div>
@@ -343,7 +319,7 @@
 <script type="text/javascript">
 
 $(function() {
-  $('#car-bounce').hover(function() {
+  $('#lowrider-1').hover(function() {
     $(this).attr('src', 'img/lowrider1.gif');
   }, function() {
     $(this).attr('src', 'img/fifth-avenue.jpg');
@@ -376,6 +352,14 @@ $(function() {
   });
 });
 
+$(function() {
+  $('#lowrider-2').hover(function() {
+    $(this).attr('src', 'img/spinnerz.gif');
+  }, function() {
+    $(this).attr('src', 'img/rimz0rz.jpg');
+  });
+});
+
 function preload(arrayOfImages) {
     $(arrayOfImages).each(function(){
         $('<img/>')[0].src = this;
@@ -390,6 +374,8 @@ preload([
     'img/rail.gif',
     'img/dyno.gif',
     'img/table-bail.gif',
+    'img/lowrider1.gif',
+    'img/spinnerz.gif',
 ]);
 
 </script>
