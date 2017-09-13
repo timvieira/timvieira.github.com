@@ -360,10 +360,11 @@ $(function() {
   });
 });
 
-function preload(arrayOfImages) {
-    return $(arrayOfImages).each(function(){
-        $('<img/>')[0].src = this;
-    });
+function preload(imgs) {
+  return $(imgs).each(function(){
+    var img = new Image();
+    img.src = this;
+  });
 }
 
 preload([
