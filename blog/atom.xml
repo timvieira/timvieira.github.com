@@ -62,7 +62,7 @@ efficiency.&lt;/p&gt;
 
 &lt;p&gt;Symbolic differentiation would have to use the "flat" version of this function,
 so no intermediate variable &lt;span class="math"&gt;\(\Rightarrow\)&lt;/span&gt; slow.&lt;/p&gt;
-&lt;p&gt;Automatic differentiation let's us differentiate a program with &lt;em&gt;intermediate&lt;/em&gt;
+&lt;p&gt;Automatic differentiation lets us differentiate a program with &lt;em&gt;intermediate&lt;/em&gt;
 variables.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -483,7 +483,7 @@ efficiency.&lt;/p&gt;
 
 &lt;p&gt;Symbolic differentiation would have to use the "flat" version of this function,
 so no intermediate variable &lt;span class="math"&gt;\(\Rightarrow\)&lt;/span&gt; slow.&lt;/p&gt;
-&lt;p&gt;Automatic differentiation let's us differentiate a program with &lt;em&gt;intermediate&lt;/em&gt;
+&lt;p&gt;Automatic differentiation lets us differentiate a program with &lt;em&gt;intermediate&lt;/em&gt;
 variables.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -4138,6 +4138,7 @@ div.cell.selected.jupyter-soft-selected {
   }
 }
 div.inner_cell {
+  min-width: 0;
   /* Old browsers */
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -4158,11 +4159,6 @@ div.inner_cell {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-}
-@-moz-document url-prefix() {
-  div.inner_cell {
-    overflow-x: hidden;
-  }
 }
 /* input_area and input_prompt must match in top border and margin for alignment */
 div.input_area {
@@ -4957,22 +4953,24 @@ h6:hover .anchor-link {
 
 .ansi-bold { font-weight: bold; }
 &lt;/style&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;In this notebook, we describe a simple trick for efficiently sampling a Bernoulli random variable $Y$ from a sigmoid-defined distribution, $p(Y = 1) = (1 + \exp(-x))^{-1}$, where $x \in \mathbb{R}$ is the only parameter of the distribution ($x$ is often defined as the dot product of features and weights).&lt;/p&gt;
 &lt;p&gt;The "slow" method for sampling from a sigmoid,&lt;/p&gt;
-$$
+&lt;p&gt;$$
 u \sim \textrm{Uniform}(0,1)
-$$$$
-Y = \textrm{sigmoid}(x) &gt; u
-$$&lt;p&gt;This method is slow because it calls the sigmoid function for every value of $x$. It is slow because $\exp$ is 2-3x slower than basic arithmetic operations.&lt;/p&gt;
-&lt;p&gt;In this post, I'll describe a simple trick, which is well-suited to vectorized computations (e.g., numpy, matlab). The way it works is by &lt;em&gt;precomputing&lt;/em&gt; the expensive stuff (i.e., calls to expensive functions like $\exp$).&lt;/p&gt;
 $$
+$$
+Y = \textrm{sigmoid}(x) &gt; u
+$$&lt;/p&gt;
+&lt;p&gt;This method is slow because it calls the sigmoid function for every value of $x$. It is slow because $\exp$ is 2-3x slower than basic arithmetic operations.&lt;/p&gt;
+&lt;p&gt;In this post, I'll describe a simple trick, which is well-suited to vectorized computations (e.g., numpy, matlab). The way it works is by &lt;em&gt;precomputing&lt;/em&gt; the expensive stuff (i.e., calls to expensive functions like $\exp$).&lt;/p&gt;
+&lt;p&gt;$$
 \textrm{sigmoid}(x) &gt; u \Leftrightarrow \textrm{logit}(\textrm{sigmoid}(x)) &gt; \textrm{logit}(u) \Leftrightarrow x &gt; \textrm{logit}(u).
-$$&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.org/wiki/Logit"&gt;logit&lt;/a&gt; is the inverse of sigmoid—sometimes it's called &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html"&gt;expit&lt;/a&gt; to highlight this connection—and (b) logit is strictly monotonic increasing you can apply it both sides of an inequality and preserve the ordering (there's a plot in the appendix).&lt;/p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.org/wiki/Logit"&gt;logit&lt;/a&gt; is the inverse of sigmoid—sometimes it's called &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html"&gt;expit&lt;/a&gt; to highlight this connection—and (b) logit is strictly monotonic increasing you can apply it both sides of an inequality and preserve the ordering (there's a plot in the appendix).&lt;/p&gt;
 &lt;p&gt;The "fast" method derives it's advantage by leveraging the fact that expensive computation can be done independently of the data (i.e., specific values of $x$). The fast method is also interesting as just cute math. In the bonus section of this post, we'll make a connection to the &lt;a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/"&gt;Gumbel-max trick&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How fast is it in practice?&lt;/strong&gt; Below, we run a quick experiment to test that the method is correct and how fast it is.&lt;/p&gt;
 &lt;/div&gt;
@@ -5055,7 +5053,8 @@ $$&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.o
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_subarea output_stream output_stdout output_text"&gt;
 &lt;pre&gt;fast is 26.8226x faster than slow1 &lt;span class="ansi-yellow-fg"&gt;(avg: slow1: 0.000353234 fast: 1.31693e-05)&lt;/span&gt;
 slow2 is 1.0093x faster than slow1 &lt;span class="ansi-yellow-fg"&gt;(avg: slow1: 0.000353234 slow2: 0.000349975)&lt;/span&gt;
@@ -5063,7 +5062,8 @@ slow1 is 1.0920x faster than slow3 &lt;span class="ansi-yellow-fg"&gt;(avg: slow
 &lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXcAAAD8CAYAAACMwORRAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xdc1dX/wPHXYW9QQUSGuHBvnJl7a9n+mu1ly/a3sp+2
@@ -5281,14 +5281,13 @@ Ryn1jdb6VhvHVaNknftlUkodAyK11vVxA6JqUUqNAd4BBmutU2wdT21RSjlhvGA8HGNSjwYma633
 2TSwWqSMI5SvgLNa68dtHY+1lY3c/621nmDrWGqazLmL6vgQ8AZWK6V2KqXmV/WE+qjsovG5w+D3
 A9/bc2IvcwVwGzCs7O92Z9mIVtRzMnIXQgg7JCN3IYSwQ5LchRDCDklyF0IIOyTJXQgh7JAkdyGE
 sEOS3IUQwg5JchdCCDskyV0IIezQ/wNdtglVGqfaoAAAAABJRU5ErkJggg==
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -5298,27 +5297,28 @@ sEOS3IUQwg5JchdCCDskyV0IIezQ/wNdtglVGqfaoAAAAABJRU5ErkJggg==
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;h2 id="Bonus"&gt;Bonus&lt;a class="anchor-link" href="#Bonus"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We could alternatively use the &lt;a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/"&gt;Gumbel-max trick&lt;/a&gt; to derive a similar algorithm. If we ground out the trick for a sigmoid instead of a general mutlinomal distributions, we end up with&lt;/p&gt;
-$$
+&lt;p&gt;$$
 Z_0 \sim \textrm{Gumbel}(0,1)
-$$$$
+$$
+$$
 Z_1 \sim \textrm{Gumbel}(0,1)
-$$$$
+$$
+$$
 Y = x &gt; Z_0 - Z_1
-$$&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
 &lt;p&gt;It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.&lt;/p&gt;
 &lt;p&gt;Voila! Our fast sampling trick and the Gumbel-max trick are connected!&lt;/p&gt;
 &lt;h2 id="Related-tricks"&gt;Related tricks&lt;a class="anchor-link" href="#Related-tricks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Another trick is Justin Domke's &lt;a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;trick&lt;/a&gt; to reduce calls to $\exp$ by $\approx 88\%$. The &lt;em&gt;disadvantage&lt;/em&gt; of this approach is that it's harder to implement with vectorization. The &lt;em&gt;advantage&lt;/em&gt; is that we don't need to precompute any expensive things.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -5326,8 +5326,7 @@ $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all exp
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -5349,7 +5348,8 @@ $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all exp
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXYAAAD8CAYAAABjAo9vAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAHXNJREFUeJzt3Xd4Vded7vHvQkKiCJCECqghQIjeBdjYtOAGLthx4h5P
@@ -5485,14 +5485,13 @@ MwRYABT4uU6n9aXfJfT8vxSMMcnARKDYr1W6w/FcC5gRu7W2yxjzIPAWPU/Qf2OtPWCMWd37/S/p
 WRmxEigCWuj5Gz6o9bHf/waMBH7eO3rtskF+YFIf+x1y+tJva22BMebPwD7ACzxlrT3rUrlg0cff
 9/eBp40x++lZIfIta23Qn/hojHkeWAokGGPKgO8CA8F3uaadpyIiISaQpmJERMQBCnYRkRCjYBcR
 CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -5518,7 +5517,8 @@ CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX4AAAD8CAYAAABw1c+bAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xl8VfWd//HXJyEBZFH2LUAAUUBkM4AIgigqi4Kd0Q62
@@ -5706,12 +5706,13 @@ BcB+YHbIsh/j9Y7YCIwKmf88fg8goBkwF9gMzAGaBvA9vADcV2ZeW2CmP90Zr2fHamAtXrNF0Pv9
 JSAXWIP3x9GmbG7/+Wi8Hh5bg86Nd4J/N7DK/5ocq/u6vP0G3Ffye4LXy2SSvzyXkB5tAeUdgtfs
 tyZk/44uk/l+f5+uxju5fk3Amcv9WcfyfvYzNcAr5BeHzIvaftaVuyIiSSbWm3pERCTCVPhFRJKM
 Cr+ISJJR4RcRSTIq/CIiSUaFX0Qkyajwi4gkGRV+EZEk8/8BqAuC7RfrrmsAAAAASUVORK5CYII=
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+&lt;/div&gt;
+
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -5896,6 +5897,7 @@ div.cell.selected.jupyter-soft-selected {
   }
 }
 div.inner_cell {
+  min-width: 0;
   /* Old browsers */
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -5916,11 +5918,6 @@ div.inner_cell {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-}
-@-moz-document url-prefix() {
-  div.inner_cell {
-    overflow-x: hidden;
-  }
 }
 /* input_area and input_prompt must match in top border and margin for alignment */
 div.input_area {
@@ -6715,22 +6712,24 @@ h6:hover .anchor-link {
 
 .ansi-bold { font-weight: bold; }
 &lt;/style&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;In this notebook, we describe a simple trick for efficiently sampling a Bernoulli random variable $Y$ from a sigmoid-defined distribution, $p(Y = 1) = (1 + \exp(-x))^{-1}$, where $x \in \mathbb{R}$ is the only parameter of the distribution ($x$ is often defined as the dot product of features and weights).&lt;/p&gt;
 &lt;p&gt;The "slow" method for sampling from a sigmoid,&lt;/p&gt;
-$$
+&lt;p&gt;$$
 u \sim \textrm{Uniform}(0,1)
-$$$$
-Y = \textrm{sigmoid}(x) &gt; u
-$$&lt;p&gt;This method is slow because it calls the sigmoid function for every value of $x$. It is slow because $\exp$ is 2-3x slower than basic arithmetic operations.&lt;/p&gt;
-&lt;p&gt;In this post, I'll describe a simple trick, which is well-suited to vectorized computations (e.g., numpy, matlab). The way it works is by &lt;em&gt;precomputing&lt;/em&gt; the expensive stuff (i.e., calls to expensive functions like $\exp$).&lt;/p&gt;
 $$
+$$
+Y = \textrm{sigmoid}(x) &gt; u
+$$&lt;/p&gt;
+&lt;p&gt;This method is slow because it calls the sigmoid function for every value of $x$. It is slow because $\exp$ is 2-3x slower than basic arithmetic operations.&lt;/p&gt;
+&lt;p&gt;In this post, I'll describe a simple trick, which is well-suited to vectorized computations (e.g., numpy, matlab). The way it works is by &lt;em&gt;precomputing&lt;/em&gt; the expensive stuff (i.e., calls to expensive functions like $\exp$).&lt;/p&gt;
+&lt;p&gt;$$
 \textrm{sigmoid}(x) &gt; u \Leftrightarrow \textrm{logit}(\textrm{sigmoid}(x)) &gt; \textrm{logit}(u) \Leftrightarrow x &gt; \textrm{logit}(u).
-$$&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.org/wiki/Logit"&gt;logit&lt;/a&gt; is the inverse of sigmoid—sometimes it's called &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html"&gt;expit&lt;/a&gt; to highlight this connection—and (b) logit is strictly monotonic increasing you can apply it both sides of an inequality and preserve the ordering (there's a plot in the appendix).&lt;/p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.org/wiki/Logit"&gt;logit&lt;/a&gt; is the inverse of sigmoid—sometimes it's called &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html"&gt;expit&lt;/a&gt; to highlight this connection—and (b) logit is strictly monotonic increasing you can apply it both sides of an inequality and preserve the ordering (there's a plot in the appendix).&lt;/p&gt;
 &lt;p&gt;The "fast" method derives it's advantage by leveraging the fact that expensive computation can be done independently of the data (i.e., specific values of $x$). The fast method is also interesting as just cute math. In the bonus section of this post, we'll make a connection to the &lt;a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/"&gt;Gumbel-max trick&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How fast is it in practice?&lt;/strong&gt; Below, we run a quick experiment to test that the method is correct and how fast it is.&lt;/p&gt;
 &lt;/div&gt;
@@ -6813,7 +6812,8 @@ $$&lt;p&gt;Some details worth mentioning: (a) &lt;a href="https://en.wikipedia.o
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_subarea output_stream output_stdout output_text"&gt;
 &lt;pre&gt;fast is 26.8226x faster than slow1 &lt;span class="ansi-yellow-fg"&gt;(avg: slow1: 0.000353234 fast: 1.31693e-05)&lt;/span&gt;
 slow2 is 1.0093x faster than slow1 &lt;span class="ansi-yellow-fg"&gt;(avg: slow1: 0.000353234 slow2: 0.000349975)&lt;/span&gt;
@@ -6821,7 +6821,8 @@ slow1 is 1.0920x faster than slow3 &lt;span class="ansi-yellow-fg"&gt;(avg: slow
 &lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXcAAAD8CAYAAACMwORRAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xdc1dX/wPHXYW9QQUSGuHBvnJl7a9n+mu1ly/a3sp+2
@@ -7039,14 +7040,13 @@ Ryn1jdb6VhvHVaNknftlUkodAyK11vVxA6JqUUqNAd4BBmutU2wdT21RSjlhvGA8HGNSjwYma633
 2TSwWqSMI5SvgLNa68dtHY+1lY3c/621nmDrWGqazLmL6vgQ8AZWK6V2KqXmV/WE+qjsovG5w+D3
 A9/bc2IvcwVwGzCs7O92Z9mIVtRzMnIXQgg7JCN3IYSwQ5LchRDCDklyF0IIOyTJXQgh7JAkdyGE
 sEOS3IUQwg5JchdCCDskyV0IIezQ/wNdtglVGqfaoAAAAABJRU5ErkJggg==
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -7056,27 +7056,28 @@ sEOS3IUQwg5JchdCCDskyV0IIezQ/wNdtglVGqfaoAAAAABJRU5ErkJggg==
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;h2 id="Bonus"&gt;Bonus&lt;a class="anchor-link" href="#Bonus"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We could alternatively use the &lt;a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/"&gt;Gumbel-max trick&lt;/a&gt; to derive a similar algorithm. If we ground out the trick for a sigmoid instead of a general mutlinomal distributions, we end up with&lt;/p&gt;
-$$
+&lt;p&gt;$$
 Z_0 \sim \textrm{Gumbel}(0,1)
-$$$$
+$$
+$$
 Z_1 \sim \textrm{Gumbel}(0,1)
-$$$$
+$$
+$$
 Y = x &gt; Z_0 - Z_1
-$$&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate &lt;em&gt;two&lt;/em&gt; Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a &lt;a href="https://en.wikipedia.org/wiki/Logistic_distribution"&gt;logistic&lt;/a&gt; RV (specifically $\textrm{Logistic}(0,1)$).&lt;/p&gt;
 &lt;p&gt;It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.&lt;/p&gt;
 &lt;p&gt;Voila! Our fast sampling trick and the Gumbel-max trick are connected!&lt;/p&gt;
 &lt;h2 id="Related-tricks"&gt;Related tricks&lt;a class="anchor-link" href="#Related-tricks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Another trick is Justin Domke's &lt;a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/"&gt;trick&lt;/a&gt; to reduce calls to $\exp$ by $\approx 88\%$. The &lt;em&gt;disadvantage&lt;/em&gt; of this approach is that it's harder to implement with vectorization. The &lt;em&gt;advantage&lt;/em&gt; is that we don't need to precompute any expensive things.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -7084,8 +7085,7 @@ $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all exp
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -7107,7 +7107,8 @@ $$&lt;p&gt;Much like our new trick, this one benefits from the fact that all exp
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXYAAAD8CAYAAABjAo9vAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAHXNJREFUeJzt3Xd4Vded7vHvQkKiCJCECqghQIjeBdjYtOAGLthx4h5P
@@ -7243,14 +7244,13 @@ MwRYABT4uU6n9aXfJfT8vxSMMcnARKDYr1W6w/FcC5gRu7W2yxjzIPAWPU/Qf2OtPWCMWd37/S/p
 WRmxEigCWuj5Gz6o9bHf/waMBH7eO3rtskF+YFIf+x1y+tJva22BMebPwD7ACzxlrT3rUrlg0cff
 9/eBp40x++lZIfIta23Qn/hojHkeWAokGGPKgO8CA8F3uaadpyIiISaQpmJERMQBCnYRkRCjYBcR
 CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;
-&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
@@ -7276,7 +7276,8 @@ CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
 &lt;/div&gt;
 &lt;div class="output_wrapper"&gt;
 &lt;div class="output"&gt;
-&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
 &lt;div class="output_png output_subarea "&gt;
 &lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX4AAAD8CAYAAABw1c+bAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xl8VfWd//HXJyEBZFH2LUAAUUBkM4AIgigqi4Kd0Q62
@@ -7464,12 +7465,13 @@ BcB+YHbIsh/j9Y7YCIwKmf88fg8goBkwF9gMzAGaBvA9vADcV2ZeW2CmP90Zr2fHamAtXrNF0Pv9
 JSAXWIP3x9GmbG7/+Wi8Hh5bg86Nd4J/N7DK/5ocq/u6vP0G3Ffye4LXy2SSvzyXkB5tAeUdgtfs
 tyZk/44uk/l+f5+uxju5fk3Amcv9WcfyfvYzNcAr5BeHzIvaftaVuyIiSSbWm3pERCTCVPhFRJKM
 Cr+ISJJR4RcRSTIq/CIiSUaFX0Qkyajwi4gkGRV+EZEk8/8BqAuC7RfrrmsAAAAASUVORK5CYII=
-"&gt;
-&lt;/img&gt;&lt;/div&gt;
+"/&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+&lt;/div&gt;
+
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
