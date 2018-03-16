@@ -21,7 +21,7 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
 Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating* the gradient
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, &lt;em&gt;approximating&lt;/em&gt; the gradient
 takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
 gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
 &lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
@@ -196,7 +196,7 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
 Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating* the gradient
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, &lt;em&gt;approximating&lt;/em&gt; the gradient
 takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
 gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
 &lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
