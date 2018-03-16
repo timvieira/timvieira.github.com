@@ -349,7 +349,7 @@ evaluations per iteration.&amp;#160;&lt;a class="footnote-backref" href="#fnref-
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="optimization calculus"></category></entry><entry><title>Backprop is not just the chain rule</title><link href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"></link><published>2017-08-18T00:00:00-04:00</published><updated>2017-08-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-08-18:/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id><summary type="html">&lt;p&gt;Almost everyone I know says that "backprop is just the chain rule." Although
+&lt;/script&gt;</content><category term="optimization"></category><category term="calculus"></category></entry><entry><title>Backprop is not just the chain rule</title><link href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"></link><published>2017-08-18T00:00:00-04:00</published><updated>2017-08-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-08-18:/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id><summary type="html">&lt;p&gt;Almost everyone I know says that "backprop is just the chain rule." Although
 that's &lt;em&gt;basically true&lt;/em&gt;, there are some subtle and beautiful things about
 automatic differentiation techniques (including backprop) that will not be
 appreciated with this &lt;em&gt;dismissive&lt;/em&gt; attitude.&lt;/p&gt;
