@@ -1,5 +1,355 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2017-08-18T00:00:00-04:00</updated><entry><title>Backprop is not just the chain rule</title><link href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"></link><published>2017-08-18T00:00:00-04:00</published><updated>2017-08-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-08-18:/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id><summary type="html">&lt;p&gt;Almost everyone I know says that "backprop is just the chain rule." Although
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2018-02-20T00:00:00-05:00</updated><entry><title>Black-box optimization</title><link href="http://timvieira.github.io/blog/post/2018/02/20/black-box-optimization/" rel="alternate"></link><published>2018-02-20T00:00:00-05:00</published><updated>2018-02-20T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2018-02-20:/blog/post/2018/02/20/black-box-optimization/</id><summary type="html">&lt;p&gt;Black-box optimization algorithms are a fantastic tool that everyone should be
+aware of. I frequently use black-box optimization algorithms for prototyping and
+when gradient-based algorithms fail,
+e.g., because the function is not differentiable,
+because the function is truly opaque (no gradients),
+because the gradient would require too much memory to compute efficiently.&lt;/p&gt;
+&lt;p&gt;From a young age, we are taught to love gradients and hence become obsessed with
+gradient descent. I believe this obsession has put us in a local optimum. I've
+been amazed at how few people know about non-gradient algorithms of
+optimization. This is slowly improving thanks to the prevalence of
+hyperparameter optimization, so most people have used random search and (at
+least) know of Bayesian optimization.&lt;/p&gt;
+&lt;p&gt;There are many ways to optimize a function! The gradient just happens to have a
+&lt;a href="/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/"&gt;beautiful&lt;/a&gt; and
+&lt;a href="/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;computationally efficient&lt;/a&gt;
+shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in Euclidean space.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What is a descent direction anyway?&lt;/strong&gt; For minimizing an function &lt;span class="math"&gt;\(f:
+\mathbb{R}^d \mapsto \mathbb{R}\)&lt;/span&gt;, a descent direction for &lt;span class="math"&gt;\(f\)&lt;/span&gt; is a
+&lt;span class="math"&gt;\((d+1)\)&lt;/span&gt;-dimensional hyperplane. The gradient gives a unique hyperplane that is
+tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
+coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
+Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating&lt;em&gt; the gradient
+&lt;/em&gt;takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
+&lt;em&gt;gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
+&lt;/em&gt;&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
+&lt;em&gt;&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
+&lt;/em&gt;shouldn't be surprising since that's the size of the object we're looking for
+*anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Can we do better?&lt;/strong&gt; Suppose we had &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt; arbitrary points
+&lt;span class="math"&gt;\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)&lt;/span&gt; in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt; with
+values &lt;span class="math"&gt;\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)&lt;/span&gt; Can we find efficiently find a
+descent direction without extra &lt;span class="math"&gt;\(f\)&lt;/span&gt; evaluations?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Nelder-Mead trick:&lt;/strong&gt; Take the worst-performing point in this set
+&lt;span class="math"&gt;\(\boldsymbol{x}^{(\text{worst})}\)&lt;/span&gt; and consider moving that point through the
+center-of-mass of the &lt;span class="math"&gt;\(d\)&lt;/span&gt; remaining points. Call this the NM direction. At some
+point along that direction (think line search) there will be a good place to put
+that point, which will make it the new best point. We can now repeat this
+process: pick the worst point, reflect it through the center of mass, etc.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The cost of finding the NM descent direction requires no additional function
+   evaluations, which allows the method to be very frugal with function
+   evaluations. Of course, stepping in the search direction should use line
+   search, which will require additional function evaluations; gradient-based
+   methods also benefit from line search.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Finding the worst point can be done in time &lt;span class="math"&gt;\(\mathcal{O}(\log d)\)&lt;/span&gt; using a
+   &lt;a href="https://en.wikipedia.org/wiki/Heap_(data_structure)"&gt;heap&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;This NM direction might is not the steepest descent direction&amp;mdash;like the
+   gradient&amp;mdash;but it does give a reasonable descent direction to
+   follow. Often, the NM direction is more useful than the gradient direction
+   because it is not based on an infinitesimal ball around the current point
+   like the gradient. NM often "works" on noisy and nonsmooth functions where
+   gradients do not exist.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;On high-dimensional problems, NM requires a significant number of "warm up"
+ &lt;em&gt;function&lt;/em&gt; evaluations before it can take its first informed step. Whereas,
+ gradient descent could plausibly CONVERGE in fewer &lt;em&gt;gradient&lt;/em&gt; evaluations
+ (assuming sufficiently "nice" functions)! So, if you have high-dimensional
+ problem and efficient gradients, use them.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In three dimensions, we can visualize this as a tetrahedron with corners that
+   "stick" to the surface of the function. At each iterations, the highest
+   (i.e., worst performing) point is the one most likely to be affected by
+   "gravity" which causes it to flip through the middle of the blob, as the
+   other points stay stuck.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;center&gt;
+   &lt;img alt="Nelder-Mead animation" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nelder-Mead_Himmelblau.gif/320px-Nelder-Mead_Himmelblau.gif"&gt;
+   &lt;br/&gt;&lt;em&gt;(animation source: Wikipedia page for Nelder-Mead)&lt;/em&gt;
+   &lt;/center&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is exactly the descent direction used in the
+   &lt;a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method"&gt;Nelder-Mead algorithm&lt;/a&gt;
+   (Nelder &amp;amp; Mead, 1965), which happens to be a great default algorithm for
+   locally optimizing functions without access to gradients. Matlab and scipy
+   users may know it better as
+   &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin.html"&gt;&lt;code&gt;fmin&lt;/code&gt;&lt;/a&gt;.
+   There are some additional "search moves" required to turn NM into a robust
+   algorithm; these include shrinking and growing the set of points. I won't try
+   to make yet another tutorial on the specifics of Nelder-Mead, as several
+   already exist, but rather bring it to your attention as a plausible approach
+   for efficiently finding descent directions. You can find a tutorial with
+   plenty of visualization on its
+   &lt;a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method"&gt;Wikipedia page&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Summary&lt;/h3&gt;
+&lt;p&gt;I described the Nelder-Mead search direction as an efficient way to leverage
+past function evaluations to find a descent directions, which serves as a
+reasonable alternative to gradients when they are unavailable (or not useful).&lt;/p&gt;
+&lt;h3&gt;Further reading&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;There are plenty of other black-box optimization algorithms out there. The
+   wiki page on
+   &lt;a href="https://en.wikipedia.org/wiki/Derivative-free_optimization"&gt;derivative-free optimization&lt;/a&gt;
+   is a good starting point for learning more.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="footnote"&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id="fn-twosidedfd"&gt;
+&lt;p&gt;Of course, it's better to use the two-sided difference
+approximation to the gradient in practice, which requires &lt;span class="math"&gt;\(2 \cdot d\)&lt;/span&gt; function
+evaluations, not &lt;span class="math"&gt;\(d+1\)&lt;/span&gt;.&amp;#160;&lt;a class="footnote-backref" href="#fnref-twosidedfd" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id="fn-faster-but-noisy"&gt;
+&lt;p&gt;Note that we can get noisy, approximations with much fewer
+than &lt;span class="math"&gt;\(\mathcal{O}(d)\)&lt;/span&gt; evaluations, e.g.,
+&lt;a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation"&gt;SPSA&lt;/a&gt;
+or even REINFORCE obtain gradients approximations with just &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt;
+evaluations per iteration.&amp;#160;&lt;a class="footnote-backref" href="#fnref-faster-but-noisy" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><content type="html">&lt;p&gt;Black-box optimization algorithms are a fantastic tool that everyone should be
+aware of. I frequently use black-box optimization algorithms for prototyping and
+when gradient-based algorithms fail,
+e.g., because the function is not differentiable,
+because the function is truly opaque (no gradients),
+because the gradient would require too much memory to compute efficiently.&lt;/p&gt;
+&lt;p&gt;From a young age, we are taught to love gradients and hence become obsessed with
+gradient descent. I believe this obsession has put us in a local optimum. I've
+been amazed at how few people know about non-gradient algorithms of
+optimization. This is slowly improving thanks to the prevalence of
+hyperparameter optimization, so most people have used random search and (at
+least) know of Bayesian optimization.&lt;/p&gt;
+&lt;p&gt;There are many ways to optimize a function! The gradient just happens to have a
+&lt;a href="/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/"&gt;beautiful&lt;/a&gt; and
+&lt;a href="/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;computationally efficient&lt;/a&gt;
+shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in Euclidean space.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What is a descent direction anyway?&lt;/strong&gt; For minimizing an function &lt;span class="math"&gt;\(f:
+\mathbb{R}^d \mapsto \mathbb{R}\)&lt;/span&gt;, a descent direction for &lt;span class="math"&gt;\(f\)&lt;/span&gt; is a
+&lt;span class="math"&gt;\((d+1)\)&lt;/span&gt;-dimensional hyperplane. The gradient gives a unique hyperplane that is
+tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
+coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
+Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating&lt;em&gt; the gradient
+&lt;/em&gt;takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
+&lt;em&gt;gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
+&lt;/em&gt;&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
+&lt;em&gt;&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
+&lt;/em&gt;shouldn't be surprising since that's the size of the object we're looking for
+*anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Can we do better?&lt;/strong&gt; Suppose we had &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt; arbitrary points
+&lt;span class="math"&gt;\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)&lt;/span&gt; in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt; with
+values &lt;span class="math"&gt;\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)&lt;/span&gt; Can we find efficiently find a
+descent direction without extra &lt;span class="math"&gt;\(f\)&lt;/span&gt; evaluations?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Nelder-Mead trick:&lt;/strong&gt; Take the worst-performing point in this set
+&lt;span class="math"&gt;\(\boldsymbol{x}^{(\text{worst})}\)&lt;/span&gt; and consider moving that point through the
+center-of-mass of the &lt;span class="math"&gt;\(d\)&lt;/span&gt; remaining points. Call this the NM direction. At some
+point along that direction (think line search) there will be a good place to put
+that point, which will make it the new best point. We can now repeat this
+process: pick the worst point, reflect it through the center of mass, etc.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The cost of finding the NM descent direction requires no additional function
+   evaluations, which allows the method to be very frugal with function
+   evaluations. Of course, stepping in the search direction should use line
+   search, which will require additional function evaluations; gradient-based
+   methods also benefit from line search.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Finding the worst point can be done in time &lt;span class="math"&gt;\(\mathcal{O}(\log d)\)&lt;/span&gt; using a
+   &lt;a href="https://en.wikipedia.org/wiki/Heap_(data_structure)"&gt;heap&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;This NM direction might is not the steepest descent direction&amp;mdash;like the
+   gradient&amp;mdash;but it does give a reasonable descent direction to
+   follow. Often, the NM direction is more useful than the gradient direction
+   because it is not based on an infinitesimal ball around the current point
+   like the gradient. NM often "works" on noisy and nonsmooth functions where
+   gradients do not exist.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;On high-dimensional problems, NM requires a significant number of "warm up"
+ &lt;em&gt;function&lt;/em&gt; evaluations before it can take its first informed step. Whereas,
+ gradient descent could plausibly CONVERGE in fewer &lt;em&gt;gradient&lt;/em&gt; evaluations
+ (assuming sufficiently "nice" functions)! So, if you have high-dimensional
+ problem and efficient gradients, use them.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In three dimensions, we can visualize this as a tetrahedron with corners that
+   "stick" to the surface of the function. At each iterations, the highest
+   (i.e., worst performing) point is the one most likely to be affected by
+   "gravity" which causes it to flip through the middle of the blob, as the
+   other points stay stuck.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;center&gt;
+   &lt;img alt="Nelder-Mead animation" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nelder-Mead_Himmelblau.gif/320px-Nelder-Mead_Himmelblau.gif"&gt;
+   &lt;br/&gt;&lt;em&gt;(animation source: Wikipedia page for Nelder-Mead)&lt;/em&gt;
+   &lt;/center&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is exactly the descent direction used in the
+   &lt;a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method"&gt;Nelder-Mead algorithm&lt;/a&gt;
+   (Nelder &amp;amp; Mead, 1965), which happens to be a great default algorithm for
+   locally optimizing functions without access to gradients. Matlab and scipy
+   users may know it better as
+   &lt;a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin.html"&gt;&lt;code&gt;fmin&lt;/code&gt;&lt;/a&gt;.
+   There are some additional "search moves" required to turn NM into a robust
+   algorithm; these include shrinking and growing the set of points. I won't try
+   to make yet another tutorial on the specifics of Nelder-Mead, as several
+   already exist, but rather bring it to your attention as a plausible approach
+   for efficiently finding descent directions. You can find a tutorial with
+   plenty of visualization on its
+   &lt;a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method"&gt;Wikipedia page&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Summary&lt;/h3&gt;
+&lt;p&gt;I described the Nelder-Mead search direction as an efficient way to leverage
+past function evaluations to find a descent directions, which serves as a
+reasonable alternative to gradients when they are unavailable (or not useful).&lt;/p&gt;
+&lt;h3&gt;Further reading&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;There are plenty of other black-box optimization algorithms out there. The
+   wiki page on
+   &lt;a href="https://en.wikipedia.org/wiki/Derivative-free_optimization"&gt;derivative-free optimization&lt;/a&gt;
+   is a good starting point for learning more.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="footnote"&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id="fn-twosidedfd"&gt;
+&lt;p&gt;Of course, it's better to use the two-sided difference
+approximation to the gradient in practice, which requires &lt;span class="math"&gt;\(2 \cdot d\)&lt;/span&gt; function
+evaluations, not &lt;span class="math"&gt;\(d+1\)&lt;/span&gt;.&amp;#160;&lt;a class="footnote-backref" href="#fnref-twosidedfd" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id="fn-faster-but-noisy"&gt;
+&lt;p&gt;Note that we can get noisy, approximations with much fewer
+than &lt;span class="math"&gt;\(\mathcal{O}(d)\)&lt;/span&gt; evaluations, e.g.,
+&lt;a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation"&gt;SPSA&lt;/a&gt;
+or even REINFORCE obtain gradients approximations with just &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt;
+evaluations per iteration.&amp;#160;&lt;a class="footnote-backref" href="#fnref-faster-but-noisy" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="optimization calculus"></category></entry><entry><title>Backprop is not just the chain rule</title><link href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"></link><published>2017-08-18T00:00:00-04:00</published><updated>2017-08-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-08-18:/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id><summary type="html">&lt;p&gt;Almost everyone I know says that "backprop is just the chain rule." Although
 that's &lt;em&gt;basically true&lt;/em&gt;, there are some subtle and beautiful things about
 automatic differentiation techniques (including backprop) that will not be
 appreciated with this &lt;em&gt;dismissive&lt;/em&gt; attitude.&lt;/p&gt;
@@ -984,8 +1334,8 @@ unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
 style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
 little different from that in the priority sampling papers. I think it's more
 straightforward. More importantly, it shows how we can extend the method to
-sample from slightly different without replacement distributions
-(as long as we can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
+sample from slightly different without-replacement distributions (as long as we
+can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray}
 \mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
@@ -1296,8 +1646,8 @@ unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
 style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
 little different from that in the priority sampling papers. I think it's more
 straightforward. More importantly, it shows how we can extend the method to
-sample from slightly different without replacement distributions
-(as long as we can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
+sample from slightly different without-replacement distributions (as long as we
+can compute &lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray}
 \mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
@@ -9515,15 +9865,17 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</content><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: Multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
+&lt;p&gt;Understanding this very basic connection not only deepens our understanding, but
+also suggests a method for testing complex CRF code.&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
 label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
 on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
 gradient:&lt;/p&gt;
 &lt;div class="math"&gt;$$
-\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$&lt;/div&gt;
 &lt;p&gt;where
 &lt;/p&gt;
@@ -9535,12 +9887,16 @@ Z(x) &amp;amp;=&amp;amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
 $$&lt;/div&gt;
 &lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
 &lt;div class="math"&gt;$$
-\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
+\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
 $$&lt;/div&gt;
-&lt;p&gt;A conditional random field is exactly multiclass logistic regression. The only
-difference is that the sum and argmax are inefficient to compute naively (i.e.,
-by enumeration). This point is often lost when people first learn about
-CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;A conditional random field is &lt;em&gt;exactly&lt;/em&gt; multiclass logistic regression. The only
+difference is that the sums (&lt;span class="math"&gt;\(Z(x)\)&lt;/span&gt; and &lt;span class="math"&gt;\(\sum_{y \in \mathcal{Y}} p(y|x)
+\phi(x,y)\)&lt;/span&gt;) and the argmax &lt;span class="math"&gt;\(\widehat{y}(x)\)&lt;/span&gt; are inefficient to compute naively
+(i.e., by brute-force enumeration). This point is often lost when people first
+learn about CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;Brute-force enumeration is a very useful method for testing complex dynamic
+programming procedures for computing the sums and the argmax on relatively small
+examples. Don't just copy code for dynamic programming out of a paper! Test it!&lt;/p&gt;
 &lt;p&gt;Here's some stuff you'll see once we start talking about CRFs:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -9559,10 +9915,10 @@ the "sum" and "max" over a handful of categories. Once we move to a structured
 label space, this term gets throw around. (BTW, this isn't "statistical
 inference," just algorithms to compute sum and max over &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt;.)&lt;/p&gt;
 &lt;p&gt;Graphical models establish a notation and structural properties which allow
-efficient inference -- things like cycles and treewidth.&lt;/p&gt;
+efficient inference&amp;mdash;things like cycles and treewidth.&lt;/p&gt;
 &lt;p&gt;Model templating is the only essential trick to move from logistic regression to
 a CRF. Templating "solves" the problem that not all training examples have the
-same "size" -- the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
+same "size"&amp;mdash;the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
 template specifies how to compute the features for an entire output, by looking
 at interactions between subsets of variables.&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -9632,15 +9988,17 @@ quite different.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><content type="html">&lt;p&gt;A short rant: multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</summary><content type="html">&lt;p&gt;A short rant: Multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
+&lt;p&gt;Understanding this very basic connection not only deepens our understanding, but
+also suggests a method for testing complex CRF code.&lt;/p&gt;
 &lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
 label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
 on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
 gradient:&lt;/p&gt;
 &lt;div class="math"&gt;$$
-\phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$&lt;/div&gt;
 &lt;p&gt;where
 &lt;/p&gt;
@@ -9652,12 +10010,16 @@ Z(x) &amp;amp;=&amp;amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
 $$&lt;/div&gt;
 &lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
 &lt;div class="math"&gt;$$
-\hat{y}(x) = \textbf{argmax}_{y \in \mathcal{Y}} \theta^\top \phi(x,y)
+\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
 $$&lt;/div&gt;
-&lt;p&gt;A conditional random field is exactly multiclass logistic regression. The only
-difference is that the sum and argmax are inefficient to compute naively (i.e.,
-by enumeration). This point is often lost when people first learn about
-CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;A conditional random field is &lt;em&gt;exactly&lt;/em&gt; multiclass logistic regression. The only
+difference is that the sums (&lt;span class="math"&gt;\(Z(x)\)&lt;/span&gt; and &lt;span class="math"&gt;\(\sum_{y \in \mathcal{Y}} p(y|x)
+\phi(x,y)\)&lt;/span&gt;) and the argmax &lt;span class="math"&gt;\(\widehat{y}(x)\)&lt;/span&gt; are inefficient to compute naively
+(i.e., by brute-force enumeration). This point is often lost when people first
+learn about CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;Brute-force enumeration is a very useful method for testing complex dynamic
+programming procedures for computing the sums and the argmax on relatively small
+examples. Don't just copy code for dynamic programming out of a paper! Test it!&lt;/p&gt;
 &lt;p&gt;Here's some stuff you'll see once we start talking about CRFs:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -9676,10 +10038,10 @@ the "sum" and "max" over a handful of categories. Once we move to a structured
 label space, this term gets throw around. (BTW, this isn't "statistical
 inference," just algorithms to compute sum and max over &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt;.)&lt;/p&gt;
 &lt;p&gt;Graphical models establish a notation and structural properties which allow
-efficient inference -- things like cycles and treewidth.&lt;/p&gt;
+efficient inference&amp;mdash;things like cycles and treewidth.&lt;/p&gt;
 &lt;p&gt;Model templating is the only essential trick to move from logistic regression to
 a CRF. Templating "solves" the problem that not all training examples have the
-same "size" -- the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
+same "size"&amp;mdash;the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
 template specifies how to compute the features for an entire output, by looking
 at interactions between subsets of variables.&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -12249,23 +12611,54 @@ plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;, my favorites are:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
+&lt;p&gt;Coordinate vectors: Varying one (or two) dimensions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.&lt;/p&gt;
+    increase/decrease in the objective, unless it's zero because we're at a
+    local optimum. Some variations on "descent" directions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Use the gradient direction of a &lt;em&gt;different&lt;/em&gt; objective, e.g., plot
+  (nondifferentiable) accuracy on dev data along the (differentiable)
+  likelihood direction on training data.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Coordinate vectors. Varying one dimension per plot.&lt;/p&gt;
+&lt;p&gt;Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
+  directions which summarize the most variation.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Random. I recommend directions drawn from a spherical
-    Gaussian.&lt;sup id="fnref-sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn-sphericalgaussian"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
+&lt;p&gt;The difference of two interesting points, e.g., the start and end points of
+    your optimization, two different solutions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Random:&lt;/p&gt;
+&lt;p&gt;If all your parameters are on an equal scale, I recommend directions drawn
+from a spherical Gaussian.&lt;sup id="fnref-sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn-sphericalgaussian"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a
+vector is uniformly distributed across all unit-length directions (i.e., the
+angle of the vector, not it's length). We will vary the length ourselves via
+&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;However, often components of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; have different scales, so
+finding a "natural scale" is crucial if we are going to draw conclusions
+that require a comparison of the perturbation sensitivities across several
+dimensions&amp;mdash;this is closely related to why we like second-order and
+adaptive optimization algorithms
+(&lt;a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/"&gt;discussion&lt;/a&gt;);
+&lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;'s units must match the units of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; in each
+coordinate!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Maximize "interestingness": You can also use a direction-optimization
+    procedure to maximize some measure of "interestingness" (e.g., the direction
+    in which training and dev loss differ the most; the "bumpiest" direction or
+    direction taking the biggest range of values).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d_2}\)&lt;/span&gt;, and varying two
-parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend these ideas to generating
+three-dimensional plots by using two vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(\boldsymbol{d_2},\)&lt;/span&gt; and varying two parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$&lt;/div&gt;
@@ -12273,6 +12666,10 @@ $$&lt;/div&gt;
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
 algorithms.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://arxiv.org/abs/1712.09913"&gt;Visualizing the Loss Landscape of Neural Nets&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2&gt;Notes&lt;/h2&gt;
 &lt;div class="footnote"&gt;
 &lt;hr&gt;
@@ -12368,23 +12765,54 @@ plot &lt;span class="math"&gt;\((\alpha_i,f_i)\)&lt;/span&gt;.&lt;/p&gt;
 &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;, my favorites are:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
+&lt;p&gt;Coordinate vectors: Varying one (or two) dimensions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero.&lt;/p&gt;
+    increase/decrease in the objective, unless it's zero because we're at a
+    local optimum. Some variations on "descent" directions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Use the gradient direction of a &lt;em&gt;different&lt;/em&gt; objective, e.g., plot
+  (nondifferentiable) accuracy on dev data along the (differentiable)
+  likelihood direction on training data.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Coordinate vectors. Varying one dimension per plot.&lt;/p&gt;
+&lt;p&gt;Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
+  directions which summarize the most variation.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Random. I recommend directions drawn from a spherical
-    Gaussian.&lt;sup id="fnref-sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn-sphericalgaussian"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a vector is
-    uniformly distributed across all unit-length directions (i.e., the angle of
-    the vector, not it's length). We will vary the length ourselves via
-    &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. It's probably best that our plots don't randomly vary in scale.&lt;/p&gt;
+&lt;p&gt;The difference of two interesting points, e.g., the start and end points of
+    your optimization, two different solutions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Random:&lt;/p&gt;
+&lt;p&gt;If all your parameters are on an equal scale, I recommend directions drawn
+from a spherical Gaussian.&lt;sup id="fnref-sphericalgaussian"&gt;&lt;a class="footnote-ref" href="#fn-sphericalgaussian"&gt;1&lt;/a&gt;&lt;/sup&gt; The reason being that such a
+vector is uniformly distributed across all unit-length directions (i.e., the
+angle of the vector, not it's length). We will vary the length ourselves via
+&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;However, often components of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; have different scales, so
+finding a "natural scale" is crucial if we are going to draw conclusions
+that require a comparison of the perturbation sensitivities across several
+dimensions&amp;mdash;this is closely related to why we like second-order and
+adaptive optimization algorithms
+(&lt;a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/"&gt;discussion&lt;/a&gt;);
+&lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;'s units must match the units of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt; in each
+coordinate!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Maximize "interestingness": You can also use a direction-optimization
+    procedure to maximize some measure of "interestingness" (e.g., the direction
+    in which training and dev loss differ the most; the "bumpiest" direction or
+    direction taking the biggest range of values).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend this generating 3d plots by
-using 2 vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{d_2}\)&lt;/span&gt;, and varying two
-parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Extension to 3d&lt;/strong&gt;: It's pretty easy to extend these ideas to generating
+three-dimensional plots by using two vectors, &lt;span class="math"&gt;\(\boldsymbol{d_1}\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(\boldsymbol{d_2},\)&lt;/span&gt; and varying two parameters &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; and &lt;span class="math"&gt;\(\beta\)&lt;/span&gt;,&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$&lt;/div&gt;
@@ -12392,6 +12820,10 @@ $$&lt;/div&gt;
 verify/explore properties of an objective function, compare approximations, test
 sensitivity to certain parameters/hyperparameters, visually debug optimization
 algorithms.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://arxiv.org/abs/1712.09913"&gt;Visualizing the Loss Landscape of Neural Nets&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2&gt;Notes&lt;/h2&gt;
 &lt;div class="footnote"&gt;
 &lt;hr&gt;
@@ -12460,7 +12892,7 @@ sample &lt;span class="math"&gt;\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</content><category term="visualization"></category></entry><entry><title>Exp-normalize trick</title><link href="http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><published>2014-02-11T00:00:00-05:00</published><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-11:/blog/post/2014/02/11/exp-normalize-trick/</id><summary type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
-(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
+(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;).&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -12476,12 +12908,26 @@ $$&lt;/div&gt;
 &lt;p&gt;In other words, the &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is shift-invariant. A reasonable choice
 is &lt;span class="math"&gt;\(b = \max_{i=1}^n x_i\)&lt;/span&gt;. With this choice, overflow due to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is
 impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponentiated after shifting is &lt;span class="math"&gt;\(0\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If what you want to remain in log-space, that is, compute
-&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
-&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
+&lt;p&gt;The naive implementation is terrible when there are large numbers!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;overflow&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;invalid&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;true_divide&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nan&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The exp-normalize trick avoid this common problem.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
@@ -12492,7 +12938,15 @@ $$&lt;/div&gt;
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$&lt;/div&gt;
 &lt;p&gt;Typically with the same choice for &lt;span class="math"&gt;\(b\)&lt;/span&gt; as above.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
+tricks!&lt;/p&gt;
+&lt;p&gt;If what you want to remain in log-space, that is, compute
+&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
+&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Numerically stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
 avoid numerical overflow. In the case of &lt;span class="math"&gt;\(\text{sigmoid}(x)\)&lt;/span&gt;, we have a
 distribution with unnormalized log probabilities &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt;, where we are only
@@ -12506,7 +12960,7 @@ $$&lt;/div&gt;
 &lt;p&gt;Interestingly, each version covers an extreme case: &lt;span class="math"&gt;\(x=\infty\)&lt;/span&gt; and &lt;span class="math"&gt;\(x=-\infty\)&lt;/span&gt;,
 respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="s2"&gt;&amp;quot;Numerically-stable sigmoid function.&amp;quot;&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Numerically stable sigmoid function.&amp;quot;&lt;/span&gt;
     &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
         &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -12518,6 +12972,14 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;p&gt;&lt;strong&gt;Closing remarks:&lt;/strong&gt; The exp-normalize distribution is also known as a
+&lt;a href="https://en.wikipedia.org/wiki/Gibbs_measure"&gt;Gibbs measure&lt;/a&gt; (sometimes called a
+Boltzmann distribution) when it is augmented with a temperature
+parameter. Exp-normalize is often called "softmax," which is unfortunate because
+log-sum-exp is &lt;em&gt;also&lt;/em&gt; called "softmax." However, unlike exp-normalize, it
+&lt;em&gt;earned&lt;/em&gt; the name because it is acutally a soft version of the max function,
+where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
+still call exp-normalize "softmax."&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -12573,7 +13035,7 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;</summary><content type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
-(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;),&lt;/p&gt;
+(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;).&lt;/p&gt;
 &lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
 parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -12589,12 +13051,26 @@ $$&lt;/div&gt;
 &lt;p&gt;In other words, the &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is shift-invariant. A reasonable choice
 is &lt;span class="math"&gt;\(b = \max_{i=1}^n x_i\)&lt;/span&gt;. With this choice, overflow due to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is
 impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponentiated after shifting is &lt;span class="math"&gt;\(0\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If what you want to remain in log-space, that is, compute
-&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
-&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
+&lt;p&gt;The naive implementation is terrible when there are large numbers!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;overflow&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;invalid&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;true_divide&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nan&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The exp-normalize trick avoid this common problem.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
@@ -12605,7 +13081,15 @@ $$&lt;/div&gt;
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$&lt;/div&gt;
 &lt;p&gt;Typically with the same choice for &lt;span class="math"&gt;\(b\)&lt;/span&gt; as above.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Numerically-stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
+tricks!&lt;/p&gt;
+&lt;p&gt;If what you want to remain in log-space, that is, compute
+&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
+&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Numerically stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
 avoid numerical overflow. In the case of &lt;span class="math"&gt;\(\text{sigmoid}(x)\)&lt;/span&gt;, we have a
 distribution with unnormalized log probabilities &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt;, where we are only
@@ -12619,7 +13103,7 @@ $$&lt;/div&gt;
 &lt;p&gt;Interestingly, each version covers an extreme case: &lt;span class="math"&gt;\(x=\infty\)&lt;/span&gt; and &lt;span class="math"&gt;\(x=-\infty\)&lt;/span&gt;,
 respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="s2"&gt;&amp;quot;Numerically-stable sigmoid function.&amp;quot;&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Numerically stable sigmoid function.&amp;quot;&lt;/span&gt;
     &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
         &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -12631,6 +13115,14 @@ respectively. Below is some python code which implements the trick:&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;p&gt;&lt;strong&gt;Closing remarks:&lt;/strong&gt; The exp-normalize distribution is also known as a
+&lt;a href="https://en.wikipedia.org/wiki/Gibbs_measure"&gt;Gibbs measure&lt;/a&gt; (sometimes called a
+Boltzmann distribution) when it is augmented with a temperature
+parameter. Exp-normalize is often called "softmax," which is unfortunate because
+log-sum-exp is &lt;em&gt;also&lt;/em&gt; called "softmax." However, unlike exp-normalize, it
+&lt;em&gt;earned&lt;/em&gt; the name because it is acutally a soft version of the max function,
+where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
+still call exp-normalize "softmax."&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

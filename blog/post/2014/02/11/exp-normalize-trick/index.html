@@ -55,7 +55,7 @@
 </header>
 
   <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>),</p>
+(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>).</p>
 <p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
 parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
 <div class="math">$$
@@ -71,12 +71,26 @@ $$</div>
 <p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
 is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
 impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
+<p>The naive implementation is terrible when there are large numbers!</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">overflow</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">exp</span>
+<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">value</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">true_divide</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="n">nan</span><span class="p">])</span>
+</pre></div>
+
+
+<p>The exp-normalize trick avoid this common problem.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+</pre></div>
+
+
 <p><strong>Log-sum-exp for computing the log-distibution</strong></p>
 <div class="math">$$
 \log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
@@ -87,7 +101,15 @@ $$</div>
 \mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
 $$</div>
 <p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Numerically-stable sigmoid function</strong></p>
+<p><strong>Exp-normalize v. log-sum-exp</strong></p>
+<p>Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
+tricks!</p>
+<p>If what you want to remain in log-space, that is, compute
+<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
+<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!</p>
+<p><strong>Numerically stable sigmoid function</strong></p>
 <p>The sigmoid function can be computed with the exp-normalize trick in order to
 avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
 distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
@@ -101,7 +123,7 @@ $$</div>
 <p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
 respectively. Below is some python code which implements the trick:</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s2">&quot;Numerically-stable sigmoid function.&quot;</span>
+    <span class="s2">&quot;Numerically stable sigmoid function.&quot;</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
@@ -113,6 +135,14 @@ respectively. Below is some python code which implements the trick:</p>
 </pre></div>
 
 
+<p><strong>Closing remarks:</strong> The exp-normalize distribution is also known as a
+<a href="https://en.wikipedia.org/wiki/Gibbs_measure">Gibbs measure</a> (sometimes called a
+Boltzmann distribution) when it is augmented with a temperature
+parameter. Exp-normalize is often called "softmax," which is unfortunate because
+log-sum-exp is <em>also</em> called "softmax." However, unlike exp-normalize, it
+<em>earned</em> the name because it is acutally a soft version of the max function,
+where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
+still call exp-normalize "softmax."</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -194,6 +224,9 @@ respectively. Below is some python code which implements the trick:</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="../../../../../post/2018/02/20/black-box-optimization/">Black-box optimization</a>
+      </li>
+      <li class="post">
           <a href="../../../../../post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
       </li>
       <li class="post">
@@ -205,22 +238,19 @@ respectively. Below is some python code which implements the trick:</p>
       <li class="post">
           <a href="../../../../../post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
       </li>
-      <li class="post">
-          <a href="../../../../../post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="../../../../../tag/datastructures.html">datastructures</a>,    <a href="../../../../../tag/importance-sampling.html">importance-sampling</a>,    <a href="../../../../../tag/testing.html">testing</a>,    <a href="../../../../../tag/misc.html">misc</a>,    <a href="../../../../../tag/sampling.html">sampling</a>,    <a href="../../../../../tag/deep-learning.html">deep-learning</a>,    <a href="../../../../../tag/rant.html">rant</a>,    <a href="../../../../../tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="../../../../../tag/visualization.html">visualization</a>,    <a href="../../../../../tag/statistics.html">statistics</a>,    <a href="../../../../../tag/machine-learning.html">machine-learning</a>,    <a href="../../../../../tag/algorithms.html">algorithms</a>,    <a href="../../../../../tag/calculus.html">calculus</a>,    <a href="../../../../../tag/decision-making.html">decision-making</a>,    <a href="../../../../../tag/structured-prediction.html">structured-prediction</a>,    <a href="../../../../../tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="../../../../../tag/numerical.html">numerical</a>,    <a href="../../../../../tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="../../../../../tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="../../../../../tag/gumbel.html">Gumbel</a>,    <a href="../../../../../tag/optimization.html">optimization</a>,    <a href="../../../../../tag/crf.html">crf</a>  </section>
+    <a href="../../../../../tag/datastructures.html">datastructures</a>,    <a href="../../../../../tag/importance-sampling.html">importance-sampling</a>,    <a href="../../../../../tag/testing.html">testing</a>,    <a href="../../../../../tag/misc.html">misc</a>,    <a href="../../../../../tag/sampling.html">sampling</a>,    <a href="../../../../../tag/deep-learning.html">deep-learning</a>,    <a href="../../../../../tag/rant.html">rant</a>,    <a href="../../../../../tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="../../../../../tag/visualization.html">visualization</a>,    <a href="../../../../../tag/statistics.html">statistics</a>,    <a href="../../../../../tag/optimization-calculus.html">optimization calculus</a>,    <a href="../../../../../tag/machine-learning.html">machine-learning</a>,    <a href="../../../../../tag/algorithms.html">algorithms</a>,    <a href="../../../../../tag/calculus.html">calculus</a>,    <a href="../../../../../tag/decision-making.html">decision-making</a>,    <a href="../../../../../tag/structured-prediction.html">structured-prediction</a>,    <a href="../../../../../tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="../../../../../tag/numerical.html">numerical</a>,    <a href="../../../../../tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="../../../../../tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="../../../../../tag/gumbel.html">Gumbel</a>,    <a href="../../../../../tag/optimization.html">optimization</a>,    <a href="../../../../../tag/crf.html">crf</a>  </section>
 
 
 
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2017  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2018  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="../../../../../theme/js/modernizr-2.0.js"></script>
