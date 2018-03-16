@@ -21,13 +21,13 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
 Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating&lt;em&gt; the gradient
-&lt;/em&gt;takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
-&lt;em&gt;gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
-&lt;/em&gt;&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
-&lt;em&gt;&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
-&lt;/em&gt;shouldn't be surprising since that's the size of the object we're looking for
-*anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating* the gradient
+takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
+gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
+&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
+&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
+shouldn't be surprising since that's the size of the object we're looking for
+anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Can we do better?&lt;/strong&gt; Suppose we had &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt; arbitrary points
 &lt;span class="math"&gt;\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)&lt;/span&gt; in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt; with
 values &lt;span class="math"&gt;\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)&lt;/span&gt; Can we find efficiently find a
@@ -196,13 +196,13 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
 Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating&lt;em&gt; the gradient
-&lt;/em&gt;takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
-&lt;em&gt;gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
-&lt;/em&gt;&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
-&lt;em&gt;&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
-&lt;/em&gt;shouldn't be surprising since that's the size of the object we're looking for
-*anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, approximating* the gradient
+takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
+gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
+&lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;few&lt;/a&gt;
+&lt;a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/"&gt;times&lt;/a&gt;. This
+shouldn't be surprising since that's the size of the object we're looking for
+anyways!&lt;sup id="fnref-faster-but-noisy"&gt;&lt;a class="footnote-ref" href="#fn-faster-but-noisy"&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Can we do better?&lt;/strong&gt; Suppose we had &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt; arbitrary points
 &lt;span class="math"&gt;\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)&lt;/span&gt; in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt; with
 values &lt;span class="math"&gt;\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)&lt;/span&gt; Can we find efficiently find a
