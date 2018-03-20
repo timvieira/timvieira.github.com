@@ -12031,20 +12031,22 @@ in this
 &lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Number of calls to the random number generator: Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt;
+     samples from a uniform, whereas the usual algorithm only requires &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
-     compute the max for use in the exp-normalize trick). More on this in a
-     later post!&lt;/p&gt;
+&lt;p&gt;Gumbel is a one-pass algorithm: It does not need to see all of the data
+     (e.g., to normalize) before it can start partially sampling. Thus,
+     Gumbel-max can be used for
+     &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;weighted sampling from a stream&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
-     requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are expensive
-     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
-     handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy.&lt;/p&gt;
+&lt;p&gt;Low-level efficiency: The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;,
+     whereas ordinary requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are
+     expensive function, we'd like to avoid calling them. What gives? Well,
+     Gumbel's calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be
+     precomputed; this is handy for implementations which rely on vectorization
+     for efficiency, e.g. python+numpy.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;: I have a few posts relating to the Gumbel-max trick. Have a
@@ -12139,20 +12141,22 @@ in this
 &lt;p&gt;&lt;strong&gt;Comparison&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; samples from a uniform. Usual requires only &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Number of calls to the random number generator: Gumbel-max requires &lt;span class="math"&gt;\(K\)&lt;/span&gt;
+     samples from a uniform, whereas the usual algorithm only requires &lt;span class="math"&gt;\(1\)&lt;/span&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Gumbel is one-pass because it does not require normalization (or a pass to
-     compute the max for use in the exp-normalize trick). More on this in a
-     later post!&lt;/p&gt;
+&lt;p&gt;Gumbel is a one-pass algorithm: It does not need to see all of the data
+     (e.g., to normalize) before it can start partially sampling. Thus,
+     Gumbel-max can be used for
+     &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;weighted sampling from a stream&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;, whereas ordinary
-     requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are expensive
-     function, we'd like to avoid calling them. What gives? Well, Gumbel's calls
-     to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be precomputed; this is
-     handy for implementations which rely on vectorization for efficiency,
-     e.g. python+numpy.&lt;/p&gt;
+&lt;p&gt;Low-level efficiency: The Gumbel-max trick requires &lt;span class="math"&gt;\(2K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt;,
+     whereas ordinary requires &lt;span class="math"&gt;\(K\)&lt;/span&gt; calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;. Since &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; and &lt;span class="math"&gt;\(\log\)&lt;/span&gt; are
+     expensive function, we'd like to avoid calling them. What gives? Well,
+     Gumbel's calls to &lt;span class="math"&gt;\(\log\)&lt;/span&gt; do not depend on the data so they can be
+     precomputed; this is handy for implementations which rely on vectorization
+     for efficiency, e.g. python+numpy.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;: I have a few posts relating to the Gumbel-max trick. Have a
