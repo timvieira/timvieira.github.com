@@ -359,7 +359,7 @@ people do not understand basic facts about autodiff.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Evaluating &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; is provably as fast as evaluating &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential incredient to
+&lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential ingredient to
 efficient optimization&amp;mdash;is no slower to compute than the function
 itself. Contrast that with the finite-difference gradient approximation, which
 is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
@@ -474,7 +474,7 @@ e &amp;amp;= \sin(c) \\
 f &amp;amp;= d + e
 \end{align*}
 $$&lt;/div&gt;
-&lt;h4&gt;The general formuation&lt;/h4&gt;
+&lt;h4&gt;The general formulation&lt;/h4&gt;
 &lt;div class="math"&gt;\begin{align*}
   &amp;amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp;amp; \\
   &amp;amp; \text{s.t.}\quad z_i = x_i                          &amp;amp;\text{ for $1 \le i \le d$} \\
@@ -516,9 +516,9 @@ Lagrange multipliers, which converts a &lt;em&gt;constrained&lt;/em&gt; optimiza
 an &lt;em&gt;unconstrained&lt;/em&gt; problem with a few more variables &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; (one
 per &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; constraint), called Lagrange multipliers.&lt;/p&gt;
 &lt;h4&gt;The Lagrangian&lt;/h4&gt;
-&lt;p&gt;To handle constaints, let's dig up a tool from our calculus class,
+&lt;p&gt;To handle constraints, let's dig up a tool from our calculus class,
 &lt;a href="https://en.wikipedia.org/wiki/Lagrange_multiplier"&gt;the method of Lagrange multipliers&lt;/a&gt;,
-which converts a &lt;em&gt;constrained&lt;/em&gt; optimization probelm into an &lt;em&gt;unconstrainted&lt;/em&gt;
+which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into an &lt;em&gt;unconstrained&lt;/em&gt;
 one. The unconstrained version is called "the Lagrangian" of the constrained
 problem. Here is its form for our task,&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -578,7 +578,7 @@ It is exactly the equation used in backpropagation! It says that we sum
 &lt;span class="math"&gt;\(\lambda_i\)&lt;/span&gt; by the derivative of the function that directly relates &lt;span class="math"&gt;\(i\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(j\)&lt;/span&gt;. You should think of the scaling as a "unit conversion" from derivatives of
 type &lt;span class="math"&gt;\(i\)&lt;/span&gt; to derivatives of type &lt;span class="math"&gt;\(j\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Output mutliplier&lt;/strong&gt; (&lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;): Here we follow the same pattern as for
+&lt;p&gt;&lt;strong&gt;Output multiplier&lt;/strong&gt; (&lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;): Here we follow the same pattern as for
   intermediate multipliers.&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray*}
@@ -596,7 +596,7 @@ $$&lt;/div&gt;
 &lt;p&gt;Of course, this interpretation is only precise when ① the constraints are
 satisfied (&lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt; equations) and ② the linear system on multipliers is
 satisfied (&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations).&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): Unforunately, the there is no
+&lt;p&gt;&lt;strong&gt;Input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): Unfortunately, the there is no
   closed-form solution to how to set &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. For this we resort to
   something like gradient ascent. Conveniently, &lt;span class="math"&gt;\(\nabla_{\!\boldsymbol{x}}
   f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)&lt;/span&gt;, which we can use to optimize
@@ -611,12 +611,12 @@ linear system (i.e., we don't need a &lt;em&gt;full&lt;/em&gt; linear system sol
 dependency graph induced by the &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; relation is acyclic. If we had needed a
 full linear system solver, the solution would take &lt;span class="math"&gt;\(\mathcal{O}(n^3)\)&lt;/span&gt; time
 instead of linear time, seriously blowing-up our nice runtime!&lt;/p&gt;
-&lt;p&gt;This connection to linear systems is interesting: It tells us that we &lt;em&gt;could&lt;/em&gt;
-compute gradients in cyclic graphs. All we'd need is to run a linear system
-solver to stich together our gradients! That is exactly what the
+&lt;p&gt;This connection to linear systems is interesting: It tells us that we can
+compute &lt;em&gt;global&lt;/em&gt; gradients in cyclic graphs. All we'd need is to run a linear
+system solver to stitch together &lt;em&gt;local&lt;/em&gt; gradients! That is exactly what the
 &lt;a href="https://en.wikipedia.org/wiki/Implicit_function_theorem"&gt;implicit function theorem&lt;/a&gt;
 says!&lt;/p&gt;
-&lt;p&gt;Cyclic constraints add some expressive powerful to "constraint language" and
+&lt;p&gt;Cyclic constraints add some expressive powerful to our "constraint language" and
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -627,11 +627,11 @@ setting. An example of what a general type of cyclic constraint looks like is&lt
 \end{align*}
 $$&lt;/div&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(g\)&lt;/span&gt; can be an any smooth multivariate function of the intermediate
-variables! Of course, allowing cyclic constraints come at the cost of a
+variables! Of course, allowing cyclic constraints comes at the cost of a
 more-difficult analogue of "the forward pass" to satisfy the &lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt;
 equations (if we want to keep it a block-coordinate step). The
-&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations are now a linear system that requres a linear
-solver (e.g., Guassian elimination).&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations are now a linear system that requires a linear
+solver (e.g., Gaussian elimination).&lt;/p&gt;
 &lt;p&gt;Example use cases:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -640,7 +640,7 @@ solver (e.g., Guassian elimination).&lt;/p&gt;
   &lt;a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/"&gt;gradient-based hyperparameter optimization&lt;/a&gt;
   in machine learning. The implicit function theorem manages to get gradients of
   hyperparameters without needing to store any of intermediate states of the
-  optimization algorithm used in the inner optimzation! This is a &lt;em&gt;huge&lt;/em&gt; memory
+  optimization algorithm used in the inner optimization! This is a &lt;em&gt;huge&lt;/em&gt; memory
   saver since direct backprop on the inner gradient decent algorithm would
   require caching all intermediate states. Yikes!&lt;/p&gt;
 &lt;/li&gt;
@@ -656,7 +656,7 @@ optimization into the mix! We can imagine using more general algorithms for
 optimizing our function and other ways of enforcing the constraints. We see
 immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
-do in other algorithms for optimizing general Langrangians).&lt;/p&gt;
+do in other algorithms for optimizing general Lagrangians).&lt;/p&gt;
 &lt;h2&gt;Summary&lt;/h2&gt;
 &lt;p&gt;Backprop is does not directly fall out of the the rules for differentiation
 that you learned in calculus (e.g., the chain rule).&lt;/p&gt;
@@ -693,7 +693,7 @@ version is too redundant.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Ben Recht has great blog post that uses the implicit function theorem to
 &lt;em&gt;derive&lt;/em&gt; the method of Lagrange multipliers. He also touches on the connection
-to backpropgation.&lt;/p&gt;
+to backpropagation.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Ben Recht. (2016)
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
@@ -790,7 +790,7 @@ people do not understand basic facts about autodiff.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Evaluating &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; is provably as fast as evaluating &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential incredient to
+&lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential ingredient to
 efficient optimization&amp;mdash;is no slower to compute than the function
 itself. Contrast that with the finite-difference gradient approximation, which
 is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
@@ -905,7 +905,7 @@ e &amp;amp;= \sin(c) \\
 f &amp;amp;= d + e
 \end{align*}
 $$&lt;/div&gt;
-&lt;h4&gt;The general formuation&lt;/h4&gt;
+&lt;h4&gt;The general formulation&lt;/h4&gt;
 &lt;div class="math"&gt;\begin{align*}
   &amp;amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp;amp; \\
   &amp;amp; \text{s.t.}\quad z_i = x_i                          &amp;amp;\text{ for $1 \le i \le d$} \\
@@ -947,9 +947,9 @@ Lagrange multipliers, which converts a &lt;em&gt;constrained&lt;/em&gt; optimiza
 an &lt;em&gt;unconstrained&lt;/em&gt; problem with a few more variables &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; (one
 per &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; constraint), called Lagrange multipliers.&lt;/p&gt;
 &lt;h4&gt;The Lagrangian&lt;/h4&gt;
-&lt;p&gt;To handle constaints, let's dig up a tool from our calculus class,
+&lt;p&gt;To handle constraints, let's dig up a tool from our calculus class,
 &lt;a href="https://en.wikipedia.org/wiki/Lagrange_multiplier"&gt;the method of Lagrange multipliers&lt;/a&gt;,
-which converts a &lt;em&gt;constrained&lt;/em&gt; optimization probelm into an &lt;em&gt;unconstrainted&lt;/em&gt;
+which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into an &lt;em&gt;unconstrained&lt;/em&gt;
 one. The unconstrained version is called "the Lagrangian" of the constrained
 problem. Here is its form for our task,&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -1009,7 +1009,7 @@ It is exactly the equation used in backpropagation! It says that we sum
 &lt;span class="math"&gt;\(\lambda_i\)&lt;/span&gt; by the derivative of the function that directly relates &lt;span class="math"&gt;\(i\)&lt;/span&gt; and
 &lt;span class="math"&gt;\(j\)&lt;/span&gt;. You should think of the scaling as a "unit conversion" from derivatives of
 type &lt;span class="math"&gt;\(i\)&lt;/span&gt; to derivatives of type &lt;span class="math"&gt;\(j\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Output mutliplier&lt;/strong&gt; (&lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;): Here we follow the same pattern as for
+&lt;p&gt;&lt;strong&gt;Output multiplier&lt;/strong&gt; (&lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;): Here we follow the same pattern as for
   intermediate multipliers.&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \begin{eqnarray*}
@@ -1027,7 +1027,7 @@ $$&lt;/div&gt;
 &lt;p&gt;Of course, this interpretation is only precise when ① the constraints are
 satisfied (&lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt; equations) and ② the linear system on multipliers is
 satisfied (&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations).&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): Unforunately, the there is no
+&lt;p&gt;&lt;strong&gt;Input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): Unfortunately, the there is no
   closed-form solution to how to set &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. For this we resort to
   something like gradient ascent. Conveniently, &lt;span class="math"&gt;\(\nabla_{\!\boldsymbol{x}}
   f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)&lt;/span&gt;, which we can use to optimize
@@ -1042,12 +1042,12 @@ linear system (i.e., we don't need a &lt;em&gt;full&lt;/em&gt; linear system sol
 dependency graph induced by the &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; relation is acyclic. If we had needed a
 full linear system solver, the solution would take &lt;span class="math"&gt;\(\mathcal{O}(n^3)\)&lt;/span&gt; time
 instead of linear time, seriously blowing-up our nice runtime!&lt;/p&gt;
-&lt;p&gt;This connection to linear systems is interesting: It tells us that we &lt;em&gt;could&lt;/em&gt;
-compute gradients in cyclic graphs. All we'd need is to run a linear system
-solver to stich together our gradients! That is exactly what the
+&lt;p&gt;This connection to linear systems is interesting: It tells us that we can
+compute &lt;em&gt;global&lt;/em&gt; gradients in cyclic graphs. All we'd need is to run a linear
+system solver to stitch together &lt;em&gt;local&lt;/em&gt; gradients! That is exactly what the
 &lt;a href="https://en.wikipedia.org/wiki/Implicit_function_theorem"&gt;implicit function theorem&lt;/a&gt;
 says!&lt;/p&gt;
-&lt;p&gt;Cyclic constraints add some expressive powerful to "constraint language" and
+&lt;p&gt;Cyclic constraints add some expressive powerful to our "constraint language" and
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -1058,11 +1058,11 @@ setting. An example of what a general type of cyclic constraint looks like is&lt
 \end{align*}
 $$&lt;/div&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(g\)&lt;/span&gt; can be an any smooth multivariate function of the intermediate
-variables! Of course, allowing cyclic constraints come at the cost of a
+variables! Of course, allowing cyclic constraints comes at the cost of a
 more-difficult analogue of "the forward pass" to satisfy the &lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt;
 equations (if we want to keep it a block-coordinate step). The
-&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations are now a linear system that requres a linear
-solver (e.g., Guassian elimination).&lt;/p&gt;
+&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations are now a linear system that requires a linear
+solver (e.g., Gaussian elimination).&lt;/p&gt;
 &lt;p&gt;Example use cases:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -1071,7 +1071,7 @@ solver (e.g., Guassian elimination).&lt;/p&gt;
   &lt;a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/"&gt;gradient-based hyperparameter optimization&lt;/a&gt;
   in machine learning. The implicit function theorem manages to get gradients of
   hyperparameters without needing to store any of intermediate states of the
-  optimization algorithm used in the inner optimzation! This is a &lt;em&gt;huge&lt;/em&gt; memory
+  optimization algorithm used in the inner optimization! This is a &lt;em&gt;huge&lt;/em&gt; memory
   saver since direct backprop on the inner gradient decent algorithm would
   require caching all intermediate states. Yikes!&lt;/p&gt;
 &lt;/li&gt;
@@ -1087,7 +1087,7 @@ optimization into the mix! We can imagine using more general algorithms for
 optimizing our function and other ways of enforcing the constraints. We see
 immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
-do in other algorithms for optimizing general Langrangians).&lt;/p&gt;
+do in other algorithms for optimizing general Lagrangians).&lt;/p&gt;
 &lt;h2&gt;Summary&lt;/h2&gt;
 &lt;p&gt;Backprop is does not directly fall out of the the rules for differentiation
 that you learned in calculus (e.g., the chain rule).&lt;/p&gt;
@@ -1124,7 +1124,7 @@ version is too redundant.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Ben Recht has great blog post that uses the implicit function theorem to
 &lt;em&gt;derive&lt;/em&gt; the method of Lagrange multipliers. He also touches on the connection
-to backpropgation.&lt;/p&gt;
+to backpropagation.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Ben Recht. (2016)
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;

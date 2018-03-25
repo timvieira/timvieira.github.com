@@ -64,7 +64,7 @@ people do not understand basic facts about autodiff.</p>
 <ul>
 <li>Evaluating <span class="math">\(\nabla f(x)\)</span> is provably as fast as evaluating <span class="math">\(f(x)\)</span>.</li>
 </ul>
-<!-- Let that sink in. Computing the gradient&mdash;an essential incredient to
+<!-- Let that sink in. Computing the gradient&mdash;an essential ingredient to
 efficient optimization&mdash;is no slower to compute than the function
 itself. Contrast that with the finite-difference gradient approximation, which
 is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
@@ -179,7 +179,7 @@ e &amp;= \sin(c) \\
 f &amp;= d + e
 \end{align*}
 $$</div>
-<h4>The general formuation</h4>
+<h4>The general formulation</h4>
 <div class="math">\begin{align*}
   &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp; \\
   &amp; \text{s.t.}\quad z_i = x_i                          &amp;\text{ for $1 \le i \le d$} \\
@@ -221,9 +221,9 @@ Lagrange multipliers, which converts a <em>constrained</em> optimization problem
 an <em>unconstrained</em> problem with a few more variables <span class="math">\(\boldsymbol{\lambda}\)</span> (one
 per <span class="math">\(x_i\)</span> constraint), called Lagrange multipliers.</p>
 <h4>The Lagrangian</h4>
-<p>To handle constaints, let's dig up a tool from our calculus class,
+<p>To handle constraints, let's dig up a tool from our calculus class,
 <a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">the method of Lagrange multipliers</a>,
-which converts a <em>constrained</em> optimization probelm into an <em>unconstrainted</em>
+which converts a <em>constrained</em> optimization problem into an <em>unconstrained</em>
 one. The unconstrained version is called "the Lagrangian" of the constrained
 problem. Here is its form for our task,</p>
 <div class="math">$$
@@ -283,7 +283,7 @@ It is exactly the equation used in backpropagation! It says that we sum
 <span class="math">\(\lambda_i\)</span> by the derivative of the function that directly relates <span class="math">\(i\)</span> and
 <span class="math">\(j\)</span>. You should think of the scaling as a "unit conversion" from derivatives of
 type <span class="math">\(i\)</span> to derivatives of type <span class="math">\(j\)</span>.</p>
-<p><strong>Output mutliplier</strong> (<span class="math">\(\lambda_n\)</span>): Here we follow the same pattern as for
+<p><strong>Output multiplier</strong> (<span class="math">\(\lambda_n\)</span>): Here we follow the same pattern as for
   intermediate multipliers.</p>
 <div class="math">$$
 \begin{eqnarray*}
@@ -301,7 +301,7 @@ $$</div>
 <p>Of course, this interpretation is only precise when ① the constraints are
 satisfied (<span class="math">\(\boldsymbol{z}\)</span> equations) and ② the linear system on multipliers is
 satisfied (<span class="math">\(\boldsymbol{\lambda}\)</span> equations).</p>
-<p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): Unforunately, the there is no
+<p><strong>Input variables</strong> (<span class="math">\(\boldsymbol{x}\)</span>): Unfortunately, the there is no
   closed-form solution to how to set <span class="math">\(\boldsymbol{x}\)</span>. For this we resort to
   something like gradient ascent. Conveniently, <span class="math">\(\nabla_{\!\boldsymbol{x}}
   f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)</span>, which we can use to optimize
@@ -316,12 +316,12 @@ linear system (i.e., we don't need a <em>full</em> linear system solver) is that
 dependency graph induced by the <span class="math">\(\alpha\)</span> relation is acyclic. If we had needed a
 full linear system solver, the solution would take <span class="math">\(\mathcal{O}(n^3)\)</span> time
 instead of linear time, seriously blowing-up our nice runtime!</p>
-<p>This connection to linear systems is interesting: It tells us that we <em>could</em>
-compute gradients in cyclic graphs. All we'd need is to run a linear system
-solver to stich together our gradients! That is exactly what the
+<p>This connection to linear systems is interesting: It tells us that we can
+compute <em>global</em> gradients in cyclic graphs. All we'd need is to run a linear
+system solver to stitch together <em>local</em> gradients! That is exactly what the
 <a href="https://en.wikipedia.org/wiki/Implicit_function_theorem">implicit function theorem</a>
 says!</p>
-<p>Cyclic constraints add some expressive powerful to "constraint language" and
+<p>Cyclic constraints add some expressive powerful to our "constraint language" and
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is</p>
 <div class="math">$$
@@ -332,11 +332,11 @@ setting. An example of what a general type of cyclic constraint looks like is</p
 \end{align*}
 $$</div>
 <p>where <span class="math">\(g\)</span> can be an any smooth multivariate function of the intermediate
-variables! Of course, allowing cyclic constraints come at the cost of a
+variables! Of course, allowing cyclic constraints comes at the cost of a
 more-difficult analogue of "the forward pass" to satisfy the <span class="math">\(\boldsymbol{z}\)</span>
 equations (if we want to keep it a block-coordinate step). The
-<span class="math">\(\boldsymbol{\lambda}\)</span> equations are now a linear system that requres a linear
-solver (e.g., Guassian elimination).</p>
+<span class="math">\(\boldsymbol{\lambda}\)</span> equations are now a linear system that requires a linear
+solver (e.g., Gaussian elimination).</p>
 <p>Example use cases:</p>
 <ul>
 <li>
@@ -345,7 +345,7 @@ solver (e.g., Guassian elimination).</p>
   <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">gradient-based hyperparameter optimization</a>
   in machine learning. The implicit function theorem manages to get gradients of
   hyperparameters without needing to store any of intermediate states of the
-  optimization algorithm used in the inner optimzation! This is a <em>huge</em> memory
+  optimization algorithm used in the inner optimization! This is a <em>huge</em> memory
   saver since direct backprop on the inner gradient decent algorithm would
   require caching all intermediate states. Yikes!</p>
 </li>
@@ -361,7 +361,7 @@ optimization into the mix! We can imagine using more general algorithms for
 optimizing our function and other ways of enforcing the constraints. We see
 immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
-do in other algorithms for optimizing general Langrangians).</p>
+do in other algorithms for optimizing general Lagrangians).</p>
 <h2>Summary</h2>
 <p>Backprop is does not directly fall out of the the rules for differentiation
 that you learned in calculus (e.g., the chain rule).</p>
@@ -398,7 +398,7 @@ version is too redundant.</p>
 </blockquote>
 <p>Ben Recht has great blog post that uses the implicit function theorem to
 <em>derive</em> the method of Lagrange multipliers. He also touches on the connection
-to backpropgation.</p>
+to backpropagation.</p>
 <blockquote>
 <p>Ben Recht. (2016)
 <a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a>.</p>
