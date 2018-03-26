@@ -161,9 +161,9 @@ h2 {
 }
 
 .extra {
-    background-color: #666;
-    text-decoration: none;
+    background-color: #999;
     color: #fff !important;
+    text-decoration: none;
     border-radius: 6px;
     padding: 1px 5px 2px 5px;
     margin-top: 10px;
@@ -173,6 +173,16 @@ h2 {
     background-color: #73AD21 !important;
 }
 
-.paper-extras {
+.pub-extras {
     margin-top: 5px;
+}
+.pub-author {}
+.pub-title {}
+.pub-venue {
+    text-decoration: none;
+    font-style: italic;
+}
+.pub-award {
+    text-decoration: none;
+    font-weight: bold;
 }
