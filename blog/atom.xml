@@ -1389,8 +1389,8 @@ $$&lt;/div&gt;
    has been shown to have near-optimal variance
    &lt;a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf"&gt;(Szegedy, 2005)&lt;/a&gt;.
    Specifically, priority sampling with &lt;span class="math"&gt;\(m\)&lt;/span&gt; samples is no worse than the best
-   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course, when
-   estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we can obviously be used to beat
+   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course,
+   if we have some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we may be able to beat
    PS. &lt;!-- We can relate subset sums to estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; by interpreting
    &lt;span class="math"&gt;\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)&lt;/span&gt; for some &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, scaling
    &lt;span class="math"&gt;\(f\)&lt;/span&gt; appropriately by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, and encoding the subset via indicators in
@@ -1701,8 +1701,8 @@ $$&lt;/div&gt;
    has been shown to have near-optimal variance
    &lt;a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf"&gt;(Szegedy, 2005)&lt;/a&gt;.
    Specifically, priority sampling with &lt;span class="math"&gt;\(m\)&lt;/span&gt; samples is no worse than the best
-   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course, when
-   estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we can obviously be used to beat
+   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course,
+   if we have some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we may be able to beat
    PS. &lt;!-- We can relate subset sums to estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; by interpreting
    &lt;span class="math"&gt;\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)&lt;/span&gt; for some &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, scaling
    &lt;span class="math"&gt;\(f\)&lt;/span&gt; appropriately by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, and encoding the subset via indicators in
@@ -3103,7 +3103,7 @@ wrap elements into a "node" class like in a general tree data structure). So, we
 can pack everything into an array, which means our implementation has great
 memory/cache locality and low storage overhead.&lt;/p&gt;
 &lt;p&gt;Traversing the tree is pretty simple: Let &lt;span class="math"&gt;\(d\)&lt;/span&gt; be the number of internal nodes,
-nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are interal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
+nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are internal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
 \cdot i},\)&lt;/span&gt; right child &lt;span class="math"&gt;\(\rightarrow {2 \cdot i + 1},\)&lt;/span&gt; parent &lt;span class="math"&gt;\(\rightarrow
 \lfloor i / 2 \rfloor.\)&lt;/span&gt; (Note that these operations assume the array's indices
 start at &lt;span class="math"&gt;\(1\)&lt;/span&gt;. We generally fake this by adding a dummy node at position &lt;span class="math"&gt;\(0\)&lt;/span&gt;,
@@ -3440,7 +3440,7 @@ wrap elements into a "node" class like in a general tree data structure). So, we
 can pack everything into an array, which means our implementation has great
 memory/cache locality and low storage overhead.&lt;/p&gt;
 &lt;p&gt;Traversing the tree is pretty simple: Let &lt;span class="math"&gt;\(d\)&lt;/span&gt; be the number of internal nodes,
-nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are interal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
+nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are internal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
 \cdot i},\)&lt;/span&gt; right child &lt;span class="math"&gt;\(\rightarrow {2 \cdot i + 1},\)&lt;/span&gt; parent &lt;span class="math"&gt;\(\rightarrow
 \lfloor i / 2 \rfloor.\)&lt;/span&gt; (Note that these operations assume the array's indices
 start at &lt;span class="math"&gt;\(1\)&lt;/span&gt;. We generally fake this by adding a dummy node at position &lt;span class="math"&gt;\(0\)&lt;/span&gt;,
@@ -3687,7 +3687,7 @@ which is perfect for binary search!&lt;/p&gt;
 s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
-"hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
+"hitting undo" from the end of the sequence or reversing a singly linked list.&lt;/p&gt;
 &lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;
 the size of each state is large, this will be infeasible.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Idea 0&lt;/strong&gt;: Rerun the forward pass &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. Runtime &lt;span class="math"&gt;\(\mathcal{O}(n^2)\)&lt;/span&gt;, space
@@ -3831,7 +3831,7 @@ with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&l
 been used in a number of place, including&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;The classic computer science interview problem of reversing a singly-linked list
+&lt;p&gt;The classic computer science interview problem of reversing a singly linked list
   under a tight budget on &lt;em&gt;additional&lt;/em&gt; memory.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -3914,7 +3914,7 @@ been used in a number of place, including&lt;/p&gt;
 s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
-"hitting undo" from the end of the sequence or reversing a singly-liked list.&lt;/p&gt;
+"hitting undo" from the end of the sequence or reversing a singly linked list.&lt;/p&gt;
 &lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;
 the size of each state is large, this will be infeasible.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Idea 0&lt;/strong&gt;: Rerun the forward pass &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. Runtime &lt;span class="math"&gt;\(\mathcal{O}(n^2)\)&lt;/span&gt;, space
@@ -4058,7 +4058,7 @@ with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&l
 been used in a number of place, including&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;The classic computer science interview problem of reversing a singly-linked list
+&lt;p&gt;The classic computer science interview problem of reversing a singly linked list
   under a tight budget on &lt;em&gt;additional&lt;/em&gt; memory.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
