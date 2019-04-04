@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Learn automatic differentiation &mdash; Graduate Descent</title>
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="robots" content="noindex, nofollow" />
+
+    <link href="../favicon.png" rel="icon">
+
+  <link href="../theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="../">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Atom</a></li>
+</ul>
+
+
+<ul class="main-navigation">
+    <li><a href="http://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/archives.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Learn automatic differentiation</h1>
+    <p class="meta">
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>    </p>
+</header>
+
+  <div class="entry-content"><p>Here are some references for learning autodiff:</p>
+<p>I learned automatic differentiation from section 2 of
+<a href="http://users.cecs.anu.edu.au/~jdomke/courses/sml2011/08autodiff_nnets.pdf">this document</a>.</p>
+<ul>
+<li>
+<p>It's very short and simple.</p>
+</li>
+<li>
+<p>I recommend doing the example on paper, including drawing the graph of the
+  function so you can annotate it as you follow along.</p>
+</li>
+<li>
+<p>It's also useful to compare the automatic differentiation method to the (less
+  efficient) method for taking gradients you learned in calculus (often called
+  "symbolic differentiation").</p>
+</li>
+<li>
+<p>The key: Just like intermediate quantities improve efficiency of function
+    evaluation (i.e., "forward propagation"), the intermediate gradients (i.e.,
+    partial derivatives of intermediate variables wrt the output node, often
+    called "adjoints") allow for equally efficient gradient evaluation ("back
+    propagation").</p>
+</li>
+<li>
+<p>The graph structure of the backward algorithm is always the same as
+   forward. (This is surprising.)</p>
+</li>
+</ul>
+<p>We have:</p>
+<ul>
+<li>
+<p>adjoint of output node = 1</p>
+</li>
+<li>
+<p><code>+=</code> feeding into the adjoint value of all nodes (only necessary if
+     an intermediate node is reused, otherwise you /can/ just assign the value
+     with <code>=</code>).</p>
+</li>
+<li>
+<p>The <code>+=</code> values aggregated into a node always have the same form:
+     adjoint of later node times the 'local gradient' at the edge.</p>
+</li>
+<li>
+<p>The units of the quantities flowing along the edges always pass the unit
+     test (just like the chain rule, but note that we add partials that reuse a
+     node). <span class="math">\(\frac{\partial out}{\partial v}\)</span> <code>+=</code> <span class="math">\(\frac{\partial
+     out}{\partial v} \cdot \frac{\partial u}{\partial v}\)</span> for <span class="math">\(u \in
+     \text{outgoing}(v)\)</span></p>
+</li>
+</ul>
+<p><strong>Testing</strong></p>
+<p>You can test your understanding by making up your own functions then testing
+that you got the gradients correct using the
+<a href="https://en.wikipedia.org/wiki/Numerical_differentiation">finite-difference test</a>
+(sometimes called "numerical differentiation")</p>
+<ul>
+<li>
+<p>This is the main way that people test that the gradient implementation is
+  correct (for the function its based on; remember though just because the
+  fdcheck passes doesn't mean that the <span class="math">\(f\)</span> is implemented correctly, just that
+  the gradient matches <span class="math">\(f\)</span>, including any bugs that <span class="math">\(f\)</span> may have).</p>
+</li>
+<li>
+<p>You should always use the "two-point" version.</p>
+</li>
+<li>
+<p>Test the gradient at multiple inputs (maybe randomly chosen, or chosen to test
+  corner/extreme cases).</p>
+</li>
+<li>
+<p>Compare the numerical gradient to your derived gradient using relative error,
+  not absolute error. This is available under numpy.allclose.</p>
+</li>
+<li>
+<p>This "test suite" (described under these bullet points) is implemented in
+  scipy.optimize.check_grad.</p>
+</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Tim Vieira
+    </span>
+  </span>
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="categories">
+    <a class='category' href='../category/misc.html'>misc</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="../tag/calculus.html">calculus</a>,    <a class="category" href="../tag/automatic-differentiation.html">automatic-differentiation</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="../post/2018/03/16/black-box-optimization/">Black-box optimization</a>
+      </li>
+      <li class="post">
+          <a href="../post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
+      </li>
+      <li class="post">
+          <a href="../post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
+      </li>
+      <li class="post">
+          <a href="../post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
+      </li>
+      <li class="post">
+          <a href="../post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+  <h1>Tags</h1>
+    <a href="../tag/optimization.html">optimization</a>,    <a href="../tag/calculus.html">calculus</a>,    <a href="../tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="../tag/sampling.html">sampling</a>,    <a href="../tag/statistics.html">statistics</a>,    <a href="../tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="../tag/testing.html">testing</a>,    <a href="../tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="../tag/importance-sampling.html">importance-sampling</a>,    <a href="../tag/machine-learning.html">machine-learning</a>,    <a href="../tag/datastructures.html">datastructures</a>,    <a href="../tag/algorithms.html">algorithms</a>,    <a href="../tag/rant.html">rant</a>,    <a href="../tag/gumbel.html">Gumbel</a>,    <a href="../tag/decision-making.html">decision-making</a>,    <a href="../tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="../tag/misc.html">misc</a>,    <a href="../tag/numerical.html">numerical</a>,    <a href="../tag/crf.html">crf</a>,    <a href="../tag/deep-learning.html">deep-learning</a>,    <a href="../tag/structured-prediction.html">structured-prediction</a>,    <a href="../tag/visualization.html">visualization</a>  </section>
+
+
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014&ndash;2018  Tim Vieira &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="../theme/js/modernizr-2.0.js"></script>
+  <script src="../theme/js/ender.js"></script>
+  <script src="../theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    var disqus_identifier = '/drafts/learn-automatic-differentiation.html';
+    var disqus_url = '../drafts/learn-automatic-differentiation.html';
+    var disqus_title = 'Learn automatic differentiation';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-8781169-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  
+</body>
+</html>
