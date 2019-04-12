@@ -48,191 +48,268 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
+        <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </h1>
     <p class="meta">
-<time datetime="2017-04-21T00:00:00-04:00" pubdate>Apr 21, 2017</time>    </p>
+<time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time>    </p>
 </header>
 
-  <div class="entry-content"><!--
-**Who should read this?** Nowadays, you're probably just using automatic
-differentiation to compute the gradient of whatever function you're using. If
-that's you and you trust your software package wholeheartedly, then you probably
-don't need to read this. If you're rolling your own module/Op to put in to an
-auto-diff library, then you should read this. I find that none of the available
-libraries are any good for differentiating dynamic programs, so I still find
-this stuff useful. You'll probably have to write gradient code without the aid
-of an autodiff library someday... So either way, knowing this stuff is good for
-you. To answer the question, everyone.
+  <div class="entry-content"><style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.</p>
+<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a derministic function
+<span class="math">\(f\)</span> over a (large) finite universe of <span class="math">\(n\)</span> elements where each element <span class="math">\(i\)</span> has
+probability <span class="math">\(p_i\)</span>:</p>
+<div class="math">$$
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
+$$</div>
+<p>However, <span class="math">\(f\)</span> is too expensive to evaluate <span class="math">\(n\)</span> times. So let's say that we have
+<span class="math">\(m \le n\)</span> evaluations to form our estimate. (Obviously, if we're happy
+evaluating <span class="math">\(f\)</span> a total of <span class="math">\(n\)</span> times, then we should just compute <span class="math">\(\mu\)</span> exactly
+with the definition above.)</p>
+<!--
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
 -->
 
-<p><strong>Setup</strong>: Suppose we have a function, <span class="math">\(f: \mathbb{R}^n \rightarrow \mathbb{R}\)</span>,
-and we want to test code that computes <span class="math">\(\nabla f\)</span>. (Note that these techniques
-also apply when <span class="math">\(f\)</span> has multivariate output.)</p>
-<h2>Finite-difference approximation</h2>
-<p>The main way that people test gradient computation is by comparing it against a
-finite-difference (FD) approximation to the gradient:</p>
+<p><strong>Monte Carlo:</strong> The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample <span class="math">\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)</span>, return <span class="math">\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)</span>. <em>Remarks</em>: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&mdash;measured in <span class="math">\(f\)</span> evaluations&mdash;somewhat by
+caching past evaluations of <span class="math">\(f\)</span>. However, this introduces a serious <em>runtime</em>
+inefficiency and requires modifying the method to account for the fact that <span class="math">\(m\)</span>
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+<em>zero</em> error; it only converges in an <span class="math">\(\epsilon\)</span>-<span class="math">\(\delta\)</span> sense.</p>
+<!--
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
+-->
+
+<p><strong>Sampling without replacement:</strong> We can get around the problem of resampling
+the same elements multiple times by sampling <span class="math">\(m\)</span> distinct elements. This is
+called a sampling <em>without replacement</em> (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+<em>de facto</em> method (more on that later). There are lots of ways to do sampling
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.</p>
+<p><strong>An alternative formulation:</strong> We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector <span class="math">\(\boldsymbol{x}\)</span>. We want
+our approximation, <span class="math">\(\boldsymbol{s}\)</span> to satisfy <span class="math">\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)</span> and while <span class="math">\(|| \boldsymbol{s} ||_0 \le m\)</span>. This will suffice for
+estimating <span class="math">\(\mu\)</span> (above) when <span class="math">\(\boldsymbol{x}=\boldsymbol{p}\)</span>, the vector of
+probabillties, because <span class="math">\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)</span> where <span class="math">\(\boldsymbol{f}\)</span> is a vector of all <span class="math">\(n\)</span> values of
+the function <span class="math">\(f\)</span>. Obviously, we don't need to evaluate <span class="math">\(f\)</span> in places where
+<span class="math">\(\boldsymbol{s}\)</span> is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not <em>necessary</em> for unbiased
+estimation of <span class="math">\(\mu\)</span> alone. However, this characterization is a good model for
+when we have zero knowledge of <span class="math">\(f\)</span>. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).</p>
+<p><strong>Priority sampling</strong>: Priority sampling (Duffield et al., 2005;
+<a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., 2007</a>)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseudocode for priority sampling
+(PS), based on the <em>alternative formulation</em>.</p>
 <div class="math">$$
-\boldsymbol{d}^\top\! \nabla f(\boldsymbol{x}) \approx \frac{1}{2 \varepsilon}(f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}))
+\begin{align*}
+&amp;\textbf{procedure } \textrm{PrioritySample} \\
+&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
+&amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;\quad  s_i \gets \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp; \text{ if } i \in S \\
+  0                               &amp; \text{ otherwise}
+\end{cases} \\
+&amp;\quad \textbf{return }\boldsymbol{s}
+\end{align*}
+$$</div>
+<p><span class="math">\(\textrm{PrioritySample}\)</span> can be applied to obtain a sparse and unbiased
+representation of any vector in <span class="math">\(\mathbb{R}^n\)</span>. We make use of such a
+representation for our original problem of budgeted mean estimation (<span class="math">\(\mu\)</span>) as
+follows:</p>
+<div class="math">$$
+\begin{align*}
+&amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
+&amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\end{align*}
+$$</div>
+<p>Explanation: The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i
+\in S)\)</span> case, it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} =
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S
+| \tau)\)</span> is an importance-weighting correction that comes from the
+<a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator">Horvitz-Thompson estimator</a>
+(modified slightly from its usual presentation to estimate means),
+<span class="math">\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)</span>, where
+<span class="math">\(S\)</span> is sampled according to some process with inclusion probabilities <span class="math">\(q_i = p(i
+\in S)\)</span>. In the case of priority sampling, we have an auxiliary variable for
+<span class="math">\(\tau\)</span> that makes computing <span class="math">\(q_i\)</span> easy. Thus, for priority sampling, we can use
+<span class="math">\(q_i = p(i \in S | \tau)\)</span>. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.</p>
+<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Show proof of
+unbiasedness</button> <div id="ps-unbiased" class="derivation"
+style="display:none;"> <strong>Proof of unbiasedness</strong>. The following proof is a
+little different from that in the priority sampling papers. I think it's more
+straightforward. More importantly, it shows how we can extend the method to
+sample from slightly different without-replacement distributions (as long as we
+can compute <span class="math">\(q_i = p(i \in S | \tau)\)</span>).</p>
+<div class="math">$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;=&amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \mu \right] \\
+&amp;=&amp; \mu
+\end{eqnarray}
 $$</div>
 <p>
-<br/>
-where <span class="math">\(\boldsymbol{d} \in \mathbb{R}^n\)</span> is an arbitrary "direction" in parameter
-space. We will look at many directions when we test. Generally, people take the
-<span class="math">\(n\)</span> elementary vectors as the directions, but random directions are just as good
-(and you can catch bugs in all dimensions with less than <span class="math">\(n\)</span> of them).</p>
-<p><strong>Always use the two-sided difference formula</strong>. There is a version which
-doesn't add <em>and</em> subtract, just does one or the other. Do not use it ever.</p>
-<p><strong>Make sure you test multiple inputs</strong> (values of <span class="math">\(\boldsymbol{x}\)</span>) or any thing
-else the function depends on (e.g., the minibatch).</p>
-<p><strong>What directions to use</strong>: When debugging, I tend to use elementary directions
-because they tell me something about which dimensions that are wrong... this
-doesn't always help though. The random directions are best when you want the
-test cases to run really quickly. In that case, you can switch to check a few
-random directions using a
-<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/util.py">spherical</a>
-distribution&mdash;do <em>not</em> sample them from a multivariate uniform!</p>
-<p><strong>Always test your implementation of <span class="math">\(f\)</span>!</strong> It's very easy to <em>correctly</em>
-  compute the gradient of the <em>wrong</em> function. The FD approximation is a
-  "self-consistency" test, it does not validate <span class="math">\(f\)</span> only the relationship
-  between <span class="math">\(f\)</span> and <span class="math">\(\nabla\! f\)</span>.</p>
-<p>Obviously, how you test <span class="math">\(f\)</span> depends strongly on what it's supposed to compute.</p>
-<ul>
-<li>Example: For a conditional random field (CRF), you can also test that your
-   implementation of a dynamic program for computing <span class="math">\(\log Z_\theta(x)\)</span> is
-   correctly by comparing against brute-force enumeration of <span class="math">\(\mathcal{Y}(x)\)</span> on
-   small examples.</li>
-</ul>
-<p>Similarly, you can directly test the gradient code if you know a different way
-to compute it.</p>
-<ul>
-<li>Example: In a CRF, we know that the <span class="math">\(\nabla \log Z_\theta(x)\)</span> is a feature
-   expectation, which you can also test against a brute-force enumeration on
-   small examples.</li>
-</ul>
-<h3>Why not just use the FD approximation as your gradient?</h3>
-<p>For low-dimensional functions, you can straight-up use the finite-difference
-approximation instead of rolling code to compute the gradient. (Take <span class="math">\(n\)</span>
-axis-aligned unit vectors for <span class="math">\(\boldsymbol{d}\)</span>.) The FD approximation is very
-accurate. Of course, specialized code is probably a little more accurate, but
-that's not <em>really</em> why we bother to do it! The reason why we write specialized
-gradient code is <em>not</em> to improve numerical accuracy, it's to improve
-<em>efficiency</em>. As I've
-<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">ranted</a>
-before, automatic differentiation techniques guarantee that evaluating <span class="math">\(\nabla
-f(x)\)</span> gradient should be as efficient as computing <span class="math">\(f(x)\)</span> (with the caveat that
-<em>space</em> complexity may increase substantially - i.e., space-time tradeoffs
-exists). FD is <span class="math">\(\mathcal{O}(n \cdot \textrm{runtime } f(x))\)</span>, where as autodiff
-is <span class="math">\(\mathcal{O}(\textrm{runtime } f(x))\)</span>.</p>
-<h2>How to compare vectors</h2>
-<p><strong>Absolute difference is the devil.</strong> You should never compare vectors in
-absolute difference (this is Lecture 1 of any numerical methods course). In this
-case, the problem is that gradients depend strongly on the scale of <span class="math">\(f\)</span>. If <span class="math">\(f\)</span>
-takes tiny values then it's easy for differences to be lower than a tiny
-threshold.</p>
-<p>Most people use <strong>relative error</strong> <span class="math">\(= \frac{|\textbf{want} -
-\textbf{got}|}{|\textbf{want}|}\)</span>, to get a scale-free error measure, but
-unfortunately relative error chokes when <span class="math">\(\textbf{want}\)</span> is zero.</p>
-<p>I compute several error measures with a script that you can import from my
-github
-<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/checkgrad.py">arsenal.math.checkgrad.{fdcheck}</a>.</p>
-<p>I use two metrics to test gradients:</p>
-<ol>
-<li>
-<p>Relative error (skipping zeros): If relative error hits a zero, I skip
-   it. I'll rely on the other measure.</p>
-</li>
-<li>
-<p>Pearson correlation: Checks the <em>direction</em> of the gradient, but allows a
-   scale and shift transformation. This measure doesn't have trouble with zeros,
-   but allows scale and shift problems to pass by. <em>Make sure you fix those
-   errors!</em> (e.g. In the CRF example, you might have forgotten to divide by
-   <span class="math">\(Z(x)\)</span>, which not really a constant... I've made this exact mistake a few
-   times.)</p>
-</li>
-</ol>
-<p>I also look at some diagnostics, which help me debug stuff:</p>
+</div></p>
+<p><strong>Remarks</strong>:</p>
 <ul>
 <li>
-<p>Accuracy of predicting the sign {+,-,0} of each dimension (or dot random product).</p>
+<p>Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).</p>
 </li>
 <li>
-<p>Absolute error (just as a diagnostic)</p>
+<p>Priority sampling can be straighforwardly generalized to support streaming
+   <span class="math">\(x_i\)</span>, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.</p>
 </li>
 <li>
-<p>Scatter plot: When debugging, I like to scatter plot the elements of FD vs. my
-  implementation.</p>
+<p>Priority sampling was designed for estimating subset sums, i.e., estimating
+   <span class="math">\(\sum_{i \in I} x_i\)</span> for some <span class="math">\(I \subseteq \{1,\ldots,n\}\)</span>. In this setting,
+   the set of sampled items <span class="math">\(S\)</span> is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   <a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf">(Szegedy, 2005)</a>.
+   Specifically, priority sampling with <span class="math">\(m\)</span> samples is no worse than the best
+   possible <span class="math">\((m-1)\)</span>-sparse estimator in terms of variance. Of course,
+   if we have some knowledge about <span class="math">\(f\)</span>, we may be able to beat
+   PS. <!-- We can relate subset sums to estimating <span class="math">\(\mu\)</span> by interpreting
+   <span class="math">\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)</span> for some <span class="math">\(\alpha\)</span>, scaling
+   <span class="math">\(f\)</span> appropriately by <span class="math">\(\alpha\)</span>, and encoding the subset via indicators in
+   <span class="math">\(f\)</span>'s dimensions. -->
+   <!-- (e.g.,. via
+   <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">importance sampling</a>
+   or by modifying PS to sample proportional to <span class="math">\(x_i = p_i \!\cdot\! |f_i|\)</span> (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for <span class="math">\(f_i\)</span> because we don't want to evaluate it). --></p>
+</li>
+<li>
+<p>Components of the estimate <span class="math">\(\boldsymbol{s}\)</span> are uncorrelated, i.e.,
+   <span class="math">\(\textrm{Cov}[s_i, s_j] = 0\)</span> for <span class="math">\(i \ne j\)</span> and <span class="math">\(m \ge 2\)</span>. This is surprising
+   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>.</p>
+</li>
+<li>
+<p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>),
+   known as probability proportional to size without replacement (PPSWOR).
+   To we can then adjust our estimator
+   <div class="math">$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$</div>
+   where <span class="math">\(q_i = p(i \in S|\tau) = p(k_i &gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)</span>. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).</p>
+</li>
+<li>
+<p><span class="math">\(\tau\)</span> is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing <span class="math">\(\tau\)</span>'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.</p>
 </li>
 </ul>
-<p>All these measurements (and the scatter plot) can be computed with
-<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/compare.py">arsenal.math.compare.{compare}</a>,
-which I find super useful when debugging absolutely anything numerical.</p>
-<h2>Bonus tests</h2>
-<p><strong>Testing modules</strong>: You can test the different modules of your code as well
-(assuming you have a composable module-based setup). E.g., I test my DP
-algorithm independent of how the features and downstream loss are computed. You
-can also test feature and downstream loss modules independent of one
-another. Note that autodiff (implicitly) computes Jacobian-vector products
-because modules are multivariate in general. We can reduce to the scalar case by
-taking a dot product of the outputs with a (fixed) random vector.</p>
-<p>Something like this:</p>
-<div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">spherical</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># fixed random vector |output|=|m|</span>
-<span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>   <span class="c1"># scalar function for use in fd</span>
-
-<span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># propagate</span>
-<span class="n">module</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">adjoint</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span> <span class="c1"># set output adjoint to r, usually we set adjoint of scalar output=1</span>
-<span class="n">module</span><span class="o">.</span><span class="n">bprop</span><span class="p">()</span>
-<span class="n">ad</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">adjoint</span> <span class="c1"># grab the gradient</span>
-<span class="n">fd</span> <span class="o">=</span> <span class="n">fdgrad</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-<span class="n">compare</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">ad</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>Integration tests</strong>: Test that running a gradient-based optimization algorithm
-is successful with your gradient implementation. Use smaller versions of your
-problem if possible. A related test for machine learning applications is to make
-sure that your model and learning procedure can (over)fit small datasets.</p>
-<p><strong>Test that batch = minibatch</strong> (if applicable). It's very easy to get this bit
-wrong. Broadcasting rules (in numpy, for example) make it easy to hide matrix
-conformability mishaps. So make sure you get the same results as manual
-minibatching (Of course, you should only do minibatching if are get a speed-up
-from vectorization or parallelism. You should probably test that it's actually
-faster.)</p>
 <!--
-Other common sources of bugs
-
-* Really look over your test cases. I often find that my errors are actually in
-  the test case themselves because either (1) I wrote it really quickly with
-  less care than the difficult function/gradient, or (2) there is a gap between
-  "what I want it to do" and "what I told it to do".
-
-* Random search in the space of programs can result in overfitting! This is a
-  general problem with test-driven development that always applies. If you are
-  hamfistedly twiddling bits of your code without thinking about why things
-  work, you can trick almost any test.
+ - The one downside of this method is that sampling seems to require looking at
+   all $n$ items.
 -->
 
-<p><strong>Further reading</strong>:</p>
+<h2>Experiments</h2>
+<p>You can get the Jupyter notebook for replicating this experiment
+<a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb">here</a>.
+So download the notebook and play with it!</p>
+<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!</p>
+<p><center>
+<img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png">
+</center></p>
+<p>The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, <span class="math">\(m \le n\)</span>.</p>
+<p>The plot shows a small example with <span class="math">\(n=50\)</span>. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at <span class="math">\(m=n\)</span>. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
+<p><strong>Further reading:</strong> If you liked this post, you might like my other posts
+tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> and
+<a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>.</p>
 <ul>
 <li>
-<p>I've written about gradient approximations before, you might like these
-  articles:
-  <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector products</a>,
-  <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step method</a>.</p>
+<p>Edith Cohen, "The Magic of Random Sampling"
+   (<a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf">slides</a>,
+   <a href="https://www.youtube.com/watch?v=jp83HyDs8fs">talk</a>)</p>
 </li>
 <li>
-<p>The foundations of backprop:
-  <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>.</p>
+<p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
+   has plenty good stuff that I didn't cover.</p>
 </li>
 <li>
-<p><a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">I strongly recommend</a>
-  learning how automatic differentiation works, I learned it from
-  <a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's course notes</a>.</p>
+<p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
 </li>
 <li>
-<p><a href="https://justindomke.wordpress.com/2017/04/22/you-deserve-better-than-two-sided-finite-differences/">Justin Domke post</a>:
-  Explains why we need bespoke finite-difference stencils (i.e., more than
-  two-sided differences) to prevent numerical demons from destroying our results!</p>
+<p>Suresh Venkatasubramanian's
+   <a href="http://blog.geomblog.org/2005/10/priority-sampling.html">post</a></p>
 </li>
 </ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
@@ -302,6 +379,9 @@ Other common sources of bugs
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a>
+      </li>
+      <li class="post">
           <a href="./post/2018/03/16/black-box-optimization/">Black-box optimization</a>
       </li>
       <li class="post">
@@ -313,22 +393,19 @@ Other common sources of bugs
       <li class="post">
           <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
       </li>
-      <li class="post">
-          <a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2018  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2019  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="./theme/js/modernizr-2.0.js"></script>

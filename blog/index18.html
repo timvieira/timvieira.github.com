@@ -48,113 +48,67 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2015/02/01/log-real-number-class/">Log-Real number class</a>
+        <a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a>
       </h1>
     <p class="meta">
-<time datetime="2015-02-01T00:00:00-05:00" pubdate>Feb 01, 2015</time>    </p>
+<time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time>    </p>
 </header>
 
-  <div class="entry-content"><p>Most people know how to avoid numerical underflow in probability computations by
-representing intermediate quantities in the log-domain. This trick turns
-"multiplication" into "addition", "addition" into "logsumexp", "0" into
-<span class="math">\(-\infty\)</span> and "1" into <span class="math">\(0\)</span>. Most importantly, it turns really small numbers into
-reasonable-size numbers.</p>
-<p>Unfortunately, without modification, this trick is limited to positive numbers
-because <code>log</code> of a negative number is <code>NaN</code>.</p>
-<p>Well, there is good news! For the cost of an extra bit, we can extend this trick
-to the negative reals and furthermore, we get a bonafide ring instead of a mere
-semiring.</p>
-<p>I first saw this trick in
-<a href="http://www.aclweb.org/anthology/D09-1005">Li and Eisner (2009)</a>. The trick is
-nicely summarized in Table 3 of that paper, which I've pasted below.</p>
-<div style="text-align:center">
-<img src="/blog/images/logreal.png"/>
-</div>
-
-<p><strong>Why do I care?</strong> When computing gradients (e.g., gradient of risk),
-intermediate values are rarely all positive. Furthermore, we're often
-multiplying small things together. I've recently found log-reals to be effective
-at squeaking a bit more numerical accuracy.</p>
-<p>This trick is useful for almost all backprop computations because backprop is
-essentially:</p>
-<div class="highlight"><pre><span></span>adjoint(u) += adjoint(v) * dv/du.
-</pre></div>
-
-
-<p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
-<p>Implementation:</p>
-<ul>
+  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.</p>
+<p>In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:</p>
+<ol>
 <li>
-<p>This trick is better suited to programming languages with structs. Using
-  objects will probably in an horrible slow down and using parallel arrays to
-  store the sign bit and double is probably too tedious and error prone. (Sorry
-  java folks.)</p>
+<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
 </li>
 <li>
-<p>Here's a <a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h">C++ implementation</a>
-  with operator overloading from Andre Martins</p>
+<p>Change the training objective</p>
 </li>
 <li>
-<p>Note that log-real <code>+=</code> involves calls to <code>log</code> and <code>exp</code>, which will
-  definitely slow your code down a bit (these functions are much slower than
-  addition).</p>
+<p>Approximate inference</p>
 </li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
+</ol>
+<p>Approximate inference is tricky. Things can easily go awry.</p>
+<p>For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
+approximations work fine.)</p>
+<p>It looks like using approximate inference during training changes the training
+objective.</p>
+<p>So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.</p>
+<p>Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handful of papers by Justin Domke, and a few by
+Stoyanov &amp; Eisner.</p>
+<p>Unsuprisingly, it works pretty well.</p>
+<p>I first saw this idea in
+<a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov &amp; Eisner (2011)</a>. They
+use loopy belief propagation as their approximate inference algorithm. At the
+end of the day, their model is essentially a deep recurrent network, which came
+from unrolling inference in a graphical model. This idea really struck me
+because it's clearly right in the middle between graphical models and deep
+learning.</p>
+<p>You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.</p>
+<p>Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.</p></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="./index19.html">&larr; Older</a>
@@ -167,6 +121,9 @@ essentially:</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a>
+      </li>
+      <li class="post">
           <a href="./post/2018/03/16/black-box-optimization/">Black-box optimization</a>
       </li>
       <li class="post">
@@ -178,22 +135,19 @@ essentially:</p>
       <li class="post">
           <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
       </li>
-      <li class="post">
-          <a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2018  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2019  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="./theme/js/modernizr-2.0.js"></script>
