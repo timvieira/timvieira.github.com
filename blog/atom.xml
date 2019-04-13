@@ -1167,7 +1167,7 @@ h6:hover .anchor-link {
 &lt;li&gt;grounded (examples and applications)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Having many levels at my disposal let's me do "&lt;a href="https://en.wikipedia.org/wiki/Co-training"&gt;co-training&lt;/a&gt;" to developing my understanding. Sometimes, I even view math as something that needs to be "empirically verified," which is kind of ridiculous, but I think the mindset isn't terrible: always be skeptical. Just because something is nicely typeset, doesn't make it correct.&lt;/p&gt;
-&lt;p&gt;One of the worst things when trying to learn or experiment with new things (e.g., do research) is a slow turn-around to simple "try" something out. Therefore, I really love tools hat facilitate rapid prototyping (e.g., black-box optimizers, automatic &amp; numerical differentiation, and visualization tools).&lt;/p&gt;
+&lt;p&gt;One of the worst things when trying to learn or experiment with new things (e.g., do research) is a slow turn-around to simply "try" something out. Therefore, I really love tools hat facilitate rapid prototyping (e.g., black-box optimizers, automatic &amp; numerical differentiation, and visualization tools).&lt;/p&gt;
 &lt;p&gt;Put your understanding to the test! Have you worked out all the math? implemented it? Ok, now try writing down a simple illustrative example (think: the idea is "software" in need of testing) that shows the method works as advertised. Now, try to break it.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -1192,7 +1192,7 @@ $$
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Most algorithms for approaching this type of problem search are iterative algorithms, "hill climbing" algorithms, which use information about how the function behaves near the current point to form a &lt;em&gt;search direction&lt;/em&gt;. A classic example is, of course, ordinary gradient ascent whose search direction is simply the gradient.&lt;/p&gt;
+&lt;p&gt;Most algorithms for approaching this type of problem are iterative, "hill climbing" algorithms, which use information about how the function behaves near the current point to form a &lt;em&gt;search direction&lt;/em&gt;. A classic example is, of course, ordinary gradient ascent whose search direction is simply the gradient.&lt;/p&gt;
 &lt;p&gt;You may have learned in calculus that "the gradient is the direction of steepest ascent." While this is true, it is only true under the assumption that $\mathcal{X}$ is a Euclidean space, i.e., a space where it makes sense to measure the distance between two points with the Euclidean distance. Clearly, not all spaces even type check as Euclidean (e.g., discrete spaces), and in some cases Euclidean distances ignore important structure and constraints (e.g., probability distributions are positive and integrate to unity).&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -3276,7 +3276,7 @@ h6:hover .anchor-link {
 &lt;li&gt;grounded (examples and applications)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Having many levels at my disposal let's me do "&lt;a href="https://en.wikipedia.org/wiki/Co-training"&gt;co-training&lt;/a&gt;" to developing my understanding. Sometimes, I even view math as something that needs to be "empirically verified," which is kind of ridiculous, but I think the mindset isn't terrible: always be skeptical. Just because something is nicely typeset, doesn't make it correct.&lt;/p&gt;
-&lt;p&gt;One of the worst things when trying to learn or experiment with new things (e.g., do research) is a slow turn-around to simple "try" something out. Therefore, I really love tools hat facilitate rapid prototyping (e.g., black-box optimizers, automatic &amp; numerical differentiation, and visualization tools).&lt;/p&gt;
+&lt;p&gt;One of the worst things when trying to learn or experiment with new things (e.g., do research) is a slow turn-around to simply "try" something out. Therefore, I really love tools hat facilitate rapid prototyping (e.g., black-box optimizers, automatic &amp; numerical differentiation, and visualization tools).&lt;/p&gt;
 &lt;p&gt;Put your understanding to the test! Have you worked out all the math? implemented it? Ok, now try writing down a simple illustrative example (think: the idea is "software" in need of testing) that shows the method works as advertised. Now, try to break it.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -3301,7 +3301,7 @@ $$
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Most algorithms for approaching this type of problem search are iterative algorithms, "hill climbing" algorithms, which use information about how the function behaves near the current point to form a &lt;em&gt;search direction&lt;/em&gt;. A classic example is, of course, ordinary gradient ascent whose search direction is simply the gradient.&lt;/p&gt;
+&lt;p&gt;Most algorithms for approaching this type of problem are iterative, "hill climbing" algorithms, which use information about how the function behaves near the current point to form a &lt;em&gt;search direction&lt;/em&gt;. A classic example is, of course, ordinary gradient ascent whose search direction is simply the gradient.&lt;/p&gt;
 &lt;p&gt;You may have learned in calculus that "the gradient is the direction of steepest ascent." While this is true, it is only true under the assumption that $\mathcal{X}$ is a Euclidean space, i.e., a space where it makes sense to measure the distance between two points with the Euclidean distance. Clearly, not all spaces even type check as Euclidean (e.g., discrete spaces), and in some cases Euclidean distances ignore important structure and constraints (e.g., probability distributions are positive and integrate to unity).&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
