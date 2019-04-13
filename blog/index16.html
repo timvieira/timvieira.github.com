@@ -48,154 +48,109 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2015/07/29/gradient-of-a-product/">Gradient of a product</a>
+        <a href="./post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
       </h1>
     <p class="meta">
-<time datetime="2015-07-29T00:00:00-04:00" pubdate>Jul 29, 2015</time>    </p>
+<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>    </p>
 </header>
 
-  <div class="entry-content"><div class="math">$$
-\newcommand{\gradx}[1]{\grad{x}{ #1 }}
-\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\bigo}[0]{\mathcal{O}}
-$$</div>
-<p>In this post we'll look at how to compute the gradient of a product. This is
-such a common subroutine in machine learning that it's worth careful
-consideration. In a later post, I'll describe the gradient of a
-sum-over-products, which is another interesting and common pattern in machine
-learning (e.g., exponential families, CRFs, context-free grammar, case-factor
-diagrams, semiring-weighted logic programming).</p>
-<p>Given a collection of functions with a common argument <span class="math">\(f_1, \cdots, f_n \in \{
-\R^d \mapsto \R \}\)</span>.</p>
-<p>Define their product <span class="math">\(p(x) = \prod_{i=1}^n f_i(x)\)</span></p>
-<p>Suppose, we'd like to compute the gradient of the product of these functions
-with respect to their common argument, <span class="math">\(x\)</span>.</p>
-<div class="math">$$
-\begin{eqnarray*}
-\gradx{ p(x) }
-&amp;=&amp; \gradx{ \prod_{i=1}^n f_i(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
-\end{eqnarray*}
-$$</div>
-<p>As you can see in the equation above, the gradient takes the form of a
-"leave-one-out product" sometimes called a "cavity."</p>
-<p>A naive method for computing the gradient computes the leave-one-out products
-from scratch for each <span class="math">\(i\)</span> (outer loop)&mdash;resulting in a overall runtime of
-<span class="math">\(O(n^2)\)</span> to compute the gradient. Later, we'll see a dynamic program for
-computing this efficiently.</p>
-<p><strong>Division trick</strong>: Before going down the dynamic programming rabbit hole, let's
-consider the following relatively simple method for computing the gradient,
-which uses division:</p>
-<div class="math">$$
-\begin{eqnarray*}
-\gradx{ p(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
-&amp;=&amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
-\end{eqnarray*}
-$$</div>
-<p>Pro:</p>
-<ul>
-<li>Runtime <span class="math">\(\bigo(n)\)</span> with space <span class="math">\(\bigo(1)\)</span>.</li>
-</ul>
-<p>Con:</p>
-<ul>
-<li>
-<p>Requires <span class="math">\(f \ne 0\)</span>. No worries, we can handle zeros with three cases: (1) If
-   no zeros: the division trick works fine. (2) Only one zero: implies that only
-   one term in the sum will have a nonzero gradient, which we compute via
-   leave-one-out product. (3) Two or more zeros: all gradients are zero and
-   there is no work to be done.</p>
-</li>
-<li>
-<p>Requires multiplicative inverse operator (division) <em>and</em>
-   associative-commutative multiplication, which means it's not applicable to
-   matrices.</p>
-</li>
-</ul>
-<p><strong>Log trick</strong>: Suppose <span class="math">\(f_i\)</span> are very small numbers (e.g., probabilities), which
-we'd rather not multiply together because we'll quickly lose precision (e.g.,
-for large <span class="math">\(n\)</span>). It's common practice (especially in machine learning) to replace
-<span class="math">\(f_i\)</span> with <span class="math">\(\log f_i\)</span>, which turns products into sums, <span class="math">\(\prod_{j=1}^n f_j(x) =
-\exp \left( \sum_{j=1}^n \log f_j(x) \right)\)</span>, and tiny numbers (like
-<span class="math">\(\texttt{3.72e-44}\)</span>) into large ones (like <span class="math">\(\texttt{-100}\)</span>).</p>
-<p>Furthermore, using the identity <span class="math">\((\nabla g) = g \cdot \nabla \log g\)</span>, we can
-operate exclusively in the "<span class="math">\(\log\)</span>-domain".</p>
-<div class="math">$$
-\begin{eqnarray*}
-\gradx{ p(x) }
-&amp;=&amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
-\end{eqnarray*}
-$$</div>
-<p>Pro:</p>
-<ul>
-<li>
-<p>Numerically stable</p>
-</li>
-<li>
-<p>Runtime <span class="math">\(\bigo(n)\)</span> with space <span class="math">\(\bigo(1)\)</span>.</p>
-</li>
-<li>
-<p>Doesn't require multiplicative inverse assuming you can compute <span class="math">\(\gradx{ \log
-   f_i(x) }\)</span> without it.</p>
-</li>
-</ul>
-<p>Con:</p>
-<ul>
-<li>
-<p>Requires <span class="math">\(f &gt; 0\)</span>. But, we can use
-   <a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/">LogReal number class</a>
-   to represent negative numbers in log-space, but we still need to be careful
-   about zeros (like in the division trick).</p>
-</li>
-<li>
-<p>Doesn't easily generalize to other notions of multiplication.</p>
-</li>
-</ul>
-<p><strong>Dynamic programming trick</strong>: <span class="math">\(\bigo(n)\)</span> runtime and <span class="math">\(\bigo(n)\)</span> space. You may
-recognize this as forward-backward algorithm for linear chain CRFs
-(cf. <a href="http://www.inference.phy.cam.ac.uk/hmw26/papers/crf_intro.pdf">Wallach (2004)</a>,
-section 7).</p>
-<p>The trick is very straightforward when you think about it in isolation. Compute
-the products of all prefixes and suffixes. Then, multiply them together.</p>
-<p>Here are the equations:</p>
-<div class="math">$$
-\begin{eqnarray*}
-\alpha_0(x) &amp;=&amp; 1 \\
-\alpha_t(x)
-   &amp;=&amp; \prod_{i \le t} f_i(x)
-   = \alpha_{t-1}(x) \cdot f_t(x) \\
-\beta_{n+1}(x) &amp;=&amp; 1 \\
-\beta_t(x)
-  &amp;=&amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
-\gradx{ p(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \prod_{j &lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &gt; i} f_j(x) \right) \\
-&amp;=&amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
-\end{eqnarray*}
-$$</div>
-<p>Clearly, this requires <span class="math">\(O(n)\)</span> additional space.</p>
-<p>Only requires an associative operator (i.e., Does not require it to be
-commutative or invertible like earlier strategies).</p>
-<p>Why do we care about the non-commutative multiplication? A common example is
-matrix multiplication where <span class="math">\(A B C \ne B C A\)</span>, even if all matrices have the
-conformable dimensions.</p>
-<p><strong>Connections to automatic differentiation</strong>: The theory behind reverse-mode
-automatic differentiation says that if you can compute a function, then you
-<em>can</em> compute it's gradient with the same asymptotic complexity, <em>but</em> you might
-need more space. That's exactly what we did here: We started with a naive
-algorithm for computing the gradient with <span class="math">\(\bigo(n^2)\)</span> time and <span class="math">\(\bigo(1)\)</span> space
-(other than the space to store the <span class="math">\(n\)</span> functions) and ended up with a <span class="math">\(\bigo(n)\)</span>
-time <span class="math">\(\bigo(n)\)</span> space algorithm with a little clever thinking. What I'm saying
-is autodiff&mdash;even if you don't use a magical package&mdash;tells us that an
-efficient algorithm for the gradient always exists. Furthermore, it tells you
-how to derive it manually, if you are so inclined. The key is to reuse
-intermediate quantities (hence the increase in space).</p>
-<p><em>Sketch</em>: In the gradient-of-a-product case, assuming we implemented
-multiplication left-to-right (forward pass) that already defines the prefix
-products (<span class="math">\(\alpha\)</span>). It turns out that the backward pass gives us <span class="math">\(\beta\)</span> as
-adjoints. Lastly, we'd propagate gradients through the <span class="math">\(f\)</span>'s to get
-<span class="math">\(\frac{\partial p}{\partial x}\)</span>. Essentially, we end up with exactly the dynamic
-programming algorithm we came up with.</p>
+  <div class="entry-content"><p>This is a simple note on how to compute a bijective mapping between the indices
+of an <span class="math">\(n\)</span>-dimensional array and a flat, one-dimensional array. We'll look at
+both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
+<p>We'll assume each dimension <span class="math">\(a, b, c, \ldots\)</span> is a positive integer and bounded
+<span class="math">\(a \le A, b \le B, c \le C, \ldots\)</span></p>
+<h3>Start small</h3>
+<p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inverse_3</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">J</span><span class="o">*</span><span class="n">K</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Here's our test case:</p>
+<div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
+<span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+            <span class="k">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
+            <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
+            <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>Note: This is not the only bijective mapping from <code>tuple</code> to <code>int</code> that we
+could have come up with. The one we chose corresponds to the particular layout,
+which is apparent in the test case.</p>
+<p>For <span class="math">\(n=4\)</span> the pattern is <span class="math">\(((a \cdot B + b) \cdot C + d) \cdot D + d\)</span>.</p>
+<p>Sidenote: We don't actually need the bound <span class="math">\(a \le A\)</span> in either <code>index</code> or
+<code>inverse</code>. This gives us a little extra flexibility because our first
+dimension can be infinite/unknown.</p>
+<h3>General case</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s2">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
+    <span class="c1"># the pattern:</span>
+    <span class="c1"># ((i*J + j)*K + k)*L + l</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s2">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">total</span> <span class="o">/=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">key</span>
+</pre></div>
+
+
+<h2>Appendix</h2>
+<h3>Testing the general case</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
+
+<span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="s2">&quot;Test that `index` produces the layout we expect.&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_inverse</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+
+
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -263,6 +218,9 @@ programming algorithm we came up with.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
+      </li>
+      <li class="post">
           <a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </li>
       <li class="post">
@@ -274,15 +232,12 @@ programming algorithm we came up with.</p>
       <li class="post">
           <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </li>
-      <li class="post">
-          <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 

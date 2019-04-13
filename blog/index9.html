@@ -48,65 +48,185 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
+        <a href="./post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a>
       </h1>
     <p class="meta">
-<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>    </p>
+<time datetime="2016-10-01T00:00:00-04:00" pubdate>Oct 01, 2016</time>    </p>
 </header>
 
-  <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
-because it makes it easy to rapidly prototype deep networks with plenty of
-doodads and geegaws, but because it means that evaluating the gradient <span class="math">\(\nabla
-f(x)\)</span> is as fast of computing <span class="math">\(f(x)\)</span>. In fact, the gradient provably requires at
-most a <em>small</em> constant factor more arithmetic operations than the function
-itself.  Furthermore, autodiff tells us how to derive and implement the gradient
-efficiently. This is a fascinating result that is perhaps not emphasized enough
-in machine learning.</p>
-<p><strong>The gradient should never be asymptotically slower than the function.</strong> In my
-recent <a href="/doc/2016-emnlp-vocrf.pdf">EMNLP'16 paper</a>, my coauthors and I found a
-line of work on variable-order CRFs
-(<a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf">Ye+'09</a>;
-<a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf">Cuong+'14</a>), which
-had an unnecessarily slow and complicated algorithm for computing gradients,
-which was asymptotically (and practically) slower than their forward
-algorithm. Without breaking a sweat, we derived a simpler and more efficient
-gradient algorithm by simply applying backprop to the forward algorithm (and
-made some other contributions).</p>
-<p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
-inside-outside, are actually just instances of automatic differentiation
-(<a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Eisner,'16</a>) (i.e.,
-outside is just backprop on inside). This shouldn't be a surprise because these
-algorithms are used to compute gradients. Basically, if you know backprop and
-the inside algorithm, then you can derive the outside algorithm by applying the
-backprop transform manually. I find it easier to understand the outside
-algorithm via its connection to backprop, then via
-<a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>. Note
-that inside-outside and forward-backward pre-date backpropagation and have
-additional uses beyond computing gradients.</p>
-<p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
-through many approximate inference algorithms, e.g.,
-<a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
-and many of Justin Domke's papers, to avoid issues I've mentioned
-<a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">before</a>. You
-can even backprop through optimization algorithms to get gradients of dev loss wrt
-hyperparameters, e.g.,
-<a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf">Domke'12</a> and
-<a href="https://arxiv.org/abs/1502.03492">Maclaurin+'15</a>.</p>
-<p><strong>There's at least one catch!</strong> Although the <em>time</em> complexity of computing the
-gradient is as good as the function, the <em>space</em> complexity may be much larger
-because the autodiff recipe (at least the default reverse-mode one) requires memoizing
-all intermediate quantities (e.g., the quantities you overwrite in a
-loop). There are generic methods for balancing the time-space tradeoff in
-autodiff, since you can (at least in theory) reconstruct the intermediate
-quantities by playing the forward computation again from intermediate
-checkpoints (at a cost to runtime, of course). A recent example is
-<a href="https://arxiv.org/abs/1606.03401">Gruslys+'16</a>.</p>
-<p><strong>A final remark</strong>. Despite the name "automatic" differentiation, there is no
-need to rely on software to "automatically" give you gradient routines. Applying
-the backprop transformation is generally easy to do manually and sometimes more
-efficient than using a library. Many autodiff libraries lack good support for
-dynamic computation graph, i.e., when the structure depends on quantities that
-vary with the input (e.g., sentence length).</p>
+  <div class="entry-content"><p>Suppose we have a computation which generates sequence of states <span class="math">\(s_1 \ldots
+s_n\)</span> according to <span class="math">\(s_{t} = f(s_{t-1})\)</span> where <span class="math">\(s_0\)</span> is given.</p>
+<p>We'd like to devise an algorithm, which can reconstruct each point in the
+sequence efficiently as we traverse it backwards. You can think of this as
+"hitting undo" from the end of the sequence or reversing a singly linked list.</p>
+<p>Obviously, we <em>could</em> just record the entire sequence, but if <span class="math">\(n\)</span> is large <em>or</em>
+the size of each state is large, this will be infeasible.</p>
+<p><strong>Idea 0</strong>: Rerun the forward pass <span class="math">\(n\)</span> times. Runtime <span class="math">\(\mathcal{O}(n^2)\)</span>, space
+  <span class="math">\(\mathcal{O}(1)\)</span>.</p>
+<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(0 &lt; k \le n\)</span> evenly spaced "checkpoint" states.
+Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to the
+runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation from
+the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus, the
+overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
+<p><strong>Idea 2</strong>: <em>Idea 1</em> did something kind of silly, within a chunk of size <span class="math">\(n/k\)</span>,
+it does each computation multiple times! Suppose we increase the memory
+requirement <em>just a little bit</em> to remember the current chunk we're working on,
+making it now <span class="math">\(\mathcal{O}(k + n/k)\)</span>. Now, we compute each state at most <span class="math">\(2\)</span>
+times: once in the initial sequence and once in the reverse. This implies a
+<em>linear</em> runtime.  Now, the question: how should we set <span class="math">\(k\)</span> so that we minimize
+extra space? Easy! Solve the following little optimization problem:</p>
+<div class="math">$$
+\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
+$$</div>
+<style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><button onclick="toggle('#derivation-optimal-space')" class="toggle-button">Derivation</button>
+<div id="derivation-optimal-space" style="display:none;" class="derivation">
+To get the minimum, we solve for <span class="math">\(k\)</span> that sets the derivative to zero.
+</p>
+<div class="math">$$
+\begin{eqnarray}
+    0 &amp;=&amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
+      &amp;=&amp; 1-n/k^2 \\
+n/k^2 &amp;=&amp; 1 \\
+  k^2 &amp;=&amp; n \\
+    k &amp;=&amp; \sqrt{n}
+\end{eqnarray}
+$$</div>
+<p>
+<br/></p>
+<p>Since it's safe to assume that <span class="math">\(n,k \ge 1\)</span> and <span class="math">\(\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &gt; 0\)</span> this is indeed a minimum. It's also global minimum
+because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\)</span> when <span class="math">\(n,k &gt; 0\)</span>.</p>
+</div>
+
+<p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
+only blow up our runtime by a factor of 2. Also, I really love the "introduce a
+parameter then optimize it out" trick.</p>
+<p><button onclick="toggle('#code-sqrt-space')">Code</button>
+<div id="code-sqrt-space" style="display:none;"></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">memory</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">:</span>
+        <span class="c1"># last chunk may be shorter than k.</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">memory</span><span class="p">[</span><span class="n">b</span><span class="o">-</span><span class="n">c</span><span class="p">],</span> <span class="n">c</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+            <span class="n">b</span> <span class="o">-=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="s2">&quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&quot;</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">B</span>
+</pre></div>
+
+
+</div>
+
+<p><strong>Idea 3</strong>: What if we apply "the remember <span class="math">\(k\)</span> states" trick <em>recursively</em>? I'm
+going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
+matter).</p>
+<p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
+\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>.
+We hit the base case when the width of the interval is
+one.</p>
+<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
+a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
+<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that <span class="math">\(k=2\)</span>.</p>
+<p><button onclick="toggle('#code-recursive')">Code</button>
+<div id="code-recursive" style="display:none;"></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">s0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># do O(n/2) work to find the midpoint with O(1) space.</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+</pre></div>
+
+
+</div>
+
+<h2>Remarks</h2>
+<p>The algorithms describe in this post are generic algorithmic tricks, which has
+been used in a number of place, including</p>
+<ul>
+<li>
+<p>The classic computer science interview problem of reversing a singly linked list
+  under a tight budget on <em>additional</em> memory.</p>
+</li>
+<li>
+<p>Backpropagation for computing gradients in sequence models, including HMMs (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
+  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>). I have
+  sample code that illustrates the basic idea below.</p>
+</li>
+<li>
+<p>Memory-efficient <a href="https://arxiv.org/pdf/cs/0310016v1">omniscient debugging</a>,
+  which allows a user to inspect program state while moving forward <em>and
+  backward</em> in time.</p>
+</li>
+</ul>
+<h2>Sample code</h2>
+<ul>
+<li>
+<p><a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">The basics</a>:
+  Simple implementation complete with test cases.</p>
+</li>
+<li>
+<p><a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0ea">Memory-efficient backprop in an RNN</a>:
+  A simple application with test cases, of course.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -174,6 +294,9 @@ vary with the input (e.g., sentence length).</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
+      </li>
+      <li class="post">
           <a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </li>
       <li class="post">
@@ -185,15 +308,12 @@ vary with the input (e.g., sentence length).</p>
       <li class="post">
           <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </li>
-      <li class="post">
-          <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 
