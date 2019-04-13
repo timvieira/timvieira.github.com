@@ -7,7 +7,7 @@ $$&lt;/div&gt;
 don't have complete knowledge of &lt;span class="math"&gt;\(p_\theta\)&lt;/span&gt;.  For example, it is a mix of
 factors that are known and under our control via &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; (policy factors) and
 factors that are not known (environment factors).&lt;/p&gt;
-&lt;p&gt;The likelihood-ratio gradient estimator is an approach for solving such a
+&lt;p&gt;Combined with stochastic gradient ascent, the likelihood-ratio gradient estimator is an approach for solving such a
 problem.  It appears in policy gradient methods for reinforcement learning
 (e.g.,
 &lt;a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf"&gt;Sutton et al. 1999&lt;/a&gt;),
@@ -284,7 +284,7 @@ $$&lt;/div&gt;
 don't have complete knowledge of &lt;span class="math"&gt;\(p_\theta\)&lt;/span&gt;.  For example, it is a mix of
 factors that are known and under our control via &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; (policy factors) and
 factors that are not known (environment factors).&lt;/p&gt;
-&lt;p&gt;The likelihood-ratio gradient estimator is an approach for solving such a
+&lt;p&gt;Combined with stochastic gradient ascent, the likelihood-ratio gradient estimator is an approach for solving such a
 problem.  It appears in policy gradient methods for reinforcement learning
 (e.g.,
 &lt;a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf"&gt;Sutton et al. 1999&lt;/a&gt;),
