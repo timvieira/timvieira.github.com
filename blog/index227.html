@@ -48,30 +48,48 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+        <a href="./post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
       </h1>
     <p class="meta">
-<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>    </p>
+<time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time>    </p>
 </header>
 
-  <div class="entry-content"><p>The following is a quick rant about
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
-(see that post for notation).</p>
-<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
-<blockquote>
-<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
-</blockquote>
-<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
-<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
-<p>With importance sampling, it is possible to achieve a variance reduction over
-Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
-for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
-variance</em> estimate <em>with a single sample</em>!</p>
-<p>Of course, this is an unreasonable distribution to use because the normalizing
-constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
-proposal distributions exist</em>.</p>
-<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
-"importance sampling for variance reduction" to learn more.</p>
+  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.</p>
+<p>This is a very simple point, but nonetheless I'll illustrate with a simple
+example.</p>
+<p>Consider the following simple example, let's find the argmax of <span class="math">\(f(x,y) = -x^2\)</span>.</p>
+<p>Suppose we search over a <span class="math">\(10\)</span>-by-<span class="math">\(10\)</span> grid, resulting in a total of <span class="math">\(100\)</span>
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the <span class="math">\(x\)</span>-dimension, which is only <span class="math">\(10\)</span> samples! On
+the other hand, randomly sampling points over the same space results in <span class="math">\(100\)</span>
+samples in every dimension.</p>
+<p>In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.</p>
+<p>This type of problem is common on hyperparameter optimizations. For futher
+reading see
+<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
+<p><strong>Other thoughts</strong>:</p>
+<ol>
+<li>
+<p>Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+</li>
+<li>
+<p>Grid search tends to produce nicer-looking plots.</p>
+</li>
+<li>
+<p>What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.</p>
+</li>
+</ol>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -129,9 +147,9 @@ proposal distributions exist</em>.</p>
 </script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index14.html">&larr; Older</a>
+    <a class="prev" href="./index228.html">&larr; Older</a>
 
-    <a class="next" href="./index12.html">Newer &rarr;</a>
+    <a class="next" href="./index226.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">

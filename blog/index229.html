@@ -48,125 +48,112 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based hyperparameter optimization and the implicit function theorem</a>
+        <a href="./post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
       </h1>
     <p class="meta">
-<time datetime="2016-03-05T00:00:00-05:00" pubdate>Mar 05, 2016</time>    </p>
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>    </p>
 </header>
 
-  <div class="entry-content"><p>The most approaches to hyperparameter optimization can be viewed as a bi-level
-optimization&mdash;the "inner" optimization optimizes training loss (wrt <span class="math">\(\theta\)</span>),
-while the "outer" optimizes hyperparameters (<span class="math">\(\lambda\)</span>).</p>
+  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
+a high-dimensional objective I was developing specialized algorithms for
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.</p>
+<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.</p>
+<p><img alt="Alt text" src="/blog/images/cross-section.png"></p>
+<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
+function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?</p>
+<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
+\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
+picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
+as follows,</p>
 <div class="math">$$
-\lambda^* = \underset{\lambda}{\textbf{argmin}}\
-\mathcal{L}_{\text{dev}}\left(
-\underset{\theta}{\textbf{argmin}}\
-\mathcal{L}_{\text{train}}(\theta, \lambda) \right)
+f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$</div>
-<p>Can we estimate <span class="math">\(\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}\)</span> so
-that we can run gradient-based optimization over <span class="math">\(\lambda\)</span>?</p>
-<p>Well, what does it mean to have an <span class="math">\(\textbf{argmin}\)</span> inside a function?</p>
-<p>Well, it means that there is a <span class="math">\(\theta^*\)</span> that gets passed to
-<span class="math">\(\mathcal{L}_{\text{dev}}\)</span>. And, <span class="math">\(\theta^*\)</span> is a function of <span class="math">\(\lambda\)</span>, denoted
-<span class="math">\(\theta(\lambda)\)</span>. Furthermore, <span class="math">\(\textbf{argmin}\)</span> must set the derivative of the
-inner optimization to zero in order to be a local optimum of the inner
-function. So we can rephrase the problem as</p>
-<div class="math">$$
-\lambda^* = \underset{\lambda}{\textbf{argmin}}\
-\mathcal{L}_{\text{dev}}\left(\theta(\lambda) \right),
-$$</div>
-<p>
-where <span class="math">\(\theta(\lambda)\)</span> is the solution to,
-</p>
-<div class="math">$$
-\frac{\partial \mathcal{L}_{\text{train}}(\theta, \lambda)}{\partial \theta} = 0.
-$$</div>
-<p>Now how does <span class="math">\(\theta\)</span> change as the result of an infinitesimal change to
-<span class="math">\(\lambda\)</span>?</p>
-<p>The constraint on the derivative implies a type of "equilibrium"&mdash;the inner
-optimization process will continue to optimize regardless of how we change
-<span class="math">\(\lambda\)</span>. Assuming we don't change <span class="math">\(\lambda\)</span> too much, then the inner
-optimization shouldn't change <span class="math">\(\theta\)</span> too much and it will change in a
-predictable way.</p>
-<p>To do this, we'll appeal to the implicit function theorem. Let's looking the
-general case to simplify notation. Suppose <span class="math">\(x\)</span> and <span class="math">\(y\)</span> are related through a
-function <span class="math">\(g\)</span> as follows,</p>
-<div class="math">$$g(x,y) = 0.$$</div>
-<p>Assuming <span class="math">\(g\)</span> is a smooth function in <span class="math">\(x\)</span> and <span class="math">\(y\)</span>, we can perturb either
-argument, say <span class="math">\(x\)</span> by a small amount <span class="math">\(\Delta_x\)</span> and <span class="math">\(y\)</span> by <span class="math">\(\Delta_y\)</span>. Because
-system preserves the constraint, i.e.,</p>
-<div class="math">$$
-g(x + \Delta_x, y + \Delta_y) = 0.
-$$</div>
-<p>We can solve for the change of <span class="math">\(x\)</span> as a result of an infinitesimal change in
-<span class="math">\(y\)</span>. We take the first-order expansion,</p>
-<div class="math">$$
-g(x, y) + \Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
-$$</div>
-<p>Since <span class="math">\(g(x,y)\)</span> is already zero,</p>
-<div class="math">$$
-\Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
-$$</div>
-<p>Next, we solve for <span class="math">\(\frac{\Delta_x}{\Delta_y}\)</span>.</p>
-<div class="math">$$
-\Delta_x \frac{\partial g}{\partial x} = - \Delta_y \frac{\partial g}{\partial y}.
-$$</div>
-<div class="math">$$
-\frac{\Delta_x}{\Delta_y}  = -\left( \frac{\partial g}{\partial y} \right)^{-1} \frac{\partial g}{\partial x}.
-$$</div>
-<p>Back to the original problem: Now we can use the implicit function theorem to
-estimate how <span class="math">\(\theta\)</span> varies in <span class="math">\(\lambda\)</span> by plugging in <span class="math">\(g \mapsto
-\frac{\partial \mathcal{L}_{\text{train}}}{\partial \theta}\)</span>, <span class="math">\(x \mapsto \theta\)</span>
-and <span class="math">\(y \mapsto \lambda\)</span>:</p>
-<div class="math">$$
-\frac{\partial \theta}{\partial \lambda} = - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top}
-$$</div>
-<p>This tells us how <span class="math">\(\theta\)</span> changes with respect to an infinitesimal change to
-<span class="math">\(\lambda\)</span>. Now, we can apply the chain rule to get the gradient of the whole
-optimization problem wrt <span class="math">\(\lambda\)</span>,</p>
-<div class="math">$$
-\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}
-= \frac{\partial \mathcal{L}_{\text{dev}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top} \right)
-$$</div>
-<p>Since we don't like (explicit) matrix inverses, we compute <span class="math">\(- \left( \frac{
-\partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top
-} \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\,
-\partial \lambda^\top}\)</span> as the solution to <span class="math">\(\left( \frac{ \partial^2
-\mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right) x
-= -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
-\lambda^\top}\)</span>. When the Hessian is positive definite, the linear system can be
-solved with conjugate gradient, which conveniently only requires matrix-vector
-products&mdash;i.e., you never have to materialize the Hessian. (Apparently,
-<a href="https://en.wikipedia.org/wiki/Matrix-free_methods">matrix-free linear algebra</a>
-is a thing.) In fact, you don't even have to implement the Hessian-vector and
-Jacobian-vector products because they are accurately and efficiently
-approximated with centered differences (see
-<a href="/blog/post/2014/02/10/gradient-vector-product/">earlier post</a>).</p>
-<p>At the end of the day, this is an easy algorithm to implement! However, the
-estimate of the gradient can be temperamental if the linear system is
-ill-conditioned.</p>
-<p>In a later post, I'll describe a more-robust algorithms based on automatic
-differentiation through the inner optimization algorithm, which make fewer and
-less-brittle assumptions about the inner optimization.</p>
-<p><strong>Further reading</strong>:</p>
+<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
+<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
+plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
+<p><strong>Picking directions</strong>: There are many alternatives for picking
+<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
+<ol>
+<li>
+<p>Coordinate vectors: Varying one (or two) dimensions.</p>
+</li>
+<li>
+<p>Gradient (if it exists), this direction is guaranteed to show a local
+    increase/decrease in the objective, unless it's zero because we're at a
+    local optimum. Some variations on "descent" directions:</p>
 <ul>
 <li>
-<p><a href="https://justindomke.wordpress.com/2014/02/03/truncated-bi-level-optimization/">Truncated Bi-Level Optimization</a></p>
+<p>Use the gradient direction of a <em>different</em> objective, e.g., plot
+  (nondifferentiable) accuracy on dev data along the (differentiable)
+  likelihood direction on training data.</p>
 </li>
 <li>
-<p><a href="http://ai.stanford.edu/~chuongdo/papers/learn_reg.pdf">Efficient multiple hyperparameter learning for log-linear models</a></p>
-</li>
-<li>
-<p><a href="http://arxiv.org/abs/1502.03492">Gradient-based Hyperparameter Optimization through Reversible Learning</a></p>
-</li>
-<li>
-<p><a href="http://fa.bianp.net/blog/2016/hyperparameter-optimization-with-approximate-gradient/">Hyperparameter optimization with approximate gradient</a>
-   (<a href="https://arxiv.org/pdf/1602.02355.pdf">paper</a>): This paper looks at the implicit
-   differentiation approach where you have an <em>approximate</em>
-   solution to the inner optimization problem. They are able to provide error bounds and
-   convergence guarantees under some reasonable conditions.</p>
+<p>Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
+  directions which summarize the most variation.</p>
 </li>
 </ul>
+</li>
+<li>
+<p>The difference of two interesting points, e.g., the start and end points of
+    your optimization, two different solutions.</p>
+</li>
+<li>
+<p>Random:</p>
+<p>If all your parameters are on an equal scale, I recommend directions drawn
+from a spherical Gaussian.<sup id="fnref-sphericalgaussian"><a class="footnote-ref" href="#fn-sphericalgaussian">1</a></sup> The reason being that such a
+vector is uniformly distributed across all unit-length directions (i.e., the
+angle of the vector, not it's length). We will vary the length ourselves via
+<span class="math">\(\alpha\)</span>.</p>
+<p>However, often components of <span class="math">\(\boldsymbol{x}\)</span> have different scales, so
+finding a "natural scale" is crucial if we are going to draw conclusions
+that require a comparison of the perturbation sensitivities across several
+dimensions&mdash;this is closely related to why we like second-order and
+adaptive optimization algorithms
+(<a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">discussion</a>);
+<span class="math">\(\boldsymbol{d}\)</span>'s units must match the units of <span class="math">\(\boldsymbol{x}\)</span> in each
+coordinate!</p>
+</li>
+<li>
+<p>Maximize "interestingness": You can also use a direction-optimization
+    procedure to maximize some measure of "interestingness" (e.g., the direction
+    in which training and dev loss differ the most; the "bumpiest" direction or
+    direction taking the biggest range of values).</p>
+</li>
+</ol>
+<p><strong>Extension to 3d</strong>: It's pretty easy to extend these ideas to generating
+three-dimensional plots by using two vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and
+<span class="math">\(\boldsymbol{d_2},\)</span> and varying two parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
+<div class="math">$$
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+$$</div>
+<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.</p>
+<p><strong>Further reading</strong>:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a></li>
+</ul>
+<h2>Notes</h2>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-sphericalgaussian">
+<p>More formally, vectors drawn from a spherical Gaussian are
+points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
+<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
+sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
+<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref-sphericalgaussian" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -224,9 +211,9 @@ less-brittle assumptions about the inner optimization.</p>
 </script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index16.html">&larr; Older</a>
+    <a class="prev" href="./index230.html">&larr; Older</a>
 
-    <a class="next" href="./index14.html">Newer &rarr;</a>
+    <a class="next" href="./index228.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">

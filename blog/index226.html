@@ -48,84 +48,68 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
+        <a href="./post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>    </p>
+<time datetime="2014-07-31T00:00:00-04:00" pubdate>Jul 31, 2014</time>    </p>
 </header>
 
-  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
-finite-difference approximation).</p>
+  <div class="entry-content"><p><strong>Goal</strong>: Sampling from a discrete distribution parametrized by unnormalized
+log-probabilities:</p>
 <div class="math">$$
-\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
- \frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
- \Big)
+\pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
 $$</div>
-<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
-<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
-<span class="math">\(o(\varepsilon^2)\)</span> additive error.</p>
-<p>This is a specific instance of a more general approximation! The dot product of
-the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
-with the following formula,</p>
+<p><strong>The usual way</strong>: Exponentiate and normalize (using the
+<a href="/blog/post/2014/02/11/exp-normalize-trick/">exp-normalize trick</a>), then use the
+an algorithm for sampling from a discrete distribution (aka categorical):</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">usual</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>     <span class="c1"># the exp-normalize trick</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>The Gumbel-max trick</strong>:</p>
 <div class="math">$$
-\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
- \Big)
+y = \underset{ i \in \{1,\cdots,K\} }{\operatorname{argmax}} x_i + z_i
 $$</div>
-<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
-exact in the limit and just as accurate.</p>
-<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
-  approximating a high-dimensional gradient because the number of function
-  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
-  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
-  function evaluations is probably faster than specialized code for computing
-  the gradient.</p>
-<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
-  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
-  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
-  is available. Andrei (2009) reccommends</p>
-<div class="math">$$
-\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
-$$</div>
-<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
-<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
-<code>numpy.finfo(x.dtype).eps</code>).</p>
-<h2>Why do I care?</h2>
+<p>where <span class="math">\(z_1 \cdots z_K\)</span> are i.i.d. <span class="math">\(\text{Gumbel}(0,1)\)</span> random variates. It
+turns out that <span class="math">\(y\)</span> is distributed according to <span class="math">\(\pi\)</span>. (See the short derivations
+in this
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">blog post</a>.)</p>
+<p>Implementing the Gumbel-max trick is remarkable easy:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gumbel_max_sample</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">gumbel</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If you don't have access to a Gumbel random variate generator, you can use
+<span class="math">\(-\log(-\log(\text{Uniform}(0,1))\)</span></p>
+<p><strong>Comparison</strong>:</p>
 <ol>
 <li>
-<p>Well, I tend to work on sparse, but high-dimensional problems where
-   finite-difference would be too slow. Thus, my usual solution is to only test
-   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
-   which should be nonzero. With the new trick, I can effectively test more
-   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
-   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
-   the angle of the vector.</p>
+<p>Number of calls to the random number generator: Gumbel-max requires <span class="math">\(K\)</span>
+     samples from a uniform, whereas the usual algorithm only requires <span class="math">\(1\)</span>.</p>
 </li>
 <li>
-<p>Sometimes the gradient-vector dot product is the end goal. This is the case
-   with Hessian-vector products, which arises in many optimization algorithms,
-   such as stochastic meta descent. Hessian-vector products are an instance of
-   the gradient-vector dot product because the Hessian is just the gradient of
-   the gradient.</p>
+<p>Gumbel is a one-pass algorithm: It does not need to see all of the data
+     (e.g., to normalize) before it can start partially sampling. Thus,
+     Gumbel-max can be used for
+     <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">weighted sampling from a stream</a>.</p>
+</li>
+<li>
+<p>Low-level efficiency: The Gumbel-max trick requires <span class="math">\(2K\)</span> calls to <span class="math">\(\log\)</span>,
+     whereas ordinary requires <span class="math">\(K\)</span> calls to <span class="math">\(\exp\)</span>. Since <span class="math">\(\exp\)</span> and <span class="math">\(\log\)</span> are
+     expensive function, we'd like to avoid calling them. What gives? Well,
+     Gumbel's calls to <span class="math">\(\log\)</span> do not depend on the data so they can be
+     precomputed; this is handy for implementations which rely on vectorization
+     for efficiency, e.g. python+numpy.</p>
 </li>
 </ol>
-<h2>Hessian-vector product</h2>
-<p>Hessian-vector products are an instance of the gradient-vector dot product
-because since the Hessian is just the gradient of the gradient! Now you only
-need to remember one formula!</p>
-<div class="math">$$
-H(\boldsymbol{x})\, \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
-- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
-\Big)
-$$</div>
-<p>With this trick you never have to actually compute the gnarly Hessian! More on
-<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
+<p><strong>Further reading</strong>: I have a few posts relating to the Gumbel-max trick. Have a
+look at <a href="/blog/tag/gumbel.html">posts tagged with Gumbel</a>.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -183,8 +167,9 @@ $$</div>
 </script></div>
   		</article>
 <div class="pagination">
+    <a class="prev" href="./index227.html">&larr; Older</a>
 
-    <a class="next" href="./index30.html">Newer &rarr;</a>
+    <a class="next" href="./index225.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">

@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent</title>
+  <title>Blog Archive &mdash; Graduate Descent</title>
   <meta name="author" content="Tim Vieira">
 
   <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
@@ -44,300 +44,515 @@
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
-<header>
-      <h1 class="entry-title">
-        <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </h1>
-    <p class="meta">
-<time datetime="2019-04-20T00:00:00-04:00" pubdate>Apr 20, 2019</time>    </p>
-</header>
+<div>
+  <article role="article">
+      <header>
+        <h1 class="entry-title">Blog Archive</h1>
+      </header>
 
-  <div class="entry-content"><p><strong>Setup</strong>: We're trying to optimize a function of the form</p>
-<div class="math">$$
-J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
-$$</div>
-<p>The problem is that we can't just evaluate each <span class="math">\(x \in \mathcal{X}\)</span> because we
-don't have complete knowledge of <span class="math">\(p_\theta\)</span>.  For example, it is a mix of
-factors that are known and under our control via <span class="math">\(\theta\)</span> (policy factors) and
-factors that are not known (environment factors).</p>
-<p>Combined with stochastic gradient ascent, the likelihood-ratio gradient estimator is an approach for solving such a
-problem.  It appears in policy gradient methods for reinforcement learning
-(e.g.,
-<a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf">Sutton et al. 1999</a>),
-black-box optimization (e.g., <a href="https://arxiv.org/abs/1106.4487">Wierstra et al. 2011</a>), and <a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">causal reasoning</a>. There are two main ideas in the
-trick: (1) the "score function" estimator and (2) the cancelation of
-complicating factors.</p>
-<h4>Part 1: The score function gradient estimator</h4>
-<p>Suppose we can sample <span class="math">\(x^{(j)} \sim p_\theta\)</span>. This opens up the following
-(unbiased) Monte Carlo estimators for <span class="math">\(J\)</span> and its gradient,</p>
-<div class="math">$$
-J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)})
-$$</div>
-<div class="math">$$
-\nabla_{\!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)}) \nabla_{\!\theta} \log p_{\theta}(x^{(j)}).
-$$</div>
-<p>The derivation is pretty simple
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-  \nabla_{\!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
-  &amp;=&amp; \nabla_{\!\theta} \left[ \sum_x p_{\theta}(x) r(x) \right] \\
-  &amp;=&amp; \sum_x \nabla_{\!\theta} \left[ p_{\theta}(x) \right] r(x) \\
-  &amp;=&amp; \sum_x p_{\theta}(x) \frac{\nabla_{\!\theta} \left[ p_{\theta}(x) \right] }{ p_{\theta}(x) } r(x) \\
-  &amp;=&amp; \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
-\end{eqnarray*}
-$$</div>
-<p><br/>
-We use the identity <span class="math">\(\nabla f = f\, \nabla \log f\)</span>, assuming <span class="math">\(f &gt; 0\)</span>.</p>
-<p>To use this estimator, we only need two things (1) the ability to sample
-<span class="math">\(x^{(j)} \sim p_{\theta}\)</span>, (2) the ability to evaluate <span class="math">\(\log
-p_{\theta}(x^{(j)})\)</span> and <span class="math">\(r(x^{(j)})\)</span> for each sampled value.</p>
-<p>This isn't even the entire method, but we can already use it to do some neat
-things.  For example, minimum risk training of structured prediction models.
-Assuming we can obtain good samples&mdash;preferably exact samples, but MCMC
-samples might be ok&mdash;the likelihood ratio can help us learning even with
-complicated blackbox cost functions (sometimes called "nondecomposable loss
-functions") like human annotators or impenetrable perl scripts. I had this idea
-back in 2012, but never got around to pushing it out. There appear to be some
-papers that picked up on this idea, including
-<a href="http://www.cl.uni-heidelberg.de/~riezler/publications/papers/ACL2016.pdf">Sokolov et al. (2016)</a>
-and <a href="https://arxiv.org/abs/1609.00150">Norouzi et al. (2016)</a> and even a few
-papers using it for "black box" variational inference
-<a href="https://arxiv.org/abs/1401.0118">(Ranganath et al., 2013)</a>.</p>
-<p><em>Remarks:</em></p>
-<ul>
-<li>
-<p><strong>Relaxing discrete actions into stochastic ones</strong>: A common way to handle
-   discrete decisions is to put a <em>differentiable</em> parametric density (like
-   <span class="math">\(p_\theta\)</span>) over the space of possible executions (paths <span class="math">\(x\)</span>). (Note: this
-   shouldn't be surprising&mdash;it's already what we do in structured
-   prediction methods like conditional random fields!)  The likelihood-ratio
-   method can be used to estimate gradients in such settings.</p>
-</li>
-<li>
-<p><strong>Bandit feedback</strong>: This approach naturally handles "bandit feedback"
-   (partial information about <span class="math">\(r\)</span>): you only see the values of only the
-   trajectories that you actually sample. In contrast with "full information",
-   which tells you the reward of all possible trajectories.</p>
-</li>
-</ul>
-<h5>The off-policy estimator</h5>
-<p>Let's generalize this estimator to allow off-policy actions
-<a href="https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance-weighted estimator</a>. Here
-<span class="math">\(q\)</span> is a distribution over the same space as <span class="math">\(p\)</span> with support at least
-everywhere <span class="math">\(p\)</span> has support.  </p>
-<div class="math">$$ \begin{eqnarray*} \nabla_{\!\theta} \,
-\underset{p_\theta}{\mathbb{E}}\left[ r(x) \right] &amp;=&amp;
-\underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
-\\ &amp;=&amp; \sum_x p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x) \\ &amp;=&amp;
-\sum_x \frac{q(x)}{q(x)} p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x)
-\\ &amp;=&amp;
-\underset{q}{\mathbb{E}}\left[ \frac{p_{\theta}(x)}{q(x)} r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
-\\ &amp;\approx&amp; \frac{1}{n} \sum_{i=1}^n \frac{p_{\theta}(x^{(i)})}{q(x^{(i)})} r(x^{(i)}) \nabla_{\!\theta} \log p_\theta(x^{(i)})\quad \text{ where } x^{(i)} \sim q
-\end{eqnarray*} $$</div>
-<p>Note that we recover the original estimator when <span class="math">\(q=p\)</span>.</p>
-<h4>Part 2: The convenient cancelation of complicating components</h4>
-<p>The real power of the <em>likelihood-ratio</em> part of this method comes when you have
-the ability to sample <span class="math">\(x\)</span>, but <em>not</em> the ability to compute the probability of
-<em>all</em> factors of the joint probability of <span class="math">\(x\)</span> (i.e., you can't compute the
-<em>complete</em> score <span class="math">\(p_{\theta}(x)\)</span>). In other words, some components of the joint
-probability's <em>generative process</em> might pass through factors which are <em>only
-accessible through sampling</em>, e.g., because they require performing <em>actual
-experiments</em> in the real world or a complex simulation! The factors that we can
-only sample from are what make this a true stochastic optimization problem.</p>
-<p>Let's be a little more concrete by looking at a classic example from
-reinforcement learning: the Markov decision process (MDP). In this context, the
-random variable <span class="math">\(x\)</span> is an alternating sequence of states and actions, <span class="math">\(x =
-\langle s_0, a_0, s_1, a_1, \ldots a_{T-1}, s_T \rangle\)</span> and the generative
-process consists of an unknown transition function <span class="math">\(p(s_{t+1}|s_t,a_t)\)</span> that is
-only accessible through sampling and a policy <span class="math">\(p_{\theta}(a_t|s_t)\)</span> which we in
-control of. So the probability of an entire sequence in an MDP <span class="math">\(p_{\theta}(x)\)</span>
-is <span class="math">\(p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t)\)</span>. The
-likelihood-ratio method can be used to derive several "policy gradient" methods,
-which compute unbiased gradient estimates with no knowledge of the transition
-distribution.</p>
-<blockquote>
-<p>The beauty of the likelihood ratio is the cancellation of unknown terms.</p>
-</blockquote>
-<p>Aside: This fortunate cancellation occurs in many other contexts, e.g. the
-Metropolis-Hastings accept-reject criteria.</p>
-<p>To make this explicit, let's consider the importance weight, <span class="math">\(p/q\)</span>.
-</p>
-<div class="math">\begin{eqnarray}
-\frac{p_\theta(x)}{q(x)}
-= \frac{ {\color{red}{ p(s_0) }} \prod_{t=0}^T {\color{red}{ p(s_{t+1}|s_t,a_t) }} \pi_\theta(a_t|s_t) }
-       { {\color{red}{ p(s_0) }} \prod_{t=0}^T {\color{red}{ p(s_{t+1}|s_t,a_t) }}  q(a_t|s_t) }
-= \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
-       {\prod_{t=0}^T q(a_t|s_t)}
-\end{eqnarray}</div>
-<p><br/>
-Common terms cancel! This implies that we don't need to compute them.</p>
-<p>Those component cancel in <span class="math">\(\nabla_{\!\theta} \log p_{\theta}(x)\)</span> because terms
-that do not depend on <span class="math">\(\theta\)</span> also disappear. Leaving you with just a sum of
-log-gradient terms that you <em>do</em> know because they are part of the model you're
-tuning.</p>
-<div class="math">$$
-\begin{eqnarray*}
-\nabla \log p(x)
-&amp;=&amp; \nabla \log \left( p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) \right) \\
-&amp;=&amp; \nabla \left(\log p(s_0) + \sum_{t=0}^T \log p(s_{t+1}|s_t,a_t)
-  + \log \pi_\theta(a_t|s_t) \right) \\
-&amp;=&amp; \sum_{t=0}^T \nabla \log \pi_\theta(a_t|s_t)
-\end{eqnarray*}
-$$</div>
-<h4>The baseline trick</h4>
-<p>These estimators should always be used in conjunction with a baseline function
-or more generally a control variate. There are many options for deriving control
-variates, which will depend on the specific structure of <span class="math">\(x\)</span>.  For example, in
-the MDP case, we can use any function that depends on <span class="math">\(s_t\)</span>.</p>
-<p>However, even without special structure, we can an always should use (at a
-minimum) a constant baseline,
-</p>
-<div class="math">$$
-\mathbb{E}_{x \sim q} \left[
-\frac{p_{\theta}(x)}{q(x)}
-r(x)
-\nabla_{\!\theta} \log p_\theta(x)
-\right]
-=
-\mathbb{E}_{x \sim q} \left[
-\frac{p_{\theta}(x)}{q(x)}
-(r(x) - {\color{red}{b}})
-\nabla_{\!\theta} \log p_\theta(x)
-\right]
-\text{for all } {\color{red}{b} \in \mathbb{R}}
-$$</div>
-<p>
-The minimum variance choice for b is
-</p>
-<div class="math">$$
-b = \frac{\sum_k \mathrm{Cov}(r, \nabla_{\theta_k} \log p) }{\sum_k \mathrm{Var}(\nabla_{\theta_k} \log p) }
-$$</div>
-<p>
-which we can compute with sampling-based estimators of the quantities.</p>
-<p>Some folks use an estimate of <span class="math">\(J\)</span>, which is better than nothing.</p>
-<h4>Important points</h4>
-<ul>
-<li>
-<p>Always use a baseline.</p>
-</li>
-<li>
-<p>This gradient estimate is "zero order" it is essentially probing the function
-   in <span class="math">\(x\)</span> space, which might be higher dimensional than <span class="math">\(\theta\)</span>. As a result,
-   you might be better off with gradient estimators that are based on perturbing
-   <span class="math">\(\theta\)</span> directly, e.g., zeroth-order methods (sometimes called <em>direct
-   search</em> or <em>gradient-free</em> optimization methods) like Nelder-Mead simplex,
-   FDSA, SPSA, and CMA-ES.</p>
-</li>
-<li>
-<p>Often there is almost no signal. Consider the example of trying to solve a
-   maze by randomly running around in it.  In this case, it's very unlikely that
-   a random path will lead to a positive outcome.  Therefore, the gradient
-   really is essentially zero. So even with access to the <em>true</em> gradient (i.e.,
-   no variance), optimization would have a lot of trouble finding a good
-   optimum.  Add to that some variance and you have useless on top of noisy.</p>
-</li>
-<li>
-<p>Although the likelihood-ratio gives us an unbiased estimate of the gradient,
-   don't be fooled. The particular gradient estimate used in the
-   likelihood-ratio method has an impractical signal-to-noise ratio, which makes
-   it very hard use in optimization.  There are countless papers on tricks to
-   reduce the variance of the estimator.</p>
-</li>
-<li>
-<p>You can improve your data efficiency and algorithm stability using off-line
-   optimization (with your favorite deterministic optimization algorithm).  I
-   have written a long article about offline optimization
-   <a href="(https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/)">here</a>.</p>
-</li>
-</ul>
-<h2>Summary</h2>
-<p>There is still a lot to say about likelihood-ratio methods.  I didn't talk about
-control variates or "baseline" functions, which are very important to making
-things work.  I'll try to post my notes on those ideas soon.</p>
-<p><strong>Take home messages</strong>:</p>
-<ul>
-<li>
-<p>If you can evaluate it, then you can take the gradient of it (assuming it
-   exists). This even holds if the evaluation is based on Monte Carlo.</p>
-</li>
-<li>
-<p>The likelihood-ratio shows up all over the place, not just RL. It shows up in
-   <a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">causal reasoning</a>
-   more generally.</p>
-</li>
-<li>
-<p>We described a general way to learn from watching someone else act in a world
-   we don't understand (i.e., off-policy learning with no knowledge of the
-   environment just samples!). The only catch is that in order for us to learn
-   from them we need them to do a little bit of "exploration" (i.e., be a
-   stochastic policy that has support everywhere we do) and tell us their action
-   probabilities (so that we can important weight against our policy).</p>
-</li>
-</ul>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="./index2.html">&larr; Older</a>
-
-  <br />
-</div></div>
+      <div id="blog-archives">
+            <h2>2019</h2>
+                    <article>
+                        <h1><a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a></h1>
+                        <time datetime="2019-04-20 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">20</span>
+                            <span class="year">2019</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/optimization.html'>optimization</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/rl.html'>rl</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/machine-learning.html'>machine-learning</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a></h1>
+                        <time datetime="2019-04-19 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">19</span>
+                            <span class="year">2019</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/optimization.html'>optimization</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/notebook.html'>notebook</a>
+                          </span>
+                        </footer>
+                    </article>
+            <h2>2018</h2>
+                    <article>
+                        <h1><a href="./post/2018/03/16/black-box-optimization/">Black-box optimization</a></h1>
+                        <time datetime="2018-03-16 00:00:00-04:00" pubdate>
+                            <span class="month">Mar</span>
+                            <span class="day">16</span>
+                            <span class="year">2018</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/optimization.html'>optimization</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                        </footer>
+                    </article>
+            <h2>2017</h2>
+                    <article>
+                        <h1><a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a></h1>
+                        <time datetime="2017-08-18 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">18</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/automatic-differentiation.html'>automatic-differentiation</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a></h1>
+                        <time datetime="2017-07-03 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">03</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/statistics.html'>statistics</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/reservoir-sampling.html'>reservoir-sampling</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a></h1>
+                        <time datetime="2017-04-21 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">21</span>
+                            <span class="year">2017</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/testing.html'>testing</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                        </footer>
+                    </article>
+            <h2>2016</h2>
+                    <article>
+                        <h1><a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a></h1>
+                        <time datetime="2016-12-19 00:00:00-05:00" pubdate>
+                            <span class="month">Dec</span>
+                            <span class="day">19</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/counterfactual-reasoning.html'>counterfactual-reasoning</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/importance-sampling.html'>importance-sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/machine-learning.html'>machine-learning</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a></h1>
+                        <time datetime="2016-11-21 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">21</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/datastructures.html'>datastructures</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a></h1>
+                        <time datetime="2016-10-01 00:00:00-04:00" pubdate>
+                            <span class="month">Oct</span>
+                            <span class="day">01</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/algorithms.html'>algorithms</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a></h1>
+                        <time datetime="2016-09-25 00:00:00-04:00" pubdate>
+                            <span class="month">Sep</span>
+                            <span class="day">25</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/automatic-differentiation.html'>automatic-differentiation</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/rant.html'>rant</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a></h1>
+                        <time datetime="2016-07-04 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">04</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/gumbel.html'>Gumbel</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a></h1>
+                        <time datetime="2016-06-28 00:00:00-04:00" pubdate>
+                            <span class="month">Jun</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/decision-making.html'>decision-making</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a></h1>
+                        <time datetime="2016-05-28 00:00:00-04:00" pubdate>
+                            <span class="month">May</span>
+                            <span class="day">28</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/statistics.html'>statistics</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/importance-sampling.html'>importance-sampling</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a></h1>
+                        <time datetime="2016-05-27 00:00:00-04:00" pubdate>
+                            <span class="month">May</span>
+                            <span class="day">27</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/optimization.html'>optimization</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based hyperparameter optimization and the implicit function theorem</a></h1>
+                        <time datetime="2016-03-05 00:00:00-05:00" pubdate>
+                            <span class="month">Mar</span>
+                            <span class="day">05</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/hyperparameter-optimization.html'>hyperparameter-optimization</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a></h1>
+                        <time datetime="2016-01-17 00:00:00-05:00" pubdate>
+                            <span class="month">Jan</span>
+                            <span class="day">17</span>
+                            <span class="year">2016</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/misc.html'>misc</a>
+                          </span>
+                        </footer>
+                    </article>
+            <h2>2015</h2>
+                    <article>
+                        <h1><a href="./post/2015/07/29/gradient-of-a-product/">Gradient of a product</a></h1>
+                        <time datetime="2015-07-29 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/numerical.html'>numerical</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/automatic-differentiation.html'>automatic-differentiation</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a></h1>
+                        <time datetime="2015-04-29 00:00:00-04:00" pubdate>
+                            <span class="month">Apr</span>
+                            <span class="day">29</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/machine-learning.html'>machine-learning</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/rant.html'>rant</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/crf.html'>crf</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a></h1>
+                        <time datetime="2015-02-05 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">05</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/machine-learning.html'>machine-learning</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/deep-learning.html'>deep-learning</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/structured-prediction.html'>structured-prediction</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2015/02/01/log-real-number-class/">Log-Real number class</a></h1>
+                        <time datetime="2015-02-01 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">01</span>
+                            <span class="year">2015</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/numerical.html'>numerical</a>
+                          </span>
+                        </footer>
+                    </article>
+            <h2>2014</h2>
+                    <article>
+                        <h1><a href="./post/2014/12/21/importance-sampling/">Importance sampling</a></h1>
+                        <time datetime="2014-12-21 00:00:00-05:00" pubdate>
+                            <span class="month">Dec</span>
+                            <span class="day">21</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/statistics.html'>statistics</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/importance-sampling.html'>importance-sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a></h1>
+                        <time datetime="2014-11-10 00:00:00-05:00" pubdate>
+                            <span class="month">Nov</span>
+                            <span class="day">10</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/numerical.html'>numerical</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a></h1>
+                        <time datetime="2014-10-06 00:00:00-04:00" pubdate>
+                            <span class="month">Oct</span>
+                            <span class="day">06</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/statistics.html'>statistics</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/machine-learning.html'>machine-learning</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/08/07/complex-step-derivative/">Complex-step derivative</a></h1>
+                        <time datetime="2014-08-07 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">07</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel-max trick and weighted reservoir sampling</a></h1>
+                        <time datetime="2014-08-01 00:00:00-04:00" pubdate>
+                            <span class="month">Aug</span>
+                            <span class="day">01</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/gumbel.html'>Gumbel</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/reservoir-sampling.html'>reservoir-sampling</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a></h1>
+                        <time datetime="2014-07-31 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">31</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/sampling.html'>sampling</a>
+                          </span>
+                          <span class="tags">
+                            <a class="tag" href='./tag/gumbel.html'>Gumbel</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/07/22/rant-against-grid-search/">Rant against grid search</a></h1>
+                        <time datetime="2014-07-22 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">22</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/hyperparameter-optimization.html'>hyperparameter-optimization</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a></h1>
+                        <time datetime="2014-07-21 00:00:00-04:00" pubdate>
+                            <span class="month">Jul</span>
+                            <span class="day">21</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/statistics.html'>statistics</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a></h1>
+                        <time datetime="2014-02-12 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">12</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/visualization.html'>visualization</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a></h1>
+                        <time datetime="2014-02-11 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">11</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/numerical.html'>numerical</a>
+                          </span>
+                        </footer>
+                    </article>
+                    <article>
+                        <h1><a href="./post/2014/02/10/gradient-vector-product/">Gradient-vector product</a></h1>
+                        <time datetime="2014-02-10 00:00:00-05:00" pubdate>
+                            <span class="month">Feb</span>
+                            <span class="day">10</span>
+                            <span class="year">2014</span>
+                        </time>
+                        <footer>
+                          <span class="tags">
+                            <a class="tag" href='./tag/calculus.html'>calculus</a>
+                          </span>
+                        </footer>
+                    </article>
+      </div>
+    </article>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>

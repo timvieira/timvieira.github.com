@@ -48,112 +48,185 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
+        <a href="./post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>    </p>
+<time datetime="2016-10-01T00:00:00-04:00" pubdate>Oct 01, 2016</time>    </p>
 </header>
 
-  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
-a high-dimensional objective I was developing specialized algorithms for
-optimizing. A month later, at least three of my colleagues told me that my plots
-had inspired them to make similar plots. The plotting trick is really simple and
-not original, but nonetheless I'll still write it up for all to enjoy.</p>
-<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
-non-smooth (black) and a smooth approximating function (blue). The plot shows
-that the approximation is faithful to the overall shape, but sometimes
-over-smooths. In this case, we miss the maximum, which happens near the middle
-of the figure.</p>
-<p><img alt="Alt text" src="/blog/images/cross-section.png"></p>
-<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
-function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
-me and can't see in high-dimensions what do you do?</p>
-<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
-\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
-picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
-as follows,</p>
+  <div class="entry-content"><p>Suppose we have a computation which generates sequence of states <span class="math">\(s_1 \ldots
+s_n\)</span> according to <span class="math">\(s_{t} = f(s_{t-1})\)</span> where <span class="math">\(s_0\)</span> is given.</p>
+<p>We'd like to devise an algorithm, which can reconstruct each point in the
+sequence efficiently as we traverse it backwards. You can think of this as
+"hitting undo" from the end of the sequence or reversing a singly linked list.</p>
+<p>Obviously, we <em>could</em> just record the entire sequence, but if <span class="math">\(n\)</span> is large <em>or</em>
+the size of each state is large, this will be infeasible.</p>
+<p><strong>Idea 0</strong>: Rerun the forward pass <span class="math">\(n\)</span> times. Runtime <span class="math">\(\mathcal{O}(n^2)\)</span>, space
+  <span class="math">\(\mathcal{O}(1)\)</span>.</p>
+<p><strong>Idea 1</strong>: Suppose we save <span class="math">\(0 &lt; k \le n\)</span> evenly spaced "checkpoint" states.
+Clearly, this gives us <span class="math">\(\mathcal{O}(k)\)</span> space, but what does it do to the
+runtime?  Well, if we are at time <span class="math">\(t\)</span> the we have to "replay" computation from
+the last recorded checkpoint to get <span class="math">\(s_t\)</span>, which takes <span class="math">\(O(n/k)\)</span> time. Thus, the
+overall runtimes becomes <span class="math">\(O(n^2/k)\)</span>. This runtime is not ideal.</p>
+<p><strong>Idea 2</strong>: <em>Idea 1</em> did something kind of silly, within a chunk of size <span class="math">\(n/k\)</span>,
+it does each computation multiple times! Suppose we increase the memory
+requirement <em>just a little bit</em> to remember the current chunk we're working on,
+making it now <span class="math">\(\mathcal{O}(k + n/k)\)</span>. Now, we compute each state at most <span class="math">\(2\)</span>
+times: once in the initial sequence and once in the reverse. This implies a
+<em>linear</em> runtime.  Now, the question: how should we set <span class="math">\(k\)</span> so that we minimize
+extra space? Easy! Solve the following little optimization problem:</p>
 <div class="math">$$
-f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
+\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
 $$</div>
-<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
-<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
-plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
-<p><strong>Picking directions</strong>: There are many alternatives for picking
-<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
-<ol>
-<li>
-<p>Coordinate vectors: Varying one (or two) dimensions.</p>
-</li>
-<li>
-<p>Gradient (if it exists), this direction is guaranteed to show a local
-    increase/decrease in the objective, unless it's zero because we're at a
-    local optimum. Some variations on "descent" directions:</p>
-<ul>
-<li>
-<p>Use the gradient direction of a <em>different</em> objective, e.g., plot
-  (nondifferentiable) accuracy on dev data along the (differentiable)
-  likelihood direction on training data.</p>
-</li>
-<li>
-<p>Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
-  directions which summarize the most variation.</p>
-</li>
-</ul>
-</li>
-<li>
-<p>The difference of two interesting points, e.g., the start and end points of
-    your optimization, two different solutions.</p>
-</li>
-<li>
-<p>Random:</p>
-<p>If all your parameters are on an equal scale, I recommend directions drawn
-from a spherical Gaussian.<sup id="fnref-sphericalgaussian"><a class="footnote-ref" href="#fn-sphericalgaussian">1</a></sup> The reason being that such a
-vector is uniformly distributed across all unit-length directions (i.e., the
-angle of the vector, not it's length). We will vary the length ourselves via
-<span class="math">\(\alpha\)</span>.</p>
-<p>However, often components of <span class="math">\(\boldsymbol{x}\)</span> have different scales, so
-finding a "natural scale" is crucial if we are going to draw conclusions
-that require a comparison of the perturbation sensitivities across several
-dimensions&mdash;this is closely related to why we like second-order and
-adaptive optimization algorithms
-(<a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">discussion</a>);
-<span class="math">\(\boldsymbol{d}\)</span>'s units must match the units of <span class="math">\(\boldsymbol{x}\)</span> in each
-coordinate!</p>
-</li>
-<li>
-<p>Maximize "interestingness": You can also use a direction-optimization
-    procedure to maximize some measure of "interestingness" (e.g., the direction
-    in which training and dev loss differ the most; the "bumpiest" direction or
-    direction taking the biggest range of values).</p>
-</li>
-</ol>
-<p><strong>Extension to 3d</strong>: It's pretty easy to extend these ideas to generating
-three-dimensional plots by using two vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and
-<span class="math">\(\boldsymbol{d_2},\)</span> and varying two parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
+<style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><button onclick="toggle('#derivation-optimal-space')" class="toggle-button">Derivation</button>
+<div id="derivation-optimal-space" style="display:none;" class="derivation">
+To get the minimum, we solve for <span class="math">\(k\)</span> that sets the derivative to zero.
+</p>
 <div class="math">$$
-f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
+\begin{eqnarray}
+    0 &amp;=&amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
+      &amp;=&amp; 1-n/k^2 \\
+n/k^2 &amp;=&amp; 1 \\
+  k^2 &amp;=&amp; n \\
+    k &amp;=&amp; \sqrt{n}
+\end{eqnarray}
 $$</div>
-<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
-verify/explore properties of an objective function, compare approximations, test
-sensitivity to certain parameters/hyperparameters, visually debug optimization
-algorithms.</p>
-<p><strong>Further reading</strong>:</p>
-<ul>
-<li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a></li>
-</ul>
-<h2>Notes</h2>
-<div class="footnote">
-<hr>
-<ol>
-<li id="fn-sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
-<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
-sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
-<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref-sphericalgaussian" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-</ol>
+<p>
+<br/></p>
+<p>Since it's safe to assume that <span class="math">\(n,k \ge 1\)</span> and <span class="math">\(\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &gt; 0\)</span> this is indeed a minimum. It's also global minimum
+because <span class="math">\(k+n/k\)</span> is convex in <span class="math">\(k\)</span> when <span class="math">\(n,k &gt; 0\)</span>.</p>
 </div>
+
+<p>That's nuts! We get away with <em>sublinear</em> space <span class="math">\(\mathcal{O}(\sqrt{n})\)</span> and we
+only blow up our runtime by a factor of 2. Also, I really love the "introduce a
+parameter then optimize it out" trick.</p>
+<p><button onclick="toggle('#code-sqrt-space')">Code</button>
+<div id="code-sqrt-space" style="display:none;"></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">memory</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">:</span>
+        <span class="c1"># last chunk may be shorter than k.</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">memory</span><span class="p">[</span><span class="n">b</span><span class="o">-</span><span class="n">c</span><span class="p">],</span> <span class="n">c</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+            <span class="n">b</span> <span class="o">-=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="s2">&quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&quot;</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">B</span>
+</pre></div>
+
+
+</div>
+
+<p><strong>Idea 3</strong>: What if we apply "the remember <span class="math">\(k\)</span> states" trick <em>recursively</em>? I'm
+going to work this out for <span class="math">\(k=2\)</span> (and then claim that the value of <span class="math">\(k\)</span> doesn't
+matter).</p>
+<p>Run forward to get the midpoint at <span class="math">\(s_{m}\)</span>, where <span class="math">\(m=b + \lfloor n/2
+\rfloor\)</span>. Next, recurse on the left and right chunks <span class="math">\([b,m)\)</span> and <span class="math">\([m,e)\)</span>.
+We hit the base case when the width of the interval is
+one.</p>
+<p>Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is <span class="math">\(\mathcal{O}(\log n)\)</span>, which gives us
+a <span class="math">\(\mathcal{O}(\log n)\)</span> space bound.</p>
+<p>We can characterize runtime with the following recurrence relation, <span class="math">\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)</span>. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to <span class="math">\(\mathcal{O}(n \log n)\)</span> time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that <span class="math">\(k=2\)</span>.</p>
+<p><button onclick="toggle('#code-recursive')">Code</button>
+<div id="code-recursive" style="display:none;"></p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">s0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># do O(n/2) work to find the midpoint with O(1) space.</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">d</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">s</span>
+</pre></div>
+
+
+</div>
+
+<h2>Remarks</h2>
+<p>The algorithms describe in this post are generic algorithmic tricks, which has
+been used in a number of place, including</p>
+<ul>
+<li>
+<p>The classic computer science interview problem of reversing a singly linked list
+  under a tight budget on <em>additional</em> memory.</p>
+</li>
+<li>
+<p>Backpropagation for computing gradients in sequence models, including HMMs (<a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf">Zweig &amp; Padmanabhan, 2000</a>)
+  and RNNs (<a href="https://arxiv.org/abs/1604.06174v2">Chen et al., 2016</a>). I have
+  sample code that illustrates the basic idea below.</p>
+</li>
+<li>
+<p>Memory-efficient <a href="https://arxiv.org/pdf/cs/0310016v1">omniscient debugging</a>,
+  which allows a user to inspect program state while moving forward <em>and
+  backward</em> in time.</p>
+</li>
+</ul>
+<h2>Sample code</h2>
+<ul>
+<li>
+<p><a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2">The basics</a>:
+  Simple implementation complete with test cases.</p>
+</li>
+<li>
+<p><a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0ea">Memory-efficient backprop in an RNN</a>:
+  A simple application with test cases, of course.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -211,7 +284,7 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
 </script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index30.html">&larr; Older</a>
+    <a class="prev" href="./index210.html">&larr; Older</a>
 
     <a class="next" href="./index28.html">Newer &rarr;</a>
   <br />

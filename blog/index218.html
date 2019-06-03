@@ -48,101 +48,81 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+        <a href="./post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>    </p>
+<time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time>    </p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>).</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+  <div class="entry-content"><p>A short rant: Multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."</p>
+<p>Understanding this very basic connection not only deepens our understanding, but
+also suggests a method for testing complex CRF code.</p>
+<p>Multiclass logistic regression is simple. The goal is to predict the correct
+label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
+on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
+gradient:</p>
 <div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
-$$</div>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
-<div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
-$$</div>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p>The naive implementation is terrible when there are large numbers!</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">overflow</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">exp</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">value</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">true_divide</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="n">nan</span><span class="p">])</span>
-</pre></div>
-
-
-<p>The exp-normalize trick avoid this common problem.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
-</pre></div>
-
-
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
-<div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
 $$</div>
 <p>where
 </p>
 <div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+\begin{eqnarray*}
+p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
+Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
 $$</div>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
-tricks!</p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Numerically stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
+<p>At test-time, we often take the highest-scoring label under the model.</p>
 <div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
 $$</div>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s2">&quot;Numerically stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c1"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>Closing remarks:</strong> The exp-normalize distribution is also known as a
-<a href="https://en.wikipedia.org/wiki/Gibbs_measure">Gibbs measure</a> (sometimes called a
-Boltzmann distribution) when it is augmented with a temperature
-parameter. Exp-normalize is often called "softmax," which is unfortunate because
-log-sum-exp is <em>also</em> called "softmax." However, unlike exp-normalize, it
-<em>earned</em> the name because it is acutally a soft version of the max function,
-where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
-still call exp-normalize "softmax."</p>
+<p>A conditional random field is <em>exactly</em> multiclass logistic regression. The only
+difference is that the sums (<span class="math">\(Z(x)\)</span> and <span class="math">\(\sum_{y \in \mathcal{Y}} p(y|x)
+\phi(x,y)\)</span>) and the argmax <span class="math">\(\widehat{y}(x)\)</span> are inefficient to compute naively
+(i.e., by brute-force enumeration). This point is often lost when people first
+learn about CRFs. Some people never make this connection.</p>
+<p>Brute-force enumeration is a very useful method for testing complex dynamic
+programming procedures for computing the sums and the argmax on relatively small
+examples. Don't just copy code for dynamic programming out of a paper! Test it!</p>
+<p>Here's some stuff you'll see once we start talking about CRFs:</p>
+<ol>
+<li>
+<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)</p>
+</li>
+<li>
+<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
+</li>
+<li>
+<p>Model templates (i.e., repeated feature functions)</p>
+</li>
+</ol>
+<p>In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
+<p>Graphical models establish a notation and structural properties which allow
+efficient inference&mdash;things like cycles and treewidth.</p>
+<p>Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size"&mdash;the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.</p>
+<div class="math">$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$</div>
+<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
+<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
+<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
+the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
+at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
+<p>Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -200,9 +180,9 @@ still call exp-normalize "softmax."</p>
 </script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index31.html">&larr; Older</a>
+    <a class="prev" href="./index219.html">&larr; Older</a>
 
-    <a class="next" href="./index29.html">Newer &rarr;</a>
+    <a class="next" href="./index217.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">

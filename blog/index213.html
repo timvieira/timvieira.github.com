@@ -48,72 +48,90 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a>
+        <a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
       </h1>
     <p class="meta">
-<time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time>    </p>
+<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>    </p>
 </header>
 
-  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
-deep learning might not be as crazy as it seems. And maybe even convince some
-deep learning lovers that the graphical models might have interesting things to
-offer.</p>
-<p>In the world of structured prediction, we are plagued by the high-treewidth
-problem -- models with loopy factors are "bad" because exact inference is
-intractable. There are three common approaches for dealing with this problem:</p>
-<ol>
-<li>
-<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
-</li>
-<li>
-<p>Change the training objective</p>
-</li>
-<li>
-<p>Approximate inference</p>
-</li>
-</ol>
-<p>Approximate inference is tricky. Things can easily go awry.</p>
-<p>For example, structured perceptron training with loopy max-product BP instead of
-exact max product can diverge
-<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
-example: using approximate marginals from sum-product loopy BP in place of the
-true marginals in the gradient of the log-likelihood. This results in a
-different nonconvex objective function. (Note:
-<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
-approximations work fine.)</p>
-<p>It looks like using approximate inference during training changes the training
-objective.</p>
-<p>So, here's a simple idea: learn a model which makes accurate predictions given
-the approximate inference algorithm that will be used at test-time. Furthermore,
-we should minimize empirical risk instead of log-likelihood because it is robust
-to model miss-specification and approximate inference. In other words, make
-training conditions as close as possible to test-time conditions.</p>
-<p>Now, as long as everything is differentiable, you can apply automatic
-differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handful of papers by Justin Domke, and a few by
-Stoyanov &amp; Eisner.</p>
-<p>Unsuprisingly, it works pretty well.</p>
-<p>I first saw this idea in
-<a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov &amp; Eisner (2011)</a>. They
-use loopy belief propagation as their approximate inference algorithm. At the
-end of the day, their model is essentially a deep recurrent network, which came
-from unrolling inference in a graphical model. This idea really struck me
-because it's clearly right in the middle between graphical models and deep
-learning.</p>
-<p>You can immediately imagine swapping in other approximate inference algorithms
-in place of loopy BP.</p>
-<p>Deep learning approaches get a bad reputation because there are a lot of
-"tricks" to get nonconvex optimization to work and because model structures are
-more open ended. Unlike graphical models, deep learning models have more
-variation in model structures. Maybe being more open minded about model
-structures is a good thing. We seem to have hit a brick wall with
-likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.</p></div>
+  <div class="entry-content"><p>The following is a quick rant about
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
+(see that post for notation).</p>
+<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
+<blockquote>
+<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
+</blockquote>
+<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
+<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
+<p>With importance sampling, it is possible to achieve a variance reduction over
+Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
+for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
+variance</em> estimate <em>with a single sample</em>!</p>
+<p>Of course, this is an unreasonable distribution to use because the normalizing
+constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
+proposal distributions exist</em>.</p>
+<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
+"importance sampling for variance reduction" to learn more.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index20.html">&larr; Older</a>
+    <a class="prev" href="./index214.html">&larr; Older</a>
 
-    <a class="next" href="./index18.html">Newer &rarr;</a>
+    <a class="next" href="./index212.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">

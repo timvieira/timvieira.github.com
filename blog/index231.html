@@ -48,65 +48,84 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
+        <a href="./post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
       </h1>
     <p class="meta">
-<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>    </p>
+<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>    </p>
 </header>
 
-  <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
-because it makes it easy to rapidly prototype deep networks with plenty of
-doodads and geegaws, but because it means that evaluating the gradient <span class="math">\(\nabla
-f(x)\)</span> is as fast of computing <span class="math">\(f(x)\)</span>. In fact, the gradient provably requires at
-most a <em>small</em> constant factor more arithmetic operations than the function
-itself.  Furthermore, autodiff tells us how to derive and implement the gradient
-efficiently. This is a fascinating result that is perhaps not emphasized enough
-in machine learning.</p>
-<p><strong>The gradient should never be asymptotically slower than the function.</strong> In my
-recent <a href="/doc/2016-emnlp-vocrf.pdf">EMNLP'16 paper</a>, my coauthors and I found a
-line of work on variable-order CRFs
-(<a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf">Ye+'09</a>;
-<a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf">Cuong+'14</a>), which
-had an unnecessarily slow and complicated algorithm for computing gradients,
-which was asymptotically (and practically) slower than their forward
-algorithm. Without breaking a sweat, we derived a simpler and more efficient
-gradient algorithm by simply applying backprop to the forward algorithm (and
-made some other contributions).</p>
-<p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
-inside-outside, are actually just instances of automatic differentiation
-(<a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Eisner,'16</a>) (i.e.,
-outside is just backprop on inside). This shouldn't be a surprise because these
-algorithms are used to compute gradients. Basically, if you know backprop and
-the inside algorithm, then you can derive the outside algorithm by applying the
-backprop transform manually. I find it easier to understand the outside
-algorithm via its connection to backprop, then via
-<a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>. Note
-that inside-outside and forward-backward pre-date backpropagation and have
-additional uses beyond computing gradients.</p>
-<p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
-through many approximate inference algorithms, e.g.,
-<a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
-and many of Justin Domke's papers, to avoid issues I've mentioned
-<a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">before</a>. You
-can even backprop through optimization algorithms to get gradients of dev loss wrt
-hyperparameters, e.g.,
-<a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf">Domke'12</a> and
-<a href="https://arxiv.org/abs/1502.03492">Maclaurin+'15</a>.</p>
-<p><strong>There's at least one catch!</strong> Although the <em>time</em> complexity of computing the
-gradient is as good as the function, the <em>space</em> complexity may be much larger
-because the autodiff recipe (at least the default reverse-mode one) requires memoizing
-all intermediate quantities (e.g., the quantities you overwrite in a
-loop). There are generic methods for balancing the time-space tradeoff in
-autodiff, since you can (at least in theory) reconstruct the intermediate
-quantities by playing the forward computation again from intermediate
-checkpoints (at a cost to runtime, of course). A recent example is
-<a href="https://arxiv.org/abs/1606.03401">Gruslys+'16</a>.</p>
-<p><strong>A final remark</strong>. Despite the name "automatic" differentiation, there is no
-need to rely on software to "automatically" give you gradient routines. Applying
-the backprop transformation is generally easy to do manually and sometimes more
-efficient than using a library. Many autodiff libraries lack good support for
-dynamic computation graph, i.e., when the structure depends on quantities that
-vary with the input (e.g., sentence length).</p>
+  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
+finite-difference approximation).</p>
+<div class="math">$$
+\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
+ \frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
+ \Big)
+$$</div>
+<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
+<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
+<span class="math">\(o(\varepsilon^2)\)</span> additive error.</p>
+<p>This is a specific instance of a more general approximation! The dot product of
+the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
+with the following formula,</p>
+<div class="math">$$
+\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+ \Big)
+$$</div>
+<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
+exact in the limit and just as accurate.</p>
+<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
+  approximating a high-dimensional gradient because the number of function
+  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
+  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
+  function evaluations is probably faster than specialized code for computing
+  the gradient.</p>
+<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
+  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
+  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
+  is available. Andrei (2009) reccommends</p>
+<div class="math">$$
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
+$$</div>
+<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
+<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
+<code>numpy.finfo(x.dtype).eps</code>).</p>
+<h2>Why do I care?</h2>
+<ol>
+<li>
+<p>Well, I tend to work on sparse, but high-dimensional problems where
+   finite-difference would be too slow. Thus, my usual solution is to only test
+   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
+   which should be nonzero. With the new trick, I can effectively test more
+   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
+   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
+   the angle of the vector.</p>
+</li>
+<li>
+<p>Sometimes the gradient-vector dot product is the end goal. This is the case
+   with Hessian-vector products, which arises in many optimization algorithms,
+   such as stochastic meta descent. Hessian-vector products are an instance of
+   the gradient-vector dot product because the Hessian is just the gradient of
+   the gradient.</p>
+</li>
+</ol>
+<h2>Hessian-vector product</h2>
+<p>Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!</p>
+<div class="math">$$
+H(\boldsymbol{x})\, \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+\Big)
+$$</div>
+<p>With this trick you never have to actually compute the gnarly Hessian! More on
+<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -164,9 +183,8 @@ vary with the input (e.g., sentence length).</p>
 </script></div>
   		</article>
 <div class="pagination">
-    <a class="prev" href="./index11.html">&larr; Older</a>
 
-    <a class="next" href="./index9.html">Newer &rarr;</a>
+    <a class="next" href="./index230.html">Newer &rarr;</a>
   <br />
 </div></div>
 <aside class="sidebar">
