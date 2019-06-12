@@ -40,7 +40,7 @@
 
 <ul class="main-navigation">
     <li><a href="http://timvieira.github.io/">About</a></li>
-    <li><a href="/blog/archives.html">Archive</a></li>
+    <li><a href="/blog/index.html">Archive</a></li>
 </ul></nav>
   <div id="main">
     <div id="content">
@@ -1227,7 +1227,7 @@ $$<p>Some details worth mentioning: (a) <a href="https://en.wikipedia.org/wiki/L
 <div class="prompt input_prompt">In [1]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<div class="highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">uniform</span>
@@ -1244,7 +1244,7 @@ $$<p>Some details worth mentioning: (a) <a href="https://en.wikipedia.org/wiki/L
 <div class="prompt input_prompt">In [2]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">timers</span><span class="p">()</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">timers</span><span class="p">()</span>
 
 <span class="c1"># These are the sigmoid parameters we're going to sample from.</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">10000</span>
@@ -1310,7 +1310,7 @@ slow1 is 1.0920x faster than slow3 <span class="ansi-yellow-fg">(avg: slow3: 0.0
 </div>
 <div class="output_area">
 <div class="prompt"></div>
-<div class="output_png output_subarea ">
+<div class="output_png output_subarea">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXcAAAD8CAYAAACMwORRAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xdc1dX/wPHXYW9QQUSGuHBvnJl7a9n+mu1ly/a3sp+2
 v6XZtDJt2Ppmad8sM0NTK9OcKG5c4AAUFZC94Z7fHxev9woIKdwLl/fz8eDBPePe+74qbw/ncz7n
@@ -1578,7 +1578,7 @@ $$<p>Much like our new trick, this one benefits from the fact that all expensive
 <div class="prompt input_prompt">In [3]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">ys</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">);</span>
 </pre></div>
@@ -1589,7 +1589,7 @@ $$<p>Much like our new trick, this one benefits from the fact that all expensive
 <div class="output">
 <div class="output_area">
 <div class="prompt"></div>
-<div class="output_png output_subarea ">
+<div class="output_png output_subarea">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXYAAAD8CAYAAABjAo9vAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAHXNJREFUeJzt3Xd4Vded7vHvQkKiCJCECqghQIjeBdjYtOAGLthx4h5P
 bCce4nHKjGeS2M5M5qbM9b2ZSZyxU4Y4ieMblziu4OA4YJobBlEEAoEQAtSlI9RAXTrr/iE5wX7A
@@ -1742,7 +1742,7 @@ CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [4]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">logistic</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">logistic</span>
 <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 <span class="n">z</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1757,7 +1757,7 @@ CTEKdhGREKNgFxEJMQp2EZEQo2AXEQkxCnYRkRDz/wFig7QfOLtyjQAAAABJRU5ErkJggg==
 <div class="output">
 <div class="output_area">
 <div class="prompt"></div>
-<div class="output_png output_subarea ">
+<div class="output_png output_subarea">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX4AAAD8CAYAAABw1c+bAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xl8VfWd//HXJyEBZFH2LUAAUUBkM4AIgigqi4Kd0Q62
 tbWtUtuqtU6t/Lqo09pRu02XwTJoW6ujQ7WiRQFRUEDZE7bIvkPCvqNAIMn398c5CdeYkJvk5p67
