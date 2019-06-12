@@ -96,7 +96,7 @@ $$&lt;/div&gt;
 &lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
 &lt;h2&gt;Interactive Notebook&lt;/h2&gt;
-&lt;script src=""&gt;&lt;/script&gt;
+&lt;script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"&gt;&lt;/script&gt;
 
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
@@ -249,7 +249,7 @@ $$&lt;/div&gt;
 &lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
 &lt;h2&gt;Interactive Notebook&lt;/h2&gt;
-&lt;script src=""&gt;&lt;/script&gt;
+&lt;script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"&gt;&lt;/script&gt;
 
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
