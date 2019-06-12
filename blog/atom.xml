@@ -91,10 +91,18 @@ $$&lt;/div&gt;
   like &lt;span class="math"&gt;\(\log\)&lt;/span&gt; and it uses a single random variate per sample.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Further reading: I have several posts on the topic of fast sampling algorithms
+&lt;p&gt;Further reading:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I have several posts on the topic of fast sampling algorithms
 (&lt;a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/"&gt;1&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Jake VanderPlas (2018) &lt;a href="http://jakevdp.github.io/blog/2018/09/13/waiting-time-paradox/"&gt;The Waiting Time Paradox, or, Why Is My Bus Always Late?&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2&gt;Interactive Notebook&lt;/h2&gt;
 &lt;script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"&gt;&lt;/script&gt;
 
@@ -244,10 +252,18 @@ $$&lt;/div&gt;
   like &lt;span class="math"&gt;\(\log\)&lt;/span&gt; and it uses a single random variate per sample.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Further reading: I have several posts on the topic of fast sampling algorithms
+&lt;p&gt;Further reading:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I have several posts on the topic of fast sampling algorithms
 (&lt;a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/"&gt;1&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
 &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Jake VanderPlas (2018) &lt;a href="http://jakevdp.github.io/blog/2018/09/13/waiting-time-paradox/"&gt;The Waiting Time Paradox, or, Why Is My Bus Always Late?&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2&gt;Interactive Notebook&lt;/h2&gt;
 &lt;script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"&gt;&lt;/script&gt;
 
