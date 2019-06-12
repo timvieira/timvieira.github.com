@@ -1,5 +1,311 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2019-04-20T00:00:00-04:00</updated><entry><title>The likelihood-ratio gradient</title><link href="http://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"></link><published>2019-04-20T00:00:00-04:00</published><updated>2019-04-20T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-04-20:/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: We're trying to optimize a function of the form&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent</title><link href="http://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/atom.xml" rel="self"></link><id>http://timvieira.github.io/blog/</id><updated>2019-06-11T00:00:00-04:00</updated><entry><title>Faster reservoir sampling by waiting</title><link href="http://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/" rel="alternate"></link><published>2019-06-11T00:00:00-04:00</published><updated>2019-06-11T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-06-11:/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/</id><summary type="html">&lt;p&gt;We are interested in designing an efficient algorithm for sampling from a categorical distribution over &lt;span class="math"&gt;\(n\)&lt;/span&gt; items with weights &lt;span class="math"&gt;\(w_i &amp;gt; 0\)&lt;/span&gt;.  Define target sampling distribution &lt;span class="math"&gt;\(p\)&lt;/span&gt; as
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
+\quad\text{where}\quad W = \frac{1}{\sum_j w_j}
+$$&lt;/div&gt;
+&lt;p&gt;The following is a very simple and relatively famous algorithm due to &lt;a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X"&gt;Efraimidis and Spirakis (2006)&lt;/a&gt;.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (discussed in &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;Vieira, 2014&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;weighted_reservoir_sampling&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argmin&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Some differences from E&amp;amp;S'06: Our &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; are &lt;span class="math"&gt;\(\log\)&lt;/span&gt; of the &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; variables in E&amp;amp;S'06.  Additionally, we take &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;.  These differences allow us to talk about exponential variates rather than the less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why does it work?&lt;/strong&gt; The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
+When &lt;span class="math"&gt;\(X_i \sim \mathrm{Exponential}(w_i)\)&lt;/span&gt;, &lt;span class="math"&gt;\(R = {\mathrm{argmin}}_i X_i\)&lt;/span&gt;, and &lt;span class="math"&gt;\(T = \min_i X_i\)&lt;/span&gt; then
+&lt;span class="math"&gt;\(R \sim p\)&lt;/span&gt; and &lt;span class="math"&gt;\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Fewer random variates by waiting&lt;/h2&gt;
+&lt;p&gt;One down-side of this one-pass algorithm is that it requires &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; samples.  E&amp;amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires &lt;span class="math"&gt;\(\mathcal{O}(\log(n))\)&lt;/span&gt; random variates (in expectation).  That's &lt;em&gt;way&lt;/em&gt; fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.&lt;/p&gt;
+&lt;p&gt;Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;jump&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by jumping&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c1"&gt;# Sample the key for item i, given that it is smaller than the current threshold&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample_truncated&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+            &lt;span class="c1"&gt;# sample the waiting time (size of the jump)&lt;/span&gt;
+            &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Why does exponential jumps work?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Let me first write the &lt;code&gt;weighted_reservoir_sampling&lt;/code&gt; algorithm to be much more similar to the &lt;code&gt;jump&lt;/code&gt; algorithm.  For fun, I'm going to refer to it as the &lt;code&gt;walk&lt;/code&gt; algorithm.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by walking&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;   &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;   &lt;span class="c1"&gt;# threshold to enter the reservoir&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;The key idea&lt;/strong&gt; of the exponential jumps algorithm is to sample &lt;em&gt;waiting times&lt;/em&gt; between new minimum events.  In particular, if the algorithm is at step &lt;span class="math"&gt;\(i\)&lt;/span&gt; the probability that sees its next minimum at steps &lt;span class="math"&gt;\(j \in \{ i+1, \ldots \}\)&lt;/span&gt; can be reasoned about without needing to &lt;em&gt;actually&lt;/em&gt; sample the various &lt;span class="math"&gt;\(X_j\)&lt;/span&gt; variables.&lt;/p&gt;
+&lt;p&gt;Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the &lt;code&gt;jump&lt;/code&gt; algorithm simulates the &lt;code&gt;walk&lt;/code&gt; algorithm.  The key to doing this is showing that the probability of jumping from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt; is the same as "walking" from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt;.  Let &lt;span class="math"&gt;\(W_{i,k} = \sum_{j=i}^k w_j\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;This proof is adapted from the original proof in E&amp;amp;S'06.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+\mathrm{Pr}\left( \text{walk to } k \mid i,T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( X_k &amp;lt; T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \\
+\\
+\mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; J \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( \exp(-T \cdot W_{i,k-1}) &amp;gt; U \ge \exp(-T \cdot W_{i,k}) \right) \label{foo}\\
+&amp;amp;=&amp;amp; \exp(T \cdot W_{i,k-1}) - \exp(T \cdot W_{i,k} )
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that &lt;span class="math"&gt;\(X_k\)&lt;/span&gt; is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a &lt;em&gt;truncated&lt;/em&gt; random variate: a random variate that is guaranteed to less than the previous minimum.  In the &lt;a href="https://cmaddis.github.io/gumbel-machinery"&gt;Gumbel-max world&lt;/a&gt;, this is used in the top-down generative story.&lt;/p&gt;
+&lt;h2&gt;Closing thoughts&lt;/h2&gt;
+&lt;p&gt;Pros:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The jump algorithm saves a ton of random variates and gives practical savings
+  (at least, in my limited experiments).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Cons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The jump algorithm is harder to parallelize or vectorize, but it seems possible.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If you aren't in a setting that requires a one-pass algorithm or some other
+  special properties, you are probably better served by the two-pass algorithms
+  since they have lower overhead because it doesn't call expensive functions
+  like &lt;span class="math"&gt;\(\log\)&lt;/span&gt; and it uses a single random variate per sample.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Further reading: I have several posts on the topic of fast sampling algorithms
+(&lt;a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/"&gt;1&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
+&lt;h2&gt;Interactive Notebook&lt;/h2&gt;
+&lt;script src=""&gt;&lt;/script&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><content type="html">&lt;p&gt;We are interested in designing an efficient algorithm for sampling from a categorical distribution over &lt;span class="math"&gt;\(n\)&lt;/span&gt; items with weights &lt;span class="math"&gt;\(w_i &amp;gt; 0\)&lt;/span&gt;.  Define target sampling distribution &lt;span class="math"&gt;\(p\)&lt;/span&gt; as
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
+\quad\text{where}\quad W = \frac{1}{\sum_j w_j}
+$$&lt;/div&gt;
+&lt;p&gt;The following is a very simple and relatively famous algorithm due to &lt;a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X"&gt;Efraimidis and Spirakis (2006)&lt;/a&gt;.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (discussed in &lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;Vieira, 2014&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;weighted_reservoir_sampling&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argmin&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Some differences from E&amp;amp;S'06: Our &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; are &lt;span class="math"&gt;\(\log\)&lt;/span&gt; of the &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; variables in E&amp;amp;S'06.  Additionally, we take &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;.  These differences allow us to talk about exponential variates rather than the less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why does it work?&lt;/strong&gt; The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
+When &lt;span class="math"&gt;\(X_i \sim \mathrm{Exponential}(w_i)\)&lt;/span&gt;, &lt;span class="math"&gt;\(R = {\mathrm{argmin}}_i X_i\)&lt;/span&gt;, and &lt;span class="math"&gt;\(T = \min_i X_i\)&lt;/span&gt; then
+&lt;span class="math"&gt;\(R \sim p\)&lt;/span&gt; and &lt;span class="math"&gt;\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Fewer random variates by waiting&lt;/h2&gt;
+&lt;p&gt;One down-side of this one-pass algorithm is that it requires &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; samples.  E&amp;amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires &lt;span class="math"&gt;\(\mathcal{O}(\log(n))\)&lt;/span&gt; random variates (in expectation).  That's &lt;em&gt;way&lt;/em&gt; fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.&lt;/p&gt;
+&lt;p&gt;Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;jump&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by jumping&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c1"&gt;# Sample the key for item i, given that it is smaller than the current threshold&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample_truncated&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+            &lt;span class="c1"&gt;# sample the waiting time (size of the jump)&lt;/span&gt;
+            &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Why does exponential jumps work?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Let me first write the &lt;code&gt;weighted_reservoir_sampling&lt;/code&gt; algorithm to be much more similar to the &lt;code&gt;jump&lt;/code&gt; algorithm.  For fun, I'm going to refer to it as the &lt;code&gt;walk&lt;/code&gt; algorithm.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by walking&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;   &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;   &lt;span class="c1"&gt;# threshold to enter the reservoir&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;The key idea&lt;/strong&gt; of the exponential jumps algorithm is to sample &lt;em&gt;waiting times&lt;/em&gt; between new minimum events.  In particular, if the algorithm is at step &lt;span class="math"&gt;\(i\)&lt;/span&gt; the probability that sees its next minimum at steps &lt;span class="math"&gt;\(j \in \{ i+1, \ldots \}\)&lt;/span&gt; can be reasoned about without needing to &lt;em&gt;actually&lt;/em&gt; sample the various &lt;span class="math"&gt;\(X_j\)&lt;/span&gt; variables.&lt;/p&gt;
+&lt;p&gt;Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the &lt;code&gt;jump&lt;/code&gt; algorithm simulates the &lt;code&gt;walk&lt;/code&gt; algorithm.  The key to doing this is showing that the probability of jumping from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt; is the same as "walking" from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt;.  Let &lt;span class="math"&gt;\(W_{i,k} = \sum_{j=i}^k w_j\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;This proof is adapted from the original proof in E&amp;amp;S'06.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+\mathrm{Pr}\left( \text{walk to } k \mid i,T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( X_k &amp;lt; T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \\
+\\
+\mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; J \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( \exp(-T \cdot W_{i,k-1}) &amp;gt; U \ge \exp(-T \cdot W_{i,k}) \right) \label{foo}\\
+&amp;amp;=&amp;amp; \exp(T \cdot W_{i,k-1}) - \exp(T \cdot W_{i,k} )
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that &lt;span class="math"&gt;\(X_k\)&lt;/span&gt; is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a &lt;em&gt;truncated&lt;/em&gt; random variate: a random variate that is guaranteed to less than the previous minimum.  In the &lt;a href="https://cmaddis.github.io/gumbel-machinery"&gt;Gumbel-max world&lt;/a&gt;, this is used in the top-down generative story.&lt;/p&gt;
+&lt;h2&gt;Closing thoughts&lt;/h2&gt;
+&lt;p&gt;Pros:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The jump algorithm saves a ton of random variates and gives practical savings
+  (at least, in my limited experiments).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Cons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The jump algorithm is harder to parallelize or vectorize, but it seems possible.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If you aren't in a setting that requires a one-pass algorithm or some other
+  special properties, you are probably better served by the two-pass algorithms
+  since they have lower overhead because it doesn't call expensive functions
+  like &lt;span class="math"&gt;\(\log\)&lt;/span&gt; and it uses a single random variate per sample.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Further reading: I have several posts on the topic of fast sampling algorithms
+(&lt;a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/"&gt;1&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
+&lt;h2&gt;Interactive Notebook&lt;/h2&gt;
+&lt;script src=""&gt;&lt;/script&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="sampling"></category><category term="reservoir-sampling"></category><category term="Gumbel"></category></entry><entry><title>The likelihood-ratio gradient</title><link href="http://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"></link><published>2019-04-20T00:00:00-04:00</published><updated>2019-04-20T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-04-20:/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: We're trying to optimize a function of the form&lt;/p&gt;
 &lt;div class="math"&gt;$$
 J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
 $$&lt;/div&gt;

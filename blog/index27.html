@@ -48,310 +48,193 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+        <a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a>
       </h1>
     <p class="meta">
-<time datetime="2016-12-19T00:00:00-05:00" pubdate>Dec 19, 2016</time>    </p>
+<time datetime="2017-04-21T00:00:00-04:00" pubdate>Apr 21, 2017</time>    </p>
 </header>
 
-  <div class="entry-content"><style> .toggle-button { background-color: #555555; border: none; color: white;
-padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
-none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
-background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
-margin-bottom: 10px; } </style>
+  <div class="entry-content"><!--
+**Who should read this?** Nowadays, you're probably just using automatic
+differentiation to compute the gradient of whatever function you're using. If
+that's you and you trust your software package wholeheartedly, then you probably
+don't need to read this. If you're rolling your own module/Op to put in to an
+auto-diff library, then you should read this. I find that none of the available
+libraries are any good for differentiating dynamic programs, so I still find
+this stuff useful. You'll probably have to write gradient code without the aid
+of an autodiff library someday... So either way, knowing this stuff is good for
+you. To answer the question, everyone.
+-->
 
-<script>
-/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
-example, reasoning about the expected reward of new policy given data collected
-from a older one.</p>
-<p>In this post, I'll discuss some basic techniques for learning from logged
-data. For the large part, this post is based on things I learned from
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Peshkin &amp; Shelton (2002)</a>
-and <a href="https://arxiv.org/abs/1209.2355">Bottou et al. (2013)</a> (two of all-time
-favorite papers).</p>
-<p>After reading, have a look at the
-<a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9">Jupyter notebook</a>
-accompanying this post!</p>
-<p><strong>Setup</strong> (<em>off-line off-policy optimization</em>): We're trying to optimize a
-function of the form,</p>
+<p><strong>Setup</strong>: Suppose we have a function, <span class="math">\(f: \mathbb{R}^n \rightarrow \mathbb{R}\)</span>,
+and we want to test code that computes <span class="math">\(\nabla f\)</span>. (Note that these techniques
+also apply when <span class="math">\(f\)</span> has multivariate output.)</p>
+<h2>Finite-difference approximation</h2>
+<p>The main way that people test gradient computation is by comparing it against a
+finite-difference (FD) approximation to the gradient:</p>
 <div class="math">$$
-J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
+\boldsymbol{d}^\top\! \nabla f(\boldsymbol{x}) \approx \frac{1}{2 \varepsilon}(f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}))
 $$</div>
-<p><br/> But! We only have a <em>fixed</em> sample of size <span class="math">\(m\)</span> from a data collection
-policy <span class="math">\(q\)</span>, <span class="math">\(\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.\)</span></p>
+<p>
+<br/>
+where <span class="math">\(\boldsymbol{d} \in \mathbb{R}^n\)</span> is an arbitrary "direction" in parameter
+space. We will look at many directions when we test. Generally, people take the
+<span class="math">\(n\)</span> elementary vectors as the directions, but random directions are just as good
+(and you can catch bugs in all dimensions with less than <span class="math">\(n\)</span> of them).</p>
+<p><strong>Always use the two-sided difference formula</strong>. There is a version which
+doesn't add <em>and</em> subtract, just does one or the other. Do not use it ever.</p>
+<p><strong>Make sure you test multiple inputs</strong> (values of <span class="math">\(\boldsymbol{x}\)</span>) or any thing
+else the function depends on (e.g., the minibatch).</p>
+<p><strong>What directions to use</strong>: When debugging, I tend to use elementary directions
+because they tell me something about which dimensions that are wrong... this
+doesn't always help though. The random directions are best when you want the
+test cases to run really quickly. In that case, you can switch to check a few
+random directions using a
+<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/util.py">spherical</a>
+distribution&mdash;do <em>not</em> sample them from a multivariate uniform!</p>
+<p><strong>Always test your implementation of <span class="math">\(f\)</span>!</strong> It's very easy to <em>correctly</em>
+  compute the gradient of the <em>wrong</em> function. The FD approximation is a
+  "self-consistency" test, it does not validate <span class="math">\(f\)</span> only the relationship
+  between <span class="math">\(f\)</span> and <span class="math">\(\nabla\! f\)</span>.</p>
+<p>Obviously, how you test <span class="math">\(f\)</span> depends strongly on what it's supposed to compute.</p>
+<ul>
+<li>Example: For a conditional random field (CRF), you can also test that your
+   implementation of a dynamic program for computing <span class="math">\(\log Z_\theta(x)\)</span> is
+   correctly by comparing against brute-force enumeration of <span class="math">\(\mathcal{Y}(x)\)</span> on
+   small examples.</li>
+</ul>
+<p>Similarly, you can directly test the gradient code if you know a different way
+to compute it.</p>
+<ul>
+<li>Example: In a CRF, we know that the <span class="math">\(\nabla \log Z_\theta(x)\)</span> is a feature
+   expectation, which you can also test against a brute-force enumeration on
+   small examples.</li>
+</ul>
+<h3>Why not just use the FD approximation as your gradient?</h3>
+<p>For low-dimensional functions, you can straight-up use the finite-difference
+approximation instead of rolling code to compute the gradient. (Take <span class="math">\(n\)</span>
+axis-aligned unit vectors for <span class="math">\(\boldsymbol{d}\)</span>.) The FD approximation is very
+accurate. Of course, specialized code is probably a little more accurate, but
+that's not <em>really</em> why we bother to do it! The reason why we write specialized
+gradient code is <em>not</em> to improve numerical accuracy, it's to improve
+<em>efficiency</em>. As I've
+<a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">ranted</a>
+before, automatic differentiation techniques guarantee that evaluating <span class="math">\(\nabla
+f(x)\)</span> gradient should be as efficient as computing <span class="math">\(f(x)\)</span> (with the caveat that
+<em>space</em> complexity may increase substantially - i.e., space-time tradeoffs
+exists). FD is <span class="math">\(\mathcal{O}(n \cdot \textrm{runtime } f(x))\)</span>, where as autodiff
+is <span class="math">\(\mathcal{O}(\textrm{runtime } f(x))\)</span>.</p>
+<h2>How to compare vectors</h2>
+<p><strong>Absolute difference is the devil.</strong> You should never compare vectors in
+absolute difference (this is Lecture 1 of any numerical methods course). In this
+case, the problem is that gradients depend strongly on the scale of <span class="math">\(f\)</span>. If <span class="math">\(f\)</span>
+takes tiny values then it's easy for differences to be lower than a tiny
+threshold.</p>
+<p>Most people use <strong>relative error</strong> <span class="math">\(= \frac{|\textbf{want} -
+\textbf{got}|}{|\textbf{want}|}\)</span>, to get a scale-free error measure, but
+unfortunately relative error chokes when <span class="math">\(\textbf{want}\)</span> is zero.</p>
+<p>I compute several error measures with a script that you can import from my
+github
+<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/checkgrad.py">arsenal.math.checkgrad.{fdcheck}</a>.</p>
+<p>I use two metrics to test gradients:</p>
+<ol>
+<li>
+<p>Relative error (skipping zeros): If relative error hits a zero, I skip
+   it. I'll rely on the other measure.</p>
+</li>
+<li>
+<p>Pearson correlation: Checks the <em>direction</em> of the gradient, but allows a
+   scale and shift transformation. This measure doesn't have trouble with zeros,
+   but allows scale and shift problems to pass by. <em>Make sure you fix those
+   errors!</em> (e.g. In the CRF example, you might have forgotten to divide by
+   <span class="math">\(Z(x)\)</span>, which not really a constant... I've made this exact mistake a few
+   times.)</p>
+</li>
+</ol>
+<p>I also look at some diagnostics, which help me debug stuff:</p>
 <ul>
 <li>
-<p>Although, it's not <em>necessarily</em> the case, you can think of <span class="math">\(q = p_{\theta'}\)</span>
-  for a <em>fixed</em> value <span class="math">\(\theta'.\)</span></p>
+<p>Accuracy of predicting the sign {+,-,0} of each dimension (or dot random product).</p>
 </li>
 <li>
-<p><span class="math">\(\mathcal{X}\)</span> is an arbitrary multivariate space, which permits a mix of
-  continuous and discrete components, with appropriate densities, <span class="math">\(p_{\theta}\)</span>
-  and <span class="math">\(q\)</span> defined over it.</p>
+<p>Absolute error (just as a diagnostic)</p>
 </li>
 <li>
-<p><span class="math">\(r: \mathcal{X} \mapsto \mathbb{R}\)</span> is a black box that outputs a scalar
-  score.</p>
-</li>
-<li>
-<p>I've used the notation <span class="math">\(r^{(j)}\)</span> instead of <span class="math">\(r(x^{(j)})\)</span> to emphasize that we
-  can't evaluate <span class="math">\(r\)</span> at <span class="math">\(x\)</span> values other than those in the sample.</p>
-</li>
-<li>
-<p>We'll assume that <span class="math">\(q\)</span> assigns positive probability everywhere, <span class="math">\(q(x) &gt; 0\)</span> for
-  all <span class="math">\(x \in \mathcal{X}\)</span>. This means is that the data collection process must
-  be randomized and eventually sample all possible configurations. Later, I
-  discuss relaxing this assumption.</p>
+<p>Scatter plot: When debugging, I like to scatter plot the elements of FD vs. my
+  implementation.</p>
 </li>
 </ul>
-<p>Each distribution is a product of one or more factors of the following types:
-<strong>policy factors</strong> (at least one), which directly depend on <span class="math">\(\theta\)</span>, and
-<strong>environment factors</strong> (possibly none), which do not depend directly on
-<span class="math">\(\theta\)</span>. Note that environment factors are <em>only</em> accessible via sampling
-(i.e., we don't know the <em>value</em> they assign to a sample). For example, a
-<em>contextual bandit problem</em>, where <span class="math">\(x\)</span> is a context-action pair, <span class="math">\(x =
-(s,a)\)</span>. Here <span class="math">\(q(x) = q(a|s) p(s)\)</span> and <span class="math">\(p_{\theta}(x) = p_{\theta}(a|s)
-p(s)\)</span>. Note that <span class="math">\(p_{\theta}\)</span> and <span class="math">\(q\)</span> share the environment factor <span class="math">\(p(s)\)</span>, the
-distribution over contexts, and only differ in the action-given-context
-factor. For now, assume that we can evaluate all environment factors; later,
-I'll discuss how we cleverly work around it.</p>
+<p>All these measurements (and the scatter plot) can be computed with
+<a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/compare.py">arsenal.math.compare.{compare}</a>,
+which I find super useful when debugging absolutely anything numerical.</p>
+<h2>Bonus tests</h2>
+<p><strong>Testing modules</strong>: You can test the different modules of your code as well
+(assuming you have a composable module-based setup). E.g., I test my DP
+algorithm independent of how the features and downstream loss are computed. You
+can also test feature and downstream loss modules independent of one
+another. Note that autodiff (implicitly) computes Jacobian-vector products
+because modules are multivariate in general. We can reduce to the scalar case by
+taking a dot product of the outputs with a (fixed) random vector.</p>
+<p>Something like this:</p>
+<div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">spherical</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># fixed random vector |output|=|m|</span>
+<span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>   <span class="c1"># scalar function for use in fd</span>
+
+<span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># propagate</span>
+<span class="n">module</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">adjoint</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span> <span class="c1"># set output adjoint to r, usually we set adjoint of scalar output=1</span>
+<span class="n">module</span><span class="o">.</span><span class="n">bprop</span><span class="p">()</span>
+<span class="n">ad</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">adjoint</span> <span class="c1"># grab the gradient</span>
+<span class="n">fd</span> <span class="o">=</span> <span class="n">fdgrad</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">compare</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">ad</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Integration tests</strong>: Test that running a gradient-based optimization algorithm
+is successful with your gradient implementation. Use smaller versions of your
+problem if possible. A related test for machine learning applications is to make
+sure that your model and learning procedure can (over)fit small datasets.</p>
+<p><strong>Test that batch = minibatch</strong> (if applicable). It's very easy to get this bit
+wrong. Broadcasting rules (in numpy, for example) make it easy to hide matrix
+conformability mishaps. So make sure you get the same results as manual
+minibatching (Of course, you should only do minibatching if are get a speed-up
+from vectorization or parallelism. You should probably test that it's actually
+faster.)</p>
 <!--
-(We can
-even extend it to a full-blown MDP or POMDP by taking $x$ to be a sequence of
-state-action pairs, often called "trajectories".)
+Other common sources of bugs
+
+* Really look over your test cases. I often find that my errors are actually in
+  the test case themselves because either (1) I wrote it really quickly with
+  less care than the difficult function/gradient, or (2) there is a gap between
+  "what I want it to do" and "what I told it to do".
+
+* Random search in the space of programs can result in overfitting! This is a
+  general problem with test-driven development that always applies. If you are
+  hamfistedly twiddling bits of your code without thinking about why things
+  work, you can trick almost any test.
 -->
 
-<p><strong>The main challenge</strong> of this setting is that we don't have controlled
-experiments to learn from because <span class="math">\(q\)</span> is not (completely) in our control. This
-manifests itself as high variance ("noise") in estimating <span class="math">\(J(\theta)\)</span>. Consider
-the contextual bandit setting, we receive a context <span class="math">\(s\)</span> and execute single
-action; we never get to rollback to that precise context and try an alternative
-action (to get a paired sample #yolo) because we do not control <span class="math">\(p(s)\)</span>. This is
-an important paradigm for many 'real world' problems, e.g., predicting medical
-treatments or ad selection.</p>
-<!--
-This is the crucial difference that makes counterfactual learning
-more difficult than (fully) supervised learning.
--->
-
-<p><strong>Estimating <span class="math">\(J(\theta)\)</span></strong> [V1]: We obtain an unbiased estimator of <span class="math">\(J(\theta)\)</span>
-with
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>,</p>
-<div class="math">$$
-J(\theta)
-\approx \hat{J}_{\!\text{IS}}(\theta)
-= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
-\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
-$$</div>
-<p><br/> This estimator is remarkable: it uses importance sampling as a function
-approximator! We have an <em>unbiased</em> estimate of <span class="math">\(J(\theta)\)</span> for any value of
-<span class="math">\(\theta\)</span> that we like. <em>The catch</em> is that we have to pick <span class="math">\(\theta\)</span> a priori,
-i.e., with no knowledge of the sample.</p>
-<!--
-We also require that the usual 'support
-conditions' for importance sampling conditions ($p_{\theta}(x)>0 \Rightarrow
-q(x)>0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
--->
-
-<p>After we've collected a (large) sample it's possible to optimize
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span> using any optimization algorithm (e.g., L-BFGS). Of
-course, we risk overfitting to the sample if we evaluate
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span>. Actually, it's a bit worse: this objective tends to
-favor regions of <span class="math">\(\theta\)</span>, which are not well represented in the sample because
-the importance sampling estimator has high variance in these regions resulting
-from large importance weights (when <span class="math">\(q(x)\)</span> is small and <span class="math">\(p_{\theta}(x)\)</span> is
-large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(\hat{J}_{\!\text{IS}}\)</span> regardless
-of whether <span class="math">\(r(x)\)</span> is high!). Thus, we want some type of "regularization" to keep
-the optimizer in regions which are sufficiently well-represented by the sample.</p>
-<!--
-**Visual example**: We can visualize this phenomena in a simple example. Let $q
-= \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
-otherwise},$ and $p_\theta = \mathcal{N}(\theta, \sigma=1)$.  This example is
-nice because it let's us plot $x$ and $\theta$ in the same space. This is
-generally not the case, because $\mathcal{X}$ may have no connection to $\theta$
-space, e.g., $\mathcal{X}$ may be discrete.
-
-**TODO** add plot
--->
-
-<p><strong>Better surrogate</strong> [V2]: There are many ways to improve the variance of the
-estimator and <em>confidently</em> obtain improvements to the system. One of my
-favorites is Bottou et al.'s lower bound on <span class="math">\(J(\theta)\)</span>, which we get by
-clipping importance weights, replace <span class="math">\(w^{(j)}_{\theta}\)</span> with <span class="math">\(\min(R,
-w^{(j)}_{\theta})\)</span>.</p>
-<p><strong>Confidence intervals</strong> [V3]: We can augment the V2 lower bound with confidence
-intervals derived from the empirical Bernstein bound (EBB). We'll require that
-<span class="math">\(r\)</span> is bounded and that we know its max/min values. The EBB <em>penalizes</em>
-hypotheses (values of <span class="math">\(\theta\)</span>) which have higher sample variance. (Note: a
-Hoeffding bound wouldn't change the <em>shape</em> of the objective, but EBB does
-thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
-introduces an additional "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
-al. recommend maximizing the lower bound as it provides safer improvements. See
-the original paper for the derivation.</p>
-<!--
-An important benefit of having upper *and* lower is that the bounds tell
-us whether or not we should collect more data
--->
-
-<p>Both V2 and V3 are <em>biased</em> (as they are lower bounds), but we can mitigate the
-bias by <em>tuning</em> the hyperparameter <span class="math">\(R\)</span> on a heldout sample (we can even tune
-<span class="math">\(\delta\)</span>, if desired). Additionally, V2 and V3 are 'valid' when <span class="math">\(q\)</span> has limited
-support since they prevent the importance weights from exploding (of course, the
-bias can be arbitrarily bad, but probably unavoidable given the
-learning-from-only-logged data setup).</p>
-<h2>Extensions</h2>
-<!--
-**Be warned**: This may be considered an idealized setting. Much of the research
-in counterfactual and causal reasoning targets (often subtle) deviations from
-these assumptions (and some different questions, of course). Some extensions and
-discussion appear towards the end of the post.
--->
-
-<p><strong>Unknown environment factors</strong>: Consider the contextual bandit setting
-(mentioned above). Here <span class="math">\(p\)</span> and <span class="math">\(q\)</span> share an <em>unknown</em> environment factor: the
-distribution of contexts. Luckily, we do not need to know the value of this
-factor in order to apply any of our estimators because they are all based on
-likelihood <em>ratios</em>, thus the shared unknown factors cancel out!  Some specific
-examples are given below. Of course, these factors do influence the estimators
-because they are crucial in <em>sampling</em>, they just aren't necessary in
-<em>evaluation</em>.</p>
+<p><strong>Further reading</strong>:</p>
 <ul>
 <li>
-<p>In contextual bandit example, <span class="math">\(x\)</span> is a state-action pair, <span class="math">\(w_{\theta}(x) =
-    \frac{p_{\theta}(x)}{q(x)} = \frac{ p_{\theta}(s,a) }{ q(s,a) } =
-    \frac{p_{\theta}(a|s) p(s)}{q(a|s) p(s)} = \frac{p_{\theta}(a|s) }{ q(a|s)
-    }\)</span>.</p>
+<p>I've written about gradient approximations before, you might like these
+  articles:
+  <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector products</a>,
+  <a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/">Complex-step method</a>.</p>
 </li>
 <li>
-<p>In a Markov decision process, <span class="math">\(x\)</span> is a sequence of state-action pairs,
-    <span class="math">\(w_{\theta}(x) = \frac{p_{\theta}(x)}{q(x)} = \frac{ p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) p_\theta(a_t|s_t) } { p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) q(a_t|s_t) } = \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
-    {\prod_{t=0}^T q(a_t|s_t)}.\)</span></p>
+<p>The foundations of backprop:
+  <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>.</p>
+</li>
+<li>
+<p><a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">I strongly recommend</a>
+  learning how automatic differentiation works, I learned it from
+  <a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's course notes</a>.</p>
+</li>
+<li>
+<p><a href="https://justindomke.wordpress.com/2017/04/22/you-deserve-better-than-two-sided-finite-differences/">Justin Domke post</a>:
+  Explains why we need bespoke finite-difference stencils (i.e., more than
+  two-sided differences) to prevent numerical demons from destroying our results!</p>
 </li>
 </ul>
-<p><strong>Variance reduction</strong>: These estimators can all be improved with variance
-reduction techniques. Probably the most effective technique is using
-<a href="https://en.wikipedia.org/wiki/Control_variates">control variates</a> (of which
-baseline functions are a special case). These are random variables correlated
-with <span class="math">\(r(x)\)</span> for which we know their expectations (or at least they are estimated
-separately). A great example is how ad clicks depend strongly on time-of-day
-(fewer people are online late at night so we get fewer clicks), thus the
-time-of-day covariate explains a large part of the variation in <span class="math">\(r(x)\)</span>.</p>
-<p><strong>Estimation instead of optimization</strong>: You can use this general setup for
-estimation instead of optimization, in which case it's fine to let <span class="math">\(r\)</span> have
-real-valued multivariate output. The confidence intervals are probably useful in
-that setting too.</p>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: Often <span class="math">\(q\)</span> is an existing complex system, which does not record
-its probabilities. It is possible to use regression to estimate <span class="math">\(q\)</span> from the
-samples, which is called the <strong>propensity score</strong> (PS). PS attempts to account
-for <strong>confounding variables</strong>, which are hidden causes that control variation in
-the data. Failing to account for confounding variables may lead to
-<a href="https://en.wikipedia.org/wiki/Simpson's_paradox">incorrect conclusions</a>. Unfortunately,
-PS results in a biased estimator because we're using a 'ratio of expectations'
-(we'll divide by the PS estimate) instead of an 'expectation of ratios'. PS is
-only statistically consistent in the (unlikely) event that the density estimate
-is correctly specified (i.e., we can eventually get <span class="math">\(q\)</span> correct). In the unknown
-<span class="math">\(q\)</span> setting, it's often better to use the <strong>doubly-robust estimator</strong> (DR) which
-combines <em>two</em> estimators: a density estimator for <span class="math">\(q\)</span> and a function
-approximation for <span class="math">\(r\)</span>. A great explanation for the bandit case is in
-<a href="https://arxiv.org/abs/1103.4601">Dudík et al. (2011)</a>. The DR estimator is also
-biased, but it has a better bias-variance tradeoff than PS.</p>
-<p><strong>What if <span class="math">\(q\)</span> doesn't have support everywhere?</strong> This is an especially important
-setting because it is often the case that data collection policies abide by some
-<strong>safety regulations</strong>, which prevent known bad configurations. In many
-situations, evaluating <span class="math">\(r(x)\)</span> corresponds to executing an action <span class="math">\(x\)</span> in the real
-world so terrible outcomes could occur, such as, breaking a system, giving a
-patient a bad treatment, or losing money. V1 is ok to use as long as we satisfy
-the importance sampling support conditions, which might mean rejecting certain
-values for <span class="math">\(\theta\)</span> (might be non-trivial to enforce) and consequently finding a
-less-optimal policy. V2 and V3 are ok to use without an explicit constraint, but
-additional care may be needed to ensure specific safety constraints are
-satisfied by the learned policy.</p>
-<p><strong>What if <span class="math">\(q\)</span> is deterministic?</strong> This is related to the point above. This is a
-hard problem. Essentially, this trying to learn without any exploration /
-experimentation! In general, we need exploration to learn. Randomization isn't
-the only way to perform exploration, there are many systematic types of
-experimentation.</p>
-<ul>
-<li>
-<p>There are some cases of systematic experimentation that are ok. For example,
-    enumerating all elements of <span class="math">\(\mathcal{X}\)</span> (almost certainly
-    infeasible). Another example is a contextual bandit where <span class="math">\(q\)</span> assigns
-    actions to contexts deterministically via a hash function (this setting is
-    fine because <span class="math">\(q\)</span> is essentially a uniform distribution over actions, which
-    is independent of the state). In other special cases, we <em>may</em> be able to
-    characterize systematic exploration as
-    <a href="https://en.wikipedia.org/wiki/Stratified_sampling">stratified sampling</a>.</p>
-</li>
-<li>
-<p>A generic solution might be to apply the doubly-robust estimator, which
-    "smooths out" deterministic components (by pretending they are random) and
-    accounting for confounds (by explicitly modeling them in the propensity
-    score).</p>
-</li>
-</ul>
-<p><strong>What if we control data collection (<span class="math">\(q\)</span>)?</strong> This is an interesting
-setting. Essentially, it asks "how do we explore/experiment optimally (and
-safely)?". In general, this is an open question and depends on many
-considerations, such as, how much control, exploration cost (safety constraints)
-and prior knowledge (of <span class="math">\(r\)</span> and unknown factors in the environment). I've seen
-some papers cleverly design <span class="math">\(q\)</span>. The first that comes to mind is
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Levine &amp; Koltun (2013)</a>. Another
-setting is <em>online</em> contextual bandits, in which algorithms like
-<a href="http://jmlr.org/proceedings/papers/v15/beygelzimer11a/beygelzimer11a.pdf">EXP4</a>
-and
-<a href="http://www.research.rutgers.edu/~lihong/pub/Chapelle12Empirical.pdf">Thompson sampling</a>,
-prescribe certain types of exploration and work interactively (i.e., they don't
-have a fixed training sample). Lastly, I'll mention that there are many
-techniques for variance reduction by importance sampling, which may apply.</p>
-<h2>Further reading</h2>
-<blockquote>
-<p>Léon Bottou, Jonas Peters, Joaquin Quiñonero-Candela, Denis X. Charles, D. Max
-Chickering, Elon Portugaly, Dipankar Ray, Patrice Simard, Ed Snelson.
-<a href="https://arxiv.org/abs/1209.2355">Counterfactual reasoning in learning systems</a>.
-JMLR 2013.</p>
-</blockquote>
-<p>The source for the majority of this post. It includes many other interesting
-ideas and goes more in depth into some of the details.</p>
-<blockquote>
-<p>Miroslav Dudík, John Langford, Lihong Li.
-<a href="https://arxiv.org/abs/1103.4601">Doubly robust policy evaluation and learning</a>.
-ICML 2011.</p>
-</blockquote>
-<p>Discussed in extensions section.</p>
-<blockquote>
-<p>Philip S. Thomas.
-<a href="http://psthomas.com/papers/Thomas2015c.pdf">Safe reinforcement learning</a>.
-PhD Thesis 2015.</p>
-</blockquote>
-<p>Covers confidence intervals for policy evaluation similar to Bottou et al., as
-well as learning algorithms for RL with safety guarantees (e.g., so we don't
-break the robot).</p>
-<blockquote>
-<p>Peshkin and Shelton.
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Learning from scarce experience</a>.
-ICML 2002.</p>
-</blockquote>
-<p>An older RL paper, which covers learning from logged data. This is one of the
-earliest papers on learning from logged data that I could find.</p>
-<blockquote>
-<p>Levine and Koltun.
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Guided policy search</a>.
-ICML 2013.</p>
-</blockquote>
-<p>Discusses clever choices for <span class="math">\(q\)</span> to better-guide learning in the RL setting.</p>
-<blockquote>
-<p>Corinna Cortes, Yishay Mansour, Mehryar Mohri.
-<a href="https://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">Learning bounds for importance weighting</a>.
-NIPS 2010.</p>
-</blockquote>
-<p>Discusses <em>generalization bounds</em> for the counterfactual objective. Includes an
-alternative weighting scheme to keep importance weights from exploding.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -419,6 +302,9 @@ alternative weighting scheme to keep importance weights from exploding.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
+      </li>
+      <li class="post">
           <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
       </li>
       <li class="post">
@@ -430,15 +316,12 @@ alternative weighting scheme to keep importance weights from exploding.</p>
       <li class="post">
           <a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
       </li>
-      <li class="post">
-          <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 

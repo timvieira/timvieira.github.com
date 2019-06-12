@@ -48,295 +48,310 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a>
+        <a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
       </h1>
     <p class="meta">
-<time datetime="2016-11-21T00:00:00-05:00" pubdate>Nov 21, 2016</time>    </p>
+<time datetime="2016-12-19T00:00:00-05:00" pubdate>Dec 19, 2016</time>    </p>
 </header>
 
-  <div class="entry-content"><p>In this post, I'll describe a neat trick for maintaining a summary quantity
-(e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
-changes to its inputs. The trick and it's implementation are inspired by the
-well-known max-heap datastructure. I'll also describe a really elegant
-application to fast sampling under an evolving categorical distribution.</p>
-<p><strong>Setup</strong>: Suppose we'd like to efficiently compute a summary quantity under
-changes to its <span class="math">\(n\)</span>-dimensional input vector <span class="math">\(\boldsymbol{w}\)</span>. The particular
-form of the quantity we're going to compute is <span class="math">\(z = \bigoplus_{i=1}^n w_i\)</span>,
-where <span class="math">\(\oplus\)</span> is some associative binary operator with identity element
-<span class="math">\(\boldsymbol{0}\)</span>.</p>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
+  <div class="entry-content"><style> .toggle-button { background-color: #555555; border: none; color: white;
+padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
+none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
+background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
+margin-bottom: 10px; } </style>
 
 <script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
+/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
 function toggle(x) { $(x).toggle(); }
 </script>
 
-<p><button class="toggle-button" onclick="toggle('#operator-mathy');">more formally...</button>
-<div id="operator-mathy" class="derivation" style="display:none"></p>
-<ul>
-<li>
-<p><span class="math">\(\boldsymbol{w} \in \boldsymbol{K}^n\)</span></p>
-</li>
-<li>
-<p><span class="math">\(\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}\)</span>.</p>
-</li>
-<li>
-<p>Associative: <span class="math">\((a \oplus b) \oplus c = a \oplus (b \oplus c)\)</span> for all <span class="math">\(a,b,c
-  \in \boldsymbol{K}\)</span>.</p>
-</li>
-<li>
-<p>Identity element: <span class="math">\(\boldsymbol{0} \in \boldsymbol{K}\)</span> such that <span class="math">\(k \oplus
-  \boldsymbol{0} = \boldsymbol{0} \oplus k = k\)</span>, for all <span class="math">\(k \in \boldsymbol{K}\)</span>.</p>
-</li>
-</ul>
-</div>
-
-<p><strong>The trick</strong>: Essentially, the trick boils down to <em>parenthesis placement</em> in
-the expression which computes <span class="math">\(z\)</span>. A freedom we assumed via the associative
-property.</p>
-<p>I'll demonstrate by example with <span class="math">\(n=8\)</span>.</p>
-<p>Linear structure: We generally compute something like <span class="math">\(z\)</span> with a simple
-loop. This looks like a right-branching binary tree when we think about the
-order of operations,</p>
+<p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
+example, reasoning about the expected reward of new policy given data collected
+from a older one.</p>
+<p>In this post, I'll discuss some basic techniques for learning from logged
+data. For the large part, this post is based on things I learned from
+<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Peshkin &amp; Shelton (2002)</a>
+and <a href="https://arxiv.org/abs/1209.2355">Bottou et al. (2013)</a> (two of all-time
+favorite papers).</p>
+<p>After reading, have a look at the
+<a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9">Jupyter notebook</a>
+accompanying this post!</p>
+<p><strong>Setup</strong> (<em>off-line off-policy optimization</em>): We're trying to optimize a
+function of the form,</p>
 <div class="math">$$
-z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
+J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
 $$</div>
-<p><br/> Heap structure: Here the parentheses form a balanced tree, which looks
-much more like a recursive implementation that computes the left and right
-halves and <span class="math">\(\oplus\)</span>s the results (divide-and-conquer style),</p>
+<p><br/> But! We only have a <em>fixed</em> sample of size <span class="math">\(m\)</span> from a data collection
+policy <span class="math">\(q\)</span>, <span class="math">\(\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.\)</span></p>
+<ul>
+<li>
+<p>Although, it's not <em>necessarily</em> the case, you can think of <span class="math">\(q = p_{\theta'}\)</span>
+  for a <em>fixed</em> value <span class="math">\(\theta'.\)</span></p>
+</li>
+<li>
+<p><span class="math">\(\mathcal{X}\)</span> is an arbitrary multivariate space, which permits a mix of
+  continuous and discrete components, with appropriate densities, <span class="math">\(p_{\theta}\)</span>
+  and <span class="math">\(q\)</span> defined over it.</p>
+</li>
+<li>
+<p><span class="math">\(r: \mathcal{X} \mapsto \mathbb{R}\)</span> is a black box that outputs a scalar
+  score.</p>
+</li>
+<li>
+<p>I've used the notation <span class="math">\(r^{(j)}\)</span> instead of <span class="math">\(r(x^{(j)})\)</span> to emphasize that we
+  can't evaluate <span class="math">\(r\)</span> at <span class="math">\(x\)</span> values other than those in the sample.</p>
+</li>
+<li>
+<p>We'll assume that <span class="math">\(q\)</span> assigns positive probability everywhere, <span class="math">\(q(x) &gt; 0\)</span> for
+  all <span class="math">\(x \in \mathcal{X}\)</span>. This means is that the data collection process must
+  be randomized and eventually sample all possible configurations. Later, I
+  discuss relaxing this assumption.</p>
+</li>
+</ul>
+<p>Each distribution is a product of one or more factors of the following types:
+<strong>policy factors</strong> (at least one), which directly depend on <span class="math">\(\theta\)</span>, and
+<strong>environment factors</strong> (possibly none), which do not depend directly on
+<span class="math">\(\theta\)</span>. Note that environment factors are <em>only</em> accessible via sampling
+(i.e., we don't know the <em>value</em> they assign to a sample). For example, a
+<em>contextual bandit problem</em>, where <span class="math">\(x\)</span> is a context-action pair, <span class="math">\(x =
+(s,a)\)</span>. Here <span class="math">\(q(x) = q(a|s) p(s)\)</span> and <span class="math">\(p_{\theta}(x) = p_{\theta}(a|s)
+p(s)\)</span>. Note that <span class="math">\(p_{\theta}\)</span> and <span class="math">\(q\)</span> share the environment factor <span class="math">\(p(s)\)</span>, the
+distribution over contexts, and only differ in the action-given-context
+factor. For now, assume that we can evaluate all environment factors; later,
+I'll discuss how we cleverly work around it.</p>
+<!--
+(We can
+even extend it to a full-blown MDP or POMDP by taking $x$ to be a sequence of
+state-action pairs, often called "trajectories".)
+-->
+
+<p><strong>The main challenge</strong> of this setting is that we don't have controlled
+experiments to learn from because <span class="math">\(q\)</span> is not (completely) in our control. This
+manifests itself as high variance ("noise") in estimating <span class="math">\(J(\theta)\)</span>. Consider
+the contextual bandit setting, we receive a context <span class="math">\(s\)</span> and execute single
+action; we never get to rollback to that precise context and try an alternative
+action (to get a paired sample #yolo) because we do not control <span class="math">\(p(s)\)</span>. This is
+an important paradigm for many 'real world' problems, e.g., predicting medical
+treatments or ad selection.</p>
+<!--
+This is the crucial difference that makes counterfactual learning
+more difficult than (fully) supervised learning.
+-->
+
+<p><strong>Estimating <span class="math">\(J(\theta)\)</span></strong> [V1]: We obtain an unbiased estimator of <span class="math">\(J(\theta)\)</span>
+with
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>,</p>
 <div class="math">$$
-z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
+J(\theta)
+\approx \hat{J}_{\!\text{IS}}(\theta)
+= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
+\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
 $$</div>
-<p><br/>
-The benefit of the heap structure is that there are <span class="math">\(\mathcal{O}(\log n)\)</span>
-intermediate quantities that depend on any input, whereas the linear structure
-has <span class="math">\(\mathcal{O}(n)\)</span>. The intermediate quantities correspond to the values of each of the
-parenthesized expressions.</p>
-<p>Since fewer intermediate quantities depend on a given input, fewer intermediates
-need to be adjusted upon a change to the input. Therefore, we get faster
-algorithms for <em>maintaining</em> the output quantity <span class="math">\(z\)</span> as the inputs change.</p>
-<p><strong>Heap datastructure</strong> (aka
-<a href="https://en.wikipedia.org/wiki/Fenwick_tree">binary index tree or Fenwick tree</a>):
-We're going to store the values of the intermediates quantities and inputs in a
-heap datastructure, which is a <em>complete</em> binary tree. In our case, the tree has
-depth <span class="math">\(1 + \lceil \log_2 n \rceil\)</span>, with the values of <span class="math">\(\boldsymbol{w}\)</span> at it's
-leaves (aligned left) and padding with <span class="math">\(\boldsymbol{0}\)</span> for remaining
-leaves. Thus, the array's length is <span class="math">\(&lt; 4 n\)</span>.</p>
-<p>This structure makes our implementation really nice and efficient because we
-don't need pointers to find the parent or children of a node (i.e., no need to
-wrap elements into a "node" class like in a general tree data structure). So, we
-can pack everything into an array, which means our implementation has great
-memory/cache locality and low storage overhead.</p>
-<p>Traversing the tree is pretty simple: Let <span class="math">\(d\)</span> be the number of internal nodes,
-nodes <span class="math">\(1 \le i \le d\)</span> are internal. For node <span class="math">\(i\)</span>, left child <span class="math">\(\rightarrow {2
-\cdot i},\)</span> right child <span class="math">\(\rightarrow {2 \cdot i + 1},\)</span> parent <span class="math">\(\rightarrow
-\lfloor i / 2 \rfloor.\)</span> (Note that these operations assume the array's indices
-start at <span class="math">\(1\)</span>. We generally fake this by adding a dummy node at position <span class="math">\(0\)</span>,
-which makes implementation simpler.)</p>
-<p><strong>Initializing the heap</strong>: Here's code that initializes the heap structure we
-  just described.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sumheap</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
-    <span class="s2">&quot;Create sumheap from weights `w` in O(n) time.&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>  <span class="c1"># number of intermediates</span>
-    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>                <span class="c1"># intermediates + leaves</span>
-    <span class="n">S</span><span class="p">[</span><span class="n">d</span><span class="p">:</span><span class="n">d</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>                     <span class="c1"># store `w` at leaves.</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">)):</span>
-        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">S</span>
-</pre></div>
+<p><br/> This estimator is remarkable: it uses importance sampling as a function
+approximator! We have an <em>unbiased</em> estimate of <span class="math">\(J(\theta)\)</span> for any value of
+<span class="math">\(\theta\)</span> that we like. <em>The catch</em> is that we have to pick <span class="math">\(\theta\)</span> a priori,
+i.e., with no knowledge of the sample.</p>
+<!--
+We also require that the usual 'support
+conditions' for importance sampling conditions ($p_{\theta}(x)>0 \Rightarrow
+q(x)>0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
+-->
 
+<p>After we've collected a (large) sample it's possible to optimize
+<span class="math">\(\hat{J}_{\!\text{IS}}\)</span> using any optimization algorithm (e.g., L-BFGS). Of
+course, we risk overfitting to the sample if we evaluate
+<span class="math">\(\hat{J}_{\!\text{IS}}\)</span>. Actually, it's a bit worse: this objective tends to
+favor regions of <span class="math">\(\theta\)</span>, which are not well represented in the sample because
+the importance sampling estimator has high variance in these regions resulting
+from large importance weights (when <span class="math">\(q(x)\)</span> is small and <span class="math">\(p_{\theta}(x)\)</span> is
+large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(\hat{J}_{\!\text{IS}}\)</span> regardless
+of whether <span class="math">\(r(x)\)</span> is high!). Thus, we want some type of "regularization" to keep
+the optimizer in regions which are sufficiently well-represented by the sample.</p>
+<!--
+**Visual example**: We can visualize this phenomena in a simple example. Let $q
+= \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
+otherwise},$ and $p_\theta = \mathcal{N}(\theta, \sigma=1)$.  This example is
+nice because it let's us plot $x$ and $\theta$ in the same space. This is
+generally not the case, because $\mathcal{X}$ may have no connection to $\theta$
+space, e.g., $\mathcal{X}$ may be discrete.
 
-<p><strong>Updating <span class="math">\(w_k\)</span></strong> boils down to fixing intermediate sums that (transitively)
-  depend on <span class="math">\(w_k.\)</span> I won't go into all of the details here, instead I'll give
-  code (below). I'd like to quickly point out that the term "parents" is not
-  great for our purposes because they are actually the <em>dependents</em>: when an
-  input changes the value the parents, grand parents, great grand parents, etc,
-  become stale and need to be recomputed bottom up (from the leaves). The code
-  below implements the update method for changing the value of <span class="math">\(w_k\)</span> and runs in
-  <span class="math">\(\mathcal{O}(\log n)\)</span> time.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-    <span class="s2">&quot;Update w[k] = v` in time O(log n).&quot;</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">d</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="n">k</span>
-    <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-    <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>   <span class="c1"># fix parents in the tree.</span>
-        <span class="n">i</span> <span class="o">//=</span> <span class="mi">2</span>
-        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-</pre></div>
+**TODO** add plot
+-->
 
+<p><strong>Better surrogate</strong> [V2]: There are many ways to improve the variance of the
+estimator and <em>confidently</em> obtain improvements to the system. One of my
+favorites is Bottou et al.'s lower bound on <span class="math">\(J(\theta)\)</span>, which we get by
+clipping importance weights, replace <span class="math">\(w^{(j)}_{\theta}\)</span> with <span class="math">\(\min(R,
+w^{(j)}_{\theta})\)</span>.</p>
+<p><strong>Confidence intervals</strong> [V3]: We can augment the V2 lower bound with confidence
+intervals derived from the empirical Bernstein bound (EBB). We'll require that
+<span class="math">\(r\)</span> is bounded and that we know its max/min values. The EBB <em>penalizes</em>
+hypotheses (values of <span class="math">\(\theta\)</span>) which have higher sample variance. (Note: a
+Hoeffding bound wouldn't change the <em>shape</em> of the objective, but EBB does
+thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
+introduces an additional "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
+al. recommend maximizing the lower bound as it provides safer improvements. See
+the original paper for the derivation.</p>
+<!--
+An important benefit of having upper *and* lower is that the bounds tell
+us whether or not we should collect more data
+-->
 
-<h2>Remarks</h2>
+<p>Both V2 and V3 are <em>biased</em> (as they are lower bounds), but we can mitigate the
+bias by <em>tuning</em> the hyperparameter <span class="math">\(R\)</span> on a heldout sample (we can even tune
+<span class="math">\(\delta\)</span>, if desired). Additionally, V2 and V3 are 'valid' when <span class="math">\(q\)</span> has limited
+support since they prevent the importance weights from exploding (of course, the
+bias can be arbitrarily bad, but probably unavoidable given the
+learning-from-only-logged data setup).</p>
+<h2>Extensions</h2>
+<!--
+**Be warned**: This may be considered an idealized setting. Much of the research
+in counterfactual and causal reasoning targets (often subtle) deviations from
+these assumptions (and some different questions, of course). Some extensions and
+discussion appear towards the end of the post.
+-->
+
+<p><strong>Unknown environment factors</strong>: Consider the contextual bandit setting
+(mentioned above). Here <span class="math">\(p\)</span> and <span class="math">\(q\)</span> share an <em>unknown</em> environment factor: the
+distribution of contexts. Luckily, we do not need to know the value of this
+factor in order to apply any of our estimators because they are all based on
+likelihood <em>ratios</em>, thus the shared unknown factors cancel out!  Some specific
+examples are given below. Of course, these factors do influence the estimators
+because they are crucial in <em>sampling</em>, they just aren't necessary in
+<em>evaluation</em>.</p>
 <ul>
 <li>
-<p><strong>Numerical stability</strong>: If the operations are noisy (e.g., floating point
-   operator), then the heap version may be better behaved. For example, if
-   operations have an independent, additive noise rate <span class="math">\(\varepsilon\)</span> then noise
-   of <span class="math">\(z_{\text{heap}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot \log n)\)</span>, whereas
-   <span class="math">\(z_{\text{linear}}\)</span> is <span class="math">\(\mathcal{O}(\varepsilon \cdot n)\)</span>. (Without further
-   assumptions about the underlying operator, I don't believe you can do better
-   than that.)</p>
+<p>In contextual bandit example, <span class="math">\(x\)</span> is a state-action pair, <span class="math">\(w_{\theta}(x) =
+    \frac{p_{\theta}(x)}{q(x)} = \frac{ p_{\theta}(s,a) }{ q(s,a) } =
+    \frac{p_{\theta}(a|s) p(s)}{q(a|s) p(s)} = \frac{p_{\theta}(a|s) }{ q(a|s)
+    }\)</span>.</p>
 </li>
 <li>
-<p><strong>Relationship to max-heap</strong>: In the case of a max or min heap, we can avoid
-   allocating extra space for intermediate quantities because all intermediates
-   values are equal to exactly one element of <span class="math">\(\boldsymbol{w}\)</span>.</p>
-</li>
-<li>
-<p><strong>Change propagation</strong>: The general idea of <em>adjusting</em> cached intermediate
-   quantities is a neat idea. In fact, we encounter it each time we type
-   <code>make</code> at the command line! The general technique goes by many
-   names&mdash;including change propagation, incremental maintenance, and
-   functional reactive programming&mdash;and applies to basically <em>any</em>
-   side-effect-free computation. However, it's most effective when the
-   dependency structure of the computation is sparse and requires little
-   overhead to find and refresh stale values. In our example of computing <span class="math">\(z\)</span>,
-   these considerations manifest themselves as the heap vs linear structures and
-   our fast array implementation instead of a generic tree datastructure.</p>
+<p>In a Markov decision process, <span class="math">\(x\)</span> is a sequence of state-action pairs,
+    <span class="math">\(w_{\theta}(x) = \frac{p_{\theta}(x)}{q(x)} = \frac{ p(s_0) \prod_{t=0}^T
+    p(s_{t+1}|s_t,a_t) p_\theta(a_t|s_t) } { p(s_0) \prod_{t=0}^T
+    p(s_{t+1}|s_t,a_t) q(a_t|s_t) } = \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
+    {\prod_{t=0}^T q(a_t|s_t)}.\)</span></p>
 </li>
 </ul>
-<h2>Generalizations</h2>
+<p><strong>Variance reduction</strong>: These estimators can all be improved with variance
+reduction techniques. Probably the most effective technique is using
+<a href="https://en.wikipedia.org/wiki/Control_variates">control variates</a> (of which
+baseline functions are a special case). These are random variables correlated
+with <span class="math">\(r(x)\)</span> for which we know their expectations (or at least they are estimated
+separately). A great example is how ad clicks depend strongly on time-of-day
+(fewer people are online late at night so we get fewer clicks), thus the
+time-of-day covariate explains a large part of the variation in <span class="math">\(r(x)\)</span>.</p>
+<p><strong>Estimation instead of optimization</strong>: You can use this general setup for
+estimation instead of optimization, in which case it's fine to let <span class="math">\(r\)</span> have
+real-valued multivariate output. The confidence intervals are probably useful in
+that setting too.</p>
+<p><strong>Unknown <span class="math">\(q\)</span></strong>: Often <span class="math">\(q\)</span> is an existing complex system, which does not record
+its probabilities. It is possible to use regression to estimate <span class="math">\(q\)</span> from the
+samples, which is called the <strong>propensity score</strong> (PS). PS attempts to account
+for <strong>confounding variables</strong>, which are hidden causes that control variation in
+the data. Failing to account for confounding variables may lead to
+<a href="https://en.wikipedia.org/wiki/Simpson's_paradox">incorrect conclusions</a>. Unfortunately,
+PS results in a biased estimator because we're using a 'ratio of expectations'
+(we'll divide by the PS estimate) instead of an 'expectation of ratios'. PS is
+only statistically consistent in the (unlikely) event that the density estimate
+is correctly specified (i.e., we can eventually get <span class="math">\(q\)</span> correct). In the unknown
+<span class="math">\(q\)</span> setting, it's often better to use the <strong>doubly-robust estimator</strong> (DR) which
+combines <em>two</em> estimators: a density estimator for <span class="math">\(q\)</span> and a function
+approximation for <span class="math">\(r\)</span>. A great explanation for the bandit case is in
+<a href="https://arxiv.org/abs/1103.4601">Dudík et al. (2011)</a>. The DR estimator is also
+biased, but it has a better bias-variance tradeoff than PS.</p>
+<p><strong>What if <span class="math">\(q\)</span> doesn't have support everywhere?</strong> This is an especially important
+setting because it is often the case that data collection policies abide by some
+<strong>safety regulations</strong>, which prevent known bad configurations. In many
+situations, evaluating <span class="math">\(r(x)\)</span> corresponds to executing an action <span class="math">\(x\)</span> in the real
+world so terrible outcomes could occur, such as, breaking a system, giving a
+patient a bad treatment, or losing money. V1 is ok to use as long as we satisfy
+the importance sampling support conditions, which might mean rejecting certain
+values for <span class="math">\(\theta\)</span> (might be non-trivial to enforce) and consequently finding a
+less-optimal policy. V2 and V3 are ok to use without an explicit constraint, but
+additional care may be needed to ensure specific safety constraints are
+satisfied by the learned policy.</p>
+<p><strong>What if <span class="math">\(q\)</span> is deterministic?</strong> This is related to the point above. This is a
+hard problem. Essentially, this trying to learn without any exploration /
+experimentation! In general, we need exploration to learn. Randomization isn't
+the only way to perform exploration, there are many systematic types of
+experimentation.</p>
 <ul>
 <li>
-<p>No zero? No problem. We don't <em>actually</em> require a zero element. So, it's
-   fair to augment <span class="math">\(\boldsymbol{K} \cup \{ \textsf{null} \}\)</span> where
-   <span class="math">\(\textsf{null}\)</span> is distinguished value (i.e., <span class="math">\(\textsf{null} \notin
-   \boldsymbol{K}\)</span>) that <em>acts</em> just like a zero after we overload <span class="math">\(\oplus\)</span> to
-   satisfy the definition of a zero (e.g., by adding an if-statement).</p>
+<p>There are some cases of systematic experimentation that are ok. For example,
+    enumerating all elements of <span class="math">\(\mathcal{X}\)</span> (almost certainly
+    infeasible). Another example is a contextual bandit where <span class="math">\(q\)</span> assigns
+    actions to contexts deterministically via a hash function (this setting is
+    fine because <span class="math">\(q\)</span> is essentially a uniform distribution over actions, which
+    is independent of the state). In other special cases, we <em>may</em> be able to
+    characterize systematic exploration as
+    <a href="https://en.wikipedia.org/wiki/Stratified_sampling">stratified sampling</a>.</p>
 </li>
 <li>
-<p>Generalization to an arbitrary maps instead of fixed vectors is possible with
-   a "locator" map, which a bijective map from elements to indices in a dense
-   array.</p>
-</li>
-<li>
-<p>Support for growing and shrinking: We support <strong>growing</strong> by maintaining an
-   underlying array that is always slightly larger than we need&mdash;which
-   we're <em>already</em> doing in the heap datastructure. Doubling the size of the
-   underlying array (i.e., rounding up to the next power of two) has the added
-   benefit of allowing us to grow <span class="math">\(\boldsymbol{w}\)</span> at no asymptotic cost!  This
-   is because the resize operation, which requires an <span class="math">\(\mathcal{O}(n)\)</span> time to
-   allocate a new array and copying old values, happens so infrequently that
-   they can be completely amortized. We get of effect of <strong>shrinking</strong> by
-   replacing the old value with <span class="math">\(\textsf{null}\)</span> (or <span class="math">\(\boldsymbol{0}\)</span>). We can
-   shrink the underlying array when the fraction of nonzeros dips below
-   <span class="math">\(25\%\)</span>. This prevents "thrashing" between shrinking and growing.</p>
+<p>A generic solution might be to apply the doubly-robust estimator, which
+    "smooths out" deterministic components (by pretending they are random) and
+    accounting for confounds (by explicitly modeling them in the propensity
+    score).</p>
 </li>
 </ul>
-<h2>Application</h2>
-<p><strong>Sampling from an evolving distribution</strong>: Suppose that <span class="math">\(\boldsymbol{w}\)</span>
-corresponds to a categorical distributions over <span class="math">\(\{1, \ldots, n\}\)</span> and that we'd
-like to sample elements from in proportion to this (unnormalized) distribution.</p>
-<p>Other methods like the <a href="http://www.keithschwarz.com/darts-dice-coins/">alias</a> or
-inverse CDF methods are efficient after a somewhat costly initialization
-step. But! they are not as efficient as the heap sampler when the distribution
-is being updated. (I'm not sure about whether variants of alias that support
-updates exist.)</p>
-<p><center></p>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Sample</th>
-<th>Update</th>
-<th>Init</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>alias</td>
-<td>O(1)</td>
-<td>O(n)?</td>
-<td>O(n)</td>
-</tr>
-<tr>
-<td>i-CDF</td>
-<td>O(log n)</td>
-<td>O(n)</td>
-<td>O(n)</td>
-</tr>
-<tr>
-<td>heap</td>
-<td>O(log n)</td>
-<td>O(log n)</td>
-<td>O(n)</td>
-</tr>
-</tbody>
-</table>
-<p></center></p>
-<p>Use cases include</p>
-<ul>
-<li>
-<p><a href="https://en.wikipedia.org/wiki/Gibbs_sampling">Gibbs sampling</a>, where
-  distributions are constantly modified and sampled from (changes may not be
-  sparse so YMMV). The heap sampler is used in
-  <a href="https://arxiv.org/abs/1412.4986">this paper</a>.</p>
-</li>
-<li>
-<p><a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/">EXP3</a>
-  (<a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">mutli-armed bandit algorithm</a>)
-  is an excellent example of an algorithm that samples and modifies a single
-  weight in the distribution.</p>
-</li>
-<li>
-<p><em>Stochastic priority queues</em> where we sample proportional to priority and the
-  weights on items in the queue may change, elements are possibly removed after
-  they are sampled (i.e., sampling without replacement), and elements are added.</p>
-</li>
-</ul>
-<p>Again, I won't spell out all of the details of these algorithms. Instead, I'll
-just give the code.</p>
-<p><strong>Inverse CDF sampling</strong></p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
-    <span class="s2">&quot;Ordinary sampling method, O(n) init, O(log n) per sample.&quot;</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>            <span class="c1"># build cdf, O(n)</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>     <span class="c1"># random probe, p ~ Uniform(0, z)</span>
-    <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>  <span class="c1"># binary search, O(log n)</span>
-</pre></div>
-
-
-<p><strong>Heap sampling</strong> is essentially the same, except the cdf is stored as heap,
-which is perfect for binary search!</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">hsample</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
-    <span class="s2">&quot;Sample from sumheap, O(log n) per sample.&quot;</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span>     <span class="c1"># number of internal nodes.</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">S</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># random probe, p ~ Uniform(0, z)</span>
-    <span class="c1"># Use binary search to find the index of the largest CDF (represented as a</span>
-    <span class="c1"># heap) value that is less than a random probe.</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
-        <span class="c1"># Determine if the value is in the left or right subtree.</span>
-        <span class="n">i</span> <span class="o">*=</span> <span class="mi">2</span>         <span class="c1"># Point at left child</span>
-        <span class="n">left</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    <span class="c1"># Probability mass under left subtree.</span>
-        <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="n">left</span><span class="p">:</span>   <span class="c1"># Value is in right subtree.</span>
-            <span class="n">p</span> <span class="o">-=</span> <span class="n">left</span>  <span class="c1"># Subtract mass from left subtree</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>     <span class="c1"># Point at right child</span>
-    <span class="k">return</span> <span class="n">i</span> <span class="o">-</span> <span class="n">d</span>
-</pre></div>
-
-
-<p><strong>Code</strong>: Complete code and test cases for heap sampling are available in this
-<a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515">gist</a>.</p>
+<p><strong>What if we control data collection (<span class="math">\(q\)</span>)?</strong> This is an interesting
+setting. Essentially, it asks "how do we explore/experiment optimally (and
+safely)?". In general, this is an open question and depends on many
+considerations, such as, how much control, exploration cost (safety constraints)
+and prior knowledge (of <span class="math">\(r\)</span> and unknown factors in the environment). I've seen
+some papers cleverly design <span class="math">\(q\)</span>. The first that comes to mind is
+<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Levine &amp; Koltun (2013)</a>. Another
+setting is <em>online</em> contextual bandits, in which algorithms like
+<a href="http://jmlr.org/proceedings/papers/v15/beygelzimer11a/beygelzimer11a.pdf">EXP4</a>
+and
+<a href="http://www.research.rutgers.edu/~lihong/pub/Chapelle12Empirical.pdf">Thompson sampling</a>,
+prescribe certain types of exploration and work interactively (i.e., they don't
+have a fixed training sample). Lastly, I'll mention that there are many
+techniques for variance reduction by importance sampling, which may apply.</p>
+<h2>Further reading</h2>
+<blockquote>
+<p>Léon Bottou, Jonas Peters, Joaquin Quiñonero-Candela, Denis X. Charles, D. Max
+Chickering, Elon Portugaly, Dipankar Ray, Patrice Simard, Ed Snelson.
+<a href="https://arxiv.org/abs/1209.2355">Counterfactual reasoning in learning systems</a>.
+JMLR 2013.</p>
+</blockquote>
+<p>The source for the majority of this post. It includes many other interesting
+ideas and goes more in depth into some of the details.</p>
+<blockquote>
+<p>Miroslav Dudík, John Langford, Lihong Li.
+<a href="https://arxiv.org/abs/1103.4601">Doubly robust policy evaluation and learning</a>.
+ICML 2011.</p>
+</blockquote>
+<p>Discussed in extensions section.</p>
+<blockquote>
+<p>Philip S. Thomas.
+<a href="http://psthomas.com/papers/Thomas2015c.pdf">Safe reinforcement learning</a>.
+PhD Thesis 2015.</p>
+</blockquote>
+<p>Covers confidence intervals for policy evaluation similar to Bottou et al., as
+well as learning algorithms for RL with safety guarantees (e.g., so we don't
+break the robot).</p>
+<blockquote>
+<p>Peshkin and Shelton.
+<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Learning from scarce experience</a>.
+ICML 2002.</p>
+</blockquote>
+<p>An older RL paper, which covers learning from logged data. This is one of the
+earliest papers on learning from logged data that I could find.</p>
+<blockquote>
+<p>Levine and Koltun.
+<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Guided policy search</a>.
+ICML 2013.</p>
+</blockquote>
+<p>Discusses clever choices for <span class="math">\(q\)</span> to better-guide learning in the RL setting.</p>
+<blockquote>
+<p>Corinna Cortes, Yishay Mansour, Mehryar Mohri.
+<a href="https://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">Learning bounds for importance weighting</a>.
+NIPS 2010.</p>
+</blockquote>
+<p>Discusses <em>generalization bounds</em> for the counterfactual objective. Includes an
+alternative weighting scheme to keep importance weights from exploding.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -404,6 +419,9 @@ which is perfect for binary search!</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
+      </li>
+      <li class="post">
           <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
       </li>
       <li class="post">
@@ -415,15 +433,12 @@ which is perfect for binary search!</p>
       <li class="post">
           <a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
       </li>
-      <li class="post">
-          <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 

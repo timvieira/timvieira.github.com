@@ -48,89 +48,189 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="./post/2014/08/07/complex-step-derivative/">Complex-step derivative</a>
+        <a href="./post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
       </h1>
     <p class="meta">
-<time datetime="2014-08-07T00:00:00-04:00" pubdate>Aug 07, 2014</time>    </p>
+<time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time>    </p>
 </header>
 
-  <div class="entry-content"><p>Estimate derivatives by simply passing in a complex number to your function!</p>
-<div class="math">$$
-f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$</div>
-<p><br/>Recall, the centered-difference approximation is a fairly accurate method for
-approximating derivatives of a univariate function <span class="math">\(f\)</span>, which only requires two
-function evaluations. A similar derivation, based on the Taylor series expansion
-with a complex perturbation, gives us a similarly-accurate approximation with a
-single (complex) function evaluation instead of two (real-valued) function
-evaluations. Note: <span class="math">\(f\)</span> must support complex inputs (in frameworks, such as numpy
-or matlab, this often requires no modification to source code).</p>
-<p>This post is based on
-<a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf">Martins+'03</a>.</p>
-<p><strong>Derivation</strong>: Start with the Taylor series approximation:</p>
-<div class="math">$$
-f(x + i \cdot \varepsilon) =
-  \frac{i^0 \varepsilon^0}{0!} f(x)
-+ \frac{i^1 \varepsilon^1}{1!} f'(x)
-+ \frac{i^2 \varepsilon^2}{2!} f''(x)
-+ \frac{i^3 \varepsilon^3}{3!} f'''(x)
-+ \cdots
-$$</div>
-<p><br/>Take the imaginary part of both sides and solve for <span class="math">\(f'(x)\)</span>. Note: the <span class="math">\(f\)</span> and
-<span class="math">\(f''\)</span> term disappear because <span class="math">\(i^0\)</span> and <span class="math">\(i^2\)</span> are real-valued.</p>
-<div class="math">$$
-f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
-$$</div>
-<p><br/>As usual, using a small <span class="math">\(\varepsilon\)</span> let's us throw out higher-order
-terms. And, we arrive at the following approximation:</p>
-<div class="math">$$
-f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$</div>
-<p><br/>If instead, we take the real part and solve for <span class="math">\(f(x)\)</span>, we get an approximation
-to the function's value at <span class="math">\(x\)</span>:</p>
-<div class="math">$$
-f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
-$$</div>
-<p><br/>In other words, a single (complex) function evaluations computes both the
-function's value and the derivative.</p>
-<p><strong>Code</strong>:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Higher-order function takes univariate function which computes a value and</span>
-<span class="sd">    returns a function which returns value-derivative pair approximation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="nb">complex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>         <span class="c1"># convert input to complex number</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">imag</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span>  <span class="c1"># return function value and gradient</span>
-    <span class="k">return</span> <span class="n">f1</span>
-</pre></div>
-
-
-<p>A simple test:</p>
-<div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">10</span>  <span class="c1"># function</span>
-<span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="c1"># gradient</span>
-<span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="k">print</span> <span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-<span class="k">print</span> <span class="n">complex_step</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>Other comments</strong></p>
+  <div class="entry-content"><p>It's well-known that
+<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
+is not symmetric, but which direction is right for fitting your model?</p>
+<h4>Which KL is which? A cheat sheet</h4>
+<p>If we're fitting <span class="math">\(q_\theta\)</span> to <span class="math">\(p\)</span> using</p>
+<p><span class="math">\(\textbf{KL}(p || q_\theta)\)</span></p>
 <ul>
 <li>
-<p>Using the complex-step method to estimate the gradients of multivariate
-  functions requires independent approximations for each dimension of the
-  input.</p>
+<p>mean-seeking, <em>inclusive</em> (more principled because approximates the <em>full</em> distribution)</p>
 </li>
 <li>
-<p>Although the complex-step approximation only requires a single function
-  evaluation, it's unlikely faster than performing two function evaluations
-  because operations on complex numbers are generally much slower than on floats
-  or doubles.</p>
+<p>requires normalization wrt <span class="math">\(p\)</span> (i.e., often <em>not</em> computationally convenient)</p>
 </li>
 </ul>
-<p><strong>Code</strong>: Check out the
-<a href="https://gist.github.com/timvieira/3d3db3e5e78e17cdd103">gist</a> for this post.</p>
+<p><span class="math">\(\textbf{KL}(q_\theta || p)\)</span></p>
+<ul>
+<li>
+<p>mode-seeking, <em>exclusive</em></p>
+</li>
+<li>
+<p>no normalization wrt <span class="math">\(p\)</span> (i.e., computationally convenient)</p>
+</li>
+</ul>
+<p><strong>Mnemonic</strong>: "When the truth comes first, you get the whole truth" (h/t
+<a href="https://www.umiacs.umd.edu/~resnik/">Philip Resnik</a>). Here "whole truth"
+corresponds to the <em>inclusiveness</em> of <span class="math">\(\textbf{KL}(p || q)\)</span>.</p>
+<p>As far as remembering the equation, I pretend that "<span class="math">\(||\)</span>" is a division symbol,
+which happens to correspond nicely to a division symbol in the equation (I'm not
+sure it's intentional).</p>
+<h2>Inclusive vs. exclusive divergence</h2>
+<div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
+
+<img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" />
+Figure by <a href="http://www.johnwinn.org/">John Winn</a>.
+</div>
+
+<p><br/></p>
+<h2>Computational perspecive</h2>
+<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.</p>
+<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
+where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
+<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</div>
+<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
+</p>
+<div class="math">\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</div>
+<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
+we're optimizing.</p>
+<p>This leaves us with the following optimization problem:
+</p>
+<div class="math">\begin{align*}
+&amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
+&amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</div>
+<p>Let's work out the gradient
+</p>
+<div class="math">\begin{align*}
+&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</div>
+<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
+<p>This direction is convenient because we don't need to normalize
+<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
+the "hard" direction, which (as we'll see shortly) is convex.</p>
+<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
+<div class="math">\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</div>
+<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
+</p>
+<div class="math">\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
+&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
+\end{align*}</div>
+<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
+<div class="math">\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</div>
+<p>Why do we say this is hard to compute? Well, for most interesting models, we
+can't compute <span class="math">\(Z_p = \sum_d \bar{p}(d)\)</span>. This is because <span class="math">\(p\)</span> is presumed to be a
+complex model (e.g., the real world, an intricate factor graph, a complicated
+Bayesian posterior). If we can't compute <span class="math">\(Z_p\)</span>, it's highly unlikely that we can
+compute another (nontrivial) integral under <span class="math">\(\bar{p}\)</span>, e.g., <span class="math">\(\sum_d \bar{p}(d)
+\log \bar{q}(d)\)</span>.</p>
+<p>Nonetheless, optimizing KL in this direction is still useful. Examples include:
+expectation propagation, variational decoding, and maximum likelihood
+estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need samples from it, which can be just as hard to get as computing a
+normalization constant.</p>
+<p>Optimization problem is <em>convex</em> when <span class="math">\(q_\theta\)</span> is an exponential
+family&mdash;i.e., for any <span class="math">\(p\)</span> the <em>optimization</em> problem is "easy." You can
+think of maximum likelihood estimation (MLE) as a method which minimizes KL
+divergence based on samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data
+distribution! The first term in the gradient is based on a sample instead of an
+exact estimate (often called "observed feature counts"). The downside, of
+course, is that computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be
+tractable or, for MLE, require tons of samples.</p>
+<h2>Remarks</h2>
+<ul>
+<li>
+<p>In many ways, optimizing exclusive KL makes no sense at all! Except for the
+  fact that it's computable when inclusive KL is often not. Exclusive KL is
+  generally regarded as "an approximation" to inclusive KL. This bias in this
+  approximation can be quite large.</p>
+</li>
+<li>
+<p>Inclusive vs. exclusive is an important distinction: Inclusive divergences
+  require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span> (i.e., no "false negatives"), whereas
+  exclusive divergences favor a single mode (i.e., only a good fit around a that
+  mode).</p>
+</li>
+<li>
+<p>When <span class="math">\(q\)</span> is an exponential family, <span class="math">\(\textbf{KL}(p || q_\theta)\)</span> will be convex
+  in <span class="math">\(\theta\)</span>, no matter how complicated <span class="math">\(p\)</span> is, whereas <span class="math">\(\textbf{KL}(q_\theta
+  || p)\)</span> is generally nonconvex (e.g., if <span class="math">\(p\)</span> is multimodal).</p>
+</li>
+<li>
+<p>Computing the value of either KL divergence requires normalization. However,
+  in the "easy" (exclusive) direction, we can optimize KL without computing
+  <span class="math">\(Z_p\)</span> (as it results in only an additive constant difference).</p>
+</li>
+<li>
+<p>Both directions of KL are special cases of
+  <a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"><span class="math">\(\alpha\)</span>-divergence</a>. For a
+  unified account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
+</li>
+</ul>
+<h3>Acknowledgments</h3>
+<p>I'd like to thank the following people:</p>
+<ul>
+<li>
+<p><a href="https://twitter.com/_shrdlu_">Ryan Cotterell</a> for an email exchange which
+  spawned this article.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/adveisner">Jason Eisner</a> for teaching me all this stuff.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/florian_shkurti">Florian Shkurti</a> for a useful email
+  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
+  compute/optimize.</p>
+</li>
+<li>
+<p><a href="https://twitter.com/sjmielke">Sebastian Mielke</a> for the suggesting the
+  "inclusive vs. exclusive" figure.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -198,6 +298,9 @@ function's value and the derivative.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="./post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
+      </li>
+      <li class="post">
           <a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
       </li>
       <li class="post">
@@ -209,15 +312,12 @@ function's value and the derivative.</p>
       <li class="post">
           <a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a>
       </li>
-      <li class="post">
-          <a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
+    <a href="./tag/sampling.html">sampling</a>,    <a href="./tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="./tag/gumbel.html">Gumbel</a>,    <a href="./tag/optimization.html">optimization</a>,    <a href="./tag/rl.html">rl</a>,    <a href="./tag/machine-learning.html">machine-learning</a>,    <a href="./tag/notebook.html">notebook</a>,    <a href="./tag/calculus.html">calculus</a>,    <a href="./tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="./tag/statistics.html">statistics</a>,    <a href="./tag/testing.html">testing</a>,    <a href="./tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="./tag/importance-sampling.html">importance-sampling</a>,    <a href="./tag/datastructures.html">datastructures</a>,    <a href="./tag/algorithms.html">algorithms</a>,    <a href="./tag/rant.html">rant</a>,    <a href="./tag/decision-making.html">decision-making</a>,    <a href="./tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="./tag/misc.html">misc</a>,    <a href="./tag/numerical.html">numerical</a>,    <a href="./tag/crf.html">crf</a>,    <a href="./tag/deep-learning.html">deep-learning</a>,    <a href="./tag/structured-prediction.html">structured-prediction</a>,    <a href="./tag/visualization.html">visualization</a>  </section>
 
 
 
