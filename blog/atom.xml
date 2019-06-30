@@ -321,7 +321,7 @@ $$&lt;/div&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="sampling"></category><category term="reservoir-sampling"></category><category term="Gumbel"></category></entry><entry><title>The likelihood-ratio gradient</title><link href="http://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"></link><published>2019-04-20T00:00:00-04:00</published><updated>2019-04-20T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-04-20:/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: We're trying to optimize a function of the form&lt;/p&gt;
+&lt;/script&gt;</content><category term="sampling"></category><category term="reservoir-sampling"></category><category term="Gumbel"></category><category term="sampling-without-replacement"></category></entry><entry><title>The likelihood-ratio gradient</title><link href="http://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"></link><published>2019-04-20T00:00:00-04:00</published><updated>2019-04-20T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-04-20:/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: We're trying to optimize a function of the form&lt;/p&gt;
 &lt;div class="math"&gt;$$
 J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
 $$&lt;/div&gt;
@@ -6279,7 +6279,7 @@ differentiation that I presented in this article. The code is available in this
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category><category term="automatic-differentiation"></category></entry><entry><title>Estimating means in a finite universe</title><link href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><updated>2017-07-03T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><summary type="html">&lt;style&gt;
+&lt;/script&gt;</content><category term="calculus"></category><category term="automatic-differentiation"></category><category term="implicit-function-theorem"></category><category term="Lagrange-multipliers"></category></entry><entry><title>Estimating means in a finite universe</title><link href="http://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><updated>2017-07-03T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><summary type="html">&lt;style&gt;
 .toggle-button {
     background-color: #555555;
     border: none;
@@ -6903,7 +6903,7 @@ tagged with &lt;a href="http://timvieira.github.io/blog/tag/sampling.html"&gt;sa
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="sampling"></category><category term="statistics"></category><category term="reservoir-sampling"></category></entry><entry><title>How to test gradient implementations</title><link href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"></link><published>2017-04-21T00:00:00-04:00</published><updated>2017-04-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-04-21:/blog/post/2017/04/21/how-to-test-gradient-implementations/</id><summary type="html">&lt;!--
+&lt;/script&gt;</content><category term="sampling"></category><category term="statistics"></category><category term="reservoir-sampling"></category><category term="sampling-without-replacement"></category></entry><entry><title>How to test gradient implementations</title><link href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"></link><published>2017-04-21T00:00:00-04:00</published><updated>2017-04-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-04-21:/blog/post/2017/04/21/how-to-test-gradient-implementations/</id><summary type="html">&lt;!--
 **Who should read this?** Nowadays, you're probably just using automatic
 differentiation to compute the gradient of whatever function you're using. If
 that's you and you trust your software package wholeheartedly, then you probably
@@ -8751,7 +8751,7 @@ which is perfect for binary search!&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="sampling"></category><category term="datastructures"></category></entry><entry><title>Reversing a sequence with sublinear space</title><link href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/" rel="alternate"></link><published>2016-10-01T00:00:00-04:00</published><updated>2016-10-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-10-01:/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</id><summary type="html">&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+&lt;/script&gt;</content><category term="sampling"></category><category term="datastructures"></category><category term="incremental-computation"></category></entry><entry><title>Reversing a sequence with sublinear space</title><link href="http://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/" rel="alternate"></link><published>2016-10-01T00:00:00-04:00</published><updated>2016-10-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-10-01:/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</id><summary type="html">&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
 s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
 &lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
 sequence efficiently as we traverse it backwards. You can think of this as
@@ -9205,7 +9205,7 @@ been used in a number of place, including&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="algorithms"></category></entry><entry><title>Evaluating ∇f(x) is as fast as f(x)</title><link href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"></link><published>2016-09-25T00:00:00-04:00</published><updated>2016-09-25T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-09-25:/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id><summary type="html">&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
+&lt;/script&gt;</content><category term="algorithms"></category><category term="automatic-differentiation"></category><category term="data-structures"></category></entry><entry><title>Evaluating ∇f(x) is as fast as f(x)</title><link href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"></link><published>2016-09-25T00:00:00-04:00</published><updated>2016-09-25T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-09-25:/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id><summary type="html">&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
 because it makes it easy to rapidly prototype deep networks with plenty of
 doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
 f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
@@ -14255,7 +14255,7 @@ affect the values we should use for them.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="optimization"></category></entry><entry><title>Gradient-based hyperparameter optimization and the implicit function theorem</title><link href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><summary type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
+&lt;/script&gt;</content><category term="optimization"></category><category term="calculus"></category></entry><entry><title>Gradient-based hyperparameter optimization and the implicit function theorem</title><link href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><summary type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
 optimization&amp;mdash;the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
 while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
 &lt;div class="math"&gt;$$
@@ -14589,7 +14589,7 @@ less-brittle assumptions about the inner optimization.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category><category term="hyperparameter-optimization"></category></entry><entry><title>Multidimensional array index</title><link href="http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/" rel="alternate"></link><published>2016-01-17T00:00:00-05:00</published><updated>2016-01-17T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-01-17:/blog/post/2016/01/17/multidimensional-array-index/</id><summary type="html">&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
+&lt;/script&gt;</content><category term="calculus"></category><category term="hyperparameter-optimization"></category><category term="implicit-function-theorem"></category></entry><entry><title>Multidimensional array index</title><link href="http://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/" rel="alternate"></link><published>2016-01-17T00:00:00-05:00</published><updated>2016-01-17T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-01-17:/blog/post/2016/01/17/multidimensional-array-index/</id><summary type="html">&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
 of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll look at
 both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;We'll assume each dimension &lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded
@@ -14891,7 +14891,7 @@ dimension can be infinite/unknown.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="misc"></category></entry><entry><title>Gradient of a product</title><link href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><summary type="html">&lt;div class="math"&gt;$$
+&lt;/script&gt;</content><category term="datastructures"></category></entry><entry><title>Gradient of a product</title><link href="http://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><summary type="html">&lt;div class="math"&gt;$$
 \newcommand{\gradx}[1]{\grad{x}{ #1 }}
 \newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
 \newcommand{\R}{\mathbb{R}}
@@ -15283,7 +15283,7 @@ programming algorithm we came up with.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: Multiclass logistic regression and conditional random fields (CRF)
+&lt;/script&gt;</content><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category><category term="datastructures"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="http://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><summary type="html">&lt;p&gt;A short rant: Multiclass logistic regression and conditional random fields (CRF)
 are the same thing. This comes to a surprise to many people because CRFs tend to
 be surrounded by additional "stuff."&lt;/p&gt;
 &lt;p&gt;Understanding this very basic connection not only deepens our understanding, but
@@ -15837,7 +15837,7 @@ essentially:&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="numerical"></category></entry><entry><title>Importance sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><published>2014-12-21T00:00:00-05:00</published><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:/blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
+&lt;/script&gt;</content><category term="numerical"></category><category term="datastructures"></category></entry><entry><title>Importance sampling</title><link href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/" rel="alternate"></link><published>2014-12-21T00:00:00-05:00</published><updated>2014-12-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-12-21:/blog/post/2014/12/21/importance-sampling/</id><summary type="html">&lt;p&gt;Importance sampling is a powerful and pervasive technique in statistics, machine
 learning and randomized algorithms.&lt;/p&gt;
 &lt;h2&gt;Basics&lt;/h2&gt;
 &lt;p&gt;Importance sampling is a technique for estimating the expectation &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; of a
@@ -16857,7 +16857,7 @@ tractable or, for MLE, require tons of samples.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="statistics"></category><category term="machine-learning"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><published>2014-08-07T00:00:00-04:00</published><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:/blog/post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;/script&gt;</content><category term="statistics"></category><category term="machine-learning"></category><category term="structured-prediction"></category></entry><entry><title>Complex-step derivative</title><link href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><published>2014-08-07T00:00:00-04:00</published><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:/blog/post/2014/08/07/complex-step-derivative/</id><summary type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
 &lt;div class="math"&gt;$$
 f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
 $$&lt;/div&gt;
@@ -17119,7 +17119,7 @@ function's value and the derivative.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="calculus"></category></entry><entry><title>Gumbel-max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><published>2014-08-01T00:00:00-04:00</published><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+&lt;/script&gt;</content><category term="calculus"></category><category term="numerical"></category></entry><entry><title>Gumbel-max trick and weighted reservoir sampling</title><link href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><published>2014-08-01T00:00:00-04:00</published><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><summary type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
 the following blog post:
 &lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
 which got us excited about reservoir sampling.&lt;/p&gt;
@@ -17210,10 +17210,14 @@ Gumbel-max trick and ES is undocumented. Furthermore, the Gumbel-max-trick is no
 &lt;/pre&gt;
 
 &lt;h2&gt;Further reading&lt;/h2&gt;
-&lt;p&gt;Here are a few interesting, recent papers that build on the ideas in this article.&lt;/p&gt;
+&lt;p&gt;I have a few other articles that are related to
+&lt;a href="http://timvieira.github.io/blog/tag/sampling-without-replacement.html"&gt;sampling without replacement&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html"&gt;reservoir sampling&lt;/a&gt;,
+and &lt;a href="http://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel tricks&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here are a few interesting papers that build on the ideas in this article.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Wouter Kool, Herke van Hoof, and Max Welling 2019.
+&lt;p&gt;Wouter Kool, Herke van Hoof, and Max Welling. 2019.
 &lt;a href="https://arxiv.org/abs/1903.06059"&gt;Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for Sampling Sequences Without Replacement&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -17365,10 +17369,14 @@ Gumbel-max trick and ES is undocumented. Furthermore, the Gumbel-max-trick is no
 &lt;/pre&gt;
 
 &lt;h2&gt;Further reading&lt;/h2&gt;
-&lt;p&gt;Here are a few interesting, recent papers that build on the ideas in this article.&lt;/p&gt;
+&lt;p&gt;I have a few other articles that are related to
+&lt;a href="http://timvieira.github.io/blog/tag/sampling-without-replacement.html"&gt;sampling without replacement&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html"&gt;reservoir sampling&lt;/a&gt;,
+and &lt;a href="http://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel tricks&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here are a few interesting papers that build on the ideas in this article.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Wouter Kool, Herke van Hoof, and Max Welling 2019.
+&lt;p&gt;Wouter Kool, Herke van Hoof, and Max Welling. 2019.
 &lt;a href="https://arxiv.org/abs/1903.06059"&gt;Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for Sampling Sequences Without Replacement&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -17429,7 +17437,7 @@ Gumbel-max trick and ES is undocumented. Furthermore, the Gumbel-max-trick is no
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="sampling"></category><category term="Gumbel"></category><category term="reservoir-sampling"></category></entry><entry><title>Gumbel-max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><published>2014-07-31T00:00:00-04:00</published><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:/blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
+&lt;/script&gt;</content><category term="sampling"></category><category term="Gumbel"></category><category term="reservoir-sampling"></category><category term="sampling-without-replacement"></category></entry><entry><title>Gumbel-max trick</title><link href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/" rel="alternate"></link><published>2014-07-31T00:00:00-04:00</published><updated>2014-07-31T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-31:/blog/post/2014/07/31/gumbel-max-trick/</id><summary type="html">&lt;p&gt;&lt;strong&gt;Goal&lt;/strong&gt;: Sampling from a discrete distribution parametrized by unnormalized
 log-probabilities:&lt;/p&gt;
 &lt;div class="math"&gt;$$
 \pi_k = \frac{1}{z} \exp(x_k)   \ \ \ \text{where } z = \sum_{j=1}^K \exp(x_j)
