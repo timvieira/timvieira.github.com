@@ -66,7 +66,7 @@ $$</div>
 </pre></div>
 
 
-<p>Some differences from E&amp;S'06: Our <span class="math">\(K\)</span> and <span class="math">\(T\)</span> are <span class="math">\(\log\)</span> of the <span class="math">\(K\)</span> and <span class="math">\(T\)</span> variables in E&amp;S'06.  Additionally, we take <span class="math">\(\min\)</span> instead of <span class="math">\(\max\)</span>.  These differences allow us to talk about exponential variates rather than the less-elegant and rather-mysterious (IMO) random key <span class="math">\(u_i^{1/w_i}\)</span>.</p>
+<p>Some cosmetic differences from E&amp;S'06: We use exponential random variates and <span class="math">\(\min\)</span> instead of <span class="math">\(\max\)</span>. E&amp;S'06 use a less-elegant and rather-mysterious (IMO) random key <span class="math">\(u_i^{1/w_i}\)</span>.</p>
 <p><strong>Why does it work?</strong> The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
 When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span class="math">\(R = {\mathrm{argmin}}_i X_i\)</span>, and <span class="math">\(T = \min_i X_i\)</span> then
 <span class="math">\(R \sim p\)</span> and <span class="math">\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)</span>.</p>

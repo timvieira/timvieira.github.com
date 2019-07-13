@@ -109,7 +109,9 @@ $$</div>
    think of <span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s stationary distribution if we regard
    <span class="math">\((1-\gamma)\)</span> as the probability of restarting the Markov chain (i.e.,
    sampling the next state from a mixture of <span class="math">\(p_0(s')\)</span> with probability
-   <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).)</li>
+   <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).  This is
+   an equivalent view for expectations, but not higher-order momements, e.g.,
+   it's not equivalent in distribution.)</li>
 </ul>
 <div class="math">$$
 \delta(s') = (1-\gamma) \cdot p_0(s') + \gamma \cdot \sum_{s,a} \delta(s) \cdot \pi(a|s) \cdot p(s'|s,a)\quad\text{for all }s' \in S
@@ -190,6 +192,8 @@ already normalized.</p>
   post, we can take any fixed policy and estimate the Lagrange mulipliers by
   setting the gradient of the Lagrangian wrt <span class="math">\(V\)</span> equal to zero given what every
   <span class="math">\(\pi\)</span> is.</p>
+<p><strong>TODO</strong> The successor representation is the dual of this connection -- They are
+Lagrange multiplier estimates of the in the primal problem.</p>
 <h2>Connections in graphical models</h2>
 <p>The concept of a value function is not limited to RL: value functions arise in
 the dynamic programming solutions to many other problems.</p>

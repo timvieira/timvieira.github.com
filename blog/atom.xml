@@ -11,7 +11,7 @@ $$&lt;/div&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Some differences from E&amp;amp;S'06: Our &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; are &lt;span class="math"&gt;\(\log\)&lt;/span&gt; of the &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; variables in E&amp;amp;S'06.  Additionally, we take &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;.  These differences allow us to talk about exponential variates rather than the less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Some cosmetic differences from E&amp;amp;S'06: We use exponential random variates and &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;. E&amp;amp;S'06 use a less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Why does it work?&lt;/strong&gt; The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
 When &lt;span class="math"&gt;\(X_i \sim \mathrm{Exponential}(w_i)\)&lt;/span&gt;, &lt;span class="math"&gt;\(R = {\mathrm{argmin}}_i X_i\)&lt;/span&gt;, and &lt;span class="math"&gt;\(T = \min_i X_i\)&lt;/span&gt; then
 &lt;span class="math"&gt;\(R \sim p\)&lt;/span&gt; and &lt;span class="math"&gt;\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)&lt;/span&gt;.&lt;/p&gt;
@@ -172,7 +172,7 @@ $$&lt;/div&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Some differences from E&amp;amp;S'06: Our &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; are &lt;span class="math"&gt;\(\log\)&lt;/span&gt; of the &lt;span class="math"&gt;\(K\)&lt;/span&gt; and &lt;span class="math"&gt;\(T\)&lt;/span&gt; variables in E&amp;amp;S'06.  Additionally, we take &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;.  These differences allow us to talk about exponential variates rather than the less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Some cosmetic differences from E&amp;amp;S'06: We use exponential random variates and &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;. E&amp;amp;S'06 use a less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Why does it work?&lt;/strong&gt; The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
 When &lt;span class="math"&gt;\(X_i \sim \mathrm{Exponential}(w_i)\)&lt;/span&gt;, &lt;span class="math"&gt;\(R = {\mathrm{argmin}}_i X_i\)&lt;/span&gt;, and &lt;span class="math"&gt;\(T = \min_i X_i\)&lt;/span&gt; then
 &lt;span class="math"&gt;\(R \sim p\)&lt;/span&gt; and &lt;span class="math"&gt;\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)&lt;/span&gt;.&lt;/p&gt;
@@ -5088,7 +5088,9 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt;-dimensional hyperplane. The gradient gives a unique hyperplane that is
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
-Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;. (For an in-depth discussion on notions of
+&lt;em&gt;steepest&lt;/em&gt; descent, check out
+&lt;a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/"&gt;this post&lt;/a&gt;.)&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, &lt;em&gt;approximating&lt;/em&gt; the gradient
 takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
 gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
@@ -5263,7 +5265,9 @@ shortcut for finding &lt;em&gt;the direction of steepest descent&lt;/em&gt; in E
 &lt;span class="math"&gt;\((d+1)\)&lt;/span&gt;-dimensional hyperplane. The gradient gives a unique hyperplane that is
 tangent to the surface of &lt;span class="math"&gt;\(f\)&lt;/span&gt; at the point &lt;span class="math"&gt;\(x\)&lt;/span&gt;; the &lt;span class="math"&gt;\((d+1)^{\text{th}}\)&lt;/span&gt;
 coordinate comes from the value &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;&amp;mdash;think of it like a first-order
-Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+Taylor approximation to &lt;span class="math"&gt;\(f\)&lt;/span&gt; at &lt;span class="math"&gt;\(x\)&lt;/span&gt;. (For an in-depth discussion on notions of
+&lt;em&gt;steepest&lt;/em&gt; descent, check out
+&lt;a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/"&gt;this post&lt;/a&gt;.)&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The baseline:&lt;/strong&gt; Without access to gradient code, &lt;em&gt;approximating&lt;/em&gt; the gradient
 takes &lt;span class="math"&gt;\(d+1\)&lt;/span&gt; function evaluations via the finite-difference approximation to the
 gradient,&lt;sup id="fnref-twosidedfd"&gt;&lt;a class="footnote-ref" href="#fn-twosidedfd"&gt;1&lt;/a&gt;&lt;/sup&gt; which I've discussed a
@@ -5767,8 +5771,8 @@ to backpropagation.&lt;/p&gt;
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Tom Goldstein's group took the Lagrangian view of backprop and used it to design
-an ADMM approach for optimizing neural nets. The ADMM approach operates
-massively parallel and leverages lots of highly optimized solvers for
+an ADMM approach for optimizing neural nets. The ADMM approach 
+can run massively in parallel and can leverage highly optimized solvers for
 subproblems. This work nicely demonstrates that understanding automatic
 differentiation&amp;mdash;in the broader sense that I described in this
 post&amp;mdash;facilitates the development of novel optimization algorithms. &lt;!--
@@ -6198,8 +6202,8 @@ to backpropagation.&lt;/p&gt;
 &lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Tom Goldstein's group took the Lagrangian view of backprop and used it to design
-an ADMM approach for optimizing neural nets. The ADMM approach operates
-massively parallel and leverages lots of highly optimized solvers for
+an ADMM approach for optimizing neural nets. The ADMM approach 
+can run massively in parallel and can leverage highly optimized solvers for
 subproblems. This work nicely demonstrates that understanding automatic
 differentiation&amp;mdash;in the broader sense that I described in this
 post&amp;mdash;facilitates the development of novel optimization algorithms. &lt;!--
