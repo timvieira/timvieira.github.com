@@ -102,7 +102,7 @@ They are a mathematical operationalization of the idea that
 -->
 
 <p>Let <span class="math">\(M = \langle \mathcal{S}, \mathcal{A}, p_0(s), p(s' \mid s, a), r(s,a), \gamma \rangle\)</span>
-be a Markov decision process over states <span class="math">\(S\)</span> and actions <span class="math">\(A\)</span> with <span class="math">\(0 &lt; \gamma &lt; 1\)</span>.  Let <span class="math">\(p_0(s)\)</span> be a
+be a Markov decision process over states <span class="math">\(S\)</span> and actions <span class="math">\(A\)</span> with <span class="math">\(0 \le \gamma &lt; 1\)</span>.  Let <span class="math">\(p_0(s)\)</span> be a
 distribution over initial states and <span class="math">\(p(s' \mid s, a)\)</span> be a transition kernel
 that describes how the next state <span class="math">\(s'\)</span> evolve from current state <span class="math">\(s\)</span> given an action <span class="math">\(a\)</span>
 from a policy <span class="math">\(\pi(a \mid s)\)</span>.  Lastly, let <span class="math">\(r(s,a)\)</span> denote the immediate reward of taking action <span class="math">\(a\)</span> in state <span class="math">\(s\)</span>.</p>
@@ -115,19 +115,22 @@ $$</div>
 <span class="math">\(\langle \langle s_t, a_t, r_t \rangle \rangle_{t=0}^\infty\)</span>.
 The next step is rewrite <span class="math">\(U(\pi)\)</span> as an expectation over state-visitation fequencies <span class="math">\(\delta(s)\)</span>, also know as the occupancy measure, rather than an expectation over infinitely long trajectories.<sup id="fnref-unnecessary-constraints"><a class="footnote-ref" href="#fn-unnecessary-constraints">1</a></sup></p>
 <div class="math">$$
-(1-P_{\pi})^{-1} = \lim_{T \rightarrow \infty} \sum_{t=1}^T P_{\pi}^{t}
+(1-P_{\pi})^{-1} p_0 (1-\gamma) = \lim_{T \rightarrow \infty} \sum_{t=1}^T P_{\pi}^{t} p_0 (1-\gamma)
 $$</div>
-<p>
-XXX: this explanation is incomplete. Need to define <span class="math">\(P_{\pi}\)</span>.</p>
+<p>XXX: this explanation is incomplete. Need to define <span class="math">\(P_{\pi}\)</span>.  Need to be
+careful about the definition.  It's easy to miss a transpose.</p>
 <div class="math">$$
 \begin{cases}
-\underset{\pi, \delta}{\textrm{maximize }} &amp; \frac{1}{1-\gamma} \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+\underset{\pi, \delta}{\textrm{maximize }} &amp; \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
 \text{subject to } &amp;
 \sum_{a'} \delta(s') \pi(a' \mid s') = (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a)\quad\text{for all }s' \in \mathcal{S}
 \label{eq:balance} \\
 &amp; \delta(s) \pi(a \mid s) \ge 0 \quad\text{for } s \in \mathcal{S}, a \in \mathcal{A}
 \end{cases}
 $$</div>
+<p>TODO: we could take <span class="math">\(\mu(s,a) = \delta(s') \pi(a' \mid s')\)</span> to be an extra
+family of constraints in the problem.  Basically, just an intermediate quantity
+in the circuit.</p>
 <p>Written as above, this optimization problem is a quadratic program with
 quadractic equality constraints.<sup id="fnref-qp"><a class="footnote-ref" href="#fn-qp">3</a></sup> Lucky for us, this optimization
 problem&mdash;as a function of <span class="math">\(\mu(s,a) \overset{\text{def}}{=} \delta(s)\pi(a
@@ -146,14 +149,11 @@ efficient (polytime) algorithms.  Once solved, we can recover our original
 variables as <span class="math">\(\delta(s) \mapsto \sum_a \mu(s,a)\)</span> and <span class="math">\(\pi(a \mid s) \mapsto
 \frac{\mu(s,a)}{\delta(s)}\)</span>.<sup id="fnref-ties"><a class="footnote-ref" href="#fn-ties">2</a></sup> The linear programming formulation is
 attributed to Manne (1960); however, the best resource on the topic is Wang et
-al. (2008).<sup id="fnref-W08"><a class="footnote-ref" href="#fn-W08">8</a></sup></p>
-<p>TODO: need to prove that this is true in the general.</p>
+al. (2008).<sup id="fnref-W08"><a class="footnote-ref" href="#fn-W08">9</a></sup></p>
 <p>Lemma 1 says the solution to the balance equation are always normalized.</p>
 <p>The average-reward case, on the other hand, needs an explicit sum-to-one
   constraint.  This explains why the average-reward settings value functions are
-  different from the discounted case.  Note that the average-reward formulation
-  on a <span class="math">\(\gamma\)</span>-resetting transition model is not equivalent.  (TODO: double
-  check)</p>
+  different from the discounted case.</p>
 <h3>The Lagrangian</h3>
 <!--
 $$
@@ -170,34 +170,33 @@ $$
 
 <div class="math">$$
 \begin{align*}
-\mathcal{L}(\delta, \pi, \lambda) \overset{\text{def}}{=}
+\mathcal{L}(\delta, \pi, \lambda, \eta) \overset{\text{def}}{=}
 &amp; \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
 &amp; + \sum_{s'} \lambda(s') \cdot \left( (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) - \sum_{a'} \delta(s') \pi(a' \mid s')\right) \\
 &amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s)
 \end{align*}
 $$</div>
-<!---
-\nabla\Biggr[
-& \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
-& + \sum_{s'} \lambda(s') (1-\gamma) p_0(s') \\
-& + \sum_{s'} \lambda(s') \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) \\
-& - \sum_{s'} \sum_{a'} \lambda(s') \delta(s') \pi(a' \mid s') \\
-& + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \\
-& + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s)
-\Biggr]
--->
-
-<p>If we differentiate <span class="math">\(\mathcal{L}\)</span> wrt <span class="math">\(\delta(s) \pi(a \mid s)\)</span>,</p>
+<p>with the constraint that <span class="math">\(\vec{\eta} \ge 0\)</span>.</p>
+<p>Now, we will working out the gradient of <span class="math">\(\mathcal{L}\)</span> with respect each
+parameter type.  We will also collect the first-order optimality conditions for
+setting the gradient with respect to each parameter type to zero.</p>
 <div class="math">$$
-\newcommand{\ggg}[0]{\frac{\partial \mathcal{L}}{\partial \delta(s^*) \pi(a^* \mid s^*)}}
 \begin{align*}
-\nabla \mathcal{L}
-=\,
- \nabla\Biggr[
+\nabla \mathcal{L} =
+\nabla\Biggr[
 &amp; \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
-&amp; + \sum_{s'} \lambda(s') \cdot \left( (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) - \sum_{a'} \delta(s') \pi(a' \mid s')\right) \\
-&amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \Biggr] \\
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+&amp; + \sum_{s'} \lambda(s') (1-\gamma) p_0(s') \\
+&amp; + \gamma \sum_{s,a,s'} \lambda(s') \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) \\
+&amp; - \sum_{s', a'} \lambda(s') \delta(s') \pi(a' \mid s') \\
+&amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \Biggr]
+\end{align*}
+$$</div>
+<h3>Conditions from <span class="math">\(\mu\)</span></h3>
+<p>Lagrangian conditions for differentiation with respect to <span class="math">\(\mu(s^*, a^*) =
+\delta(s^*) \pi(a^* \mid s^*)\)</span>.</p>
+<div class="math">$$
+\begin{align*}
+\nabla_{\delta(s^*) \pi(a^* \mid s^*)} \mathcal{L}
 =\,
 &amp; r(s^*, a^*) \\
 &amp; + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a^*)
@@ -205,19 +204,30 @@ $$</div>
 &amp; + \eta(s^*, a^*)
 \end{align*}
 $$</div>
-<p>In solving for <span class="math">\(\ggg = 0\)</span>, we notice that <span class="math">\(\eta(s,a)\)</span> is a just a slack
-variable!  Thus, we can treat this equation as an inequality constraint,</p>
+<p>Equating with <span class="math">\(0\)</span> and solving for <span class="math">\(\lambda(s^*)\)</span></p>
 <div class="math">$$
 \begin{eqnarray*}
 \nabla_{\delta(s^*) \pi(a^* \mid s^*)} \mathcal{L} &amp;=&amp; 0  \\
 &amp;\Leftrightarrow&amp; \\
-\lambda(s^*)
-&amp;\ge&amp; r(s^*, a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a^*)\quad\text{for all }s^*, a^*.
+\lambda(s^*) - \eta(s^*, a^*)
+&amp;=&amp; r(s^*, a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a^*)\quad\text{for all }s^*, a^*.
 \end{eqnarray*}
 $$</div>
-<p>This is precisely the set of constraints in the optimal value function problem.</p>
-<p>The dual problem is min <span class="math">\(\lambda\)</span></p>
-<p>As usual, setting the derivative with respect to the a Lagrange multiplier&mdash;in our case <span class="math">\(\lambda\)</span>&mdash;to zero results in a condition which says that the original equallity constraint should be satisfied, that is</p>
+<p><em>Slack interpretation</em>: Notice that <span class="math">\(\eta(s,a)\)</span> is a just a slack variable in
+these equations.  Thus, we can treat interpret these equations as inequality
+constraints,
+</p>
+<div class="math">$$
+\begin{eqnarray*}
+\lambda(s^*) &amp;\ge&amp; r(s^*, a^*) + \gamma \sum_{s'}
+\lambda(s') \cdot P(s' \mid s^*, a^*)\quad\text{for all }s^*, a^*.
+\end{eqnarray*}
+$$</div>
+<p>These are precisely the constraints in the optimal value-function problem.<sup id="fnref-nonlinear-VF"><a class="footnote-ref" href="#fn-nonlinear-VF">4</a></sup></p>
+<h3>Conditions from <span class="math">\(\lambda\)</span></h3>
+<p>As usual, setting the derivative with respect to the a Lagrange
+multiplier&mdash;in our case <span class="math">\(\lambda\)</span>&mdash;to zero results in a condition
+which says that the original equallity constraint should be satisfied, that is</p>
 <div class="math">$$
 \begin{eqnarray*}
 \nabla_{\lambda(s^*)} \mathcal{L} &amp;=&amp; 0  \\
@@ -226,12 +236,8 @@ $$</div>
 &amp;=&amp; (1-\gamma) p_0(s^*) + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s^* \mid s,a)
 \end{eqnarray*}
 $$</div>
-<p><strong>TODO</strong> saddle-point problems and optimization instability, best-response and
-  positive response; regularization.</p>
-<p><strong>TODO</strong> What happens if we differentiate wrt <span class="math">\(\delta\)</span> or <span class="math">\(\pi\)</span> separately?
-  That might be how we get policy-specific value functions.</p>
-<p>The derivative wrt <span class="math">\(\pi( a^* \mid s^*)\)</span>
-</p>
+<h3>What happens if we differentiate w.r.t. <span class="math">\(\delta\)</span> or <span class="math">\(\pi\)</span> separately?</h3>
+<h4>Conditions from <span class="math">\(\pi( a^* \mid s^*)\)</span></h4>
 <div class="math">$$
 \begin{align*}
 \nabla_{\pi( a^* \mid s^*)} \mathcal{L}
@@ -248,15 +254,14 @@ r(s,a) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*,a^*) - \lambda(s^*)  +
 \right)
 \end{align*}
 $$</div>
-<p>We can solver for <span class="math">\(\lambda\)</span> such that the gradient is zero for all <span class="math">\(s^*\)</span>, which
+<p>We can solve for <span class="math">\(\lambda\)</span> such that the gradient is zero for all <span class="math">\(s^*\)</span>, which
 gives us (assuming that <span class="math">\(\delta \ne 0\)</span>),</p>
 <div class="math">$$
 \lambda(s^*) =
 r(s^*,a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*,a^*) + \eta(s^*, a^*)
 $$</div>
 <p>This is the same as earlier version. \eta is a slack variable again.</p>
-<p>The derivative wrt <span class="math">\(\delta(s^*)\)</span>
-</p>
+<h4>Conditions from <span class="math">\(\delta(s^*)\)</span></h4>
 <div class="math">$$
 \begin{align*}
 \nabla_{\delta( s^*)} \mathcal{L}
@@ -269,10 +274,16 @@ $$</div>
 $$</div>
 <p>This gives us the value of a fixed policy as an implicit function of setting
 this derivative equal to zero.</p>
-<p>XXX What is the story about <span class="math">\(\eta\)</span>?  I suspect it something like <span class="math">\(\eta\)</span> doesn't
-matter if <span class="math">\(\pi\)</span> is already positive.</p>
+<h3>Summary</h3>
+<p>We also see that the slack variable <span class="math">\(\eta(s^*, a^*)\)</span> is the disadvantage
+function.</p>
+<p>In other words,</p>
+<p><span class="math">\(\lambda(s) = V(s)\)</span> is a dual variable for primal constraint <span class="math">\((s)\)</span>,</p>
+<p><span class="math">\(\eta(s,a) = -A(s,a)\)</span> is the slack variable in the dual constraint <span class="math">\((s,a)\)</span></p>
+<p><span class="math">\(\lambda(s) + \eta(s,a) = Q(s,a)\)</span></p>
 <h3>The Lagrangian dual problem</h3>
-<p>The Lagrange dual problem simplifies to</p>
+<p>The Lagrange dual problem simplifies to under the interpretation of <span class="math">\(\eta\)</span> as a
+slack variable.</p>
 <div class="math">$$
 \begin{cases}
 \underset{\lambda}{\textrm{minimize }} &amp; \sum_{s} p_0(s) \cdot \lambda(s) \\
@@ -281,11 +292,6 @@ matter if <span class="math">\(\pi\)</span> is already positive.</p>
 + \gamma \sum_{s'} P(s' \mid s,a) \lambda(s') \quad\text{for all }s \in \mathcal{S}, a \in \mathcal{A}
 \end{cases}
 $$</div>
-<p><strong>TODO</strong> The S-procedure might fit in here.  The Lagrange dual of the QP
-  formulation has a no duality gap, which is the main consequence of the
-  S-procedure in control theory.  The reason why this is true is because once we
-  take the Lagrange dual the problem can be simplified into another LP.  This is
-  pretty trivial in our case because the original problem is sort of an LP too.</p>
 <h3>Implicit functions</h3>
 <p>Much like in consumer theory of economics, the optimization formulation of the
 MDP problem has rich connections between variables in the primal and dual.
@@ -301,7 +307,7 @@ they are coupled by the Lagrangian. The generally the primal-dual coupling is
 "modulated" by Lagrange multiplier estimates.</p>
 <h4>Occupancy measure: <span class="math">\(\delta\)</span> as an implicit function of <span class="math">\(\pi\)</span>:</h4>
 <p>If we fix <span class="math">\(\pi\)</span> and solve for a primal feasible <span class="math">\(\delta\)</span>, then we can interpret
-<span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s occupancy measure.<sup id="fnref-occupancy-note"><a class="footnote-ref" href="#fn-occupancy-note">5</a></sup></p>
+<span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s occupancy measure.<sup id="fnref-occupancy-note"><a class="footnote-ref" href="#fn-occupancy-note">6</a></sup></p>
 <p>In the Lagrangian view, we have use <span class="math">\(\nabla_{\lambda} \mathcal{L} = 0\)</span>
 simultaneously for all states (a type of block-wise update / "partial
 optimization").</p>
@@ -310,17 +316,51 @@ function</p>
 <p>Written in a vector form,
 </p>
 <div class="math">$$
-\delta_\pi = (1-\gamma P \pi)^{-1} p_0
+\delta_\pi = (1-\gamma P_\pi)^{-1} p_0
 $$</div>
 <p>The benefit of collapsing-out the parameters in the fashion is that we eliminate
-the constraint and reduced the number of parameters.<sup id="fnref-collapse-linear"><a class="footnote-ref" href="#fn-collapse-linear">4</a></sup></p>
+the constraint and reduced the number of parameters.<sup id="fnref-collapse-linear"><a class="footnote-ref" href="#fn-collapse-linear">5</a></sup></p>
 <p><strong>TODO</strong>: Half-baked thought: As a function of <span class="math">\(\mu\)</span>, we have an underdetermined
 linear system (S constraints with SA unknowns).  What happens to the
 optimization problem if we perform the usual linear-equality elimation trick?
 Clearly, we reduce the number of parameters from SA to S.  The trick uses the
 null space of the linear system (which is a linear mapping from <span class="math">\(\mu \in
 \mathbb{R}^{S \times A}\)</span> to <span class="math">\(\mu': \mathbb{R}^{S}\)</span>).  This reparameterization
-might be interesting.</p>
+might be interesting. XXX: maybe things breakdown because of the revised
+positivity constraints.</p>
+<h3>A "feed-forward" view of the policy-search problem</h3>
+<div class="math">$$
+\textbf{input: } \pi \\
+d = (1 - \gamma P_\pi)^{-\top} (1-\gamma) p_0 \\
+\mu = d \pi \\
+\textbf{return } U = r \mu
+$$</div>
+<p>An alternative circuit
+</p>
+<div class="math">$$
+\textbf{input: } \pi \\
+v = (1-\gamma P_\pi)^{-1} r \\
+\textbf{return } U = p_0^\top v / (1-\gamma)
+$$</div>
+<p>The gradient is
+</p>
+<div class="math">$$
+d \pi (r + \gamma P_\pi v)
+$$</div>
+<p>We can get that by implicit differentiation under the d-stationarity constraint.</p>
+<p>max r * d * pi
+s.t. stationary(d, pi)</p>
+<p>max  reward(d0, pi+eps) =
+     reward(d0, pi) + eps * dU/dpi
+s.t.
+     d0 = stationary(pi+eps)
+     d = stationary(d, pi) + eps * dd/dpi = 0</p>
+<div class="highlight"><pre><span></span><span class="err">#</span><span class="w"> </span><span class="n">dx</span><span class="o">/</span><span class="n">dA</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"></span>
+<span class="n">dA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">inv</span><span class="p">(</span><span class="n">A</span><span class="p">).</span><span class="n">T</span><span class="w"> </span><span class="err">@</span><span class="w"> </span><span class="n">np</span><span class="p">.</span><span class="n">mat</span><span class="p">(</span><span class="n">g</span><span class="p">).</span><span class="n">T</span><span class="w"> </span><span class="err">@</span><span class="w"> </span><span class="n">np</span><span class="p">.</span><span class="n">mat</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"></span>
+<span class="n">fdcheck</span><span class="p">(</span><span class="nl">lambda</span><span class="p">:</span><span class="w"> </span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">[</span><span class="n">k</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">dA</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+
+
 <h4>Value function: <span class="math">\(V\)</span> as an implicit function of <span class="math">\(\pi\)</span></h4>
 <p>For a fixed policy, (WHAT ABOUT <span class="math">\(\delta\)</span>?)
 if we set <span class="math">\(\nabla_{???} \mathcal{L} = 0\)</span>,
@@ -345,13 +385,22 @@ $$</div>
 <p><strong>TODO</strong> featurized version of SR.</p>
 <p><strong>TODO</strong> Describe Wang et al's policy-improvement friendly SA x SA matrix.</p>
 <h2>TODO</h2>
+<p><strong>TODO</strong> duality explains the why the policy gradient can be written in terms of
+  the dual variables V/Q</p>
 <p><strong>TODO</strong> Formulate the Lagrangian.  Take its derivatives.  Talk about all the
   implicit functions and connections.</p>
+<p><strong>TODO</strong> saddle-point problems and optimization instability, best-response and
+  positive response; regularization.  Go thru notes on the saddle-point
+  formulation.</p>
 <p><strong>TODO</strong> Take the LP dual, note that it is exactly the optimal value function
   problem.</p>
 <p><strong>TODO</strong> Proximal RL https://arxiv.org/pdf/1405.6757.pdf</p>
 <p><strong>TODO</strong> featurized equilibrium distribution</p>
-<p><strong>TODO</strong> S-procedure and nonconvexity.</p>
+<p><strong>TODO</strong> The S-procedure might fit in here.  The Lagrange dual of the QP
+  formulation has a no duality gap, which is the main consequence of the
+  S-procedure in control theory.  The reason why this is true is because once we
+  take the Lagrange dual the problem can be simplified into another LP.  This is
+  pretty trivial in our case because the original problem is sort of an LP too.</p>
 <p><strong>TODO</strong> <a href="http://www.argmin.net/2016/05/18/mates-of-costate/">Mates of costate</a></p>
 <p><strong>TODO</strong> if we write an equivalent set of constraints, what happen to the dual
   variables (e.g., do we get Q or A under different variations)?  Or are these
@@ -365,14 +414,14 @@ $$</div>
 <p><strong>TODO</strong> Value function polytope
   https://arxiv.org/pdf/1901.11524.pdf</p>
 <p><strong>TODO</strong> Consider adding entropic regularization to the discussion.  At the very
-  least add references to Belousov &amp; Peters. (2017)<sup id="fnref-BP17"><a class="footnote-ref" href="#fn-BP17">7</a></sup></p>
+  least add references to Belousov &amp; Peters. (2017)<sup id="fnref-BP17"><a class="footnote-ref" href="#fn-BP17">8</a></sup></p>
 <p><strong>TODO</strong> The averge-reward formulation of V/Q functions are a little
   different.  Figure out why.</p>
 <p>Q(s,a) = R(s,a) - Rbar + \sum_{s'} T(s'| s,a) V(s')</p>
 <p>(Is the Rbar because of the sum-to-one constraint?)</p>
 <p><strong>TODO</strong> the diagram in this consumer theory tutorial is great.
   https://policonomics.com/marshallian-hicksian-demand-curves/</p>
-<p><strong>TODO</strong> Optimization-based view of MDP [^KBP13] <sup id="fnref2-BP17"><a class="footnote-ref" href="#fn-BP17">7</a></sup> <sup id="fnref2-W08"><a class="footnote-ref" href="#fn-W08">8</a></sup></p>
+<p><strong>TODO</strong> Optimization-based view of MDP [^KBP13] <sup id="fnref2-BP17"><a class="footnote-ref" href="#fn-BP17">8</a></sup> <sup id="fnref2-W08"><a class="footnote-ref" href="#fn-W08">9</a></sup></p>
 <p><strong>TODO</strong> the "line theorem" in VF-polytope extends to all factored probability
    model (PGMs) and case-factor diagrams (CFDs) more generally.  The laws of
    probability are such that all probabilistic statements are multi-linear
@@ -435,7 +484,7 @@ space complexity of algorithms for computing these quantities and even better
 gives us a recipe for efficiently computing these quantities backward/outside
 quantities.</p>
 <p>This connection extends to marginal inference in Bayesian networks more
-generally Darwiche (2003).<sup id="fnref-D03"><a class="footnote-ref" href="#fn-D03">10</a></sup></p>
+generally Darwiche (2003).<sup id="fnref-D03"><a class="footnote-ref" href="#fn-D03">11</a></sup></p>
 <div class="footnote">
 <hr>
 <ol>
@@ -465,37 +514,44 @@ generally Darwiche (2003).<sup id="fnref-D03"><a class="footnote-ref" href="#fn-
   other words, it is an encoding of binary variables, and thus can be used to
   solve NP-hard integer programming problems.&#160;<a class="footnote-backref" href="#fnref-qp" title="Jump back to footnote 3 in the text">&#8617;</a></p>
 </li>
+<li id="fn-nonlinear-VF">
+<p>The optimal value function is more familiar in it's non-linear equational form,
+  <div class="math">$$
+  \lambda(s^*)
+  = \max_a r(s^*, a) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a)\quad\text{for all }s^*
+  $$</div>&#160;<a class="footnote-backref" href="#fnref-nonlinear-VF" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
 <li id="fn-collapse-linear">
 <p>We can always removed linear equality constraints, even if
    the linear system is under-determined.  An over-determined system is, of
-   course, infeasible.  XXX: reference to linear-equality elimination trick.&#160;<a class="footnote-backref" href="#fnref-collapse-linear" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+   course, infeasible.  XXX: reference to linear-equality elimination trick.&#160;<a class="footnote-backref" href="#fnref-collapse-linear" title="Jump back to footnote 5 in the text">&#8617;</a></p>
 </li>
 <li id="fn-occupancy-note">
 <p>For the average reward case, we use <span class="math">\(P(s' \mid s, a) = p(s' \mid s, a)\)</span>.
   We may run into issues with feasibility if the transition function is not unichain (ergodic for all policies).
   For discounted case use <span class="math">\(P(s' \mid s, a) = (1-\gamma) \cdot p_0(s') + \gamma \cdot p(s' \mid s,a)\)</span>.
-  In the discounted cases, we can think of <span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s stationary distribution if we regard <span class="math">\((1-\gamma)\)</span> as the probability of restarting the Markov chain (i.e., sampling the next state from a mixture of <span class="math">\(p_0(s')\)</span> with probability <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).  This is an equivalent in expected reward, but not higher-order moments of reward, i.e., it's not equivalent in distribution.&#160;<a class="footnote-backref" href="#fnref-occupancy-note" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+  In the discounted cases, we can think of <span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s stationary distribution if we regard <span class="math">\((1-\gamma)\)</span> as the probability of restarting the Markov chain (i.e., sampling the next state from a mixture of <span class="math">\(p_0(s')\)</span> with probability <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).  This is an equivalent in expected reward, but not higher-order moments of reward, i.e., it's not equivalent in distribution.&#160;<a class="footnote-backref" href="#fnref-occupancy-note" title="Jump back to footnote 6 in the text">&#8617;</a></p>
 </li>
 <li id="fn-P13">
 <p>Kober, Bagnell, &amp; Peters. 2013
-  <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.910.7004&amp;rep=rep1&amp;type=pdf">Reinforcement learning in robotics: A survey</a>&#160;<a class="footnote-backref" href="#fnref-P13" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+  <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.910.7004&amp;rep=rep1&amp;type=pdf">Reinforcement learning in robotics: A survey</a>&#160;<a class="footnote-backref" href="#fnref-P13" title="Jump back to footnote 7 in the text">&#8617;</a></p>
 </li>
 <li id="fn-BP17">
 <p>Belousov &amp; Peters. 2017.
-  <a href="https://arxiv.org/abs/1801.00056">f-Divergence constrained policy improvement</a>&#160;<a class="footnote-backref" href="#fnref-BP17" title="Jump back to footnote 7 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-BP17" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+  <a href="https://arxiv.org/abs/1801.00056">f-Divergence constrained policy improvement</a>&#160;<a class="footnote-backref" href="#fnref-BP17" title="Jump back to footnote 8 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-BP17" title="Jump back to footnote 8 in the text">&#8617;</a></p>
 </li>
 <li id="fn-W08">
 <p>Wang, Lizotte, Bowling, &amp; Schuurmans. 2008.
-  <a href="https://webdocs.cs.ualberta.ca/~dale/papers/dualdp.pdf">Dual Representations for Dynamic Programming</a>&#160;<a class="footnote-backref" href="#fnref-W08" title="Jump back to footnote 8 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-W08" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+  <a href="https://webdocs.cs.ualberta.ca/~dale/papers/dualdp.pdf">Dual Representations for Dynamic Programming</a>&#160;<a class="footnote-backref" href="#fnref-W08" title="Jump back to footnote 9 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-W08" title="Jump back to footnote 9 in the text">&#8617;</a></p>
 </li>
 <li id="fn-LM04">
 <p>Jonathan Levin and Paul Milgrom. 2004.
-  <a href="https://web.stanford.edu/~jdlevin/Econ%20202/Consumer%20Theory.pdf">Consumer Theory</a>&#160;<a class="footnote-backref" href="#fnref-LM04" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+  <a href="https://web.stanford.edu/~jdlevin/Econ%20202/Consumer%20Theory.pdf">Consumer Theory</a>&#160;<a class="footnote-backref" href="#fnref-LM04" title="Jump back to footnote 10 in the text">&#8617;</a></p>
 </li>
 <li id="fn-D03">
 <p>Adnan Darwiche.
   <a href="https://dl.acm.org/citation.cfm?id=765570">A differential approach to inference in Bayesian networks</a>.
-  Journal of the Association for Computing Machinery, 50(3):280–305, 2003.&#160;<a class="footnote-backref" href="#fnref-D03" title="Jump back to footnote 10 in the text">&#8617;</a></p>
+  Journal of the Association for Computing Machinery, 50(3):280–305, 2003.&#160;<a class="footnote-backref" href="#fnref-D03" title="Jump back to footnote 11 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>
