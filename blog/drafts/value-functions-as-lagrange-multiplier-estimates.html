@@ -52,7 +52,7 @@
 <header>
       <h1 class="entry-title">Value functions as Lagrange multiplier estimates</h1>
     <p class="meta">
-<time datetime="2018-03-16T00:00:00-04:00" pubdate>Mar 16, 2018</time>    </p>
+<time datetime="2019-07-17T00:00:00-04:00" pubdate>Jul 17, 2019</time>    </p>
 </header>
 
   <div class="entry-content"><p><a href="https://en.wikipedia.org/wiki/Bellman_equation">Value functions</a>, or some
@@ -61,10 +61,38 @@ reinforcement learning, planning under uncertaintly, and optimal control).  They
 generally regarded as (somewhat intuitive) definitions that seem to help solve
 the decision-making problem.  In this post, I will give an account of value
 functions as Lagrange multiplier estimates for a specific formulation of the
-policy-search problem in reinforcement learning - I believe this story
-generalize to the other cases, but I haven't worked it out formally.  This
-connection is pretty cool and is closely related to my previous post on
+policy-search problem in reinforcement learning.  This connection is pretty cool
+and is closely related to my previous post on
 <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">backpropagation and Lagrangians</a>.</p>
+<div style="border: thin solid black; padding: 10px; background-color: #ffffcc;
+margin-bottom: 1.5em;">
+
+The ideal version of this work would be a completed
+commutation diagram of the primal and dual views of the MDP optimization problem
+much like the diagrams in consumer theory.[^LM04]
+
+I am confident that every quantity will have many connections (each one
+analogous to their "cousin" in economics).  This diagram will be an elegant,
+unifying view of lots of concepts in MDPs.
+
+Making the implicit functions explicit will make a lot of shortcuts simplier as
+well as providing calculus views of policy gradients (for example) than the
+usual expectations views.
+
+I am confident that all connections are "interesting" in one way or another.
+I am also confident that if we discover a new one, then that's even more interesting.
+
+These connections should even cover policy gradients and successor
+representations!
+Any properties of the mappings will be of interest as well.
+For example, the nonconvexity of the VF polytope as the shadow of the optimal
+value function polytope.  It is also interesting that the mapping is not
+generally convex.
+
+What are the interesting plots for MDPs?  (analogues of income-consumption
+curves) The VF-polytope "line theorem" is like a econ theorem.
+</div>
+
 <!--
 They are a mathematical operationalization of the idea that
 
@@ -73,128 +101,318 @@ They are a mathematical operationalization of the idea that
 > ― [Søren Kierkegaard](https://www.goodreads.com/quotes/6812-life-can-only-be-understood-backwards-but-it-must-be)
 -->
 
-<p><strong>The setup</strong>: Let <span class="math">\(M = \langle S, A, p_0(s), p(s' \mid s, a), r(s,a), \gamma \rangle\)</span>
+<p>Let <span class="math">\(M = \langle \mathcal{S}, \mathcal{A}, p_0(s), p(s' \mid s, a), r(s,a), \gamma \rangle\)</span>
 be a Markov decision process over states <span class="math">\(S\)</span> and actions <span class="math">\(A\)</span> with <span class="math">\(0 &lt; \gamma &lt; 1\)</span>.  Let <span class="math">\(p_0(s)\)</span> be a
 distribution over initial states and <span class="math">\(p(s' \mid s, a)\)</span> be a transition kernel
 that describes how the next state <span class="math">\(s'\)</span> evolve from current state <span class="math">\(s\)</span> given an action <span class="math">\(a\)</span>
-from a policy <span class="math">\(\pi(a \mid s)\)</span>.  Lastly, let <span class="math">\(r(s,a)\)</span> denote the immediate reward of taking action <span class="math">\(a\)</span> in state <span class="math">\(s\)</span>. The utility of a policy <span class="math">\(\pi\)</span> is typically measure as the long-term,
-<span class="math">\(\gamma\)</span>-discounted reward
+from a policy <span class="math">\(\pi(a \mid s)\)</span>.  Lastly, let <span class="math">\(r(s,a)\)</span> denote the immediate reward of taking action <span class="math">\(a\)</span> in state <span class="math">\(s\)</span>.</p>
+<p>The utility of a policy <span class="math">\(\pi\)</span> is typically measured as the long-term, <span class="math">\(\gamma\)</span>-discounted reward
 </p>
 <div class="math">$$
 U(\pi) \overset{\text{def}}{=} \mathbb{E}\left[  \sum_{t=0}^\infty \gamma^t \!\cdot\! r(s,a) \right]
 $$</div>
-<p>where the randomness in the expecation is take over trajectories, <span class="math">\(\langle
-\langle s_t, a_t, r_t \rangle \rangle_{t=0}^\infty\)</span>.  Don't worry too much about
-the infinite summation, we will now replace it with something much more
-computation friendly.</p>
-<p><strong>The policy search problem:</strong> Here we write the policy search problem as a
-constrained optimization problem.  We exploit an important rewrite of <span class="math">\(U(\pi)\)</span>
-as the expectation an expectation over an occupancy measure over states rather
-than an expectation over infinitely long trajectories.</p>
+<p>where the randomness in the expecation is taken over trajectories,
+<span class="math">\(\langle \langle s_t, a_t, r_t \rangle \rangle_{t=0}^\infty\)</span>.
+The next step is rewrite <span class="math">\(U(\pi)\)</span> as an expectation over state-visitation fequencies <span class="math">\(\delta(s)\)</span>, also know as the occupancy measure, rather than an expectation over infinitely long trajectories.<sup id="fnref-unnecessary-constraints"><a class="footnote-ref" href="#fn-unnecessary-constraints">1</a></sup></p>
 <div class="math">$$
-\underset{\pi, \delta}{\textrm{maximize }} U = \frac{1}{1-\gamma}\sum_{s,a} r(s,a) \cdot \delta(s) \cdot \pi(a|s)
+(1-P_{\pi})^{-1} = \lim_{T \rightarrow \infty} \sum_{t=1}^T P_{\pi}^{t}
 $$</div>
-<p><em>subject to</em></p>
-<ul>
-<li><span class="math">\(\pi\)</span> is a valid conditional probability distribution</li>
-</ul>
+<p>
+XXX: this explanation is incomplete. Need to define <span class="math">\(P_{\pi}\)</span>.</p>
 <div class="math">$$
-\textstyle\sum_a \pi(a | s) = 1 \quad\text{for all } s \in S
-$$</div>
-<div class="math">$$
-\pi(a | s) \ge 0 \quad\text{for all } s \in S, a \in A
-$$</div>
-<ul>
-<li><span class="math">\(\delta\)</span> is <span class="math">\(\pi\)</span>'s occupancy measure (<strong>footnote</strong>: Alternatively, we can
-   think of <span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s stationary distribution if we regard
-   <span class="math">\((1-\gamma)\)</span> as the probability of restarting the Markov chain (i.e.,
-   sampling the next state from a mixture of <span class="math">\(p_0(s')\)</span> with probability
-   <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).  This is
-   an equivalent view for expectations, but not higher-order momements, e.g.,
-   it's not equivalent in distribution.)</li>
-</ul>
-<div class="math">$$
-\delta(s') = (1-\gamma) \cdot p_0(s') + \gamma \cdot \sum_{s,a} \delta(s) \cdot \pi(a|s) \cdot p(s'|s,a)\quad\text{for all }s' \in S
-$$</div>
-<div class="math">$$
-\sum_{s} \delta(s) = 1
-$$</div>
-<div class="math">$$
-\delta(s) \ge 0 \quad\text{for all }s
+\begin{cases}
+\underset{\pi, \delta}{\textrm{maximize }} &amp; \frac{1}{1-\gamma} \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+\text{subject to } &amp;
+\sum_{a'} \delta(s') \pi(a' \mid s') = (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a)\quad\text{for all }s' \in \mathcal{S}
+\label{eq:balance} \\
+&amp; \delta(s) \pi(a \mid s) \ge 0 \quad\text{for } s \in \mathcal{S}, a \in \mathcal{A}
+\end{cases}
 $$</div>
 <p>Written as above, this optimization problem is a quadratic program with
-quadractic equality constraints.  Quadratic equality constraints can encode
-nonconvex constraints, which are generally NP-Hard to solve.  (<strong>footnote</strong>: To
-see why, consider the constraint <span class="math">\(x \cdot (x - 1) = 0\)</span>, this constraint has
-exactly two solutions <span class="math">\(x \in \{0, 1\}\)</span>.  In other words, it is an encoding of
-binary variables, and thus can be used to solve NP-hard problems.)</p>
-<h2>Lagrangian</h2>
-<p>We can write out the Lagrangian for this optimization problem</p>
+quadractic equality constraints.<sup id="fnref-qp"><a class="footnote-ref" href="#fn-qp">3</a></sup> Lucky for us, this optimization
+problem&mdash;as a function of <span class="math">\(\mu(s,a) \overset{\text{def}}{=} \delta(s)\pi(a
+\mid s)\)</span>&mdash;is a linear program!  Performing the substitution gives the
+following optimization problem,</p>
 <div class="math">$$
+\begin{cases}
+\underset{\mu}{\textrm{maximize }} &amp; \sum_{s,a} r(s,a) \cdot \mu(s, a) \\
+\text{subject to} &amp;
+\sum_{a'} \mu(s',a') = \sum_{s,a} \mu(s,a) \cdot P(s' \mid s,a)\quad\text{for all }s' \in \mathcal{S} \\
+&amp; \mu(s, a) \ge 0 \quad\text{for all }s \in \mathcal{S}, a \in \mathcal{A}
+\end{cases}
+$$</div>
+<p>The linear programming version formulation suggests allows us to use a number of
+efficient (polytime) algorithms.  Once solved, we can recover our original
+variables as <span class="math">\(\delta(s) \mapsto \sum_a \mu(s,a)\)</span> and <span class="math">\(\pi(a \mid s) \mapsto
+\frac{\mu(s,a)}{\delta(s)}\)</span>.<sup id="fnref-ties"><a class="footnote-ref" href="#fn-ties">2</a></sup> The linear programming formulation is
+attributed to Manne (1960); however, the best resource on the topic is Wang et
+al. (2008).<sup id="fnref-W08"><a class="footnote-ref" href="#fn-W08">8</a></sup></p>
+<p>TODO: need to prove that this is true in the general.</p>
+<p>Lemma 1 says the solution to the balance equation are always normalized.</p>
+<p>The average-reward case, on the other hand, needs an explicit sum-to-one
+  constraint.  This explains why the average-reward settings value functions are
+  different from the discounted case.  Note that the average-reward formulation
+  on a <span class="math">\(\gamma\)</span>-resetting transition model is not equivalent.  (TODO: double
+  check)</p>
+<h3>The Lagrangian</h3>
+<!--
+$$
 \begin{eqnarray*}
 \mathcal{L}(\delta, \pi, \lambda, \sigma, \zeta, \eta)
-&amp;=&amp; \sum_{s,a} r(s,a) \delta(s) \pi(a|s)\\
-&amp;&amp; + \sum_{s'} \lambda(s') \delta(s')  - \sum_{s,a} \lambda(s') \delta(s) \pi(a|s) p(s'|s,a)\\
-&amp;&amp; + \sum_s \sigma(s)  - \sum_a \sigma(s) \pi(a | s)\\
-&amp;&amp; + \sum_{s,a} \zeta(s,a) \pi(a | s) \\
-&amp;&amp; + \sum_{s} \eta(s) \delta(a | s)
+&=& \sum_{s,a} r(s,a) \delta(s) \pi(a \mid s)\\
+&& + \sum_{s'} \lambda(s') \delta(s')  - \sum_{s,a} \lambda(s') \delta(s) \pi(a \mid s) p(s' \mid s,a)\\
+&& + \sum_s \sigma(s)  - \sum_a \sigma(s) \pi(a \mid s)\\
+&& + \sum_{s,a} \zeta(s,a) \pi(a \mid s) \\
+&& + \sum_{s} \eta(s) \delta(a \mid s)
 \end{eqnarray*}
+$$
+--->
+
+<div class="math">$$
+\begin{align*}
+\mathcal{L}(\delta, \pi, \lambda) \overset{\text{def}}{=}
+&amp; \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+&amp; + \sum_{s'} \lambda(s') \cdot \left( (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) - \sum_{a'} \delta(s') \pi(a' \mid s')\right) \\
+&amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s)
+\end{align*}
 $$</div>
-<p>TODO: What does it mean to be a Lagrange multiplier <em>estimate</em></p>
-<p>Now, let's solve for <span class="math">\(\nabla \mathcal{L} = 0\)</span> under each chunk of parameters.</p>
+<!---
+\nabla\Biggr[
+& \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+& + \sum_{s'} \lambda(s') (1-\gamma) p_0(s') \\
+& + \sum_{s'} \lambda(s') \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) \\
+& - \sum_{s'} \sum_{a'} \lambda(s') \delta(s') \pi(a' \mid s') \\
+& + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \\
+& + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s)
+\Biggr]
+-->
+
+<p>If we differentiate <span class="math">\(\mathcal{L}\)</span> wrt <span class="math">\(\delta(s) \pi(a \mid s)\)</span>,</p>
+<div class="math">$$
+\newcommand{\ggg}[0]{\frac{\partial \mathcal{L}}{\partial \delta(s^*) \pi(a^* \mid s^*)}}
+\begin{align*}
+\nabla \mathcal{L}
+=\,
+ \nabla\Biggr[
+&amp; \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+&amp; + \sum_{s'} \lambda(s') \cdot \left( (1-\gamma) p_0(s') + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a) - \sum_{a'} \delta(s') \pi(a' \mid s')\right) \\
+&amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \Biggr] \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+=\,
+&amp; r(s^*, a^*) \\
+&amp; + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a^*)
+- \lambda(s^*) \\
+&amp; + \eta(s^*, a^*)
+\end{align*}
+$$</div>
+<p>In solving for <span class="math">\(\ggg = 0\)</span>, we notice that <span class="math">\(\eta(s,a)\)</span> is a just a slack
+variable!  Thus, we can treat this equation as an inequality constraint,</p>
 <div class="math">$$
 \begin{eqnarray*}
-\frac{\partial \mathcal{L}}{\partial \delta(s^*)}
-&amp;=&amp;
-\sum_a r(s^*,a) \pi(a \mid s^*)
-+ \sum_{s'} \lambda(s') (1(s' = s^*)
-- \sum_{a} \delta(s^*) \pi(a \mid s^*) p(s' \mid s^*, a))\\
+\nabla_{\delta(s^*) \pi(a^* \mid s^*)} \mathcal{L} &amp;=&amp; 0  \\
+&amp;\Leftrightarrow&amp; \\
+\lambda(s^*)
+&amp;\ge&amp; r(s^*, a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*, a^*)\quad\text{for all }s^*, a^*.
 \end{eqnarray*}
 $$</div>
+<p>This is precisely the set of constraints in the optimal value function problem.</p>
+<p>The dual problem is min <span class="math">\(\lambda\)</span></p>
+<p>As usual, setting the derivative with respect to the a Lagrange multiplier&mdash;in our case <span class="math">\(\lambda\)</span>&mdash;to zero results in a condition which says that the original equallity constraint should be satisfied, that is</p>
 <div class="math">$$
 \begin{eqnarray*}
-\frac{\partial \mathcal{L}}{\partial \pi(a^* \mid s^*)}
-&amp;=&amp;
-r(s^*,a^*) \delta(s^*)
-- \sum_{s'} \lambda(s') \delta(s^*) p(s'|s^*,a^*)
- - \sum_a \sigma(s^*)
- + \zeta(s^*,a^*)
+\nabla_{\lambda(s^*)} \mathcal{L} &amp;=&amp; 0  \\
+&amp;\Leftrightarrow&amp; \\
+\sum_{a'} \delta(s^*) \pi(a' \mid s^*)
+&amp;=&amp; (1-\gamma) p_0(s^*) + \gamma \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s^* \mid s,a)
 \end{eqnarray*}
 $$</div>
-<h2>Linear programming re-formulation</h2>
-<p>Manne (1960), came up with a very clever trick which reformulates this
-optimization into a linear programming problem.  The trick is to "flatten" the
-optimization of <span class="math">\(\pi\)</span> and <span class="math">\(\delta\)</span>, by optimizing over their product <span class="math">\(\mu(s,a)
-\overset{\text{def}}{=} \pi(a \mid s) \cdot \delta(s)\)</span> instead.  We can recover
-our original variables as <span class="math">\(\delta(s) = \sum_a \mu(s,a)\)</span> and <span class="math">\(\pi(a \mid s) =
-\mu(s,a) / \delta(s)\)</span>.  If every <span class="math">\(\delta(s)=0\)</span> the choice for <span class="math">\(\pi(a \mid s)\)</span> is
-an arbitrary distribution over <span class="math">\(a\)</span>.</p>
+<p><strong>TODO</strong> saddle-point problems and optimization instability, best-response and
+  positive response; regularization.</p>
+<p><strong>TODO</strong> What happens if we differentiate wrt <span class="math">\(\delta\)</span> or <span class="math">\(\pi\)</span> separately?
+  That might be how we get policy-specific value functions.</p>
+<p>The derivative wrt <span class="math">\(\pi( a^* \mid s^*)\)</span>
+</p>
 <div class="math">$$
-\underset{\pi}{\textrm{maximize }} \frac{1}{1-\gamma}\sum_{s,a} r(s,a) \cdot \mu(s, a)
+\begin{align*}
+\nabla_{\pi( a^* \mid s^*)} \mathcal{L}
+=\,
+&amp; r(s^*, a^*) \cdot \delta(s^*) \\
+&amp; +
+\sum_{s'} \lambda(s') \delta(s^*) \cdot P(s' \mid s^*,a^*)
+-
+\lambda(s^*) \delta(s^*) \\
+&amp; + \eta(s^*, a^*) \cdot \delta(s^*) \\
+=\,
+&amp; \delta(s^*) \left(
+r(s,a) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*,a^*) - \lambda(s^*)  + \eta(s^*, a^*)
+\right)
+\end{align*}
 $$</div>
-<p><em>subject to</em></p>
-<ul>
-<li><span class="math">\(\mu\)</span> is a valid occupancy measure over state-actions pairs</li>
-</ul>
+<p>We can solver for <span class="math">\(\lambda\)</span> such that the gradient is zero for all <span class="math">\(s^*\)</span>, which
+gives us (assuming that <span class="math">\(\delta \ne 0\)</span>),</p>
 <div class="math">$$
-\sum_{a'} \mu(s',a') = (1-\gamma) \cdot p_0(s') + \gamma \cdot \sum_{s,a} \mu(s,a) \cdot p(s'|s,a)\quad\text{for all }s' \in S
+\lambda(s^*) =
+r(s^*,a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*,a^*) + \eta(s^*, a^*)
 $$</div>
+<p>This is the same as earlier version. \eta is a slack variable again.</p>
+<p>The derivative wrt <span class="math">\(\delta(s^*)\)</span>
+</p>
 <div class="math">$$
-\mu(s, a) \ge 0 \quad\text{for all }s, a
+\begin{align*}
+\nabla_{\delta( s^*)} \mathcal{L}
+=\,
+&amp; \sum_{a} r(s^*, a) \cdot \pi(a \mid s^*) \\
+&amp; + \gamma \sum_{s'} \sum_{a} \lambda(s') \pi(a \mid s^*) \cdot P(s' \mid s^*, a) \\
+&amp; - \lambda(s^*) \\
+&amp; + \sum_{a} \eta(s^*,a) \cdot \pi(a \mid s^*)
+\end{align*}
 $$</div>
-<p>It turns out that explicit sum-to-one constraint (i.e., <span class="math">\(\sum_{s,a} \mu(s,a) =
-1\)</span>) is not necessary because solutions to the linear constraints will are
-already normalized.</p>
-<p><strong>TODO</strong> Formulate the Lagrangian.  Take its derivatives.</p>
+<p>This gives us the value of a fixed policy as an implicit function of setting
+this derivative equal to zero.</p>
+<p>XXX What is the story about <span class="math">\(\eta\)</span>?  I suspect it something like <span class="math">\(\eta\)</span> doesn't
+matter if <span class="math">\(\pi\)</span> is already positive.</p>
+<h3>The Lagrangian dual problem</h3>
+<p>The Lagrange dual problem simplifies to</p>
+<div class="math">$$
+\begin{cases}
+\underset{\lambda}{\textrm{minimize }} &amp; \sum_{s} p_0(s) \cdot \lambda(s) \\
+\text{subject to } &amp;
+\lambda(s) \ge r(s, a)
++ \gamma \sum_{s'} P(s' \mid s,a) \lambda(s') \quad\text{for all }s \in \mathcal{S}, a \in \mathcal{A}
+\end{cases}
+$$</div>
+<p><strong>TODO</strong> The S-procedure might fit in here.  The Lagrange dual of the QP
+  formulation has a no duality gap, which is the main consequence of the
+  S-procedure in control theory.  The reason why this is true is because once we
+  take the Lagrange dual the problem can be simplified into another LP.  This is
+  pretty trivial in our case because the original problem is sort of an LP too.</p>
+<h3>Implicit functions</h3>
+<p>Much like in consumer theory of economics, the optimization formulation of the
+MDP problem has rich connections between variables in the primal and dual.
+Theses connections are meaningful (e.g., as expectations and/or partial
+derivatives) and interconnected (e.g., as implicit functions of one another).
+In the case of consumer theory, almost every connection is associated with a
+theorem named after a Nobel Laureate.</p>
+<p>In this section, we sketch a number of connections in the MDP setting here.</p>
+<p><strong>TODO</strong> how do implicit functions work in the the primal-dual case?  I think
+the answer is that any partial optimization create constraints (as usual),
+regardless of whether or not those constraints are in the primal or the dual,
+they are coupled by the Lagrangian. The generally the primal-dual coupling is
+"modulated" by Lagrange multiplier estimates.</p>
+<h4>Occupancy measure: <span class="math">\(\delta\)</span> as an implicit function of <span class="math">\(\pi\)</span>:</h4>
+<p>If we fix <span class="math">\(\pi\)</span> and solve for a primal feasible <span class="math">\(\delta\)</span>, then we can interpret
+<span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s occupancy measure.<sup id="fnref-occupancy-note"><a class="footnote-ref" href="#fn-occupancy-note">5</a></sup></p>
+<p>In the Lagrangian view, we have use <span class="math">\(\nabla_{\lambda} \mathcal{L} = 0\)</span>
+simultaneously for all states (a type of block-wise update / "partial
+optimization").</p>
+<p>This version of <span class="math">\(\delta\)</span> is indexed by <span class="math">\(\pi\)</span> because it is now an implicit
+function</p>
+<p>Written in a vector form,
+</p>
+<div class="math">$$
+\delta_\pi = (1-\gamma P \pi)^{-1} p_0
+$$</div>
+<p>The benefit of collapsing-out the parameters in the fashion is that we eliminate
+the constraint and reduced the number of parameters.<sup id="fnref-collapse-linear"><a class="footnote-ref" href="#fn-collapse-linear">4</a></sup></p>
+<p><strong>TODO</strong>: Half-baked thought: As a function of <span class="math">\(\mu\)</span>, we have an underdetermined
+linear system (S constraints with SA unknowns).  What happens to the
+optimization problem if we perform the usual linear-equality elimation trick?
+Clearly, we reduce the number of parameters from SA to S.  The trick uses the
+null space of the linear system (which is a linear mapping from <span class="math">\(\mu \in
+\mathbb{R}^{S \times A}\)</span> to <span class="math">\(\mu': \mathbb{R}^{S}\)</span>).  This reparameterization
+might be interesting.</p>
+<h4>Value function: <span class="math">\(V\)</span> as an implicit function of <span class="math">\(\pi\)</span></h4>
+<p>For a fixed policy, (WHAT ABOUT <span class="math">\(\delta\)</span>?)
+if we set <span class="math">\(\nabla_{???} \mathcal{L} = 0\)</span>,
+the Lagrange mulipliers associated with constraint <span class="math">\((\ref{eq:balance})\)</span> become
+another implicit function <span class="math">\(V_\pi\)</span> of the policy</p>
+<p>We can estimate the Lagrange multipler (by L2 projection into the dual space?)
+for that policy.  It will be infeasible wrt to the optimization problem
+(TODO:XREF), however.  The problem is a simple fully determined linear system</p>
+<div class="math">$$
+V_\pi = (1-\gamma P \pi)^{-1} r
+$$</div>
+<p>Varying <span class="math">\(\pi\)</span> under this mapping in nonconvex in the space of <span class="math">\(V_\pi\)</span>
+(cite:VF-polytope paper)</p>
+<h4>Successor representation?</h4>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">successor_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="s2">&quot;Dayan&#39;s successor representation.&quot;</span>
+    <span class="k">return</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">))</span>
+</pre></div>
+
+
+<p><strong>TODO</strong> featurized version of SR.</p>
+<p><strong>TODO</strong> Describe Wang et al's policy-improvement friendly SA x SA matrix.</p>
+<h2>TODO</h2>
+<p><strong>TODO</strong> Formulate the Lagrangian.  Take its derivatives.  Talk about all the
+  implicit functions and connections.</p>
 <p><strong>TODO</strong> Take the LP dual, note that it is exactly the optimal value function
   problem.</p>
+<p><strong>TODO</strong> Proximal RL https://arxiv.org/pdf/1405.6757.pdf</p>
+<p><strong>TODO</strong> featurized equilibrium distribution</p>
+<p><strong>TODO</strong> S-procedure and nonconvexity.</p>
+<p><strong>TODO</strong> <a href="http://www.argmin.net/2016/05/18/mates-of-costate/">Mates of costate</a></p>
+<p><strong>TODO</strong> if we write an equivalent set of constraints, what happen to the dual
+  variables (e.g., do we get Q or A under different variations)?  Or are these
+  other things just different implicit functions?</p>
 <p><strong>TODO</strong> Block-coordinate method - is policy iteration.  Just like my backprop
   post, we can take any fixed policy and estimate the Lagrange mulipliers by
   setting the gradient of the Lagrangian wrt <span class="math">\(V\)</span> equal to zero given what every
   <span class="math">\(\pi\)</span> is.</p>
 <p><strong>TODO</strong> The successor representation is the dual of this connection -- They are
-Lagrange multiplier estimates of the in the primal problem.</p>
-<h2>Connections in graphical models</h2>
+  Lagrange multiplier estimates of the in the primal problem.</p>
+<p><strong>TODO</strong> Value function polytope
+  https://arxiv.org/pdf/1901.11524.pdf</p>
+<p><strong>TODO</strong> Consider adding entropic regularization to the discussion.  At the very
+  least add references to Belousov &amp; Peters. (2017)<sup id="fnref-BP17"><a class="footnote-ref" href="#fn-BP17">7</a></sup></p>
+<p><strong>TODO</strong> The averge-reward formulation of V/Q functions are a little
+  different.  Figure out why.</p>
+<p>Q(s,a) = R(s,a) - Rbar + \sum_{s'} T(s'| s,a) V(s')</p>
+<p>(Is the Rbar because of the sum-to-one constraint?)</p>
+<p><strong>TODO</strong> the diagram in this consumer theory tutorial is great.
+  https://policonomics.com/marshallian-hicksian-demand-curves/</p>
+<p><strong>TODO</strong> Optimization-based view of MDP [^KBP13] <sup id="fnref2-BP17"><a class="footnote-ref" href="#fn-BP17">7</a></sup> <sup id="fnref2-W08"><a class="footnote-ref" href="#fn-W08">8</a></sup></p>
+<p><strong>TODO</strong> the "line theorem" in VF-polytope extends to all factored probability
+   model (PGMs) and case-factor diagrams (CFDs) more generally.  The laws of
+   probability are such that all probabilistic statements are multi-linear
+   polynomials (MPs): the basic operations are chain-rule decompositions
+   (times), marginalization (sum), and Bayes rule (div); additionally, it is
+   never ok to multiply p(A, ... | ...) * p(A, ... | ...).  I am not sure how
+   Bayes rule works yet, but it is definitely the case that restricting to the
+   semiring (times-sum) part results in MPs.  I think that CFDs don't allow
+   division.  They do allow case statements unlike PGMs.</p>
+<h2>Extensions</h2>
+<h3>Average reward</h3>
+<div style="border: thin solid black; padding: 10px; background-color: #ffffcc;
+margin-bottom: 1.5em;">
+
+The average-reward formulation
+$$
+U(\pi) \overset{\text{def}}{=} \lim_{T \rightarrow \infty} \frac{1}{T} \mathbb{E}\left[  \sum_{t=0}^T r(s,a) \right]
+$$
+
+The follow mathematical program formalizes the average reward optimization
+problem.  The main difference is the balance equation is slightly different and
+we now require an explicit sum-to-one constraint that we didn't need in the
+discounted case.  Also the $1/(1-\gamma)$ is gone from the objective function.
+
+$$
+\begin{cases}
+\underset{\pi, \delta}{\textrm{maximize }} & \sum_{s,a} r(s,a) \cdot \delta(s) \pi(a \mid s) \\
+\text{subject to } &
+\sum_{a'} \delta(s') \pi(a' \mid s') = \sum_{s,a} \delta(s) \pi(a \mid s) \cdot P(s' \mid s,a)\quad\text{for all }s' \in \mathcal{S} \\
+& \sum_{s,a} \delta(s) \pi(a \mid s) = 1 \\
+& \delta(s) \pi(a \mid s) \ge 0 \quad\text{for } s \in \mathcal{S}, a \in \mathcal{A}
+\end{cases}
+$$
+
+Note that all of the implicit functions for the average reward case are slightly
+different.  The reason why is the extra sum-to-one constraint!
+
+</div>
+
+<h2>Dynamic programming inference in graphical models</h2>
 <p>The concept of a value function is not limited to RL: value functions arise in
 the dynamic programming solutions to many other problems.</p>
 <p>Building on
@@ -217,10 +435,70 @@ space complexity of algorithms for computing these quantities and even better
 gives us a recipe for efficiently computing these quantities backward/outside
 quantities.</p>
 <p>This connection extends to marginal inference in Bayesian networks more
-generally <a href="https://dl.acm.org/citation.cfm?id=765570">Darwiche (2003)</a>.</p>
-<blockquote>
-<p>Adnan Darwiche. <a href="https://dl.acm.org/citation.cfm?id=765570">A differential approach to inference in Bayesian networks</a>. Journal of the Association for Computing Machinery, 50(3):280–305, 2003.</p>
-</blockquote>
+generally Darwiche (2003).<sup id="fnref-D03"><a class="footnote-ref" href="#fn-D03">10</a></sup></p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-unnecessary-constraints">
+<p>We also want <span class="math">\(\delta(s) \pi(a \mid s)\)</span> to be a valid
+  joint state-action distribution and for <span class="math">\(\pi\)</span> to be a valid conditional
+  distribution.
+  <div class="math">$$
+  \begin{cases}
+  &amp;\sum_{s,a} \delta(s) \pi(a \mid s) = 1
+  &amp;\textstyle\sum_a \pi(a \mid s) = 1 \quad\text{for all } s \in \mathcal{S} \\
+  &amp;\pi(a \mid s) \ge 0 \quad\text{for all } s \in \mathcal{S}, a \in \mathcal{A}
+  \end{cases}
+  $$</div>
+  It turns out that we don't need to explicitly add these constraints because
+  they are implied by the existing balance constraints and assumptions that <span class="math">\(P\)</span>
+  is a stochastic matrix.&#160;<a class="footnote-backref" href="#fnref-unnecessary-constraints" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn-ties">
+<p>If ever <span class="math">\(\delta(s)=0\)</span>, the choice for <span class="math">\(\pi(a \mid s)\)</span> is any valid
+  distribution over <span class="math">\(a\)</span>.&#160;<a class="footnote-backref" href="#fnref-ties" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn-qp">
+<p>Optimization with quadratic equality constraints are generally NP-Hard to
+  solve.  To see why, consider the constraint <span class="math">\(x \cdot (x
+  - 1) = 0\)</span>, this constraint has exactly two solutions <span class="math">\(x \in \{0, 1\}\)</span>.  In
+  other words, it is an encoding of binary variables, and thus can be used to
+  solve NP-hard integer programming problems.&#160;<a class="footnote-backref" href="#fnref-qp" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn-collapse-linear">
+<p>We can always removed linear equality constraints, even if
+   the linear system is under-determined.  An over-determined system is, of
+   course, infeasible.  XXX: reference to linear-equality elimination trick.&#160;<a class="footnote-backref" href="#fnref-collapse-linear" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn-occupancy-note">
+<p>For the average reward case, we use <span class="math">\(P(s' \mid s, a) = p(s' \mid s, a)\)</span>.
+  We may run into issues with feasibility if the transition function is not unichain (ergodic for all policies).
+  For discounted case use <span class="math">\(P(s' \mid s, a) = (1-\gamma) \cdot p_0(s') + \gamma \cdot p(s' \mid s,a)\)</span>.
+  In the discounted cases, we can think of <span class="math">\(\delta\)</span> as <span class="math">\(\pi\)</span>'s stationary distribution if we regard <span class="math">\((1-\gamma)\)</span> as the probability of restarting the Markov chain (i.e., sampling the next state from a mixture of <span class="math">\(p_0(s')\)</span> with probability <span class="math">\((1-\gamma)\)</span> and from <span class="math">\(p(s' \mid s,a)\)</span> with probability <span class="math">\(\gamma\)</span>).  This is an equivalent in expected reward, but not higher-order moments of reward, i.e., it's not equivalent in distribution.&#160;<a class="footnote-backref" href="#fnref-occupancy-note" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn-P13">
+<p>Kober, Bagnell, &amp; Peters. 2013
+  <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.910.7004&amp;rep=rep1&amp;type=pdf">Reinforcement learning in robotics: A survey</a>&#160;<a class="footnote-backref" href="#fnref-P13" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+<li id="fn-BP17">
+<p>Belousov &amp; Peters. 2017.
+  <a href="https://arxiv.org/abs/1801.00056">f-Divergence constrained policy improvement</a>&#160;<a class="footnote-backref" href="#fnref-BP17" title="Jump back to footnote 7 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-BP17" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+</li>
+<li id="fn-W08">
+<p>Wang, Lizotte, Bowling, &amp; Schuurmans. 2008.
+  <a href="https://webdocs.cs.ualberta.ca/~dale/papers/dualdp.pdf">Dual Representations for Dynamic Programming</a>&#160;<a class="footnote-backref" href="#fnref-W08" title="Jump back to footnote 8 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2-W08" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+</li>
+<li id="fn-LM04">
+<p>Jonathan Levin and Paul Milgrom. 2004.
+  <a href="https://web.stanford.edu/~jdlevin/Econ%20202/Consumer%20Theory.pdf">Consumer Theory</a>&#160;<a class="footnote-backref" href="#fnref-LM04" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+</li>
+<li id="fn-D03">
+<p>Adnan Darwiche.
+  <a href="https://dl.acm.org/citation.cfm?id=765570">A differential approach to inference in Bayesian networks</a>.
+  Journal of the Association for Computing Machinery, 50(3):280–305, 2003.&#160;<a class="footnote-backref" href="#fnref-D03" title="Jump back to footnote 10 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -283,7 +561,7 @@ generally <a href="https://dl.acm.org/citation.cfm?id=765570">Darwiche (2003)</a
         Tim Vieira
     </span>
   </span>
-<time datetime="2018-03-16T00:00:00-04:00" pubdate>Mar 16, 2018</time>  <span class="categories">
+<time datetime="2019-07-17T00:00:00-04:00" pubdate>Jul 17, 2019</time>  <span class="categories">
     <a class='category' href='../category/misc.html'>misc</a>
   </span>
   <span class="categories">
