@@ -111,9 +111,11 @@ from a policy <span class="math">\(\pi(a \mid s)\)</span>.  Lastly, let <span cl
 <div class="math">$$
 U(\pi) \overset{\text{def}}{=} \mathbb{E}\left[  \sum_{t=0}^\infty \gamma^t \!\cdot\! r(s,a) \right]
 $$</div>
-<p>where the randomness in the expecation is taken over trajectories,
-<span class="math">\(\langle \langle s_t, a_t, r_t \rangle \rangle_{t=0}^\infty\)</span>.
-The next step is rewrite <span class="math">\(U(\pi)\)</span> as an expectation over state-visitation fequencies <span class="math">\(\delta(s)\)</span>, also know as the occupancy measure, rather than an expectation over infinitely long trajectories.<sup id="fnref-unnecessary-constraints"><a class="footnote-ref" href="#fn-unnecessary-constraints">1</a></sup></p>
+<p>where the randomness in the expecation is taken over trajectories, <span class="math">\(\langle
+\langle s_t, a_t, r_t \rangle \rangle_{t=0}^\infty\)</span>.  The next step is to
+rewrite <span class="math">\(U(\pi)\)</span> as an expectation over state-visitation fequencies <span class="math">\(\delta(s)\)</span>,
+also know as the occupancy measure, rather than an expectation over infinitely
+long trajectories.<sup id="fnref-unnecessary-constraints"><a class="footnote-ref" href="#fn-unnecessary-constraints">1</a></sup></p>
 <div class="math">$$
 (1-P_{\pi})^{-1} p_0 (1-\gamma) = \lim_{T \rightarrow \infty} \sum_{t=1}^T P_{\pi}^{t} p_0 (1-\gamma)
 $$</div>
@@ -281,9 +283,11 @@ function.</p>
 <p><span class="math">\(\lambda(s) = V(s)\)</span> is a dual variable for primal constraint <span class="math">\((s)\)</span>,</p>
 <p><span class="math">\(\eta(s,a) = -A(s,a)\)</span> is the slack variable in the dual constraint <span class="math">\((s,a)\)</span></p>
 <p><span class="math">\(\lambda(s) + \eta(s,a) = Q(s,a)\)</span></p>
+<p>No duality gap: Show Slater's conditions hold when no function approximation is
+used.  What do we want to say about the function approximation case?</p>
 <h3>The Lagrangian dual problem</h3>
-<p>The Lagrange dual problem simplifies to under the interpretation of <span class="math">\(\eta\)</span> as a
-slack variable.</p>
+<p>The Lagrange dual problem simplifies (under the interpretation of <span class="math">\(\eta\)</span> as a
+slack variable) to</p>
 <div class="math">$$
 \begin{cases}
 \underset{\lambda}{\textrm{minimize }} &amp; \sum_{s} p_0(s) \cdot \lambda(s) \\
@@ -392,10 +396,11 @@ $$</div>
 <p><strong>TODO</strong> saddle-point problems and optimization instability, best-response and
   positive response; regularization.  Go thru notes on the saddle-point
   formulation.</p>
+<p><strong>TODO</strong> We can get a different Lagrangian by starting from the value function
+  optimization problem -- that is the approach take in Dai et al.</p>
 <p><strong>TODO</strong> Take the LP dual, note that it is exactly the optimal value function
   problem.</p>
-<p><strong>TODO</strong> Proximal RL https://arxiv.org/pdf/1405.6757.pdf</p>
-<p><strong>TODO</strong> featurized equilibrium distribution</p>
+<p><strong>TODO</strong> <a href="https://arxiv.org/pdf/1405.6757.pdf">Proximal RL</a></p>
 <p><strong>TODO</strong> The S-procedure might fit in here.  The Lagrange dual of the QP
   formulation has a no duality gap, which is the main consequence of the
   S-procedure in control theory.  The reason why this is true is because once we
