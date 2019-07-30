@@ -64,6 +64,20 @@ functions as Lagrange multiplier estimates for a specific formulation of the
 policy-search problem in reinforcement learning.  This connection is pretty cool
 and is closely related to my previous post on
 <a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">backpropagation and Lagrangians</a>.</p>
+<p><strong>TODO</strong> this post suggests that a "policy evaluation" is not necessary: there
+  are plenty of other strategies to optimize a policy.  Within the RL literature
+  there is a prevalence of two-timescale methods that allow the policy updates
+  and policy evaluations to be co-optimized under a careful choice to
+  two-timescale step-size sequences for each problem.</p>
+<p>My other post suggested that backpropagation is also not necessary.  In both
+  cases, they simply "good strategies" because they can compute some
+  intermediate quantities in closed form (in particular, gradients of the primal
+  problem, by setting certain Lagrangian gradients to zero).  In the RL case,
+  this efficiency argument is less strong because these quantities are estimated
+  by sampling and have some error that can compound.  THis it is less clear that
+  we should bother with the intermediate step.  Recent algorithms based on the
+  primal-dual view are starting to take off (for example, SBEED, boosted actor
+  with dual critic, appropos).</p>
 <div style="border: thin solid black; padding: 10px; background-color: #ffffcc;
 margin-bottom: 1.5em;">
 
@@ -193,6 +207,11 @@ setting the gradient with respect to each parameter type to zero.</p>
 &amp; + \sum_{s, a} \eta(s,a) \cdot \delta(s) \pi(a \mid s) \Biggr]
 \end{align*}
 $$</div>
+<p>All of the derivatives of the Lagrangian are very easy to take because the
+Lagrangian is multi-linear in each the individual variables (it is bi-linear in
+<span class="math">\(\delta \cdot \pi\)</span> and <span class="math">\(\lambda\)</span>, but tri-linear if <span class="math">\(\pi\)</span> and <span class="math">\(\delta\)</span> and
+<span class="math">\(\lambda\)</span> can move independently).  The study of bi-linear forms is pretty
+common in game theory.</p>
 <h3>Conditions from <span class="math">\(\mu\)</span></h3>
 <p>Lagrangian conditions for differentiation with respect to <span class="math">\(\mu(s^*, a^*) =
 \delta(s^*) \pi(a^* \mid s^*)\)</span>.</p>
@@ -262,7 +281,7 @@ gives us (assuming that <span class="math">\(\delta \ne 0\)</span>),</p>
 \lambda(s^*) =
 r(s^*,a^*) + \gamma \sum_{s'} \lambda(s') \cdot P(s' \mid s^*,a^*) + \eta(s^*, a^*)
 $$</div>
-<p>This is the same as earlier version. \eta is a slack variable again.</p>
+<p>Same as earlier version. <span class="math">\(\eta\)</span> is a slack variable.</p>
 <h4>Conditions from <span class="math">\(\delta(s^*)\)</span></h4>
 <div class="math">$$
 \begin{align*}

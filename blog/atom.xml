@@ -13367,7 +13367,7 @@ $$&lt;/div&gt;
 is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
 sample it at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt; We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
 &lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
-&lt;p&gt;Note that this equation assumes that we known &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
+&lt;p&gt;Note that this equation assumes that we know &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
 certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
 consider potential errors in executing the recipe.&lt;/p&gt;
 &lt;p&gt;Since we don't known which &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the right one, we take an expectation over it
@@ -13669,7 +13669,7 @@ $$&lt;/div&gt;
 is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
 sample it at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt; We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
 &lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
-&lt;p&gt;Note that this equation assumes that we known &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
+&lt;p&gt;Note that this equation assumes that we know &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
 certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
 consider potential errors in executing the recipe.&lt;/p&gt;
 &lt;p&gt;Since we don't known which &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the right one, we take an expectation over it
