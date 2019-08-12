@@ -14293,7 +14293,7 @@ optimization process will continue to optimize regardless of how we change
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
 optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
 predictable way.&lt;/p&gt;
-&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's looking the
+&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's look at the
 general case to simplify notation. Suppose &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; are related through a
 function &lt;span class="math"&gt;\(g\)&lt;/span&gt; as follows,&lt;/p&gt;
 &lt;div class="math"&gt;$$g(x,y) = 0.$$&lt;/div&gt;
@@ -14460,7 +14460,7 @@ optimization process will continue to optimize regardless of how we change
 &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
 optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
 predictable way.&lt;/p&gt;
-&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's looking the
+&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's look at the
 general case to simplify notation. Suppose &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; are related through a
 function &lt;span class="math"&gt;\(g\)&lt;/span&gt; as follows,&lt;/p&gt;
 &lt;div class="math"&gt;$$g(x,y) = 0.$$&lt;/div&gt;
