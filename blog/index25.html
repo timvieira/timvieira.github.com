@@ -97,14 +97,13 @@ $$\small
 \quad\quad\small+ \cos(\exp(x) + \exp(x)^2) (\exp(x) + 2 \exp(x) \exp(x)).
 $$
 
-However, this expression leaves something to be desired because it has lot of
+However, this expression leaves something to be desired because it has a lot of
 repeated evaluations of the same function. This is clearly bad, if we want to
 turn it into source code.
 -->
 
-<p>If we were writing <em>a program</em> (e.g., in Python) to compute <span class="math">\(f\)</span>, we'd definitely
-take advantage of the fact that it has a lot of repeated evaluations for
-efficiency.</p>
+<p>If we were writing <em>a program</em> (e.g., in Python) to compute <span class="math">\(f\)</span>, we'd take
+advantage of the fact that it has a lot of repeated evaluations for efficiency.</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span>
@@ -123,7 +122,7 @@ variables.</p>
 <li>
 <p>The rules for transforming the code for a function into code for the gradient
   are really minimal (fewer things to memorize!). Additionally, the rules are
-  more general than in symbolic case because they handle as superset of
+  more general than in symbolic case because they handle as a superset of
   programs.</p>
 </li>
 <li>
@@ -204,7 +203,7 @@ categories:</p>
 </li>
 </ul>
 <!-- (It is possible to generalize this story to compute Jacobians of functions
-with multi-variate outputs by "scalarizing" the objective, e.g., multiply the
+with multivariate outputs by "scalarizing" the objective, e.g., multiply the
 outputs by a vector. This Gives an efficient program for computing Jacobian
 vector products that can be used to extra Jacobians.)  -->
 
@@ -321,7 +320,7 @@ compute <em>global</em> gradients in cyclic graphs. All we'd need is to run a li
 system solver to stitch together <em>local</em> gradients! That is exactly what the
 <a href="https://en.wikipedia.org/wiki/Implicit_function_theorem">implicit function theorem</a>
 says!</p>
-<p>Cyclic constraints add some expressive powerful to our "constraint language" and
+<p>Cyclic constraints add some expressive powerful to our "constraint language," and
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is</p>
 <div class="math">$$
@@ -331,12 +330,12 @@ setting. An example of what a general type of cyclic constraint looks like is</p
 &amp; \text{and}\quad \boldsymbol{z}_{1:d} = \boldsymbol{x}
 \end{align*}
 $$</div>
-<p>where <span class="math">\(g\)</span> can be an any smooth multivariate function of the intermediate
-variables! Of course, allowing cyclic constraints comes at the cost of a
-more-difficult analogue of "the forward pass" to satisfy the <span class="math">\(\boldsymbol{z}\)</span>
-equations (if we want to keep it a block-coordinate step). The
-<span class="math">\(\boldsymbol{\lambda}\)</span> equations are now a linear system that requires a linear
-solver (e.g., Gaussian elimination).</p>
+<p>where <span class="math">\(g\)</span> can be any smooth multivariate function of the intermediate variables!
+Of course, allowing cyclic constraints comes at the cost of a more-difficult
+analogue of "the forward pass" to satisfy the <span class="math">\(\boldsymbol{z}\)</span> equations (if we
+want to keep it a block-coordinate step). The <span class="math">\(\boldsymbol{\lambda}\)</span> equations
+are now a linear system that requires a linear solver (e.g., Gaussian
+elimination).</p>
 <p>Example use cases:</p>
 <ul>
 <li>
@@ -344,9 +343,9 @@ solver (e.g., Gaussian elimination).</p>
   it. For example,
   <a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">gradient-based hyperparameter optimization</a>
   in machine learning. The implicit function theorem manages to get gradients of
-  hyperparameters without needing to store any of intermediate states of the
+  hyperparameters without needing to store any of the intermediate states of the
   optimization algorithm used in the inner optimization! This is a <em>huge</em> memory
-  saver since direct backprop on the inner gradient decent algorithm would
+  saver since direct backprop on the inner gradient descent algorithm would
   require caching all intermediate states. Yikes!</p>
 </li>
 <li>
@@ -363,8 +362,8 @@ immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
 do in other algorithms for optimizing general Lagrangians).</p>
 <h2>Summary</h2>
-<p>Backprop is does not directly fall out of the the rules for differentiation
-that you learned in calculus (e.g., the chain rule).</p>
+<p>Backprop does not directly fall out of the rules for differentiation that you
+learned in calculus (e.g., the chain rule).</p>
 <ul>
 <li>This is because it operates on a more general family of functions: <em>programs</em>
   which have <em>intermediate variables</em>. Supporting intermediate variables is
@@ -396,7 +395,7 @@ version is too redundant.</p>
 <p>Yann LeCun. (1988)
 <a href="http://yann.lecun.com/exdb/publis/pdf/lecun-88.pdf">A Theoretical Framework from Back-Propagation</a>.</p>
 </blockquote>
-<p>Ben Recht has great blog post that uses the implicit function theorem to
+<p>Ben Recht has a great blog post that uses the implicit function theorem to
 <em>derive</em> the method of Lagrange multipliers. He also touches on the connection
 to backpropagation.</p>
 <blockquote>
@@ -404,17 +403,17 @@ to backpropagation.</p>
 <a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/">Mechanics of Lagrangians</a>.</p>
 </blockquote>
 <p>Tom Goldstein's group took the Lagrangian view of backprop and used it to design
-an ADMM approach for optimizing neural nets. The ADMM approach 
+an ADMM approach for optimizing neural nets. The ADMM approach
 can run massively in parallel and can leverage highly optimized solvers for
 subproblems. This work nicely demonstrates that understanding automatic
 differentiation&mdash;in the broader sense that I described in this
 post&mdash;facilitates the development of novel optimization algorithms. <!--
-ADMM is based on a cool reformulation trick, which take a *big* circuit and
+ADMM is based on a cool reformulation trick, which takes a *big* circuit and
 breaks it up into several *small* circuits (subproblems), which are *decoupled*
 from the big problem because each subproblem gets to freely tune its own *local*
 version of the variables. There is, of course, a global equality constraint on
 the decoupled variables so that we get a correct solution. The global equality
-constraints iteratively brings the subproblems into agreement.--></p>
+constraints iteratively bring the subproblems into agreement.--></p>
 <blockquote>
 <p>Gavin Taylor, Ryan Burmeister, Zheng Xu, Bharat Singh, Ankit Patel, Tom Goldstein. (2018)
 <a href="https://arxiv.org/abs/1605.02026">Training Neural Networks Without Gradients: A Scalable ADMM Approach</a>.</p>
