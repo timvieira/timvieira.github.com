@@ -3,3 +3,15 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 article li {
   margin: 1em 2em;
 }
+
+.prompt {
+    display: none !important;
+}
+
+.highlight {
+    border: none !important;
+}
+
+p {
+    margin-bottom: 0em;
+}
