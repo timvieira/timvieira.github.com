@@ -1506,7 +1506,7 @@ optimized: 1.42 4.43
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Closing-remarks"&gt;Closing remarks&lt;a class="anchor-link" href="#Closing-remarks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article there is a lot more interesting properties and details worked out for reference.&lt;/p&gt;
+&lt;h2 id="Closing-remarks"&gt;Closing remarks&lt;a class="anchor-link" href="#Closing-remarks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article, there is a lot more discussion of interesting properties and details.&lt;/p&gt;
 &lt;p&gt;This notebook is available for download &lt;a href="https://github.com/timvieira/blog/blob/master/content/Restart-acceleration.ipynb"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I am very happy to answer questions! There are many ways to do that: comment at the end of this document, Tweet at &lt;code&gt;@xtimv&lt;/code&gt;, or email &lt;code&gt;tim.f.vieira@gmail.com&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;If you found this article interesting please consider sharing it on social media.  If you found this article useful please cite it&lt;/p&gt;
@@ -3696,7 +3696,7 @@ optimized: 1.42 4.43
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Closing-remarks"&gt;Closing remarks&lt;a class="anchor-link" href="#Closing-remarks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article there is a lot more interesting properties and details worked out for reference.&lt;/p&gt;
+&lt;h2 id="Closing-remarks"&gt;Closing remarks&lt;a class="anchor-link" href="#Closing-remarks"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article, there is a lot more discussion of interesting properties and details.&lt;/p&gt;
 &lt;p&gt;This notebook is available for download &lt;a href="https://github.com/timvieira/blog/blob/master/content/Restart-acceleration.ipynb"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I am very happy to answer questions! There are many ways to do that: comment at the end of this document, Tweet at &lt;code&gt;@xtimv&lt;/code&gt;, or email &lt;code&gt;tim.f.vieira@gmail.com&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;If you found this article interesting please consider sharing it on social media.  If you found this article useful please cite it&lt;/p&gt;
