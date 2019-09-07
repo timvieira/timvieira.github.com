@@ -60,7 +60,7 @@
 p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
 \quad\text{where}\quad W = \frac{1}{\sum_j w_j}
 $$</div>
-<p>The following is a very simple and relatively famous algorithm due to <a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X">Efraimidis and Spirakis (2006)</a>.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (discussed in <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Vieira, 2014</a>).</p>
+<p>The following is a very simple and relatively famous algorithm due to <a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X">Efraimidis and Spirakis (2006)</a>.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (<a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Vieira,  2014</a>).</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">weighted_reservoir_sampling</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">])</span>
 </pre></div>
@@ -123,8 +123,8 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
 \mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
 &amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; J \le W_{i,k} \right) \\
 &amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \\
-&amp;=&amp; \mathrm{Pr}\left( \exp(-T \cdot W_{i,k-1}) &gt; U \ge \exp(-T \cdot W_{i,k}) \right) \label{foo}\\
-&amp;=&amp; \exp(T \cdot W_{i,k-1}) - \exp(T \cdot W_{i,k} )
+&amp;=&amp; \mathrm{Pr}\left( \exp(-T W_{i,k-1}) &gt; U \ge \exp(-T W_{i,k}) \right) \label{foo}\\
+&amp;=&amp; \exp(T W_{i,k-1}) - \exp(T W_{i,k} )
 \end{eqnarray}
 $$</div>
 <p>Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that <span class="math">\(X_k\)</span> is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a <em>truncated</em> random variate: a random variate that is guaranteed to less than the previous minimum.  In the <a href="https://cmaddis.github.io/gumbel-machinery">Gumbel-max world</a>, this is used in the top-down generative story.</p>
