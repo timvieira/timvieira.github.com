@@ -11,7 +11,26 @@ time, mark, audio, video {
 
 html {
     line-height: 1
+    font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+    color: #333;
 }
+
+.mono,
+pre,
+code,
+tt,
+p code,
+p tt,
+li code,
+li tt {
+    font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace
+}
+
+a {
+    color: inherit;
+    decoration: underline;
+}
+
 
 ol,
 ul {
@@ -78,40 +97,12 @@ summary {
     display: block
 }
 
-a {
-    color: #1863a1
-}
 
-a:visited {
-   /* color: #751590*/
-}
-
-a:focus {
-    color: #0181eb
-}
-
-a:hover {
-    color: #0181eb
+a: hover {
 }
 
 a:active {
-    color: #01579f
-}
-
-aside.sidebar a {
-    color: #1863a1
-}
-
-aside.sidebar a:focus {
-    color: #0181eb
-}
-
-aside.sidebar a:hover {
-    color: #0181eb
-}
-
-aside.sidebar a:active {
-    color: #01579f
+    color: inherit;
 }
 
 a {
@@ -121,17 +112,12 @@ a {
     transition: color 0.3s
 }
 
-html {
-    background: #252525 url('../images/line-tile.png?1395516324') top left
-}
 
 body>div {
-    background: #f2f2f2 url('../images/noise.png?1395516324') top left;
     border-bottom: 1px solid #bfbfbf
 }
 
 body>div>div {
-    background: #f8f8f8 url('../images/noise.png?1395516324') top left;
     border-right: 1px solid #e0e0e0
 }
 
@@ -143,7 +129,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif
+
 }
 
 .sans,
@@ -156,41 +142,29 @@ html .gist .gist-file .gist-meta,
 #blog-archives time,
 aside.sidebar section,
 body>footer {
-    font-family: "PT Sans", "Helvetica Neue", Arial, sans-serif
+
 }
 
 .serif,
 body,
 #content .blog-index a[rel=full-article] {
-    font-family: "PT Serif", Georgia, Times, "Times New Roman", serif
+
 }
 
-.mono,
-pre,
-code,
-tt,
-p code,
-p tt,
-li code,
-li tt {
-    font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace
-}
 
 body>header h1 {
-    font-size: 2.2em;
-    font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.5em;
     font-weight: normal;
     line-height: 1.2em;
     margin-bottom: 0.6667em
 }
 
 body>header h2 {
-    font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif
+
 }
 
 body {
     line-height: 1.5em;
-    color: #222
 }
 
 h1 {
@@ -216,7 +190,7 @@ h5,
 h6 {
     text-rendering: optimizelegibility;
     margin-bottom: 1em;
-    font-weight: bold
+    font-weight: 575;
 }
 
 h2,
@@ -796,31 +770,30 @@ body.sidebar-footer .toggle-sidebar {
 }
 
 body>header {
-    background: #333
 }
 
 body>header h1 {
     display: inline-block;
-    margin: 0
+    margin: 0;
 }
 
 body>header h1 a,
 body>header h1 a:visited,
 body>header h1 a:hover {
-    color: #f2f2f2;
     text-decoration: none
 }
 
 body>header h2 {
     margin: .2em 0 0;
     font-size: 1em;
-    color: #aaa;
+
     font-weight: normal
 }
 
 body>nav {
     position: relative;
-    background-color: #ccc;
+    /*
+    background-color: #fff;
     background: url('../images/noise.png?1395516324'), -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e0e0e0), color-stop(50%, #cccccc), color-stop(100%, #b0b0b0));
     background: url('../images/noise.png?1395516324'), -webkit-linear-gradient(#e0e0e0, #cccccc, #b0b0b0);
     background: url('../images/noise.png?1395516324'), -moz-linear-gradient(#e0e0e0, #cccccc, #b0b0b0);
@@ -828,6 +801,7 @@ body>nav {
     background: url('../images/noise.png?1395516324'), linear-gradient(#e0e0e0, #cccccc, #b0b0b0);
     border-top: 1px solid #f2f2f2;
     border-bottom: 1px solid #8c8c8c;
+    */
     padding-top: .35em;
     padding-bottom: .35em
 }
@@ -843,7 +817,6 @@ body>nav form {
 body>nav form .search {
     padding: .3em .5em 0;
     font-size: .85em;
-    font-family: "PT Sans", "Helvetica Neue", Arial, sans-serif;
     line-height: 1.1em;
     width: 95%;
     -webkit-border-radius: 0.5em;
@@ -859,7 +832,6 @@ body>nav form .search {
     box-shadow: #d1d1d1 0 1px;
     background-color: #f2f2f2;
     border: 1px solid #b3b3b3;
-    color: #888
 }
 
 body>nav form .search:focus {
@@ -937,8 +909,6 @@ body>nav ul {
         margin: 0
     }
     body>nav a {
-        color: #6b6b6b;
-        font-family: "PT Sans", "Helvetica Neue", Arial, sans-serif;
         text-shadow: #ebebeb 0 1px;
         float: left;
         text-decoration: none;
@@ -947,13 +917,13 @@ body>nav ul {
         line-height: 1.5em
     }
     body>nav a:visited {
-        color: #6b6b6b
+
     }
     body>nav a:hover {
-        color: #2b2b2b
+        text-decoration: underline;
     }
     body>nav li+li {
-        border-left: 1px solid #b0b0b0;
+/*        border-left: 1px solid #b0b0b0; */
         margin-left: .8em
     }
     body>nav li+li a {
@@ -1097,7 +1067,8 @@ body>nav ul {
 }
 
 article {
-    padding-top: 1em
+    margin: 0;
+    padding-top: 0em
 }
 
 article header {
@@ -1250,10 +1221,6 @@ article>footer p.meta {
     color: inherit
 }
 
-#content .blog-index article h1 a:hover {
-    color: #0181eb
-}
-
 #content .blog-index a[rel=full-article] {
     background: #ebebeb;
     display: inline-block;
@@ -1311,10 +1278,6 @@ article>footer .byline ~ .categories:before {
     right: 0
 }
 
-#content div.pagination a:hover {
-    color: #0181eb
-}
-
 #content div.pagination a[href*=archive]:before,
 #content div.pagination a[href*=archive]:after {
     content: '\2014';
@@ -1324,7 +1287,7 @@ article>footer .byline ~ .categories:before {
 p.meta+.sharing {
     padding-top: 1em;
     padding-left: 0;
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
+//    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
 }
 
 #fb-root {
@@ -1333,14 +1296,13 @@ p.meta+.sharing {
 
 
 html .gist .gist-file {
-    margin-bottom: 1.8em;
+    margin-bottom: 0;
     position: relative;
     border: none;
     padding-top: 26px !important
 }
 
 html .gist .gist-file table {
-//    width: 789px;
     margin-bottom: 0
 }
 
@@ -1349,16 +1311,10 @@ html .gist .gist-file .gist-syntax {
     background: none !important
 }
 
-html .gist .gist-file .gist-syntax .gist-highlight {
-    background: #002b36 !important
-}
-
 html .gist .gist-file .gist-meta {
     padding: .6em 0.8em;
-//    border: 1px solid #083e4b !important;
     color: #586e75;
     font-size: .7em !important;
-//    background: #073642 url('../images/noise.png?1395516324') top left;
     line-height: 1.5em
 }
 
@@ -1378,10 +1334,6 @@ html .gist .gist-file .gist-meta a[href*='#file'] {
     left: 0;
     right: -10px;
     color: #474747 !important
-}
-
-html .gist .gist-file .gist-meta a[href*='#file']:hover {
-    color: #1863a1 !important
 }
 
 html .gist .gist-file .gist-meta a[href*=raw] {
@@ -1499,7 +1451,6 @@ html .gist .gist-file .gist-syntax .gist-highlight pre,
 .highlight pre,
 .gist-highlight pre,
 .highlight code {
-    font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace !important;
     overflow: scroll;
     overflow-y: hidden;
     display: block;
@@ -2051,30 +2002,28 @@ figure.code .highlight {
     margin-bottom: 0
 }
 
-.code-title,
-html .gist .gist-file .gist-meta a[href*='#file'],
-h3.filename,
-figure.code figcaption {
-    text-align: center;
-    font-size: 13px;
-    line-height: 2em;
-    text-shadow: #cbcccc 0 1px 0;
-    color: #474747;
-    font-weight: normal;
-    margin-bottom: 0;
+.gist {
+    /*
     -moz-border-radius-topleft: 5px;
     -webkit-border-top-left-radius: 5px;
     border-top-left-radius: 5px;
     -moz-border-radius-topright: 5px;
     -webkit-border-top-right-radius: 5px;
     border-top-right-radius: 5px;
-    font-family: "Helvetica Neue", Arial, "Lucida Grande", "Lucida Sans Unicode", Lucida, sans-serif;
-    background: #aaa url('../images/code_bg.png?1395516324') top repeat-x;
-    border: 1px solid #565656;
-    border-top-color: #cbcbcb;
-    border-left-color: #a5a5a5;
-    border-right-color: #a5a5a5;
-    border-bottom: 0
+
+    border: 1px solid #ccc;
+   */
+}
+
+.code-title,
+html .gist .gist-file .gist-meta a[href*='#file'],
+h3.filename,
+figure.code figcaption {
+    font-size: 14px;
+    line-height: 2em;
+    color: #474747;
+    font-weight: normal;
+    margin-bottom: 0;
 }
 
 .download-source,
@@ -2086,8 +2035,7 @@ figure.code figcaption a {
     color: #666 !important;
     z-index: 1;
     font-size: 13px;
-    text-shadow: #cbcccc 0 1px 0;
-    padding-left: 3em
+    padding-left: 4em;
 }
 
 .download-source:hover,
@@ -2145,7 +2093,6 @@ figure.code figcaption a:hover {
 }
 
 #blog-archives h1 a:hover {
-    color: #0181eb
 }
 
 #blog-archives a.category,
@@ -2178,15 +2125,6 @@ figure.code figcaption a:hover {
 #blog-archives a,
 #blog-archives .entry-content a {
     color: inherit
-}
-
-#blog-archives a:hover,
-#blog-archives .entry-content a:hover {
-    color: #0181eb
-}
-
-#blog-archives a:hover {
-    color: #0181eb
 }
 
 @media only screen and (min-width: 550px) {
@@ -2230,6 +2168,7 @@ figure.code figcaption a:hover {
 #content>.category .year {
     display: inline
 }
+
 
 .side-shadow-border,
 aside.sidebar section h1,
@@ -2300,25 +2239,12 @@ aside.sidebar a {
     transition: color 0.5s
 }
 
-aside.sidebar:hover a {
-    color: #1863a1
-}
-
-aside.sidebar:hover a:hover {
-    color: #0181eb
-}
-
 .aside-alt-link,
 #tweets a[href*='twitter.com/search'],
 #pinboard_linkroll .pin-tag {
     color: #7e7e7e
 }
 
-.aside-alt-link:hover,
-#tweets a[href*='twitter.com/search']:hover,
-#pinboard_linkroll .pin-tag:hover {
-    color: #0181eb
-}
 
 @media only screen and (min-width: 768px) {
     .toggle-sidebar {
@@ -2414,7 +2340,6 @@ aside.sidebar:hover a:hover {
 }
 
 #tweets a[href*=status]:first-child:hover {
-    color: #0181eb;
     text-decoration: none
 }
 
@@ -2516,7 +2441,6 @@ body>footer a:visited {
 }
 
 body>footer a:hover {
-    color: #484848
 }
 
 body>footer p:last-child {
@@ -2558,8 +2482,20 @@ dd {
     margin-left: 1.5em
 }
 
+article li p {
+    padding: 0; margin: 0;
+}
+
+article ul {
+    margin: 0;
+    margin-top: -1.25em;
+    padding: 0;
+    padding-bottom: 1em;
+}
+
 article li {
-    margin: 1em 2em;
+    padding: 0;
+    margin: .5em 3em 0em 3em;
 }
 
 
@@ -2655,7 +2591,6 @@ pre {
     width: 100%;
     margin-bottom: 2em;
     border: 1px solid #ddd;
-//    background-color: #ddd;
 }
 
 .inner_cell, .input_area{ margin: 0; padding: 0}
@@ -2671,3 +2606,38 @@ p {
     margin-bottom: 0em;
 }
 */
+
+
+footer {
+    display: none;
+}
+
+body>header h1 a {
+
+}
+
+body>header,
+body>header h1 {
+    padding-bottom: 0;
+}
+
+
+article h1 {
+    font-size: 2em;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.sidebar a {
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    text-decoration: underline;
+}
+
+div.derivation {
+    background-color: #ccc;
+}
