@@ -12093,6 +12093,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
     |  1.00 |    0.345 |
 --&gt;
 
+&lt;p&gt;&lt;strong&gt;Final remarks&lt;/strong&gt;: I have uploaded a &lt;a href="https://github.com/timvieira/blog/blob/master/content/notebook/Sqrt-biased-sampling.ipynb"&gt;Jupyter notebook&lt;/a&gt; with test cases that illustrate the ideas in this article.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -12402,6 +12403,7 @@ gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
     |  1.00 |    0.345 |
 --&gt;
 
+&lt;p&gt;&lt;strong&gt;Final remarks&lt;/strong&gt;: I have uploaded a &lt;a href="https://github.com/timvieira/blog/blob/master/content/notebook/Sqrt-biased-sampling.ipynb"&gt;Jupyter notebook&lt;/a&gt; with test cases that illustrate the ideas in this article.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
