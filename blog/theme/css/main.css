@@ -20,6 +20,10 @@ li tt {
     font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace;
 }
 
+code {
+    font-size: .85em;
+}
+
 a {
     color: inherit;
     decoration: underline;
