@@ -719,7 +719,6 @@ body>header h1 a:hover {
 body>header h2 {
     margin: .2em 0 0;
     font-size: 1em;
-
     font-weight: normal
 }
 
@@ -1049,11 +1048,9 @@ article header p.meta time {
 
 article h2 {
     padding-top: 0.8em;
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
 }
 
-.comments,
-article h2 {
+.comments {
     margin-top: 0.8em;
     padding-top: 0.8em;
     background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
