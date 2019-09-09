@@ -1969,3 +1969,7 @@ body {
     color: #333;
     font-size: 16pt;
 }
+
+.output_wrapper {
+    margin-bottom: 1.5em;
+}
