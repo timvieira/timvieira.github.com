@@ -6,8 +6,8 @@
   <meta charset="utf-8">
   <title>Graduate Descent</title>
 
-<link href="https://fonts.googleapis.com/css?family=EB+Garamond&display=swap"
-      rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=EB+Garamond&display=swap"
+        rel="stylesheet">
 
   <meta name="author" content="Tim Vieira">
 
@@ -122,7 +122,7 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
 </pre></div>
 
 
-<p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step <span class="math">\(i\)</span> the probability that sees its next minimum at steps <span class="math">\(j \in \{ i+1, \ldots \}\)</span> can be reasoned about without needing to <em>actually</em> sample the various <span class="math">\(X_j\)</span> variables.</p>
+<p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step <span class="math">\(i\)</span> the probability that it sees its next minimum at steps <span class="math">\(j \in \{ i+1, \ldots \}\)</span> can be reasoned about without needing to <em>actually</em> sample the various <span class="math">\(X_j\)</span> variables.</p>
 <p>Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the <code>jump</code> algorithm simulates the <code>walk</code> algorithm.  The key to doing this is showing that the probability of jumping from <span class="math">\(i\)</span> to <span class="math">\(k\)</span> is the same as "walking" from <span class="math">\(i\)</span> to <span class="math">\(k\)</span>.  Let <span class="math">\(W_{i,k} = \sum_{j=i}^k w_j\)</span>.</p>
 <p>This proof is adapted from the original proof in E&amp;S'06.</p>
 <div class="math">$$
