@@ -469,7 +469,7 @@ body>header {
 aside.sidebar {
     float: none;
     padding: 0 18px 1px;
-    border-top: 1px solid #e0e0e0
+    /*border-top: 1px solid #e0e0e0*/
 }
 
 .flex-content,
@@ -533,7 +533,6 @@ aside.sidebar img.right {
         clear: left;
         margin: 0;
         padding: 0 35px 1px;
-        border-top: 1px solid #eaeaea
     }
     body.sidebar-footer aside.sidebar section.odd,
     body.sidebar-footer aside.sidebar section.even {
@@ -577,7 +576,6 @@ body.sidebar-footer .toggle-sidebar {
         clear: left;
         margin: 0;
         padding: 0 35px 1px;
-        border-top: 1px solid #eaeaea
     }
     aside.sidebar section.odd,
     aside.sidebar section.even {
@@ -653,7 +651,6 @@ body.sidebar-footer .toggle-sidebar {
         clear: left;
         margin: 0;
         padding: 0 35px 1px;
-        border-top: 1px solid #eaeaea
     }
     .collapse-sidebar aside.sidebar section.odd,
     .collapse-sidebar aside.sidebar section.even {
