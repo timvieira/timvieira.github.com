@@ -15914,9 +15914,9 @@ reservoir sampling&lt;/p&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;/dl&gt;
-&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
-that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute pow (which is nice
-because pow is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
+&lt;p&gt;Again, if we interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
+that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute &lt;code&gt;pow&lt;/code&gt; (which is nice
+because &lt;code&gt;pow&lt;/code&gt; is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
 \log(u_i)/x_i\)&lt;/span&gt; because &lt;span class="math"&gt;\(\log\)&lt;/span&gt; is monotonic. (Note that &lt;span class="math"&gt;\(-e'_i \sim
 \textrm{Exponential}(x_i)\)&lt;/span&gt;.)&lt;/p&gt;
 &lt;!--
@@ -15927,9 +15927,8 @@ that minimizing is actually summing. However, we want the argmin, which is
 distributed according to $\pi_t$.
 --&gt;
 
-&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
-algorithms compute a randomized key and take an argmax. What's the relationship
-between the keys?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: At a high level, we can see that both algorithms compute a
+randomized key and take an argmax. What's the relationship between the keys?&lt;/p&gt;
 &lt;p&gt;First, note that a &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; variate can be generated via
 &lt;span class="math"&gt;\(-\log(-\log(\text{Uniform}(0,1)))\)&lt;/span&gt;. This is a straightforward application of
 the
@@ -16080,9 +16079,9 @@ reservoir sampling&lt;/p&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
 &lt;/dl&gt;
-&lt;p&gt;Again, if interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
-that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute pow (which is nice
-because pow is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
+&lt;p&gt;Again, if we interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
+that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute &lt;code&gt;pow&lt;/code&gt; (which is nice
+because &lt;code&gt;pow&lt;/code&gt; is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
 \log(u_i)/x_i\)&lt;/span&gt; because &lt;span class="math"&gt;\(\log\)&lt;/span&gt; is monotonic. (Note that &lt;span class="math"&gt;\(-e'_i \sim
 \textrm{Exponential}(x_i)\)&lt;/span&gt;.)&lt;/p&gt;
 &lt;!--
@@ -16093,9 +16092,8 @@ that minimizing is actually summing. However, we want the argmin, which is
 distributed according to $\pi_t$.
 --&gt;
 
-&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: Let's try to relate these algorithms. At a high level, both
-algorithms compute a randomized key and take an argmax. What's the relationship
-between the keys?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: At a high level, we can see that both algorithms compute a
+randomized key and take an argmax. What's the relationship between the keys?&lt;/p&gt;
 &lt;p&gt;First, note that a &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; variate can be generated via
 &lt;span class="math"&gt;\(-\log(-\log(\text{Uniform}(0,1)))\)&lt;/span&gt;. This is a straightforward application of
 the

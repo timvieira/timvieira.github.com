@@ -116,9 +116,9 @@ reservoir sampling</p>
 <dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
 <dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
 </dl>
-<p>Again, if interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>. Note
-that you can simplify <span class="math">\(e_i\)</span> so that you don't have to compute pow (which is nice
-because pow is pretty slow). It's equivalent to use <span class="math">\(e'_i = \log(e_i) =
+<p>Again, if we interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>. Note
+that you can simplify <span class="math">\(e_i\)</span> so that you don't have to compute <code>pow</code> (which is nice
+because <code>pow</code> is pretty slow). It's equivalent to use <span class="math">\(e'_i = \log(e_i) =
 \log(u_i)/x_i\)</span> because <span class="math">\(\log\)</span> is monotonic. (Note that <span class="math">\(-e'_i \sim
 \textrm{Exponential}(x_i)\)</span>.)</p>
 <!--
@@ -129,9 +129,8 @@ that minimizing is actually summing. However, we want the argmin, which is
 distributed according to $\pi_t$.
 -->
 
-<p><strong>Relationship</strong>: Let's try to relate these algorithms. At a high level, both
-algorithms compute a randomized key and take an argmax. What's the relationship
-between the keys?</p>
+<p><strong>Relationship</strong>: At a high level, we can see that both algorithms compute a
+randomized key and take an argmax. What's the relationship between the keys?</p>
 <p>First, note that a <span class="math">\(\text{Gumbel}(0,1)\)</span> variate can be generated via
 <span class="math">\(-\log(-\log(\text{Uniform}(0,1)))\)</span>. This is a straightforward application of
 the
