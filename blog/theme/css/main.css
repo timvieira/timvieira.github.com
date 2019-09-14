@@ -1973,3 +1973,16 @@ body {
 .output_wrapper {
     margin-bottom: 1.5em;
 }
+
+.tag {
+    text-decoration: none;
+}
+a.tag:hover {
+    text-decoration: underline;
+}
+
+.tag:before {
+    content: "#";
+    color: #acacac;
+    text-decoration: none;
+}

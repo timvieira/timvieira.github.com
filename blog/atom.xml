@@ -9083,7 +9083,7 @@ which is perfect for binary search!&lt;/p&gt;
 
 
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Complete code and test cases for heap sampling are available in this
-&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.  A fast Cython &lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/maths/sumheap.pyx"&gt;implementation&lt;/a&gt; is available in my Python &lt;a href="https://github.com/timvieira/arsenal/"&gt;arsenal&lt;/a&gt;.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -9427,7 +9427,7 @@ which is perfect for binary search!&lt;/p&gt;
 
 
 &lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Complete code and test cases for heap sampling are available in this
-&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.  A fast Cython &lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/maths/sumheap.pyx"&gt;implementation&lt;/a&gt; is available in my Python &lt;a href="https://github.com/timvieira/arsenal/"&gt;arsenal&lt;/a&gt;.&lt;/p&gt;
 &lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
