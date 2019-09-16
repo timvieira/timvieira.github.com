@@ -76,7 +76,7 @@
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In this notebook, we'll describe, implement, and test some simple and efficient strategies for sampling without replacement from a categorical distribution.</p>
-<p>Given a set of items indexed by $1, \ldots, n$ and weights $w_1, \ldots, w_n$, we'd like to sample $0 &lt; k \le n$ elements without replacement from the set.</p>
+<p>Given a set of items indexed by $1, \ldots, n$ and weights $w_1, \ldots, w_n$, we want to sample $0 &lt; k \le n$ elements without replacement from the set.</p>
 
 </div>
 </div>
@@ -91,8 +91,8 @@ $$
 p(z_t \mid z_{:t}) = \frac{ w_{z_t} }{ W_t(z) }  \quad\text{ and }\quad
 W_t(z) = \sum_{i=t}^n w_{z_{t}}
 $$</p>
-<p>Note that $w_{z_t}$ is the weight of the $t^{\text{th}}$ item sampled in $z$ and $W_t(z)$ is the normalizing constant at time $t$, thus $p_t(z)$ is the probability that $z_t$ was sampled item given $z_1, \ldots, z_{t-1}$.</p>
-<p>This probability is evaluated by <code>p_perm</code> (below) and it can be used to test that $z$ is sampled according the correct sampling without replacement process.</p>
+<p>Note that $w_{z_t}$ is the weight of the $t^{\text{th}}$ item sampled in $z$ and $W_t(z)$ is the normalizing constant at time $t$.</p>
+<p>This probability is evaluated by <code>p_perm</code> (below), and it can be used to test that $z$ is sampled according to the correct sampling without replacement process.</p>
 
 </div>
 </div>
@@ -605,11 +605,11 @@ swor_exp is 10.4478x faster than swor_numpy <span class="ansi-yellow-fg">(median
 </li>
 <li><p>The heap-based implementation is pretty fast.  It has the best asymptotic complexity if the sample size is less then $n$.</p>
 </li>
-<li><p>That said, the heap-based sampler is harder to implement than the Exp and Gumbel algorithm, and harder to vectorize unlike Exp and Gumbel.</p>
+<li><p>That said, the heap-based sampler is harder to implement than the Exp and Gumbel algorithm, and harder to vectorize, unlike Exp and Gumbel.</p>
 </li>
-<li><p>The difference between the Exp and Gumbel tricks is just that the Gumbel trick takes does a few more floating-point operations.  In fact, as I pointed out in a <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">2014 article</a>, the Exp-sort and Gumbel-sort tricks produced exactly the same overall sample if we use the same random seed.</p>
+<li><p>The difference between the Exp and Gumbel tricks is just that the Gumbel trick takes does a few more floating-point operations.  In fact, as I pointed out in a <a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">2014 article</a>, the Exp-sort and Gumbel-sort tricks produced <em>precisely</em> the same sample if we use the same random seed.</p>
 </li>
-<li><p>I suspect that the performance of both the Exp and Gumbel methods could be improved with a bit of implementation effort.  For example, currently, there are some unnecessary extra temporary memory allocations.  These algorithms are also fairly trivial to parallelize.  The true bottleneck is the random variate generation time.</p>
+<li><p>I suspect that the performance of both the Exp and Gumbel methods could be improved with a bit of implementation effort.  For example, currently, there are some unnecessary extra temporary memory allocations.  These algorithms are also trivial to parallelize.  The real bottleneck is the random variate generation time.</p>
 </li>
 </ul>
 
