@@ -50,114 +50,107 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a>
+        <a href="https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance sampling</a>
       </h1>
     <p class="meta">
-<time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-11-10T00:00:00-05:00" pubdate>Nov 10, 2014</time>  <span class="categories">
+<time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>Consider the p-norm
-</p>
+  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
+learning and randomized algorithms.</p>
+<h2>Basics</h2>
+<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
+random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
+distribution <span class="math">\(q.\)</span></p>
+<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
+different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q.\)</span></p>
 <div class="math">$$
-|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
+\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$</div>
-<p>In python this translates to:</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
-
-<span class="k">def</span> <span class="nf">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="s2">&quot;First-pass implementation of p-norm.&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, suppose <span class="math">\(|x_i|^p\)</span> causes overflow (for some <span class="math">\(i\)</span>). This will occur for sufficiently large <span class="math">\(p\)</span> or sufficiently large <span class="math">\(x_i\)</span>&mdash;even if <span class="math">\(x_i\)</span> is representable (i.e., not NaN or <span class="math">\(\infty\)</span>).</p>
-<p>For example:</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">big</span> <span class="o">=</span> <span class="mf">1e300</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>   <span class="c1"># expected: 1e+300</span>
-</pre></div>
-
-
-<p>This fails because we can't square <code>big</code></p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">big</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
-<span class="p">[</span> <span class="n">inf</span><span class="p">]</span>
-</pre></div>
-
-
-<h2>A little math</h2>
-<p>There is a way to avoid overflowing because of a few large <span class="math">\(x_i\)</span>.</p>
-<p>Here's a little fact about p-norms: for any <span class="math">\(p\)</span> and <span class="math">\(\boldsymbol{x}\)</span>
-</p>
-<div class="math">$$
-|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
-$$</div>
-<p>We'll use the following version (harder to remember)
-</p>
-<div class="math">$$
-|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-$$</div>
-<p>Don't believe it? Here's some algebra:
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-|| \boldsymbol{x} ||_p
-&amp;=&amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
-&amp;=&amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
-\end{eqnarray*}
-$$</div>
-<h2>Back to numerical stability</h2>
-<p>Suppose we pick <span class="math">\(\alpha = \max_i |x_i|\)</span>. Now, the largest number we have to take
-the power of is one&mdash;making it very difficult to overflow on the account of
-<span class="math">\(\boldsymbol{x}\)</span>. This should remind you of the infamous log-sum-exp trick.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">norm1</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-</pre></div>
-
-
-<p>Now, our example from before works :-)</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="mf">1e+300</span>
-</pre></div>
-
-
+<p><br/>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
+\Rightarrow q(x) &gt; 0.\)</span> Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
+can support things that <span class="math">\(p\)</span> doesn't.</p>
+<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
+"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
+target density and <span class="math">\(q\)</span> the proposal density.</p>
+<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q,\)</span> we can use the Monte
+Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)}),\)</span> as
+an unbiased estimator of <span class="math">\(\mu.\)</span></p>
 <h2>Remarks</h2>
-<ul>
+<p>There are a few reasons we might want use importance sampling:</p>
+<ol>
 <li>
-<p>It appears as if <code>scipy.linalg.norm</code> is robust to overflow, while <code>numpy.linalg.norm</code> is not. Note that <code>scipy.linalg.norm</code> appears to be a bit slower.</p>
+<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p.\)</span></p>
 </li>
 <li>
-<p>The <code>logsumexp</code> trick is nearly identical, but operates in the log-domain, i.e., <span class="math">\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)</span>. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain&mdash;a trick you might have seen before.</p>
+<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
+     samples to satisfy some "safety" condition (e.g., a minimum support
+     threshold) and be unbiased. Importance sampling can be used to remove bias,
+     while satisfying the condition.</p>
 </li>
-</ul>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arsenal.math</span> <span class="kn">import</span> <span class="n">logsumexp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="nb">abs</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span>
-<span class="mf">1.91432069824</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">log</span><span class="p">(</span><span class="n">robust_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-<span class="mf">1.91432069824</span>
-</pre></div>
-
-
+<li>
+<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
+     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu.\)</span> Check out these
+     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
+     more.</p>
+</li>
+<li>
+<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
+     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
+     to pick the best one). Here's a link to a future post on
+     <a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/">off-policy evaluation and counterfactual reasoning</a>
+     and some cool papers:
+     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
+     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
+     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
+     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+</li>
+</ol>
+<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
+<ol>
+<li>
+<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
+     reduction, active learning and reinforcement learning. It's often difficult
+     to design <span class="math">\(q,\)</span> which results in an estimator with "reasonable" variance. A
+     very difficult case is in off-policy evaluation because it (essentially)
+     requires a good exploratory distribution for every possible policy. (I have
+     much more to say on this topic.)</p>
+</li>
+<li>
+<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
+     (e.g., new articles) and you want to estimate performance on a different
+     dataset (e.g., Twitter).</p>
+</li>
+<li>
+<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
+     to as the propensity score) and use it in the importance sampling
+     estimator. This technique, as far as I can tell, is widely used to remove
+     selection bias when estimating effects of different treatments.</p>
+</li>
+</ol>
+<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
+samples with large weights can drastically throw off the estimator. Thus, it's
+often the case that a biased estimator is preferred, e.g.,
+<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
+<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
+<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
+drawback is that both densities must be normalized, which is often intractable.</p>
+<p><strong>What's next?</strong> I plan to cover "variance reduction" and
+<a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/">off-policy evaluation</a>
+in more detail in future posts.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -232,6 +225,9 @@ the power of is one&mdash;making it very difficult to overflow on the account of
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
       <li class="post">
@@ -243,15 +239,12 @@ the power of is one&mdash;making it very difficult to overflow on the account of
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/">Black-box optimization</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 

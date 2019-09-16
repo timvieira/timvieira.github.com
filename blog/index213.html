@@ -50,856 +50,140 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a>
+        <a href="https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a>
       </h1>
     <p class="meta">
-<time datetime="2016-07-04T00:00:00-04:00" pubdate>Jul 04, 2016</time>  <span class="byline author vcard">
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2016-07-04T00:00:00-04:00" pubdate>Jul 04, 2016</time>  <span class="categories">
+<time datetime="2016-09-25T00:00:00-04:00" pubdate>Sep 25, 2016</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/rant.html">rant</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>
-
-
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>In this notebook, we describe a simple trick for efficiently sampling a Bernoulli random variable $Y$ from a sigmoid-defined distribution, $p(Y = 1) = (1 + \exp(-x))^{-1}$, where $x \in \mathbb{R}$ is the only parameter of the distribution ($x$ is often defined as the dot product of features and weights).</p>
-<p>The "slow" method for sampling from a sigmoid,</p>
-$$
-u \sim \textrm{Uniform}(0,1)
-$$$$
-Y = \textrm{sigmoid}(x) &gt; u
-$$<p>This method is slow because it calls the sigmoid function for every value of $x$. It is slow because $\exp$ is 2-3x slower than basic arithmetic operations.</p>
-<p>In this post, I'll describe a simple trick, which is well-suited to vectorized computations (e.g., numpy, matlab). The way it works is by <em>precomputing</em> the expensive stuff (i.e., calls to expensive functions like $\exp$).</p>
-$$
-\textrm{sigmoid}(x) &gt; u \Leftrightarrow \textrm{logit}(\textrm{sigmoid}(x)) &gt; \textrm{logit}(u) \Leftrightarrow x &gt; \textrm{logit}(u).
-$$<p>Some details worth mentioning: (a) <a href="https://en.wikipedia.org/wiki/Logit">logit</a> is the inverse of sigmoid&mdash;sometimes it's called <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html">expit</a> to highlight this connection&mdash;and (b) logit is strictly monotonic increasing you can apply it both sides of an inequality and preserve the ordering (there's a plot in the appendix).</p>
-<p>The "fast" method derives it's advantage by leveraging the fact that expensive computation can be done independently of the data (i.e., specific values of $x$). The fast method is also interesting as just cute math. In the bonus section of this post, we'll make a connection to the <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a>.</p>
-<p><strong>How fast is it in practice?</strong> Below, we run a quick experiment to test that the method is correct and how fast it is.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">uniform</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">expit</span> <span class="k">as</span> <span class="n">sigmoid</span><span class="p">,</span> <span class="n">logit</span>
-<span class="kn">from</span> <span class="nn">arsenal.timer</span> <span class="kn">import</span> <span class="n">timers</span>    <span class="c1"># https://github.com/timvieira/arsenal</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">timers</span><span class="p">()</span>
-
-<span class="c1"># These are the sigmoid parameters we&#39;re going to sample from.</span>
-<span class="n">n</span> <span class="o">=</span> <span class="mi">10000</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
-
-<span class="c1"># number of runs to average over.</span>
-<span class="n">R</span> <span class="o">=</span> <span class="mi">1000</span>
-
-<span class="c1"># Used for plotting average p(Y=1)</span>
-<span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-
-<span class="c1"># Temporary array for saving on memory allocation, cf. method slow-2.</span>
-<span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>                     
-
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">R</span><span class="p">):</span>
-
-    <span class="c1"># Let&#39;s use the same random variables for all methods. This allows </span>
-    <span class="c1"># for a lower variance comparsion and equivalence testing.</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>       <span class="c1"># used in fast method: precompute expensive stuff.</span>
-
-    <span class="c1"># Requires computing sigmoid for each x.</span>
-    <span class="k">with</span> <span class="n">T</span><span class="p">[</span><span class="s1">&#39;slow1&#39;</span><span class="p">]:</span>
-        <span class="n">s1</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">u</span>           
-        
-    <span class="c1"># Avoid memory allocation in slow-1 by using the out option to sigmoid</span>
-    <span class="c1"># function. It&#39;s a little bit faster than slow-1.</span>
-    <span class="k">with</span> <span class="n">T</span><span class="p">[</span><span class="s1">&#39;slow2&#39;</span><span class="p">]:</span>
-        <span class="n">sigmoid</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp</span><span class="p">)</span>           
-        <span class="n">s2</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">&gt;</span> <span class="n">u</span>
-
-    <span class="c1"># Rolling our sigmoid is a bit slower than using the library function.</span>
-    <span class="c1"># Not to mention this implementation isn&#39;t as numerically stable.</span>
-    <span class="k">with</span> <span class="n">T</span><span class="p">[</span><span class="s1">&#39;slow3&#39;</span><span class="p">]:</span>
-        <span class="n">s3</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">X</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">u</span>
-        
-    <span class="c1"># The fast method.</span>
-    <span class="k">with</span> <span class="n">T</span><span class="p">[</span><span class="s1">&#39;fast&#39;</span><span class="p">]:</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">X</span> <span class="o">&gt;</span> <span class="n">z</span>
-    
-    <span class="n">F</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">/</span> <span class="n">R</span>    
-    <span class="k">assert</span> <span class="p">(</span><span class="n">s1</span> <span class="o">==</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">s2</span> <span class="o">==</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">s3</span> <span class="o">==</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-
-<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">T</span><span class="o">.</span><span class="n">compare</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>fast is 26.8226x faster than slow1 <span class="ansi-yellow-fg">(avg: slow1: 0.000353234 fast: 1.31693e-05)</span>
-slow2 is 1.0093x faster than slow1 <span class="ansi-yellow-fg">(avg: slow1: 0.000353234 slow2: 0.000349975)</span>
-slow1 is 1.0920x faster than slow3 <span class="ansi-yellow-fg">(avg: slow3: 0.000385725 slow1: 0.000353234)</span>
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-"
->
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>It looks like our trick is about $28$x faster than the fastest competing slow method!</p>
-<p>We also see that the assert statements passed, which means that the methods tested produce precisely the same samples.</p>
-<p>The final plot demonstrates that we get the right expected value (red curve) as we sweep the distributions parameter (x-axis).</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Bonus">Bonus<a class="anchor-link" href="#Bonus">&#182;</a></h2><p>We could alternatively use the <a href="http://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a> to derive a similar algorithm. If we ground out the trick for a sigmoid instead of a general mutlinomal distributions, we end up with</p>
-$$
-Z_0 \sim \textrm{Gumbel}(0,1)
-$$$$
-Z_1 \sim \textrm{Gumbel}(0,1)
-$$$$
-Y = x &gt; Z_0 - Z_1
-$$<p>Much like our new trick, this one benefits from the fact that all expensive stuff is done independent of the data (i.e., the value of $x$). However, it seems silly that we "need" to generate <em>two</em> Gumbel RVs to get one sample from the sigmoid. With a little bit of Googling, we discover that the difference of $\textrm{Gumbel}(0,1)$ RVs is a <a href="https://en.wikipedia.org/wiki/Logistic_distribution">logistic</a> RV (specifically $\textrm{Logistic}(0,1)$).</p>
-<p>It turns out that $\textrm{logit}(\textrm{Uniform}(0,1))$ is a $\textrm{Logistic}(0,1)$ RV.</p>
-<p>Voila! Our fast sampling trick and the Gumbel-max trick are connected!</p>
-<h2 id="Related-tricks">Related tricks<a class="anchor-link" href="#Related-tricks">&#182;</a></h2><p>Another trick is Justin Domke's <a href="https://justindomke.wordpress.com/2014/01/08/reducing-sigmoid-computations-by-at-least-88-0797077977882/">trick</a> to reduce calls to $\exp$ by $\approx 88\%$. The <em>disadvantage</em> of this approach is that it's harder to implement with vectorization. The <em>advantage</em> is that we don't need to precompute any expensive things.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Appendix">Appendix<a class="anchor-link" href="#Appendix">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Logit-plot">Logit plot<a class="anchor-link" href="#Logit-plot">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">ys</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">);</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-"
->
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Logistic-random-variable">Logistic random variable<a class="anchor-link" href="#Logistic-random-variable">&#182;</a></h3><p>Check that our sampling method is equivalent to sampling from a logistic distribution.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">logistic</span>
-<span class="n">u</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-<span class="n">z</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">ys</span> <span class="o">=</span> <span class="n">logistic</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX4AAAD8CAYAAABw1c+bAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
-AAALEgAACxIB0t1+/AAAIABJREFUeJzt3Xl8VfWd//HXJyEBZFH2LUAAUUBkM4AIgigqi4Kd0Q62
-tbWtUtuqtU6t/Lqo09pRu02XwTJoW6ujQ7WiRQFRUEDZE7bIvkPCvqNAIMn398c5CdeYkJvk5p67
-vJ+PRx733LPc+85J8sm53/M932POOUREJHmkBB1ARESiS4VfRCTJqPCLiCQZFX4RkSSjwi8ikmRU
-+EVEkowKv4hIklHhFxFJMir8IiJJpk7QAcrTvHlzl5mZGXQMEZG4kZOTc8g51yKcdWOy8GdmZpKd
-nR10DBGRuGFmO8NdV009IiJJRoVfRCTJqPCLiCQZFX4RkSSjwi8ikmRU+EVEkkxYhd/MRprZRjPb
-YmYTy1n+ZTNbY2a5ZrbIzHqHLNvhz19lZuqjKSISsEr78ZtZKjAJuBHIA5ab2XTn3LqQ1bYDw5xz
-R81sFDAFGBiyfLhz7lAEc4uISDWFc8Q/ANjinNvmnDsLTAXGha7gnFvknDvqP10CZEQ2poiIREo4
-hb8dsDvkeZ4/ryLfBGaFPHfAHDPLMbMJVY8oEl8yJ84o/SqVkwPDh8Nll3lf48fDnj3BhZSkFtEh
-G8xsOF7hHxIye4hzLt/MWgLvmdkG59yCcradAEwA6NChQyRjiQSnqAj+8z/hZz+DwsLz8zdvhnff
-hcmT4YtfDC6fJKVwjvjzgfYhzzP8eZ9hZr2A54FxzrnDJfOdc/n+4wHgDbymo89xzk1xzmU557Ja
-tAhrnCGR2PfTn8Jjj3lF/8EHYf16WLkSRo6Eo0fh3/4N3nwz6JSSZMIp/MuBrmbWyczSgfHA9NAV
-zKwDMA24yzm3KWR+AzNrVDIN3AR8HKnwIrHs2u0r4KmnKLIUvn774/D730O3btCnD8ycCU884a34
-jW/Arl2BZpXkUmnhd84VAvcDs4H1wKvOubVmdp+Z3eev9hjQDHi2TLfNVsBHZrYaWAbMcM69E/Hv
-QiTGtPjkKL99+7cA/NeQL/FBl/6fXcHM+zQwZox35H/nnXDuXABJJRmF1cbvnJsJzCwzb3LI9D3A
-PeVstw3oXXa+SKL70Qd/psWpYyzs2Itnr76j/JVSUuCFF7xPAIsWee39DzwQ1ZySnHTlrkiEdTm0
-m3Hr5nM2pQ4/HPUQxSmpFa/cvDn88Y/e9FNPwenT0QkpSU2FXyTCHlr4Cik4/t77JvIvbln5Brfd
-Bn37wt69MGVK7QeUpKfCLxJJa9cyZsNHFKTWYdLVYXbTNDt/ovfpp+HUqVqLJwIq/CIRUXLB1vQ7
-vkMKjqm9b2Zf4+bhv8Ctt8JVV8G+ffDcc7UXVAQVfpGIafbpMUZuXESRpTB54O1V29gMfvxjb3ry
-ZHAu8gFFfDF5s3WRePSFte+TXlzIe5cOYG/jC1+EGDqcw46nx3gTt9wCrVvDhg1eL5/Bg2szriQx
-FX6RSHCO8avfBeDvvW4ud5XPjN1Twfwdd9/ttfM//7wKv9QaNfWIREBW/jouPZLH/oZN+aBLVvVf
-6Bvf8B5ffRWOH49MOJEyVPhFIqDkaP8fPW+g6EL99ivTtStcd53Xs2fq1MiEEylDTT0i1VTSRFP/
-7BlyNn4EwKu9bqz5C99zD8ybB3/7G3zrWzV/PZEydMQvUkPDtudw0bkCVra5nJ1N2tb8BceNg/r1
-YfFiyMur+euJlKHCL1JDozcuBGDm5RE6GduwIYwa5U1PmxaZ1xQJocIvUgN1C89y/dblAMy6/JrI
-vfDt/nUAr78eudcU8anwi9TAtdtX0vDsaXJbdSHvktaRe+ExYyA9HT780LuaVySCdHJXpAZG+Sd1
-Z0WqmadE48Zw883w1lvwxhtk7jx/O9LSC75EqklH/CLVlFZ0jhu3LANqofDD+eaef/wj8q8tSU2F
-X6SaBuxeS+OCT9nYvAPbm7aL/BuMHQt16sD8+TQ+80nkX1+Slgq/SDVdt827w+jnbqsYKZdcAtdc
-A0VFDN6xqnbeQ5KSCr9INV23LQeADzrXYIiGyoweDcDwbdmVrCgSPhV+kerYsYOuh3dzIv0ictp1
-r7338fvzX7ctR0M1S8So8ItUx6xZAHyU2YfC1FrsHHflldCuHS0/PcoVB7bV3vtIUlHhF6kOv/DP
-q81mHvBu0OIf9Q/zm5ZEakqFX6SqzpyBuXMBmN+5X+2/n1/4h29VO79Ehgq/SFV9+CGcOsW6lp3Y
-36gK99WtrhEjOJeSSr89G9StUyJChV+kqubMAWBBZt/ovF/jxqxo151UV8ygXWui856S0FT4RarK
-b+ZZ1LF31N5yUYdeAAzaqcIvNafCL1IVR47AihWQlsbyjCui9rYLM71/MoN3ro7ae0ri0iBtIlUx
-b57Xn37QIE6n16vVtwq9CXtam8v4NK0eXQ/vhj17oG0EbvgiSUtH/CJV8f773uMNN0T1bc+lprGs
-/RWfzSBSTSr8IlXht+9Hu/ADLCw5p1CSQaSaVPhFwpWfDxs2eLdGHDAg6m+/qGMfb+L99zV8g9SI
-Cr9IuEqaWIYOhbS0qL/9+paZHKnfGHbtYth9z3/mHIBIVYRV+M1spJltNLMtZjaxnOVfNrM1ZpZr
-ZovMrHe424rEjQ8+8B6HDw/k7Z2lsLjDlYC6dUrNVFr4zSwVmASMAnoAd5pZjzKrbQeGOeeuBH4O
-TKnCtiLxYcEC7/G66wKLsLR9TwAG5K0NLIPEv3CO+AcAW5xz25xzZ4GpwLjQFZxzi5xzR/2nS4CM
-cLcViQv5+bB1KzRqBH36BBZjqX/EP3DXx2rnl2oLpx9/O2B3yPM8YOAF1v8mMKua24rEpvnzvcfB
-g73bIdaSytrtNzXvwNF6jWh38iAZx/fXWg5JbBH9DTaz4XiFf0g1tp0ATADo0KFDJGOJ1JzfzPPM
-6Vb8KcCTqs5SWN7+Cm7avISBu9XcI9UTTlNPPtA+5HmGP+8zzKwX8Dwwzjl3uCrbAjjnpjjnspxz
-WS1atAgnu0j0+Ef8JW3sQVrqDxUxcHduwEkkXoVT+JcDXc2sk5mlA+OB6aErmFkHYBpwl3NuU1W2
-FYl5Bw54/fcvuojc1pcGnaa0nX+Ajvilmipt6nHOFZrZ/cBsIBX4i3NurZnd5y+fDDwGNAOeNTOA
-Qv/ovdxta+l7EakdJb15Bg3iXGr0+++Xtb5lJ06m1yfz2F7vpHO7dkFHkjgTVhu/c24mMLPMvMkh
-0/cA94S7rUhcKTmxO2wYfBpsFICilFSyM3owfFuOl+1LXwo6ksQZXbkrUpkPP/Qehw4NNkeIZSXn
-GkqyiVSBCr/IhRw/DmvWeEM0BDA+T0WWldwL4KOPgg0icUmFX+RCFi/2LpTKyoL69YNOUyq3dVcK
-UtPg44/h6NHKNxAJocIvciELF3qPQ6p8aUqtOlsnjdVtunpPFi0KNozEHRV+kQspaUqJscIPkJ3h
-D3ul5h6pIhV+kYqcPQtLl3rT11wTbJZyLFc7v1ST7rkrUpGVK+H0aTY3a8+Nv14adJrPyWnX3ZtY
-tgzOnIF6tXsPYEkcOuIXqYh/JL08IzZHEj9RryH07Ol9MsnJCTqOxBEVfpGK+IU/O0YLP3D+3IOa
-e6QKVPhFyuNcaY+e7HZxUPh1IZdUgQq/SHk2b4aDB6F1a3Zd0jroNBUa8lEBAEfnLqDTo28FnEbi
-hQq/SHlK+u8PHgzewIMxKa9xS/Y1bEqTMyfpfLjcEc9FPke9ekTKU1L4r7kGDgQb5YLMyGnXnTEb
-F3JV/vrP3MFrx9NjAgwmsUxH/CLlCT3ij3E5/jmIrPx1ASeReKHCL1LW4cPejVfq1YO+fYNOU6ns
-DK8//1X56wNOIvFChV+krMWLvcf+/SE9PdgsYVjXsjOn69Sly5F8mpw6HnQciQMq/CJlxVEzD0Bh
-ap3SAduuyt8QcBqJByr8ImXFWeGH8xeZqZ1fwqHCLxLq7FlYvtybHjQo2CxVkO2P23NVntr5pXIq
-/CKhVq70Bjzr1g2aNQs6TdhW+IW/177NpBeeCziNxDoVfpFQJTc1iaNmHvAGbNvUrAN1i85xxf6t
-QceRGKfCLxLKL/yP7GlA5sQZn7kgKtbltOsGwFVq55dKqPCLlAgZmK2k6SSe5PgneNWzRyqjwi9S
-YudO2LsXmjZla9OMoNNUWcmNWbLy13n/xEQqoMIv4nvwwUkAzGnSJaYHZqvI9iZtOVy/MS0+PUb7
-4/uDjiMxTIO0ifiy/K6Q8djMA4AZK9p158YtS8nKW6cB26RCOuIX8ZWMdRPTd9yqhMbtkXCo8IsA
-nDxJt4M7OJeSyprWlwadptpK2vlV+OVCVPhFAJYuJdUVs7ZVZ86k1Qs6TbXltrqUsyl1uPzgThoV
-fBp0HIlRKvwiUNqNMyeW768bhoK0unzcugspOPqqW6dUQIVfBEJurB6nJ3ZDlNwcXs09UhEVfpGi
-IliyBDjfRh7PcjJC+vOLlEOFXyQ3F06eZPfFrTjQKH4GZqtIyT+vPns2kVpcFHAaiUVhFX4zG2lm
-G81si5lNLGd5NzNbbGYFZvaDMst2mFmuma0ys+xIBReJmARq5gE41KAJOy5pQ4NzZ+h+YHvQcSQG
-VVr4zSwVmASMAnoAd5pZ2TNgR4AHgV9X8DLDnXN9nHNZNQkrUitKTuzGcf/9skqbe/LU3COfF84R
-/wBgi3Num3PuLDAVGBe6gnPugHNuOaCBwCWuZE6cQd6MuUDiHPGDTvDKhYVT+NsBu0Oe5/nzwuWA
-OWaWY2YTKlrJzCaYWbaZZR88eLAKLy9Sfa1OHiLjxAFOpF/EpuYdgo4TMdm6kEsuIBond4c45/rg
-NRV918yGlreSc26Kcy7LOZfVokWLKMQSOT8+z8p23ShOSQ04TeRsad6e43Ub0PbkIdqeOBB0HIkx
-4RT+fKB9yPMMf15YnHP5/uMB4A28piORmFDS5TGRmnkAnKWcH6ZZ7fxSRjiFfznQ1cw6mVk6MB6Y
-Hs6Lm1kDM2tUMg3cBHxc3bAikdbfL4rZGVcEnCTySgab66/CL2VUOiyzc67QzO4HZgOpwF+cc2vN
-7D5/+WQzaw1kA42BYjN7CK8HUHPgDfPGNq8DvOKce6d2vhWRKjpxgu4HtnMuJZWVbS8LOk3ELfcL
-v474paywxuN3zs0EZpaZNzlkeh9eE1BZJ4DeNQkoUmuWLCHVFbOm9eVxPTBbRda0uYyCVG/ANo4e
-hSZNgo4kMUJX7kry+ugj4PyRcaIpqJPOmtaXkYKDxYuDjiMxRIVfkpdf+OP5xiuVKfneJv38BTIn
-zvjMXbkkeanwS3I6e7Z0YLZELvzLS0/wrg04icQS3XNXkk7mxBn02bORN0+fZkvTDI5cdHHQkWpN
-yT+13ns3UbfwLAV10gNOJLFAR/ySlLL8I+BEbd8vcaJeQzY070jdokJ67tsSdByJESr8kpQG+F0c
-E2lgtoqUHPUP3K1LaMSjwi9Jx1wx/Xd7R/xL2vcMOE3tW+Z/j2rnlxIq/JJ0uh7aRZMzJ9nTqDl5
-F7cKOk6tW+ZflZyVt44U3ZhFUOGXJDTAP9pf1v4K8K4qT2j7Gjdn5yWtaXT2tG7MIoAKvyShkrbu
-ZUnQzFNiWYb3vQ7creYeUeGXZONcaeFfmpFEhb+919wzIE8neEWFX5LNli20/PQohy66mK3Nyhte
-KjEt9T/dDNi9FpwLOI0ETYVfksuCBYB/wjMJ2vdL7LqkNfsaNqXp6ROwXnflSnYq/JJcSgp/ErXv
-A2B2/nv294EkLxV+SS7z5wOwvH3i3XilMqWFf968QHNI8FT4JXls3w47d3KsXkPWtewUdJqoW9z+
-Sm9i3jy18yc5FX5JHh98AHgnOp0l36/+1mYZHGjQBPbvhw0bgo4jAUq+335JXn7hX9yhV8BBAmLG
-kg7+Ub+/LyQ5qfBLcnCutG17ccckLfyE/NNT4U9qKvySHLZuhbw8aNaMTc07BJ0mMKVH/PPmQXFx
-oFkkOCr8khxKjnCvuy4p2/dLbG/SFtq2hUOHYK2Gb0hWyfsXIMmlpPAPHx5sjqCZnd8Hau5JWir8
-kvhC2veTvvCDCr+o8EsS2LAB9u6FVq2ge/eg0wTv+uu9x3nzoEjj8ycjFX5JfO+95z2OGJFU4/NU
-qFMn6NwZjh2DFSuCTiMBUOGXxDdnDgA/ONqCzIkzAg4TI0aM8B79fSPJRYVfEtu5c6Xt+ws79g42
-SywpKfwln4YkqdQJOoBIbcmcOIN+eeuZdvIkW5tmsLdxi6AjxY7rrwczChZ8SO9/f50zafXY8fSY
-oFNJlOiIXxLatTtWAvBhZp+Ak8SYZs2gXz/qFhXSP29d0GkkylT4JaEN3rkKgIUq/J/nN/cM3rEq
-4CASbWrqkYTVoOAUffdspMhSzg9VIKUnuAfvaMTLwJCdq4MNJFGnI35JWFfvziWtuIjVbbpysm6D
-oOPEnOx23TlTJ52e+7fS7NNjQceRKAqr8JvZSDPbaGZbzGxiOcu7mdliMyswsx9UZVuR2nLdthwA
-5ne6KuAksakgrW7pTdiHbld//mRSaeE3s1RgEjAK6AHcaWY9yqx2BHgQ+HU1thWJPOfOF/7OKvwV
-mefvm2HbcwJOItEUzhH/AGCLc26bc+4sMBUYF7qCc+6Ac245cK6q24rUik2baH98P0fqN2ZN60uD
-ThOzSj4NDd2+UsM3JJFwCn87YHfI8zx/XjjC3tbMJphZtpllHzx4MMyXF6nAO+8A8GFmX4pTUgMO
-E7u2NW3Hrotb0fT0CcjRUX+yiJmTu865Kc65LOdcVosWutBGasgv/PM79ws4SIwzO98U5u8zSXzh
-FP58oH3I8wx/Xjhqsq1I9Zw+XTpMw4JOKvyVKT35PWtWsEEkasIp/MuBrmbWyczSgfHA9DBfvybb
-ilTP/Plw5gy5rbpwqEGToNPEvEUde3E2pQ4sWwaHDwcdR6Kg0sLvnCsE7gdmA+uBV51za83sPjO7
-D8DMWptZHvAw8BMzyzOzxhVtW1vfjAgAb78NwLzOWQEHiQ+n0uuzrP0VUFzM9+5+SiOYJoGwrtx1
-zs0EZpaZNzlkeh9eM05Y24rUGufgrbcAmHvpgIDDxI+5lw5gyM7VjNiyjH9eobuUJbqYObkrEhG5
-ubBrF7Rqxeo2XYNOEzfmXDoQgGHbckgrKtsrWxKNCr8kFv9on1tuwZl+vcO1+5LWbGrWgcZnT9F/
-t1pjE53+MiSxTPf7Dtx6a7A54tCcrl7T2IgtywJOIrVNhV8Sx759sGwZZ+qk031+YdBp4s6cLl5z
-z4gtS71zJZKwVPglcczweqMs7Nib0+n1Ag4Tf1a1vYzD9RvT4fh+WKebsyQyFX5JHG++Cag3T3UV
-p6Tyfhd/3/n7UhKTCr8khhMn4N13KcZ479Krg04Tt2ZfNsibeP31YINIrVLhl7iXOXEGD37lSTh7
-luUZPTjYUFfrVteHnfrySXp9WLkStm0LOo7UEhV+SQgjNy4E4J3Lrwk4SXwrqJPOByVXPE+bFmwY
-qTUq/BL36p07w3X+jUTeuUyFv6ZmXT7Ym1BzT8JS4Ze4N2zbCi46V8CqNpext7GG9K6peZ2vgnr1
-YMkSyMsLOo7UAhV+iXuj/WaeWWrmiYhT6fVh5EjviZp7EpIKv8S3U6e8C46AmZcPCThMArnjDu/x
-738PNofUChV+iW9vvUWDc2dY2eZydl/SOug0CaNHdjqn69SFRYtg+/ag40iEqfBLfHvlFQD+2WNY
-wEESy6n0+rzX1RvC4Zd3P0HmxBkapz+BqPBL/Dp6FGbNoshSmNHt2qDTJJySf6a3rl8QcBKJNBV+
-iV+vvw7nzrGoQy9dtFULFnTqx7F6Del+cAeXH9wRdByJIBV+iUuZE2ew6Od/BGC6mnlqxbnUtNIT
-5mPXzQ84jUSSCr/EpbYnDnD1rlwKUtPOjy8jEVfS3HPb2nmkFBcFnEYiRYVf4tK/5s4lBce7Xa/m
-RL2GQcdJWMvaX8Hui1vR7uRBrtm5Jug4EiEq/BJ/iou5/eO5ALza68aAwyQ2Zym8duUIAO7InRNw
-GokUFX6JPwsW0PHYPvY0as7Cjr2DTpPwXu95A8UYN29eDMeOBR1HIkCFX+LPX/8KwD963kBxSmrA
-YRJf/sUtWdixN/UKz8LUqUHHkQhQ4Zf4cuIE/OMfAPzDb4KQ2vdaL39f/+UvwQaRiFDhl/jy0ktw
-6hRL2vdkV5M2QadJGrO7DuJ43QawfDlj7v69ruKNcyr8Ej+cg2efBeClvmMCDpNcCtLqlp7kvWvl
-zIDTSE2p8Ev8WLAA1q2D1q159zLdVzfaXu47GoBx6+bT+MwnAaeRmlDhl/jhH+1z772cS00LNksS
-2t60HQsy+1K/sEBdO+OcCr/Eh717vZuCpKbChAlBp0laL/Xzmti+snIGnR59S6N2xikVfokPzz4L
-hYUwdixkZASdJmm936U/+Y1a0OnoXq7blhN0HKkmFX6JfZ9+er6Z5+GHg82S5IpSUnnhqlsBmLBM
-t2WMVyr8Evv++lc4cgQGDoTBg4NOk/Sm9rmZk+n1GbQrlyv3bg46jlRDWIXfzEaa2UYz22JmE8tZ
-bmb2B3/5GjPrF7Jsh5nlmtkqM8uOZHhJAkVF8NvfetOPPAJmweYRTtZtwCt9RgFw7/I3Ak4j1VFp
-4TezVGASMAroAdxpZj3KrDYK6Op/TQD+VGb5cOdcH+dcVs0jS1KZNs2752vnznDbbUGnEd8LV93K
-uZRURm/4iIzj+4OOI1UUzhH/AGCLc26bc+4sMBUYV2adccCLzrMEuMTMdFml1ExxMfziF970ww97
-PXokJuxt3ILp3YdSxxXz7SWvBR1Hqiicwt8O2B3yPM+fF+46DphjZjlmpn54Er7p02H1amjbFr75
-zaDTSBnPDvoixRh3rJkDu3YFHUeqIBond4c45/rgNQd918yGlreSmU0ws2wzyz548GAUYklMcw7+
-4z+86YkToV69YPPI52xt1p7pPYaSXlwITz0VdBypgnAKfz7QPuR5hj8vrHWccyWPB4A38JqOPsc5
-N8U5l+Wcy2rRokV46SVx/fOfsGoVtGkD994bdBqpwB8HjacYgz//WUf9cSScwr8c6GpmncwsHRgP
-TC+zznTgq37vnquB4865vWbWwMwaAZhZA+Am4OMI5pdEVFQEjz0GwONXjCXzibkBB5KKbG3enre6
-D4Vz585/QpOYV2nhd84VAvcDs4H1wKvOubVmdp+Z3eevNhPYBmwBngO+489vBXxkZquBZcAM59w7
-Ef4eJNG8+CLk5pLXuCVTe98cdBqpxO+GfAnq1IEXXoCPdVwXD+qEs5JzbiZecQ+dNzlk2gHfLWe7
-bYDujSfhO3UKfvITAH419C4K6qQHHEgqs71pO/jWt2DSJHj0UZihsXtiXViFXyRq/uu/YM8e6NeP
-6T2Glc7WQGAx7vHHvU9qM2fC++/D9dcHnUguQEM2SOzIz4enn/amf/UrnOnXM15k/mYZv+z7Be/J
-Qw95A+pJzNJflsSOhx+GTz7xrtDVEWPc+XPWOHZd3Apyc+G//zvoOHIBKvwSG959F159FS66CH73
-u6DTSDUUpNXliRHf8p489pjXZCcxSYVfAlFyA4/MiTPgzBl44AFvwU9/Ch07BhtOqu39SwfAuHFw
-8iR8//tBx5EKqPBL4CYP+zJs2sSWphkabz8BDG4zjlNpdb1PcNM0Zn8sUq8eCVS//PXcu/xNiiyF
-R0Y/xMrH3gs6ktRQ/sUteXrY3fxszv/AfffBtdeCrsaPKTril8DUPVfAr2b+jlRXzJQB/8LKdt2C
-jiQR8lK/MSzucCUcPAjf/a439pLEDBV+Cczjc6fQ5Ug+m5p18K7+lIThLIVHRn0PGjSA117z7qIm
-MUOFXwIxdt08vrR6NgWpaXxv7A90hW4CyruktXc1L8D998PatcEGklIq/BJ9Gzfyn7O9gvCzG+5l
-fcvOAQeSWvO1r3lfp0/DHXd412lI4FT4JbqOHoWxY2l49jRvd7uWl/17t0oCmzQJuneH9evhq1/1
-7qwmgVKvHomewkIYPx42bWJ9i0weHfmAbp6e4ErGWOo8+Hu8v+dReOMNePxxMs9dXbrOjqfHBBUv
-aanwS60qHVzNOXZ8Msu7QrdFC+7915/yad2Lgg0nUbOtWYbXr3/0aHjySf5lzPeZ1vOGoGMlLTX1
-SFR8/6NX4NlnoW5dmDaNvItbBR1Jou2mm0qH4/jlzN9zw5alAQdKXir8Uuu+nv1Pvrfo/yAlBaZO
-hSFDgo4kQbn/fvjRj6jjipn0z2e4eteaoBMlJTX1SMSFjp3/zeVv8tP3nwfgkZsf4LUlabBEY+sn
-tSef5OWZK/jyqnf462v/Ad/oDyNGBJ0qqajwS+1wju8seY0fLngRgJ/c9B1e63VjwKEkSKEHBCk3
-fpu0okK+mDsHbrnFG9Nn9OgA0yUXNfVIxKUWF/Gz9ybzwwUvUozxyKgH+d+++qOW84pTUnl01IO8
-1Hc0FBTA2LHw3HNBx0oaKvwSWSdOMGXak3x15QwKUtN4YOwPea3XTUGnkhjkLIWf3vht+NGPoKgI
-JkyAiRO9aalVKvwSOWvXQv/+3LB1OUfrNeLL459kRvdrg04lscwMfvELmDIFUlPhmWe8Jp9Dh4JO
-ltBU+KXmnIM//xkGDCi9OOu2r/6G7Iwrgk4m8eLee2H2bGje3LvWo18/mD8/6FQJS4VfambfPu8e
-uffcA6dOwVe+whfu+jU7m7QNOpnEmxtugBUrYOBA2L0bhg+HRx7xxvmRiFLhl+opLoY//Qm6dYPp
-0+Hii+F//xdefJEzafWCTifxqn17+PBD7569KSnw61/DlVd6nwIkYtSdU6pu3jz4wQ8gJweADzpf
-xfB5b3h/tCJVFNrN87wB7Fi40Psk+fHHcPPN3ifLZ56Byy6LesZEoyN+Cd+yZTBmjPcRPCeHfQ2b
-8u1xE/n67U+o6EvkDRzoNf088wxcdBG8+Sb06AHf+hbs3Bl0urhmLgZviZaVleWys7ODjiHgnbid
-Mwd+8xvGtDRTAAAI/0lEQVTv5BtAw4bw6KN0P9Kd0+lq1pHaETpq54Dvvsj3P3qZL+bOIdUVQ506
-cNdd8NBD0KtXgCljh5nlOOeywlpXhV9KhH7k3vHI1fDyy/A//wPr1gHwSXp9Xuo7huf738bhBpcE
-FVOSWJfDu5l7ZiG88krpuP6LO1zJ//UeyR9e/RnUS94DkaoUfrXxS6l6585w/dZsbl2/gIJfL6Nu
-USEA+xo25cV+t/BKn5Ecq9844JSSzLY2aw9PvwSPPw5/+AOfTn6OQbtyGbQrF9o+D7ff7t3zYehQ
-71OBlEt7Jtnt2AHvvQdvvcWqWbOpV3gWgGKMeZ2uYmrvm5h76QDOpaYFm1Mk1KWXwh/+wNWpQxi3
-bj7jV8+m5/6t3rAPzz3HkfqN+aBLFu937s/CzN6s+v2dQSeOKWrqSSbOwebN/Pv3J9M/by0Dd+fS
-6ejez6yyss3lvNV9KDO6DWZ/o+YBBRWpussO7uDW9R8yZsOHdD66p3R+MUZKv77ep4Brr2XA3E84
-0KgZkFh3/1Ibv3gXU23Y4HWFW7MGVq70vo4e/ex6jRt7F87cfDMD1tQv/YMQiVvO0eVwHjduWcq1
-O1aQlbeutNmyxJ5GzVnbqjM3fmmkd51Az57QpQukxe8n24gXfjMbCfweSAWed849XWa5+ctHA6eA
-u51zK8LZtjwq/GE6dMgr7rt2ed3btm+Hbdtg0ybvysfytG7Nu40yWZbRg2Xte7K2VReKUlKjm1sk
-iuqfPUPfPRsYuPtj+uVvoPfeTTQ+e+rzK6amQufO0LWr99ipE3ToAB07et1IGzSIfvgqiOjJXTNL
-BSYBNwJ5wHIzm+6cWxey2iigq/81EPgTMDDMbaW6pkyBH/+4/GVpaV47aM+e0LMn96wuZG2rzuxt
-1Fw3OJekcjq9Hosy+7Aosw8A5orpfCSfHvu30ePAdroe2snlh3bR7vgBUjZvhs2bP/8ic+fC9ddH
-OXntCefk7gBgi3NuG4CZTQXGAaHFexzwovM+Piwxs0vMrA2QGca2SeMz3SUraFssexXjBdsgu3eH
-gQN5+1gaexq3YNclrXny4bHeR9ZOncj8id/v/hTev2QRwVkKW5u1Z2uz9rzVY1jp/LrnCsg8tpeO
-R/fS4dhe2p04SLsTB7mpwRnv6J+q/w2HrlPV+bWp0qYeM7sdGOmcu8d/fhcw0Dl3f8g6bwNPO+c+
-8p/PBR7FK/wX3LY8NWnqqepOLP9y8Yp/MFVdR0QkXDUp/HHZj9/MJgAT/KefmNlGf7o5UK3Bue2Z
-GuQJY9sLrFPtzAGLx9zKHB3KHAX2TI0ydwx3xXAKfz4QOhBLhj8vnHXSwtgWAOfcFGBK2flmlh3u
-f7FYEY+ZIT5zK3N0KHN0RCtzOIO0LQe6mlknM0sHxgPTy6wzHfiqea4Gjjvn9oa5rYiIRFGlR/zO
-uUIzux+Yjdcl8y/OubVmdp+/fDIwE68r5xa8U4lfv9C2tfKdiIhIWMJq43fOzcQr7qHzJodMO+C7
-4W5bRZ9r/okD8ZgZ4jO3MkeHMkdHVDLH5JW7IiJSe3QjFhGRJBMThd/M7jCztWZWbGZZZZb9PzPb
-YmYbzezmCrZvambvmdlm/7FJdJKXvv/fzWyV/7XDzFZVsN4OM8v11wt8TAoze8LM8kOyj65gvZH+
-/t9iZhOjnbNMll+Z2QYzW2Nmb5hZuTcGiIV9Xdl+8ztD/MFfvsbM+gWRMyRPezP7wMzW+X+P3ytn
-nevM7HjI78xjQWQtk+mCP+sY3M+Xh+y/VWZ2wsweKrNO7e5n51zgX0B34HJgHpAVMr8HsBqoC3QC
-tgKp5Wz/S2CiPz0ReCbA7+U3wGMVLNsBNA96f4fkeQL4QSXrpPr7vTOQ7v88egSY+Sagjj/9TEU/
-66D3dTj7Da9DxCzAgKuBpQH/PrQB+vnTjYBN5WS+Dng7yJxV/VnH2n4u5/dkH9Axmvs5Jo74nXPr
-nXMby1k0DpjqnCtwzm3H6zU0oIL1/uZP/w24rXaSXpg/WN0Xgf8L4v1rSemQHc65s0DJsBuBcM69
-65wrGWpxCd61IbEonP1WOtSJc24JUDLUSSCcc3udP7iic+4ksB5oF1SeCIqp/VzGDcBW51xUbyIc
-E4X/AtoBocNM5lH+L2Ir5103AN5/z1a1HawC1wL7nXPljPIEgAPmmFmOf6VyLHjA//j7lwqayML9
-GQThG3hHcuUJel+Hs99idt+aWSbQF1hazuJr/N+ZWWZ2RVSDla+yn3XM7me8a5sqOlCstf0ctSEb
-zGwO0LqcRT92zv0zUu/jnHNmFvGuSmHmv5MLH+0Pcc7lm1lL4D0z2+CcWxDprKEulBtvFNWf4/3h
-/ByvmeobtZknHOHsazP7MVAIvFzBy0R9XycKM2sIvA485Jw7UWbxCqCDc+4T/5zQmwQ/BGBc/qz9
-i1rHAv+vnMW1up+jVvidcyOqsVk4w0UA7DezNs65vf5HuAPVyXghleU3szrAvwBXXeA18v3HA2b2
-Bl5zQK3+goa7383sOeDtchaF+zOImDD29d3ALcANzm8QLec1or6vy6jJUCeBMbM0vKL/snNuWtnl
-of8InHMzzexZM2vunAtsTJwwftYxt599o4AVzrn9ZRfU9n6O9aae6cB4M6trZp3w/uMtq2C9r/nT
-XwMi9gmiCkYAG5xzeeUtNLMGZtaoZBrvJOXHUcxXXqbQds4vUH6emBp2w7wb+/wQGOucK+duGjGz
-r2sy1Ekg/HNUfwbWO+d+W8E6rf31MLMBeDXkcPRSfi5POD/rmNrPISpsIaj1/Rz0WW3/gO0LeO1u
-BcB+YHbIsh/j9Y7YCIwKmf88fg8goBkwF9gMzAGaBvA9vADcV2ZeW2CmP90Zr2fHamAtXrNF0Pv9
-JSAXWIP3x9GmbG7/+Wi8Hh5bg86Nd4J/N7DK/5ocq/u6vP0G3Ffye4LXy2SSvzyXkB5tAeUdgtfs
-tyZk/44uk/l+f5+uxju5fk3Amcv9WcfyfvYzNcAr5BeHzIvaftaVuyIiSSbWm3pERCTCVPhFRJKM
-Cr+ISJJR4RcRSTIq/CIiSUaFX0Qkyajwi4gkGRV+EZEk8/8BqAuC7RfrrmsAAAAASUVORK5CYII=
-"
->
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
- 
-
-
+  <div class="entry-content"><p>Automatic differentiation ('autodiff' or 'backprop') is great&mdash;not just
+because it makes it easy to rapidly prototype deep networks with plenty of
+doodads and geegaws, but because it means that evaluating the gradient <span class="math">\(\nabla
+f(x)\)</span> is as fast of computing <span class="math">\(f(x)\)</span>. In fact, the gradient provably requires at
+most a <em>small</em> constant factor more arithmetic operations than the function
+itself.  Furthermore, autodiff tells us how to derive and implement the gradient
+efficiently. This is a fascinating result that is perhaps not emphasized enough
+in machine learning.</p>
+<p><strong>The gradient should never be asymptotically slower than the function.</strong> In my
+recent <a href="/doc/2016-emnlp-vocrf.pdf">EMNLP'16 paper</a>, my coauthors and I found a
+line of work on variable-order CRFs
+(<a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf">Ye+'09</a>;
+<a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf">Cuong+'14</a>), which
+had an unnecessarily slow and complicated algorithm for computing gradients,
+which was asymptotically (and practically) slower than their forward
+algorithm. Without breaking a sweat, we derived a simpler and more efficient
+gradient algorithm by simply applying backprop to the forward algorithm (and
+made some other contributions).</p>
+<p><strong>Many algorithms are just backprop.</strong> For example, forward-backward and
+inside-outside, are actually just instances of automatic differentiation
+(<a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Eisner,'16</a>) (i.e.,
+outside is just backprop on inside). This shouldn't be a surprise because these
+algorithms are used to compute gradients. Basically, if you know backprop and
+the inside algorithm, then you can derive the outside algorithm by applying the
+backprop transform manually. I find it easier to understand the outside
+algorithm via its connection to backprop, then via
+<a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf">the usual presentation</a>. Note
+that inside-outside and forward-backward pre-date backpropagation and have
+additional uses beyond computing gradients.</p>
+<p><strong>Once you've grokked backprop, the world is your oyster!</strong> You can backprop
+through many approximate inference algorithms, e.g.,
+<a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov+'11</a>
+and many of Justin Domke's papers, to avoid issues I've mentioned
+<a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">before</a>. You
+can even backprop through optimization algorithms to get gradients of dev loss wrt
+hyperparameters, e.g.,
+<a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf">Domke'12</a> and
+<a href="https://arxiv.org/abs/1502.03492">Maclaurin+'15</a>.</p>
+<p><strong>There's at least one catch!</strong> Although the <em>time</em> complexity of computing the
+gradient is as good as the function, the <em>space</em> complexity may be much larger
+because the autodiff recipe (at least the default reverse-mode one) requires memoizing
+all intermediate quantities (e.g., the quantities you overwrite in a
+loop). There are generic methods for balancing the time-space tradeoff in
+autodiff, since you can (at least in theory) reconstruct the intermediate
+quantities by playing the forward computation again from intermediate
+checkpoints (at a cost to runtime, of course). A recent example is
+<a href="https://arxiv.org/abs/1606.03401">Gruslys+'16</a>.</p>
+<p><strong>A final remark</strong>. Despite the name "automatic" differentiation, there is no
+need to rely on software to "automatically" give you gradient routines. Applying
+the backprop transformation is generally easy to do manually and sometimes more
+efficient than using a library. Many autodiff libraries lack good support for
+dynamic computation graph, i.e., when the structure depends on quantities that
+vary with the input (e.g., sentence length).</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
         "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
         "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: 'center'," +
-        "    displayIndent: '0em'," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
         "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
         "    tex2jax: { " +
-        "        inlineMath: [ ['$','$'] ], " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
         "        displayMath: [ ['$$','$$'] ]," +
         "        processEscapes: true," +
         "        preview: 'TeX'," +
         "    }, " +
         "    'HTML-CSS': { " +
-        " linebreaks: { automatic: true, width: '95% container' }, " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-        "    } " +
-        "}); ";
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script>
-</p></div>
+</script></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index214.html">&larr; Older</a>
@@ -912,6 +196,9 @@ Cr+ISJJR4RcRSTIq/CIiSUaFX0Qkyajwi4gkGRV+EZEk8/8BqAuC7RfrrmsAAAAASUVORK5CYII=
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
       <li class="post">
@@ -923,15 +210,12 @@ Cr+ISJJR4RcRSTIq/CIiSUaFX0Qkyajwi4gkGRV+EZEk8/8BqAuC7RfrrmsAAAAASUVORK5CYII=
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/">Black-box optimization</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 

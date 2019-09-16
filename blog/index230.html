@@ -50,67 +50,61 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
+        <a href="https://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
       </h1>
     <p class="meta">
-<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="categories">
+<time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-<span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is
-a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and
-<span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a
-quadratic has the following simple form:</p>
-<div class="math">$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
-$$</div>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
-<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by
-replacing <span class="math">\(f\)</span> by it's second-order Talylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at
-some point <span class="math">\(a\)</span></p>
-<div class="math">$$
-\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
-$$</div>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
-<div class="math">$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
-$$</div>
-<p>It's common to take the Taylor expansion around <span class="math">\(\mu\)</span>. This simplifies the equation</p>
-<div class="math">\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</div>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
+  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.</p>
+<p>This is a very simple point, but nonetheless I'll illustrate with a simple
+example.</p>
+<p>Consider the following simple example, let's find the argmax of <span class="math">\(f(x,y) = -x^2\)</span>.</p>
+<p>Suppose we search over a <span class="math">\(10\)</span>-by-<span class="math">\(10\)</span> grid, resulting in a total of <span class="math">\(100\)</span>
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the <span class="math">\(x\)</span>-dimension, which is only <span class="math">\(10\)</span> samples! On
+the other hand, randomly sampling points over the same space results in <span class="math">\(100\)</span>
+samples in every dimension.</p>
+<p>In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.</p>
+<p>This type of problem is common on hyperparameter optimizations. For futher
+reading see
+<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
+<p><strong>Other thoughts</strong>:</p>
+<ol>
+<li>
+<p>Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+</li>
+<li>
+<p>Grid search tends to produce nicer-looking plots.</p>
+</li>
+<li>
+<p>What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.</p>
+</li>
+</ol>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -185,6 +179,9 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
       <li class="post">
@@ -196,15 +193,12 @@ see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/">Black-box optimization</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
