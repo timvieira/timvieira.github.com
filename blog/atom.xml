@@ -13120,8 +13120,8 @@ $$&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;p&gt;The equation says that expected time it takes to sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;em&gt;the first time&lt;/em&gt;
-is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
-sample it at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt; We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
+is the probability we didn't sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
+sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt;  We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
 &lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
 &lt;p&gt;Note that this equation assumes that we know &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
 certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
@@ -13148,7 +13148,7 @@ solution),&lt;/p&gt;
 \end{eqnarray*}
 $$&lt;/div&gt;
 &lt;p&gt;The optimization problem says minimize the expected time to find the special
-recipe. The constraints enforce that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; be a valid probability
+recipe. The constraints enforce that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is a valid probability
 distribution.&lt;/p&gt;
 &lt;p&gt;The optimal strategy, which we get via Lagrange multipliers, turns out to be,
 &lt;/p&gt;
@@ -13430,8 +13430,8 @@ $$&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;p&gt;The equation says that expected time it takes to sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;em&gt;the first time&lt;/em&gt;
-is the probability we didn't sample for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
-sample it at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt; We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
+is the probability we didn't sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; for &lt;span class="math"&gt;\((t-1)\)&lt;/span&gt; steps times the probability we
+sample &lt;span class="math"&gt;\(j\)&lt;/span&gt; at time &lt;span class="math"&gt;\(t.\)&lt;/span&gt;  We multiply this probability by the time &lt;span class="math"&gt;\(t\)&lt;/span&gt; to get the
 &lt;em&gt;expected&lt;/em&gt; time.&lt;/p&gt;
 &lt;p&gt;Note that this equation assumes that we know &lt;span class="math"&gt;\(j\)&lt;/span&gt; is the special recipe &lt;em&gt;with
 certainty&lt;/em&gt; when we sample it. We'll revisit this assumption later when we
@@ -13458,7 +13458,7 @@ solution),&lt;/p&gt;
 \end{eqnarray*}
 $$&lt;/div&gt;
 &lt;p&gt;The optimization problem says minimize the expected time to find the special
-recipe. The constraints enforce that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; be a valid probability
+recipe. The constraints enforce that &lt;span class="math"&gt;\(\boldsymbol{q}\)&lt;/span&gt; is a valid probability
 distribution.&lt;/p&gt;
 &lt;p&gt;The optimal strategy, which we get via Lagrange multipliers, turns out to be,
 &lt;/p&gt;
