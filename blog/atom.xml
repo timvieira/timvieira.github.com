@@ -13194,8 +13194,8 @@ that recipe &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; times more often;
 &lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt; Additional cooking experiments are not so advantageous.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Allowing for noise in the cooking process&lt;/strong&gt;: Suppose that for each recipe we
   had a prior belief about how hard that recipe is for us to cook. Denote that
-  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;, these belief are between zero (never get it right) and one
-  (perfect every time) and do not sum to one over the cookbook.&lt;/p&gt;
+  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;, these beliefs are between zero (never get it right) and one
+  (perfect every time) and do not necessarily sum to one over the cookbook.&lt;/p&gt;
 &lt;p&gt;Following a similar derivation to before, the time to cook the special recipe
 &lt;span class="math"&gt;\(j\)&lt;/span&gt; and cook it correctly is,
 &lt;/p&gt;
@@ -13504,8 +13504,8 @@ that recipe &lt;span class="math"&gt;\(\sqrt{k}\)&lt;/span&gt; times more often;
 &lt;span class="math"&gt;\(\boldsymbol{p}.\)&lt;/span&gt; Additional cooking experiments are not so advantageous.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Allowing for noise in the cooking process&lt;/strong&gt;: Suppose that for each recipe we
   had a prior belief about how hard that recipe is for us to cook. Denote that
-  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;, these belief are between zero (never get it right) and one
-  (perfect every time) and do not sum to one over the cookbook.&lt;/p&gt;
+  belief &lt;span class="math"&gt;\(s_i\)&lt;/span&gt;, these beliefs are between zero (never get it right) and one
+  (perfect every time) and do not necessarily sum to one over the cookbook.&lt;/p&gt;
 &lt;p&gt;Following a similar derivation to before, the time to cook the special recipe
 &lt;span class="math"&gt;\(j\)&lt;/span&gt; and cook it correctly is,
 &lt;/p&gt;
