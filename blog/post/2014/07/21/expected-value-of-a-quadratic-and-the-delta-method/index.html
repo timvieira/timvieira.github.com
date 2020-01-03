@@ -69,29 +69,18 @@
     </p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation
-of a quadratic function, i.e.,
-<span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is
-a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and
-<span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a
-quadratic has the following simple form:</p>
+  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation of a quadratic function, i.e., <span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and <span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a quadratic has the following simple form:</p>
 <div class="math">$$
 \mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
 =
 \text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
 $$</div>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear
-function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
-<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by
-replacing <span class="math">\(f\)</span> by it's second-order Talylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at
-some point <span class="math">\(a\)</span></p>
+<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
+<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by replacing <span class="math">\(f\)</span> by its second-order Taylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at some point <span class="math">\(a\)</span></p>
 <div class="math">$$
 \hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
 $$</div>
-<p>The expectation of this Talyor approximation is a quadratic function! Let's try
-to apply our new equation for the expected value of quadratic. We can use the
-trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, covariance matrix is shift
-invariant and the Hessian is a symmetric matrix!</p>
+<p>The expectation of this Taylor approximation is a quadratic function! Let's try to apply our new equation for the expected value of quadratic. We can use the trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, the covariance matrix is shift-invariant, and the Hessian is a symmetric matrix!</p>
 <div class="math">$$
 \begin{aligned}
 \mathbb{E}\left[ \hat{f_{a}}(x) \right]
@@ -101,15 +90,13 @@ invariant and the Hessian is a symmetric matrix!</p>
    \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
 \end{aligned}
 $$</div>
-<p>It's common to take the Taylor expansion around <span class="math">\(\mu\)</span>. This simplifies the equation</p>
+<p>Taking the Taylor expansion around <span class="math">\(\mu\)</span> simplifies the equation as follows</p>
 <div class="math">\begin{aligned}
 \mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
 &amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
 &amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
 \end{aligned}</div>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside
-to scope of this post. For a nice use of the delta method in machine learning
-see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
+<p>That looks much more tractable! Error bounds are possible to derive, but outside to scope of this post. For a nice use of the delta method in machine learning see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
 <a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",

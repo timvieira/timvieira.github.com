@@ -393,9 +393,9 @@ s.t. stationary(d, pi)</p>
 s.t.
      d0 = stationary(pi+eps)
      d = stationary(d, pi) + eps * dd/dpi = 0</p>
-<div class="highlight"><pre><span></span><span class="err">#</span><span class="w"> </span><span class="n">dx</span><span class="o">/</span><span class="n">dA</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"></span>
-<span class="n">dA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">inv</span><span class="p">(</span><span class="n">A</span><span class="p">).</span><span class="n">T</span><span class="w"> </span><span class="err">@</span><span class="w"> </span><span class="n">np</span><span class="p">.</span><span class="n">mat</span><span class="p">(</span><span class="n">g</span><span class="p">).</span><span class="n">T</span><span class="w"> </span><span class="err">@</span><span class="w"> </span><span class="n">np</span><span class="p">.</span><span class="n">mat</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"></span>
-<span class="n">fdcheck</span><span class="p">(</span><span class="nl">lambda</span><span class="p">:</span><span class="w"> </span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">[</span><span class="n">k</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">dA</span><span class="p">)</span><span class="w"></span>
+<div class="highlight"><pre><span></span># dx/dA given A x = b
+dA = -inv(A).T @ np.mat(g).T @ np.mat(x)
+fdcheck(lambda: solve(A, b)[k], A, dA)
 </pre></div>
 
 

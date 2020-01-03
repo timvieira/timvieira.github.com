@@ -4,7 +4,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Graduate Descent</title>
+  <title>Hot take: Expectation maximization &mdash; Graduate Descent</title>
 
   <link href="https://fonts.googleapis.com/css?family=EB+Garamond&display=swap"
         rel="stylesheet">
@@ -16,11 +16,14 @@
 
 
 
+
+
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <meta name="robots" content="noindex, nofollow" />
 
     <link href="https://timvieira.github.io/blog/favicon.png" rel="icon">
 
@@ -46,58 +49,168 @@
 </ul></nav>
   <div id="main">
     <div id="content">
-<div class="blog-index">
-  		<article>
+<div>
+  <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
-      </h1>
+      <h1 class="entry-title">Hot take: Expectation maximization</h1>
     <p class="meta">
-<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="byline author vcard">
+<time datetime="2019-11-20T00:00:00-05:00" pubdate>Nov 20, 2019</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="categories">
+<time datetime="2019-11-20T00:00:00-05:00" pubdate>Nov 20, 2019</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/hot-take.html">hot-take</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation of a quadratic function, i.e., <span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and <span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a quadratic has the following simple form:</p>
-<div class="math">$$
-\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
-=
-\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
+  <div class="entry-content"><div class="math">$$
+\newcommand{\ind}[1]{\boldsymbol{1}\left[ #1 \right]}
+\newcommand{\defeq}[0]{\overset{\scriptsize\text{def}}{=}}
 $$</div>
-<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
-<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by replacing <span class="math">\(f\)</span> by its second-order Taylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at some point <span class="math">\(a\)</span></p>
+<p>The expectation maximization algorithm (EM) is a poorly understood and poorly
+explained.</p>
+<ul>
+<li>
+<p>Explanations are littered with distracting model-specific details and messy
+   variational inference notation that make it hard to see the signal in the
+   noise.<sup id="fnref-why-the-noise"><a class="footnote-ref" href="#fn-why-the-noise">1</a></sup></p>
+</li>
+<li>
+<p>Today, I will give my hot take.  I will create a bridge between EM and MLE,
+   which I believe makes it easier to see the signal in the noise.</p>
+</li>
+</ul>
+<!--
+   There are no
+   KL divergences, lower bounds, or convergence proofs to distract from what's
+   going on.
+   -->
+
+<p>EM is an algorithm for maximum-likelihood estimation when we have "incomplete
+observations."  What that means is that there is an underlying i.i.d. process
+<span class="math">\(\{ X_i \}_{i=1}^n\)</span>, which we do not get to fully observe.  Instead, we see an
+<strong>incomplete observation</strong>, which are (generally speaking) <em>constraints</em> on what
+<span class="math">\(X_i\)</span> might have been if only we had actually observed it.  In other words, we
+do not observe <span class="math">\(X_i\)</span>, we observe that <span class="math">\(g(X_i)\)</span> is true.  We assume knowledge of
+the function, <span class="math">\(g\)</span> and that <span class="math">\(g(x) \in \{0, 1\}\)</span> for all <span class="math">\(x \in
+\mathrm{domain}(X)\)</span>.</p>
+<p>Consider the following examples:</p>
+<ol>
+<li>
+<p>Complete observation: <span class="math">\(g(X_i) = \ind{X_i = x_i}\)</span> where <span class="math">\(\ind{\cdot}\)</span> is the
+   indicator function.</p>
+</li>
+<li>
+<p>Incomplete, interval observation: be <span class="math">\(g(X_i) = \ind{a_i \le X_i &lt; b_i}\)</span> for some
+   constants <span class="math">\(a_i &lt; b_i\)</span>.  We recover the complete case as <span class="math">\(a_i\)</span> approachs <span class="math">\(b_i\)</span>
+   for all <span class="math">\(i\)</span>.<sup id="fnref-interval"><a class="footnote-ref" href="#fn-interval">2</a></sup></p>
+</li>
+<li>
+<p>Incomplete, subset observations: we could observe non-empty subsets,
+   <span class="math">\(\mathcal{X}_i\)</span>, of <span class="math">\(X\)</span>'s domain, <span class="math">\(\ind{X_i \in \mathcal{X}_i}\)</span>.</p>
+</li>
+<li>
+<p><span class="math">\(\ind{y_i = f(X_i)}\)</span> for a function <span class="math">\(f\)</span> that is not necessarily invertible.</p>
+</li>
+</ol>
+<p>There are tons of weird incomplete observations types (i.e., families of <span class="math">\(g\)</span>
+functions).  Every choice will result is some set of details that you will have
+to work out in order to accomodate.  For example, to accommodate intervals we
+can use the cumulative distribution function, <span class="math">\(F(\cdot; \theta)\)</span>, <span class="math">\(p(a_i \le X &lt;
+b_i) = F(b_i; \theta) \cdot (1 - F(a_i; \theta))\)</span>.<sup id="fnref-a-equals-b"><a class="footnote-ref" href="#fn-a-equals-b">3</a></sup></p>
+<p>The obvious thing to optimize is the <strong>incomplete log-likelihood</strong>
+</p>
 <div class="math">$$
-\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
+\mathcal{L}(\theta) \defeq \sum_{i=1}^n \log p_\theta( g(X_i) ) = \sum_{i=1}^n
+\log \sum_{x \in \mathcal{X} } p_\theta(x) g(x)
 $$</div>
-<p>The expectation of this Taylor approximation is a quadratic function! Let's try to apply our new equation for the expected value of quadratic. We can use the trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, the covariance matrix is shift-invariant, and the Hessian is a symmetric matrix!</p>
-<div class="math">$$
-\begin{aligned}
-\mathbb{E}\left[ \hat{f_{a}}(x) \right]
- &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
- &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
-   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
-\end{aligned}
-$$</div>
-<p>Taking the Taylor expansion around <span class="math">\(\mu\)</span> simplifies the equation as follows</p>
-<div class="math">\begin{aligned}
-\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
-&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
-&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
-\end{aligned}</div>
-<p>That looks much more tractable! Error bounds are possible to derive, but outside to scope of this post. For a nice use of the delta method in machine learning see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
-<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
+<p>We can often optimize <span class="math">\(\mathcal{L}\)</span> directly with gradient-based optimization
+method.  However, <span class="math">\(\mathcal{L}\)</span> is generally nonconvex so we will only get
+locally optimal approximation.  The EM algorithm is an different type of search
+algorithm which has different convergence guarantees.</p>
+<p>EM is based on a chicken and egg type of story:</p>
+<ol>
+<li>
+<p>if we had the complete data observations, we'd get <span class="math">\(\theta\)</span> via MLE.</p>
+</li>
+<li>
+<p>if we had <span class="math">\(\theta\)</span>, we could get complete the data by sampling from the
+    model (or, more generally, using the model's distribution over it).</p>
+</li>
+</ol>
+<p>That's basically what EM is going to do:</p>
+<p>initialize: guess model parameters, \theta.<sup id="fnref-ME-alg"><a class="footnote-ref" href="#fn-ME-alg">4</a></sup></p>
+<p>repeat until some convergence criterion is met</p>
+<ul>
+<li>
+<p>E step: generate fake complete data: use the model to complete that data in
+    a manner which is consistent with the observations.</p>
+</li>
+<li>
+<p>M step: re-fit the model to that fake data,</p>
+</li>
+</ul>
+<p>Consider a slightly dumbed down version of EM, called Monte Carlo EM (MCEM).</p>
+<p>MCEM just (iteratively) fills in the missing information about the random
+variables by sampling what the complete value were based on the current estimate
+of the model <span class="math">\(\widehat{\theta}\)</span> (sometimes called bootstrapping).</p>
+<ul>
+<li>
+<p>E-step: gives us "complete" dataset that satisfies the observed constraints,
+  for each <span class="math">\(i\)</span> sample <span class="math">\(\widehat{x}_i \sim  p_{\widehat{\theta}}(\cdot \mid g(X))\)</span>.</p>
+</li>
+<li>
+<p>M step: compute fully observed maximum-likelihood estimate of <span class="math">\(\theta\)</span> on the
+  approximate data set <span class="math">\(\{ \widehat{x}_i \}_{i=1}^n\)</span>.</p>
+</li>
+</ul>
+<p>From MCEM to EM: We could take more than one sample per <span class="math">\(i\)</span> in the E step as
+long as we take an equal number per example (in expectation).  If we took
+infinitely many samples, we match what traditional EM does.  In particular,
+traditional EM uses the complete distribution, <span class="math">\(q_i\)</span>, when it is tractible to do
+so.  In other words, rather than sampling from <span class="math">\(p_{\widehat{\theta}}(\cdot \mid
+g(X))\)</span>, we use the distribution in the M step to reduce the approximation error.</p>
+<p>Using the fully distribution introduces some ugly notion that hides the signal.
+It is also more implementation: you have to extend the M-step to compute the
+expectation over complete data sets.  The sampling version conveniently uses the
+exact same code as fully observed MLE (i.e., a dataset of <span class="math">\(\{ x_i \}_{i=1}^n\)</span>).</p>
+<p>Leveraging the distribution is generally an efficiency win so it is worth doing
+if you need the extra accuracy (no sampling error that results from the
+approximate E step) and efficiency (no need to take lots of samples).  That
+said, the MCEM algorithm is a pretty good algorithm since it is very fast to
+implement.</p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-why-the-noise">
+<p>Why such a messy presentation?  My guess is that it is
+ because the theoretical foundations for EM are based on an iterative
+ lower-bound maximization algorithm.  The theory is bleeding into the
+ presentation.  This view is useful because they tie EM to a theoretical
+ optimization foundation that is used to prove convergence properties, but
+ at the end of the day they are just some dude's hot take.&#160;<a class="footnote-backref" href="#fnref-why-the-noise" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn-interval">
+<p>Interval observations are used in estimation for censored
+ observations.&#160;<a class="footnote-backref" href="#fnref-interval" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn-a-equals-b">
+<p>To support <span class="math">\(a_i = b_i\)</span>, you swap in the pdf via a piecewise
+  function when <span class="math">\(a_i = b_i\)</span> happens to be observed.&#160;<a class="footnote-backref" href="#fnref-a-equals-b" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn-ME-alg">
+<p>Alternatively, one can initialize with a guess of the data
+  completions and reorder the two steps below "M-E" rather than "E-M."&#160;<a class="footnote-backref" href="#fnref-ME-alg" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -160,13 +273,9 @@ $$</div>
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script></div>
-  		</article>
-<div class="pagination">
-    <a class="prev" href="https://timvieira.github.io/blog/index232.html">&larr; Older</a>
+  </article>
 
-    <a class="next" href="https://timvieira.github.io/blog/index230.html">Newer &rarr;</a>
-  <br />
-</div></div>
+</div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
@@ -209,6 +318,9 @@ $$</div>
   <script src="https://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
   <script type="text/javascript">
     var disqus_shortname = 'graduatedescent';
+    var disqus_identifier = 'https://timvieira.github.io/blog/drafts/hot-take-expectation-maximization.html';
+    var disqus_url = 'https://timvieira.github.io/blog/drafts/hot-take-expectation-maximization.html';
+    var disqus_title = 'Hot take: Expectation maximization';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
