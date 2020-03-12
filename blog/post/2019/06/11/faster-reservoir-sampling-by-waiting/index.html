@@ -90,7 +90,7 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
 <p>Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">jump</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="s2">&quot;Weighted-reservoir sampling by jumping&quot;</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
@@ -110,7 +110,7 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
 <p>Let me first write the <code>weighted_reservoir_sampling</code> algorithm to be much more similar to the <code>jump</code> algorithm.  For fun, I'm going to refer to it as the <code>walk</code> algorithm.</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="s2">&quot;Weighted-reservoir sampling by walking&quot;</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
@@ -279,7 +279,7 @@ $$</div>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

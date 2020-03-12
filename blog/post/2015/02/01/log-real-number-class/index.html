@@ -92,7 +92,7 @@ multiplying small things together. I've recently found log-reals to be effective
 at squeaking a bit more numerical accuracy.</p>
 <p>This trick is useful for almost all backprop computations because backprop is
 essentially:</p>
-<div class="highlight"><pre><span></span>adjoint(u) += adjoint(v) * dv/du.
+<div class="highlight"><pre><span></span><span class="err">adjoint(u) += adjoint(v) * dv/du.</span>
 </pre></div>
 
 
@@ -218,7 +218,7 @@ essentially:</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
