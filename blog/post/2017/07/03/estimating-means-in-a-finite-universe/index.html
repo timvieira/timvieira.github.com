@@ -172,7 +172,7 @@ we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseu
 <div class="math">$$
 \begin{align*}
 &amp;\textbf{procedure } \textrm{PrioritySample} \\
-&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}_{&gt;0}^n, \text{budget } m \in \{1, \ldots, n\}\\
 &amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
 &amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
 &amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\

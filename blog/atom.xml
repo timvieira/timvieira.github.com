@@ -4171,7 +4171,7 @@ we assume no prior knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;. 
 &lt;div class="math"&gt;$$
 \begin{align*}
 &amp;amp;\textbf{procedure } \textrm{PrioritySample} \\
-&amp;amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}_{&amp;gt;0}^n, \text{budget } m \in \{1, \ldots, n\}\\
 &amp;amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
 &amp;amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
 &amp;amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
