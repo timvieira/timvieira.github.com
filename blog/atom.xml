@@ -9310,7 +9310,7 @@ finite-difference approximation).&lt;/p&gt;
 $$&lt;/div&gt;
 &lt;p&gt;where &lt;span class="math"&gt;\(\varepsilon &amp;gt; 0\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{e_i}\)&lt;/span&gt; is a vector of zeros except at
 &lt;span class="math"&gt;\(i\)&lt;/span&gt; where it is &lt;span class="math"&gt;\(1\)&lt;/span&gt;. This approximation is exact in the limit, and accurate to
-&lt;span class="math"&gt;\(o(\varepsilon^2)\)&lt;/span&gt; additive error.&lt;/p&gt;
+&lt;span class="math"&gt;\(o(\varepsilon)\)&lt;/span&gt; additive error.&lt;/p&gt;
 &lt;p&gt;This is a specific instance of a more general approximation! The dot product of
 the gradient and any (conformable) vector &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt; can be approximated
 with the following formula,&lt;/p&gt;
