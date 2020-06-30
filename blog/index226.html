@@ -50,202 +50,107 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a>
+        <a href="https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">Importance sampling</a>
       </h1>
     <p class="meta">
-<time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-10-06T00:00:00-04:00" pubdate>Oct 06, 2014</time>  <span class="categories">
+<time datetime="2014-12-21T00:00:00-05:00" pubdate>Dec 21, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>It's well-known that
-<a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
-is not symmetric, but which direction is right for fitting your model?</p>
-<h4>Which KL is which? A cheat sheet</h4>
-<p>If we're fitting <span class="math">\(q_\theta\)</span> to <span class="math">\(p\)</span> using</p>
-<p><span class="math">\(\textbf{KL}(p || q_\theta)\)</span></p>
-<ul>
-<li>
-<p>mean-seeking, <em>inclusive</em> (more principled because approximates the <em>full</em> distribution)</p>
-</li>
-<li>
-<p>requires normalization wrt <span class="math">\(p\)</span> (i.e., often <em>not</em> computationally convenient)</p>
-</li>
-</ul>
-<p><span class="math">\(\textbf{KL}(q_\theta || p)\)</span></p>
-<ul>
-<li>
-<p>mode-seeking, <em>exclusive</em></p>
-</li>
-<li>
-<p>no normalization wrt <span class="math">\(p\)</span> (i.e., computationally convenient)</p>
-</li>
-</ul>
-<p><strong>Mnemonic</strong>: "When the truth comes first, you get the whole truth" (h/t
-<a href="https://www.umiacs.umd.edu/~resnik/">Philip Resnik</a>). Here "whole truth"
-corresponds to the <em>inclusiveness</em> of <span class="math">\(\textbf{KL}(p || q)\)</span>.</p>
-<p>As far as remembering the equation, I pretend that "<span class="math">\(||\)</span>" is a division symbol,
-which happens to correspond nicely to a division symbol in the equation (I'm not
-sure it's intentional).</p>
-<h2>Inclusive vs. exclusive divergence</h2>
-<div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
-
-<img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" />
-Figure by <a href="http://www.johnwinn.org/">John Winn</a>.
-</div>
-
-<p><br/></p>
-<h2>Computational perspecive</h2>
-<p>Let's look at what's involved in fitting a model <span class="math">\(q_\theta\)</span> in each
-direction. In this section, I'll describe the gradient and pay special attention
-to the issue of normalization.</p>
-<p><strong>Notation</strong>: <span class="math">\(p,q_\theta\)</span> are probabilty distributions. <span class="math">\(p = \bar{p} / Z_p\)</span>,
-where <span class="math">\(Z_p\)</span> is the normalization constant. Similarly for <span class="math">\(q\)</span>.</p>
-<h3>The easy direction <span class="math">\(\textbf{KL}(q_\theta || p)\)</span></h3>
-<div class="math">\begin{align*}
-\textbf{KL}(q_\theta || p)
-&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
-&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
-&amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
-\end{align*}</div>
-<p>Let's look at normalization of <span class="math">\(p\)</span>, the entropy term is easy because there is no <span class="math">\(p\)</span> in it.
-</p>
-<div class="math">\begin{align*}
-\sum_d q(d) \log p(d)
-&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
-&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
-&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
-&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
-\end{align*}</div>
-<p>In this case, <span class="math">\(-\log Z_p\)</span> is an additive constant, which can be dropped because
-we're optimizing.</p>
-<p>This leaves us with the following optimization problem:
-</p>
-<div class="math">\begin{align*}
-&amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
-&amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
-\end{align*}</div>
-<p>Let's work out the gradient
-</p>
-<div class="math">\begin{align*}
-&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
-\end{align*}</div>
-<p>We killed the one in the last equality because <span class="math">\(\sum_d \nabla
-\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
-\left[ 1 \right] = 0\)</span>, for any <span class="math">\(q\)</span> which is a probability distribution.</p>
-<p>This direction is convenient because we don't need to normalize
-<span class="math">\(p\)</span>. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
-the "hard" direction, which (as we'll see shortly) is convex.</p>
-<h3>Harder direction <span class="math">\(\textbf{KL}(p || q_\theta)\)</span></h3>
-<div class="math">\begin{align*}
-\textbf{KL}(p || q_\theta)
-&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
-&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
-&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
-\end{align*}</div>
-<p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
-<span class="math">\(\theta\)</span>. So, let's focus on the second term (cross-entropy).
-</p>
-<div class="math">\begin{align*}
-\sum_d p(d) \log q(d)
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
-\end{align*}</div>
-<p>The gradient, when <span class="math">\(q\)</span> is in the exponential family, is intuitive:</p>
-<div class="math">\begin{align*}
-\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
-&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
-\end{align*}</div>
-<p>Why do we say this is hard to compute? Well, for most interesting models, we
-can't compute <span class="math">\(Z_p = \sum_d \bar{p}(d)\)</span>. This is because <span class="math">\(p\)</span> is presumed to be a
-complex model (e.g., the real world, an intricate factor graph, a complicated
-Bayesian posterior). If we can't compute <span class="math">\(Z_p\)</span>, it's highly unlikely that we can
-compute another (nontrivial) integral under <span class="math">\(\bar{p}\)</span>, e.g., <span class="math">\(\sum_d \bar{p}(d)
-\log \bar{q}(d)\)</span>.</p>
-<p>Nonetheless, optimizing KL in this direction is still useful. Examples include:
-expectation propagation, variational decoding, and maximum likelihood
-estimation. In the case of maximum likelihood estimation, <span class="math">\(p\)</span> is the empirical
-distribution, so technically you don't have to compute its normalizing constant,
-but you do need samples from it, which can be just as hard to get as computing a
-normalization constant.</p>
-<p>Optimization problem is <em>convex</em> when <span class="math">\(q_\theta\)</span> is an exponential
-family&mdash;i.e., for any <span class="math">\(p\)</span> the <em>optimization</em> problem is "easy." You can
-think of maximum likelihood estimation (MLE) as a method which minimizes KL
-divergence based on samples of <span class="math">\(p\)</span>. In this case, <span class="math">\(p\)</span> is the true data
-distribution! The first term in the gradient is based on a sample instead of an
-exact estimate (often called "observed feature counts"). The downside, of
-course, is that computing <span class="math">\(\mathbb{E}_p \left[ \phi_q \right]\)</span> might not be
-tractable or, for MLE, require tons of samples.</p>
+  <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
+learning and randomized algorithms.</p>
+<h2>Basics</h2>
+<p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
+random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
+distribution <span class="math">\(q.\)</span></p>
+<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
+different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q.\)</span></p>
+<div class="math">$$
+\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+$$</div>
+<p><br/>Technical condition: <span class="math">\(q\)</span> must have support everywhere <span class="math">\(p\)</span> does, <span class="math">\(p(x) &gt; 0
+\Rightarrow q(x) &gt; 0.\)</span> Without this condition, the equation is biased! Note: <span class="math">\(q\)</span>
+can support things that <span class="math">\(p\)</span> doesn't.</p>
+<p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
+"importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
+target density and <span class="math">\(q\)</span> the proposal density.</p>
+<p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q,\)</span> we can use the Monte
+Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)}),\)</span> as
+an unbiased estimator of <span class="math">\(\mu.\)</span></p>
 <h2>Remarks</h2>
-<ul>
+<p>There are a few reasons we might want use importance sampling:</p>
+<ol>
 <li>
-<p>In many ways, optimizing exclusive KL makes no sense at all! Except for the
-  fact that it's computable when inclusive KL is often not. Exclusive KL is
-  generally regarded as "an approximation" to inclusive KL. This bias in this
-  approximation can be quite large.</p>
+<p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p.\)</span></p>
 </li>
 <li>
-<p>Inclusive vs. exclusive is an important distinction: Inclusive divergences
-  require <span class="math">\(q &gt; 0\)</span> whenever <span class="math">\(p &gt; 0\)</span> (i.e., no "false negatives"), whereas
-  exclusive divergences favor a single mode (i.e., only a good fit around a that
-  mode).</p>
+<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
+     samples to satisfy some "safety" condition (e.g., a minimum support
+     threshold) and be unbiased. Importance sampling can be used to remove bias,
+     while satisfying the condition.</p>
 </li>
 <li>
-<p>When <span class="math">\(q\)</span> is an exponential family, <span class="math">\(\textbf{KL}(p || q_\theta)\)</span> will be convex
-  in <span class="math">\(\theta\)</span>, no matter how complicated <span class="math">\(p\)</span> is, whereas <span class="math">\(\textbf{KL}(q_\theta
-  || p)\)</span> is generally nonconvex (e.g., if <span class="math">\(p\)</span> is multimodal).</p>
+<p><strong>Variance reduction</strong>: It might be the case that sampling directly from
+     <span class="math">\(p\)</span> would require more samples to estimate <span class="math">\(\mu.\)</span> Check out these
+     <a href="http://www.columbia.edu/~mh2078/MCS04/MCS_var_red2.pdf">great notes</a> for
+     more.</p>
 </li>
 <li>
-<p>Computing the value of either KL divergence requires normalization. However,
-  in the "easy" (exclusive) direction, we can optimize KL without computing
-  <span class="math">\(Z_p\)</span> (as it results in only an additive constant difference).</p>
+<p><strong>Off-policy evaluation and learning</strong>: We might want to collect some
+     "exploratory data" from <span class="math">\(q\)</span> and evaluate different "policies", <span class="math">\(p\)</span> (e.g.,
+     to pick the best one). Here's a link to a future post on
+     <a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/">off-policy evaluation and counterfactual reasoning</a>
+     and some cool papers:
+     <a href="http://arxiv.org/abs/1209.2355">counterfactual reasoning</a>,
+     <a href="http://arxiv.org/abs/cs/0204043">reinforcement learning</a>,
+     <a href="http://arxiv.org/abs/1103.4601">contextual bandits</a>,
+     <a href="http://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">domain adaptation</a>.</p>
+</li>
+</ol>
+<p>There are a few common cases for <span class="math">\(q\)</span> worth separate consideration:</p>
+<ol>
+<li>
+<p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
+     reduction, active learning and reinforcement learning. It's often difficult
+     to design <span class="math">\(q,\)</span> which results in an estimator with "reasonable" variance. A
+     very difficult case is in off-policy evaluation because it (essentially)
+     requires a good exploratory distribution for every possible policy. (I have
+     much more to say on this topic.)</p>
 </li>
 <li>
-<p>Both directions of KL are special cases of
-  <a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"><span class="math">\(\alpha\)</span>-divergence</a>. For a
-  unified account of both directions consider looking into <span class="math">\(\alpha\)</span>-divergence.</p>
-</li>
-</ul>
-<h3>Acknowledgments</h3>
-<p>I'd like to thank the following people:</p>
-<ul>
-<li>
-<p><a href="https://twitter.com/_shrdlu_">Ryan Cotterell</a> for an email exchange which
-  spawned this article.</p>
+<p><strong>Little to no control over <span class="math">\(q\)</span></strong>: For example, you're given some dataset
+     (e.g., new articles) and you want to estimate performance on a different
+     dataset (e.g., Twitter).</p>
 </li>
 <li>
-<p><a href="https://twitter.com/adveisner">Jason Eisner</a> for teaching me all this stuff.</p>
+<p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
+     to as the propensity score) and use it in the importance sampling
+     estimator. This technique, as far as I can tell, is widely used to remove
+     selection bias when estimating effects of different treatments.</p>
 </li>
-<li>
-<p><a href="https://twitter.com/florian_shkurti">Florian Shkurti</a> for a useful email
-  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
-  compute/optimize.</p>
-</li>
-<li>
-<p><a href="https://twitter.com/sjmielke">Sebastian Mielke</a> for the suggesting the
-  "inclusive vs. exclusive" figure.</p>
-</li>
-</ul>
+</ol>
+<p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
+samples with large weights can drastically throw off the estimator. Thus, it's
+often the case that a biased estimator is preferred, e.g.,
+<a href="https://hips.seas.harvard.edu/blog/2013/01/14/unbiased-estimators-of-partition-functions-are-basically-lower-bounds/">estimating the partition function</a>,
+<a href="http://arxiv.org/abs/1209.2355">clipping weights</a>,
+<a href="http://arxiv.org/abs/cs/0204043">indirect importance sampling</a>. A secondary
+drawback is that both densities must be normalized, which is often intractable.</p>
+<p><strong>What's next?</strong> I plan to cover "variance reduction" and
+<a href="http://timvieira.github.io/blog/post/2016/12/13/counterfactual-reasoning-and-learning-from-logged-data/">off-policy evaluation</a>
+in more detail in future posts.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -320,6 +225,12 @@ tractable or, for MLE, require tons of samples.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -328,18 +239,12 @@ tractable or, for MLE, require tons of samples.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -349,7 +254,7 @@ tractable or, for MLE, require tons of samples.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

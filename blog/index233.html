@@ -50,114 +50,54 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+        <a href="https://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>  <span class="categories">
+<time datetime="2014-07-21T00:00:00-04:00" pubdate>Jul 21, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>).</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+  <div class="entry-content"><p><strong>Expected value of a quadratic</strong>: Suppose we'd like to compute the expectation of a quadratic function, i.e., <span class="math">\(\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]\)</span> , where <span class="math">\(x\)</span> is a random vector and <span class="math">\(A\)</span> is deterministic <em>symmetric</em> matrix. Let <span class="math">\(\mu\)</span> and <span class="math">\(\Sigma\)</span> be the mean and variance of <span class="math">\(x\)</span>. It turns out the expected value of a quadratic has the following simple form:</p>
 <div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+\mathbb{E}\left[ x^{\top}\negthinspace\negthinspace A x \right]
+=
+\text{trace}\left( A \Sigma \right) + \mu^{\top}\negthinspace A \mu
 $$</div>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
+<p><strong>Delta Method</strong>: Suppose we'd like to compute expected value of a nonlinear function <span class="math">\(f\)</span> applied our random variable <span class="math">\(x\)</span>,
+<span class="math">\(\mathbb{E}\left[ f(x) \right]\)</span>. The Delta method approximates this expection by replacing <span class="math">\(f\)</span> by its second-order Taylor approximation <span class="math">\(\hat{f_{a}}\)</span> taken at some point <span class="math">\(a\)</span></p>
 <div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+\hat{f_{a}}(x) = f(a) + \nabla f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^\top H(a) (x - a)
 $$</div>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p>The naive implementation is terrible when there are large numbers!</p>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">overflow</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">exp</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">value</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">true_divide</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="n">nan</span><span class="p">])</span>
-</pre></div>
-
-
-<p>The exp-normalize trick avoid this common problem.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
-</pre></div>
-
-
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
+<p>The expectation of this Taylor approximation is a quadratic function! Let's try to apply our new equation for the expected value of quadratic. We can use the trick from above with <span class="math">\(A=H(a)\)</span> and <span class="math">\(x = (x-a)\)</span>. Note, the covariance matrix is shift-invariant, and the Hessian is a symmetric matrix!</p>
 <div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+\begin{aligned}
+\mathbb{E}\left[ \hat{f_{a}}(x) \right]
+ &amp; = \mathbb{E} \left[ f(a) + \nabla\negthinspace f(a)^{\top} (x - a) + \frac{1}{2} (x - a)^{\top} H(a)\, (x - a) \right] \\\
+ &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) + \frac{1}{2} \mathbb{E} \left[ (x - a)^{\top} H(a)\, (x - a) \right] \\\
+ &amp; = f(a) + \nabla\negthinspace f(a)^{\top} ( \mu - a ) +
+   \frac{1}{2}\left( \text{trace}\left( H(a) \, \Sigma \right) + (\mu - a)^{\top} H(a)\, (\mu - a) \right)
+\end{aligned}
 $$</div>
-<p>where
-</p>
-<div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</div>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
-tricks!</p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Numerically stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
-<div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$</div>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s2">&quot;Numerically stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c1"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>Closing remarks:</strong> The exp-normalize distribution is also known as a
-<a href="https://en.wikipedia.org/wiki/Gibbs_measure">Gibbs measure</a> (sometimes called a
-Boltzmann distribution) when it is augmented with a temperature
-parameter. Exp-normalize is often called "softmax," which is unfortunate because
-log-sum-exp is <em>also</em> called "softmax." However, unlike exp-normalize, it
-<em>earned</em> the name because it is acutally a soft version of the max function,
-where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
-still call exp-normalize "softmax."</p>
+<p>Taking the Taylor expansion around <span class="math">\(\mu\)</span> simplifies the equation as follows</p>
+<div class="math">\begin{aligned}
+\mathbb{E}\left[ \hat{f_{\mu}} (x) \right]
+&amp;= \mathbb{E}\left[ f(\mu) + \nabla\negthinspace f(\mu) (x - \mu) + \frac{1}{2} (x - \mu)^{\top} H(\mu)\, (x - \mu) \right] \\\
+&amp;= f(\mu) + \frac{1}{2} \, \text{trace}\Big( H(\mu) \, \Sigma \Big)
+\end{aligned}</div>
+<p>That looks much more tractable! Error bounds are possible to derive, but outside to scope of this post. For a nice use of the delta method in machine learning see <a href="http://arxiv.org/pdf/1307.1493v2.pdf">(Wager+,'13)</a> and
+<a href="http://cs.jhu.edu/~jason/papers/smith+eisner.acl06-risk.pdf">(Smith &amp; Eisner,'06)</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -232,6 +172,12 @@ still call exp-normalize "softmax."</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -240,18 +186,12 @@ still call exp-normalize "softmax."</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -261,7 +201,7 @@ still call exp-normalize "softmax."</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

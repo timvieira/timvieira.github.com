@@ -50,323 +50,283 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a>
+        <a href="https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a>
       </h1>
     <p class="meta">
-<time datetime="2016-12-19T00:00:00-05:00" pubdate>Dec 19, 2016</time>  <span class="byline author vcard">
+<time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2016-12-19T00:00:00-05:00" pubdate>Dec 19, 2016</time>  <span class="categories">
+<time datetime="2017-07-03T00:00:00-04:00" pubdate>Jul 03, 2017</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><style> .toggle-button { background-color: #555555; border: none; color: white;
-padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
-none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
-background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
-margin-bottom: 10px; } </style>
+  <div class="entry-content"><style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
 
 <script>
-/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
 function toggle(x) { $(x).toggle(); }
 </script>
 
-<p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
-example, reasoning about the expected reward of new policy given data collected
-from a older one.</p>
-<p>In this post, I'll discuss some basic techniques for learning from logged
-data. For the large part, this post is based on things I learned from
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Peshkin &amp; Shelton (2002)</a>
-and <a href="https://arxiv.org/abs/1209.2355">Bottou et al. (2013)</a> (two of all-time
-favorite papers).</p>
-<p>After reading, have a look at the
-<a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9">Jupyter notebook</a>
-accompanying this post!</p>
-<p><strong>Setup</strong> (<em>off-line off-policy optimization</em>): We're trying to optimize a
-function of the form,</p>
+<p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.</p>
+<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a derministic function
+<span class="math">\(f\)</span> over a (large) finite universe of <span class="math">\(n\)</span> elements where each element <span class="math">\(i\)</span> has
+probability <span class="math">\(p_i\)</span>:</p>
 <div class="math">$$
-J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
 $$</div>
-<p><br/> But! We only have a <em>fixed</em> sample of size <span class="math">\(m\)</span> from a data collection
-policy <span class="math">\(q\)</span>, <span class="math">\(\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.\)</span></p>
-<ul>
-<li>
-<p>Although, it's not <em>necessarily</em> the case, you can think of <span class="math">\(q = p_{\theta'}\)</span>
-  for a <em>fixed</em> value <span class="math">\(\theta'.\)</span></p>
-</li>
-<li>
-<p><span class="math">\(\mathcal{X}\)</span> is an arbitrary multivariate space, which permits a mix of
-  continuous and discrete components, with appropriate densities, <span class="math">\(p_{\theta}\)</span>
-  and <span class="math">\(q\)</span> defined over it.</p>
-</li>
-<li>
-<p><span class="math">\(r: \mathcal{X} \mapsto \mathbb{R}\)</span> is a black box that outputs a scalar
-  score.</p>
-</li>
-<li>
-<p>I've used the notation <span class="math">\(r^{(j)}\)</span> instead of <span class="math">\(r(x^{(j)})\)</span> to emphasize that we
-  can't evaluate <span class="math">\(r\)</span> at <span class="math">\(x\)</span> values other than those in the sample.</p>
-</li>
-<li>
-<p>We'll assume that <span class="math">\(q\)</span> assigns positive probability everywhere, <span class="math">\(q(x) &gt; 0\)</span> for
-  all <span class="math">\(x \in \mathcal{X}\)</span>. This means is that the data collection process must
-  be randomized and eventually sample all possible configurations. Later, I
-  discuss relaxing this assumption.</p>
-</li>
-</ul>
-<p>Each distribution is a product of one or more factors of the following types:
-<strong>policy factors</strong> (at least one), which directly depend on <span class="math">\(\theta\)</span>, and
-<strong>environment factors</strong> (possibly none), which do not depend directly on
-<span class="math">\(\theta\)</span>. Note that environment factors are <em>only</em> accessible via sampling
-(i.e., we don't know the <em>value</em> they assign to a sample). For example, a
-<em>contextual bandit problem</em>, where <span class="math">\(x\)</span> is a context-action pair, <span class="math">\(x =
-(s,a)\)</span>. Here <span class="math">\(q(x) = q(a|s) p(s)\)</span> and <span class="math">\(p_{\theta}(x) = p_{\theta}(a|s)
-p(s)\)</span>. Note that <span class="math">\(p_{\theta}\)</span> and <span class="math">\(q\)</span> share the environment factor <span class="math">\(p(s)\)</span>, the
-distribution over contexts, and only differ in the action-given-context
-factor. For now, assume that we can evaluate all environment factors; later,
-I'll discuss how we cleverly work around it.</p>
+<p>However, <span class="math">\(f\)</span> is too expensive to evaluate <span class="math">\(n\)</span> times. So let's say that we have
+<span class="math">\(m \le n\)</span> evaluations to form our estimate. (Obviously, if we're happy
+evaluating <span class="math">\(f\)</span> a total of <span class="math">\(n\)</span> times, then we should just compute <span class="math">\(\mu\)</span> exactly
+with the definition above.)</p>
 <!--
-(We can
-even extend it to a full-blown MDP or POMDP by taking $x$ to be a sequence of
-state-action pairs, often called "trajectories".)
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
 -->
 
-<p><strong>The main challenge</strong> of this setting is that we don't have controlled
-experiments to learn from because <span class="math">\(q\)</span> is not (completely) in our control. This
-manifests itself as high variance ("noise") in estimating <span class="math">\(J(\theta)\)</span>. Consider
-the contextual bandit setting, we receive a context <span class="math">\(s\)</span> and execute single
-action; we never get to rollback to that precise context and try an alternative
-action (to get a paired sample #yolo) because we do not control <span class="math">\(p(s)\)</span>. This is
-an important paradigm for many 'real world' problems, e.g., predicting medical
-treatments or ad selection.</p>
+<p><strong>Monte Carlo:</strong> The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample <span class="math">\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)</span>, return <span class="math">\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)</span>. <em>Remarks</em>: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&mdash;measured in <span class="math">\(f\)</span> evaluations&mdash;somewhat by
+caching past evaluations of <span class="math">\(f\)</span>. However, this introduces a serious <em>runtime</em>
+inefficiency and requires modifying the method to account for the fact that <span class="math">\(m\)</span>
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+<em>zero</em> error; it only converges in an <span class="math">\(\epsilon\)</span>-<span class="math">\(\delta\)</span> sense.</p>
 <!--
-This is the crucial difference that makes counterfactual learning
-more difficult than (fully) supervised learning.
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
 -->
 
-<p><strong>Estimating <span class="math">\(J(\theta)\)</span></strong> [V1]: We obtain an unbiased estimator of <span class="math">\(J(\theta)\)</span>
-with
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>,</p>
+<p><strong>Sampling without replacement:</strong> We can get around the problem of resampling
+the same elements multiple times by sampling <span class="math">\(m\)</span> distinct elements. This is
+called a sampling <em>without replacement</em> (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+<em>de facto</em> method (more on that later). There are lots of ways to do sampling
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.</p>
+<p><strong>An alternative formulation:</strong> We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}_{&gt;0}^n\)</span>. We want
+our approximation, <span class="math">\(\boldsymbol{s}\)</span> to satisfy <span class="math">\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)</span> and while <span class="math">\(|| \boldsymbol{s} ||_0 \le m\)</span>. This will suffice for
+estimating <span class="math">\(\mu\)</span> (above) when <span class="math">\(\boldsymbol{x}=\boldsymbol{p}\)</span>, the vector of
+probabillties, because <span class="math">\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)</span> where <span class="math">\(\boldsymbol{f}\)</span> is a vector of all <span class="math">\(n\)</span> values of
+the function <span class="math">\(f\)</span>. Obviously, we don't need to evaluate <span class="math">\(f\)</span> in places where
+<span class="math">\(\boldsymbol{s}\)</span> is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not <em>necessary</em> for unbiased
+estimation of <span class="math">\(\mu\)</span> alone. However, this characterization is a good model for
+when we have zero knowledge of <span class="math">\(f\)</span>. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).</p>
+<p><strong>Priority sampling</strong>: Priority sampling (Duffield et al., 2005;
+<a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., 2007</a>)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about <span class="math">\(f\)</span>. Here is pseudocode for priority sampling
+(PS), based on the <em>alternative formulation</em>.</p>
 <div class="math">$$
-J(\theta)
-\approx \hat{J}_{\!\text{IS}}(\theta)
-= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
-\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
+\begin{align*}
+&amp;\textbf{procedure } \textrm{PrioritySample} \\
+&amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}_{&gt;0}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
+&amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;\quad  s_i \gets \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp; \text{ if } i \in S \\
+  0                               &amp; \text{ otherwise}
+\end{cases} \\
+&amp;\quad \textbf{return }\boldsymbol{s}
+\end{align*}
 $$</div>
-<p><br/> This estimator is remarkable: it uses importance sampling as a function
-approximator! We have an <em>unbiased</em> estimate of <span class="math">\(J(\theta)\)</span> for any value of
-<span class="math">\(\theta\)</span> that we like. <em>The catch</em> is that we have to pick <span class="math">\(\theta\)</span> a priori,
-i.e., with no knowledge of the sample.</p>
-<!--
-We also require that the usual 'support
-conditions' for importance sampling conditions ($p_{\theta}(x)>0 \Rightarrow
-q(x)>0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
--->
-
-<p>After we've collected a (large) sample it's possible to optimize
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span> using any optimization algorithm (e.g., L-BFGS). Of
-course, we risk overfitting to the sample if we evaluate
-<span class="math">\(\hat{J}_{\!\text{IS}}\)</span>. Actually, it's a bit worse: this objective tends to
-favor regions of <span class="math">\(\theta\)</span>, which are not well represented in the sample because
-the importance sampling estimator has high variance in these regions resulting
-from large importance weights (when <span class="math">\(q(x)\)</span> is small and <span class="math">\(p_{\theta}(x)\)</span> is
-large, <span class="math">\(w(x)\)</span> is large and consequently so is <span class="math">\(\hat{J}_{\!\text{IS}}\)</span> regardless
-of whether <span class="math">\(r(x)\)</span> is high!). Thus, we want some type of "regularization" to keep
-the optimizer in regions which are sufficiently well-represented by the sample.</p>
-<!--
-**Visual example**: We can visualize this phenomena in a simple example. Let $q
-= \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
-otherwise},$ and $p_\theta = \mathcal{N}(\theta, \sigma=1)$.  This example is
-nice because it let's us plot $x$ and $\theta$ in the same space. This is
-generally not the case, because $\mathcal{X}$ may have no connection to $\theta$
-space, e.g., $\mathcal{X}$ may be discrete.
-
-**TODO** add plot
--->
-
-<p><strong>Better surrogate</strong> [V2]: There are many ways to improve the variance of the
-estimator and <em>confidently</em> obtain improvements to the system. One of my
-favorites is Bottou et al.'s lower bound on <span class="math">\(J(\theta)\)</span>, which we get by
-clipping importance weights, replace <span class="math">\(w^{(j)}_{\theta}\)</span> with <span class="math">\(\min(R,
-w^{(j)}_{\theta})\)</span>.</p>
-<p><strong>Confidence intervals</strong> [V3]: We can augment the V2 lower bound with confidence
-intervals derived from the empirical Bernstein bound (EBB). We'll require that
-<span class="math">\(r\)</span> is bounded and that we know its max/min values. The EBB <em>penalizes</em>
-hypotheses (values of <span class="math">\(\theta\)</span>) which have higher sample variance. (Note: a
-Hoeffding bound wouldn't change the <em>shape</em> of the objective, but EBB does
-thanks to the sample variance penalty. EBB tends to be tighter.). The EBB
-introduces an additional "confidence" hyperparameter, <span class="math">\((1-\delta)\)</span>. Bottou et
-al. recommend maximizing the lower bound as it provides safer improvements. See
-the original paper for the derivation.</p>
-<!--
-An important benefit of having upper *and* lower is that the bounds tell
-us whether or not we should collect more data
--->
-
-<p>Both V2 and V3 are <em>biased</em> (as they are lower bounds), but we can mitigate the
-bias by <em>tuning</em> the hyperparameter <span class="math">\(R\)</span> on a heldout sample (we can even tune
-<span class="math">\(\delta\)</span>, if desired). Additionally, V2 and V3 are 'valid' when <span class="math">\(q\)</span> has limited
-support since they prevent the importance weights from exploding (of course, the
-bias can be arbitrarily bad, but probably unavoidable given the
-learning-from-only-logged data setup).</p>
-<h2>Extensions</h2>
-<!--
-**Be warned**: This may be considered an idealized setting. Much of the research
-in counterfactual and causal reasoning targets (often subtle) deviations from
-these assumptions (and some different questions, of course). Some extensions and
-discussion appear towards the end of the post.
--->
-
-<p><strong>Unknown environment factors</strong>: Consider the contextual bandit setting
-(mentioned above). Here <span class="math">\(p\)</span> and <span class="math">\(q\)</span> share an <em>unknown</em> environment factor: the
-distribution of contexts. Luckily, we do not need to know the value of this
-factor in order to apply any of our estimators because they are all based on
-likelihood <em>ratios</em>, thus the shared unknown factors cancel out!  Some specific
-examples are given below. Of course, these factors do influence the estimators
-because they are crucial in <em>sampling</em>, they just aren't necessary in
-<em>evaluation</em>.</p>
+<p><span class="math">\(\textrm{PrioritySample}\)</span> can be applied to obtain a sparse and unbiased
+representation of any vector in <span class="math">\(\mathbb{R}^n\)</span>. We make use of such a
+representation for our original problem of budgeted mean estimation (<span class="math">\(\mu\)</span>) as
+follows:</p>
+<div class="math">$$
+\begin{align*}
+&amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
+&amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\end{align*}
+$$</div>
+<p>Explanation: The definition of <span class="math">\(s_i\)</span> might look a little mysterious. In the <span class="math">\((i
+\in S)\)</span> case, it comes from <span class="math">\(s_i = \frac{p_i}{p(i \in S | \tau)} =
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)</span>. The factor <span class="math">\(p(i \in S
+| \tau)\)</span> is an importance-weighting correction that comes from the
+<a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator">Horvitz-Thompson estimator</a>
+(modified slightly from its usual presentation to estimate means),
+<span class="math">\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)</span>, where
+<span class="math">\(S\)</span> is sampled according to some process with inclusion probabilities <span class="math">\(q_i = p(i
+\in S)\)</span>. In the case of priority sampling, we have an auxiliary variable for
+<span class="math">\(\tau\)</span> that makes computing <span class="math">\(q_i\)</span> easy. Thus, for priority sampling, we can use
+<span class="math">\(q_i = p(i \in S | \tau)\)</span>. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.</p>
+<p><button class="toggle-button" onclick="toggle('#ps-unbiased');">Show proof of
+unbiasedness</button> <div id="ps-unbiased" class="derivation"
+style="display:none;"> <strong>Proof of unbiasedness</strong>. The following proof is a
+little different from that in the priority sampling papers. I think it's more
+straightforward. More importantly, it shows how we can extend the method to
+sample from slightly different without-replacement distributions (as long as we
+can compute <span class="math">\(q_i = p(i \in S | \tau)\)</span>).</p>
+<div class="math">$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;=&amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \mu \right] \\
+&amp;=&amp; \mu
+\end{eqnarray}
+$$</div>
+<p>
+</div></p>
+<p><strong>Remarks</strong>:</p>
 <ul>
 <li>
-<p>In contextual bandit example, <span class="math">\(x\)</span> is a state-action pair, <span class="math">\(w_{\theta}(x) =
-    \frac{p_{\theta}(x)}{q(x)} = \frac{ p_{\theta}(s,a) }{ q(s,a) } =
-    \frac{p_{\theta}(a|s) p(s)}{q(a|s) p(s)} = \frac{p_{\theta}(a|s) }{ q(a|s)
-    }\)</span>.</p>
+<p>Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).</p>
 </li>
 <li>
-<p>In a Markov decision process, <span class="math">\(x\)</span> is a sequence of state-action pairs,
-    <span class="math">\(w_{\theta}(x) = \frac{p_{\theta}(x)}{q(x)} = \frac{ p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) p_\theta(a_t|s_t) } { p(s_0) \prod_{t=0}^T
-    p(s_{t+1}|s_t,a_t) q(a_t|s_t) } = \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
-    {\prod_{t=0}^T q(a_t|s_t)}.\)</span></p>
+<p>Priority sampling can be straighforwardly generalized to support streaming
+   <span class="math">\(x_i\)</span>, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.</p>
+</li>
+<li>
+<p>Priority sampling was designed for estimating subset sums, i.e., estimating
+   <span class="math">\(\sum_{i \in I} x_i\)</span> for some <span class="math">\(I \subseteq \{1,\ldots,n\}\)</span>. In this setting,
+   the set of sampled items <span class="math">\(S\)</span> is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   <a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf">(Szegedy, 2005)</a>.
+   Specifically, priority sampling with <span class="math">\(m\)</span> samples is no worse than the best
+   possible <span class="math">\((m-1)\)</span>-sparse estimator in terms of variance. Of course,
+   if we have some knowledge about <span class="math">\(f\)</span>, we may be able to beat
+   PS. <!-- We can relate subset sums to estimating <span class="math">\(\mu\)</span> by interpreting
+   <span class="math">\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)</span> for some <span class="math">\(\alpha\)</span>, scaling
+   <span class="math">\(f\)</span> appropriately by <span class="math">\(\alpha\)</span>, and encoding the subset via indicators in
+   <span class="math">\(f\)</span>'s dimensions. -->
+   <!-- (e.g.,. via
+   <a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">importance sampling</a>
+   or by modifying PS to sample proportional to <span class="math">\(x_i = p_i \!\cdot\! |f_i|\)</span> (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for <span class="math">\(f_i\)</span> because we don't want to evaluate it). --></p>
+</li>
+<li>
+<p>Components of the estimate <span class="math">\(\boldsymbol{s}\)</span> are uncorrelated, i.e.,
+   <span class="math">\(\textrm{Cov}[s_i, s_j] = 0\)</span> for <span class="math">\(i \ne j\)</span> and <span class="math">\(m \ge 2\)</span>. This is surprising
+   since <span class="math">\(s_i\)</span> and <span class="math">\(s_j\)</span> are related via the threshold <span class="math">\(\tau\)</span>.</p>
+</li>
+<li>
+<p>If we instead sample <span class="math">\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)</span>, then <span class="math">\(S\)</span> will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>),
+   known as probability proportional to size without replacement (PPSWOR).
+   To we can then adjust our estimator
+   <div class="math">$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$</div>
+   where <span class="math">\(q_i = p(i \in S|\tau) = p(k_i &gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)</span>. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).</p>
+</li>
+<li>
+<p><span class="math">\(\tau\)</span> is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing <span class="math">\(\tau\)</span>'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.</p>
 </li>
 </ul>
-<p><strong>Variance reduction</strong>: These estimators can all be improved with variance
-reduction techniques. Probably the most effective technique is using
-<a href="https://en.wikipedia.org/wiki/Control_variates">control variates</a> (of which
-baseline functions are a special case). These are random variables correlated
-with <span class="math">\(r(x)\)</span> for which we know their expectations (or at least they are estimated
-separately). A great example is how ad clicks depend strongly on time-of-day
-(fewer people are online late at night so we get fewer clicks), thus the
-time-of-day covariate explains a large part of the variation in <span class="math">\(r(x)\)</span>.</p>
-<p><strong>Estimation instead of optimization</strong>: You can use this general setup for
-estimation instead of optimization, in which case it's fine to let <span class="math">\(r\)</span> have
-real-valued multivariate output. The confidence intervals are probably useful in
-that setting too.</p>
-<p><strong>Unknown <span class="math">\(q\)</span></strong>: Often <span class="math">\(q\)</span> is an existing complex system, which does not record
-its probabilities. It is possible to use regression to estimate <span class="math">\(q\)</span> from the
-samples, which is called the <strong>propensity score</strong> (PS). PS attempts to account
-for <strong>confounding variables</strong>, which are hidden causes that control variation in
-the data. Failing to account for confounding variables may lead to
-<a href="https://en.wikipedia.org/wiki/Simpson's_paradox">incorrect conclusions</a>. Unfortunately,
-PS results in a biased estimator because we're using a 'ratio of expectations'
-(we'll divide by the PS estimate) instead of an 'expectation of ratios'. PS is
-only statistically consistent in the (unlikely) event that the density estimate
-is correctly specified (i.e., we can eventually get <span class="math">\(q\)</span> correct). In the unknown
-<span class="math">\(q\)</span> setting, it's often better to use the <strong>doubly-robust estimator</strong> (DR) which
-combines <em>two</em> estimators: a density estimator for <span class="math">\(q\)</span> and a function
-approximation for <span class="math">\(r\)</span>. A great explanation for the bandit case is in
-<a href="https://arxiv.org/abs/1103.4601">Dudík et al. (2011)</a>. The DR estimator is also
-biased, but it has a better bias-variance tradeoff than PS.</p>
-<p><strong>What if <span class="math">\(q\)</span> doesn't have support everywhere?</strong> This is an especially important
-setting because it is often the case that data collection policies abide by some
-<strong>safety regulations</strong>, which prevent known bad configurations. In many
-situations, evaluating <span class="math">\(r(x)\)</span> corresponds to executing an action <span class="math">\(x\)</span> in the real
-world so terrible outcomes could occur, such as, breaking a system, giving a
-patient a bad treatment, or losing money. V1 is ok to use as long as we satisfy
-the importance sampling support conditions, which might mean rejecting certain
-values for <span class="math">\(\theta\)</span> (might be non-trivial to enforce) and consequently finding a
-less-optimal policy. V2 and V3 are ok to use without an explicit constraint, but
-additional care may be needed to ensure specific safety constraints are
-satisfied by the learned policy.</p>
-<p><strong>What if <span class="math">\(q\)</span> is deterministic?</strong> This is related to the point above. This is a
-hard problem. Essentially, this trying to learn without any exploration /
-experimentation! In general, we need exploration to learn. Randomization isn't
-the only way to perform exploration, there are many systematic types of
-experimentation.</p>
+<!--
+ - The one downside of this method is that sampling seems to require looking at
+   all $n$ items.
+-->
+
+<h2>Experiments</h2>
+<p>You can get the Jupyter notebook for replicating this experiment
+<a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb">here</a>.
+So download the notebook and play with it!</p>
+<p>The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!</p>
+<p><center>
+<img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png">
+</center></p>
+<p>The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, <span class="math">\(m \le n\)</span>.</p>
+<p>The plot shows a small example with <span class="math">\(n=50\)</span>. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at <span class="math">\(m=n\)</span>. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
+<p><strong>Further reading:</strong> If you liked this post, you might like my other posts
+tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling</a> and
+<a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>.</p>
 <ul>
 <li>
-<p>There are some cases of systematic experimentation that are ok. For example,
-    enumerating all elements of <span class="math">\(\mathcal{X}\)</span> (almost certainly
-    infeasible). Another example is a contextual bandit where <span class="math">\(q\)</span> assigns
-    actions to contexts deterministically via a hash function (this setting is
-    fine because <span class="math">\(q\)</span> is essentially a uniform distribution over actions, which
-    is independent of the state). In other special cases, we <em>may</em> be able to
-    characterize systematic exploration as
-    <a href="https://en.wikipedia.org/wiki/Stratified_sampling">stratified sampling</a>.</p>
+<p>Edith Cohen, "The Magic of Random Sampling"
+   (<a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf">slides</a>,
+   <a href="https://www.youtube.com/watch?v=jp83HyDs8fs">talk</a>)</p>
 </li>
 <li>
-<p>A generic solution might be to apply the doubly-robust estimator, which
-    "smooths out" deterministic components (by pretending they are random) and
-    accounting for confounds (by explicitly modeling them in the propensity
-    score).</p>
+<p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
+   has plenty good stuff that I didn't cover.</p>
+</li>
+<li>
+<p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
+</li>
+<li>
+<p>Suresh Venkatasubramanian's
+   <a href="http://blog.geomblog.org/2005/10/priority-sampling.html">post</a></p>
 </li>
 </ul>
-<p><strong>What if we control data collection (<span class="math">\(q\)</span>)?</strong> This is an interesting
-setting. Essentially, it asks "how do we explore/experiment optimally (and
-safely)?". In general, this is an open question and depends on many
-considerations, such as, how much control, exploration cost (safety constraints)
-and prior knowledge (of <span class="math">\(r\)</span> and unknown factors in the environment). I've seen
-some papers cleverly design <span class="math">\(q\)</span>. The first that comes to mind is
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Levine &amp; Koltun (2013)</a>. Another
-setting is <em>online</em> contextual bandits, in which algorithms like
-<a href="http://jmlr.org/proceedings/papers/v15/beygelzimer11a/beygelzimer11a.pdf">EXP4</a>
-and
-<a href="http://www.research.rutgers.edu/~lihong/pub/Chapelle12Empirical.pdf">Thompson sampling</a>,
-prescribe certain types of exploration and work interactively (i.e., they don't
-have a fixed training sample). Lastly, I'll mention that there are many
-techniques for variance reduction by importance sampling, which may apply.</p>
-<h2>Further reading</h2>
-<blockquote>
-<p>Léon Bottou, Jonas Peters, Joaquin Quiñonero-Candela, Denis X. Charles, D. Max
-Chickering, Elon Portugaly, Dipankar Ray, Patrice Simard, Ed Snelson.
-<a href="https://arxiv.org/abs/1209.2355">Counterfactual reasoning in learning systems</a>.
-JMLR 2013.</p>
-</blockquote>
-<p>The source for the majority of this post. It includes many other interesting
-ideas and goes more in depth into some of the details.</p>
-<blockquote>
-<p>Miroslav Dudík, John Langford, Lihong Li.
-<a href="https://arxiv.org/abs/1103.4601">Doubly robust policy evaluation and learning</a>.
-ICML 2011.</p>
-</blockquote>
-<p>Discussed in extensions section.</p>
-<blockquote>
-<p>Philip S. Thomas.
-<a href="http://psthomas.com/papers/Thomas2015c.pdf">Safe reinforcement learning</a>.
-PhD Thesis 2015.</p>
-</blockquote>
-<p>Covers confidence intervals for policy evaluation similar to Bottou et al., as
-well as learning algorithms for RL with safety guarantees (e.g., so we don't
-break the robot).</p>
-<blockquote>
-<p>Peshkin and Shelton.
-<a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf">Learning from scarce experience</a>.
-ICML 2002.</p>
-</blockquote>
-<p>An older RL paper, which covers learning from logged data. This is one of the
-earliest papers on learning from logged data that I could find.</p>
-<blockquote>
-<p>Levine and Koltun.
-<a href="https://graphics.stanford.edu/projects/gpspaper/gps_full.pdf">Guided policy search</a>.
-ICML 2013.</p>
-</blockquote>
-<p>Discusses clever choices for <span class="math">\(q\)</span> to better-guide learning in the RL setting.</p>
-<blockquote>
-<p>Corinna Cortes, Yishay Mansour, Mehryar Mohri.
-<a href="https://papers.nips.cc/paper/4156-learning-bounds-for-importance-weighting.pdf">Learning bounds for importance weighting</a>.
-NIPS 2010.</p>
-</blockquote>
-<p>Discusses <em>generalization bounds</em> for the counterfactual objective. Includes an
-alternative weighting scheme to keep importance weights from exploding.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -441,6 +401,12 @@ alternative weighting scheme to keep importance weights from exploding.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -449,18 +415,12 @@ alternative weighting scheme to keep importance weights from exploding.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -470,7 +430,7 @@ alternative weighting scheme to keep importance weights from exploding.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

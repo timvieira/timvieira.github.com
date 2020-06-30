@@ -50,61 +50,129 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/">Rant against grid search</a>
+        <a href="https://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel-max trick and weighted reservoir sampling</a>
       </h1>
     <p class="meta">
-<time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-08-01T00:00:00-04:00" pubdate>Aug 01, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-07-22T00:00:00-04:00" pubdate>Jul 22, 2014</time>  <span class="categories">
+<time datetime="2014-08-01T00:00:00-04:00" pubdate>Aug 01, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>Grid search is a simple and intuitive algorithm for optimizing and/or exploring
-the effects of parameters to a function. However, given its rigid definition
-grid search is susceptible to degenerate behavior. One type of unfortunate
-behavior occurs in the presence of unimportant parameters, which results in many
-(potentially expensive) function evaluations being wasted.</p>
-<p>This is a very simple point, but nonetheless I'll illustrate with a simple
-example.</p>
-<p>Consider the following simple example, let's find the argmax of <span class="math">\(f(x,y) = -x^2\)</span>.</p>
-<p>Suppose we search over a <span class="math">\(10\)</span>-by-<span class="math">\(10\)</span> grid, resulting in a total of <span class="math">\(100\)</span>
-function evaluations. For this function, we expect precision which proportional
-of the number of samples in the <span class="math">\(x\)</span>-dimension, which is only <span class="math">\(10\)</span> samples! On
-the other hand, randomly sampling points over the same space results in <span class="math">\(100\)</span>
-samples in every dimension.</p>
-<p>In other words, randomly sample instead of using a rigid grid. If you have
-points, which are not uniformly spaced, I'm willing to bet that an appropriate
-probability distribution exists.</p>
-<p>This type of problem is common on hyperparameter optimizations. For futher
-reading see
-<a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf">Bergstra &amp; Bengio (2012)</a>.</p>
-<p><strong>Other thoughts</strong>:</p>
-<ol>
+  <div class="entry-content"><p>A while back, <a href="http://people.cs.umass.edu/~wallach/">Hanna</a> and I stumbled upon
+the following blog post:
+<a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm">Algorithms Every Data Scientist Should Know: Reservoir Sampling</a>,
+which got us excited about reservoir sampling.</p>
+<p>Around the same time, I attended a talk by
+<a href="http://cs.haifa.ac.il/~tamir/">Tamir Hazan</a> about some of his work on
+perturb-and-MAP
+<a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf">(Hazan &amp; Jaakkola, 2012)</a>,
+which is inspired by the
+<a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/">Gumbel-max-trick</a>
+(see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent similarity between weighted reservoir sampling and the Gumbel-max trick lead us to make some cute connections, which I'll describe in this post.</p>
+<p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, <span class="math">\(x_1, x_2, \cdots\)</span>. At any point in time <span class="math">\(t\)</span> we'd like to have a sampled index <span class="math">\(i\)</span> available, where the probability of <span class="math">\(i\)</span> is given by <span class="math">\(\pi_t(i) = \frac{x_i}{
+\sum_{j=1}^t x_j}\)</span>.</p>
+<p>Assume, without loss of generality, that <span class="math">\(x_i &gt; 0\)</span> for all <span class="math">\(i\)</span>. (If any element has a zero weight we can safely ignore it since it should never be sampled.)</p>
+<p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
+<dl>
+<dt><span class="math">\(a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}\)</span></dt>
+<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
+<dd># Compute log-unnormalized probabilities</dd>
+<dd><span class="math">\(w_i = \log(x_i)\)</span></dd>
+<dd># Additively perturb each weight by a Gumbel random variate</dd>
+<dd><span class="math">\(z_i \sim \text{Gumbel}(0,1)\)</span></dd>
+<dd><span class="math">\(k_i = w_i + z_i\)</span></dd>
+<dd># Keep around the largest <span class="math">\(k_i\)</span> (i.e. the argmax)</dd>
+<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
+<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
+<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
+</dl>
+<p>If we interrupt this algorithm at any point, we have a sample <span class="math">\(b\)</span>.</p>
+<p>After convincing myself this algorithm was correct, I sat down to try to
+understand the algorithm in the blog post, which is due to Efraimidis and
+Spirakis (2005) (<a href="http://dl.acm.org/citation.cfm?id=1138834">paywall</a>,
+<a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf">free summary</a>). They
+looked similar in many ways but used different sorting keys/perturbations.</p>
+<p><strong>Efraimidis and Spirakis (2005)</strong>: Here is the ES algorithm for weighted
+reservoir sampling</p>
+<dl>
+<dt><span class="math">\(a = -\infty; b = \text{null}\)</span></dt>
+<dt>for <span class="math">\(i=1,2,\cdots;\)</span> do:</dt>
+<dd># compute randomized key</dd>
+<dd><span class="math">\(u_i \sim \text{Uniform}(0,1)\)</span></dd>
+<dd><span class="math">\(e_i = u_i^{(\frac{1}{x_i})}\)</span></dd>
+<dd># Keep around the largest <span class="math">\(e_i\)</span></dd>
+<dd>if <span class="math">\(k_i &gt; a\)</span>:</dd>
+<dd><span class="math">\(\ \ \ \ a = k_i\)</span></dd>
+<dd><span class="math">\(\ \ \ \ b = i\)</span></dd>
+</dl>
+<p>Again, if we interrupt this algorithm at any point, we have our sample <span class="math">\(b\)</span>. Note
+that you can simplify <span class="math">\(e_i\)</span> so that you don't have to compute <code>pow</code> (which is nice
+because <code>pow</code> is pretty slow). It's equivalent to use <span class="math">\(e'_i = \log(e_i) =
+\log(u_i)/x_i\)</span> because <span class="math">\(\log\)</span> is monotonic. (Note that <span class="math">\(-e'_i \sim
+\textrm{Exponential}(x_i)\)</span>.)</p>
+<!--
+I find this version of the algorithm more intuitive, since it's well-known that
+$\left(\underset{{i=1 \ldots t}}{\min} \textrm{Exponential}(x_i) \right) =
+\textrm{Exponential}\left(\sum_{i=1}^t x_i \right)$. This version makes it clear
+that minimizing is actually summing. However, we want the argmin, which is
+distributed according to $\pi_t$.
+-->
+
+<p><strong>Relationship</strong>: At a high level, we can see that both algorithms compute a
+randomized key and take an argmax. What's the relationship between the keys?</p>
+<p>First, note that a <span class="math">\(\text{Gumbel}(0,1)\)</span> variate can be generated via
+<span class="math">\(-\log(-\log(\text{Uniform}(0,1)))\)</span>. This is a straightforward application of
+the
+<a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling">inverse transform sampling</a>
+method for random number generation. This means that if we use the same sequence
+of uniform random variates then, <span class="math">\(z_i = -\log(-\log(u_i))\)</span>.</p>
+<p>However, this does not give use equality between <span class="math">\(k_i\)</span> and <span class="math">\(e_i\)</span>, but it does
+turn out that <span class="math">\(k_i = -\log(-\log(e_i))\)</span>, which is useful because this is a
+monotonic transformation on the interval <span class="math">\((0,1)\)</span>. Since monotonic
+transformations preserve ordering, the sequences <span class="math">\(k\)</span> and <span class="math">\(e\)</span> result in the same
+comparison decisions, as well as, the same argmax. In summary, the algorithms
+are the same!</p>
+<p><strong>Extensions</strong>: After reading a little further along in the ES paper, we see
+that the same algorithm can be used to perform <em>sampling without replacement</em> by
+sorting and taking the elements with the highest keys. This same modification applies to the Gumbel-max-trick because the keys have precisely the same ordering as ES. In practice, we don't sort the key, but instead, use a bounded priority queue.</p>
+<p><strong>Closing</strong>: To the best of my knowledge, the connection between the
+Gumbel-max trick and ES is undocumented. Furthermore, the Gumbel-max-trick is not known as a streaming algorithm, much less known to perform sampling without replacement! If you know of a reference, let me know.</p>
+<p><strong>How to cite this article</strong>: If you found this article useful, please cite it as</p>
+<pre style="background-color: white; color: black; border: #333;">
+@misc{vieira2014gumbel,
+    title = {Gumbel-max trick and weighted reservoir sampling},
+    author = {Tim Vieira},
+    url = {http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/},
+    year = {2014}
+}
+</pre>
+
+<h2>Further reading</h2>
+<p>I have a few other articles that are related to
+<a href="http://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling without replacement</a>,
+<a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir sampling</a>,
+and <a href="http://timvieira.github.io/blog/tag/gumbel.html">Gumbel tricks</a>.</p>
+<p>Here are a few interesting papers that build on the ideas in this article.</p>
+<ul>
 <li>
-<p>Local search is often much more effective. For example, gradient-based
-   optimization, Nelder-Mead, stochastic local search, coordinate ascent.</p>
+<p>Wouter Kool, Herke van Hoof, and Max Welling. 2019.
+<a href="https://arxiv.org/abs/1903.06059">Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for Sampling Sequences Without Replacement</a></p>
 </li>
 <li>
-<p>Grid search tends to produce nicer-looking plots.</p>
+<p>Sang Michael Xie and Stefano Ermon. 2019. <a href="https://arxiv.org/abs/1901.10517">Reparameterizable Subset Sampling via Continuous Relaxations</a></p>
 </li>
-<li>
-<p>What about variance in the results? Two things: (a) This is a concern for
-   replicability, but is easily remedied by making sampled parameters
-   available. (b) There is always some probability that the sampling gives you a
-   terrible set of points. This shouldn't be a problem if you use enough
-   samples.</p>
-</li>
-</ol>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -179,6 +247,12 @@ reading see
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -187,18 +261,12 @@ reading see
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -208,7 +276,7 @@ reading see
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

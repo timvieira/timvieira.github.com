@@ -50,94 +50,122 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
+        <a href="https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
       </h1>
     <p class="meta">
-<time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time>  <span class="byline author vcard">
+<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time>  <span class="categories">
+<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/rant.html">rant</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/crf.html">crf</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>A short rant: Multiclass logistic regression and conditional random fields (CRF)
-are the same thing. This comes to a surprise to many people because CRFs tend to
-be surrounded by additional "stuff."</p>
-<p>Understanding this very basic connection not only deepens our understanding, but
-also suggests a method for testing complex CRF code.</p>
-<p>Multiclass logistic regression is simple. The goal is to predict the correct
-label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
-on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
-gradient:</p>
-<div class="math">$$
-\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
-$$</div>
-<p>where
-</p>
-<div class="math">$$
-\begin{eqnarray*}
-p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
-Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
-\end{eqnarray*}
-$$</div>
-<p>At test-time, we often take the highest-scoring label under the model.</p>
-<div class="math">$$
-\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
-$$</div>
-<p>A conditional random field is <em>exactly</em> multiclass logistic regression. The only
-difference is that the sums (<span class="math">\(Z(x)\)</span> and <span class="math">\(\sum_{y \in \mathcal{Y}} p(y|x)
-\phi(x,y)\)</span>) and the argmax <span class="math">\(\widehat{y}(x)\)</span> are inefficient to compute naively
-(i.e., by brute-force enumeration). This point is often lost when people first
-learn about CRFs. Some people never make this connection.</p>
-<p>Brute-force enumeration is a very useful method for testing complex dynamic
-programming procedures for computing the sums and the argmax on relatively small
-examples. Don't just copy code for dynamic programming out of a paper! Test it!</p>
-<p>Here's some stuff you'll see once we start talking about CRFs:</p>
-<ol>
-<li>
-<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
-   tree)</p>
-</li>
-<li>
-<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
-</li>
-<li>
-<p>Model templates (i.e., repeated feature functions)</p>
-</li>
-</ol>
-<p>In the logistic regression case, we'd never use the term "inference" to describe
-the "sum" and "max" over a handful of categories. Once we move to a structured
-label space, this term gets throw around. (BTW, this isn't "statistical
-inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
-<p>Graphical models establish a notation and structural properties which allow
-efficient inference&mdash;things like cycles and treewidth.</p>
-<p>Model templating is the only essential trick to move from logistic regression to
-a CRF. Templating "solves" the problem that not all training examples have the
-same "size"&mdash;the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
-template specifies how to compute the features for an entire output, by looking
-at interactions between subsets of variables.</p>
-<div class="math">$$
-\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
-\boldsymbol{y}_\alpha)
-$$</div>
-<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
-<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
-<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
-the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
-at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
-<p>Anywho, it's often useful to take a step back and think about what you are
-trying to compute instead of how you're computing it. In this post, this allowed
-us see the similarity between logistic regression and CRFs even though they seem
-quite different.</p>
+  <div class="entry-content"><p>This is a simple note on how to compute a bijective mapping between the indices
+of an <span class="math">\(n\)</span>-dimensional array and a flat, one-dimensional array. We'll look at
+both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
+<p>We'll assume each dimension <span class="math">\(a, b, c, \ldots\)</span> is a positive integer and bounded
+<span class="math">\(a \le A, b \le B, c \le C, \ldots\)</span></p>
+<h3>Start small</h3>
+<p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">inverse_3</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">J</span><span class="o">*</span><span class="n">K</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Here's our test case:</p>
+<div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
+<span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
+            <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
+            <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>Note: This is not the only bijective mapping from <code>tuple</code> to <code>int</code> that we
+could have come up with. The one we chose corresponds to the particular layout,
+which is apparent in the test case.</p>
+<p>For <span class="math">\(n=4\)</span> the pattern is <span class="math">\(((a \cdot B + b) \cdot C + d) \cdot D + d\)</span>.</p>
+<p>Sidenote: We don't actually need the bound <span class="math">\(a \le A\)</span> in either <code>index</code> or
+<code>inverse</code>. This gives us a little extra flexibility because our first
+dimension can be infinite/unknown.</p>
+<h3>General case</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s2">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
+    <span class="c1"># the pattern:</span>
+    <span class="c1"># ((i*J + j)*K + k)*L + l</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+    <span class="s2">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="n">total</span> <span class="o">/=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">key</span>
+</pre></div>
+
+
+<h2>Appendix</h2>
+<h3>Testing the general case</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
+
+<span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="s2">&quot;Test that `index` produces the layout we expect.&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_inverse</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+
+
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -212,6 +240,12 @@ quite different.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -220,18 +254,12 @@ quite different.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -241,7 +269,7 @@ quite different.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

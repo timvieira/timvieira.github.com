@@ -50,97 +50,125 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
+        <a href="https://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>  <span class="categories">
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
-finite-difference approximation).</p>
+  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
+a high-dimensional objective I was developing specialized algorithms for
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.</p>
+<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.</p>
+<p><img alt="Alt text" src="/blog/images/cross-section.png"></p>
+<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
+function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?</p>
+<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
+\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
+picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
+as follows,</p>
 <div class="math">$$
-\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
- \frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
- \Big)
+f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$</div>
-<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
-<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
-<span class="math">\(o(\varepsilon)\)</span> additive error.</p>
-<p>This is a specific instance of a more general approximation! The dot product of
-the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
-with the following formula,</p>
-<div class="math">$$
-\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
- - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
- \Big)
-$$</div>
-<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
-exact in the limit and just as accurate.</p>
-<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
-  approximating a high-dimensional gradient because the number of function
-  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
-  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
-  function evaluations is probably faster than specialized code for computing
-  the gradient.</p>
-<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
-  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
-  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
-  is available. Andrei (2009) reccommends</p>
-<div class="math">$$
-\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
-$$</div>
-<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
-<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
-<code>numpy.finfo(x.dtype).eps</code>).</p>
-<h2>Why do I care?</h2>
+<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
+<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
+plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
+<p><strong>Picking directions</strong>: There are many alternatives for picking
+<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
 <ol>
 <li>
-<p>Well, I tend to work on sparse, but high-dimensional problems where
-   finite-difference would be too slow. Thus, my usual solution is to only test
-   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
-   which should be nonzero. With the new trick, I can effectively test more
-   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
-   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
-   the angle of the vector.</p>
+<p>Coordinate vectors: Varying one (or two) dimensions.</p>
 </li>
 <li>
-<p>Sometimes the gradient-vector dot product is the end goal. This is the case
-   with Hessian-vector products, which arises in many optimization algorithms,
-   such as stochastic meta descent. Hessian-vector products are an instance of
-   the gradient-vector dot product because the Hessian is just the gradient of
-   the gradient.</p>
+<p>Gradient (if it exists), this direction is guaranteed to show a local
+    increase/decrease in the objective, unless it's zero because we're at a
+    local optimum. Some variations on "descent" directions:</p>
+<ul>
+<li>
+<p>Use the gradient direction of a <em>different</em> objective, e.g., plot
+  (nondifferentiable) accuracy on dev data along the (differentiable)
+  likelihood direction on training data.</p>
+</li>
+<li>
+<p>Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
+  directions which summarize the most variation.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>The difference of two interesting points, e.g., the start and end points of
+    your optimization, two different solutions.</p>
+</li>
+<li>
+<p>Random:</p>
+<p>If all your parameters are on an equal scale, I recommend directions drawn
+from a spherical Gaussian.<sup id="fnref-sphericalgaussian"><a class="footnote-ref" href="#fn-sphericalgaussian">1</a></sup> The reason being that such a
+vector is uniformly distributed across all unit-length directions (i.e., the
+angle of the vector, not it's length). We will vary the length ourselves via
+<span class="math">\(\alpha\)</span>.</p>
+<p>However, often components of <span class="math">\(\boldsymbol{x}\)</span> have different scales, so
+finding a "natural scale" is crucial if we are going to draw conclusions
+that require a comparison of the perturbation sensitivities across several
+dimensions&mdash;this is closely related to why we like second-order and
+adaptive optimization algorithms
+(<a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">discussion</a>);
+<span class="math">\(\boldsymbol{d}\)</span>'s units must match the units of <span class="math">\(\boldsymbol{x}\)</span> in each
+coordinate!</p>
+</li>
+<li>
+<p>Maximize "interestingness": You can also use a direction-optimization
+    procedure to maximize some measure of "interestingness" (e.g., the direction
+    in which training and dev loss differ the most; the "bumpiest" direction or
+    direction taking the biggest range of values).</p>
 </li>
 </ol>
-<h2>Hessian-vector product</h2>
-<p>Hessian-vector products are an instance of the gradient-vector dot product
-because since the Hessian is just the gradient of the gradient! Now you only
-need to remember one formula!</p>
+<p><strong>Extension to 3d</strong>: It's pretty easy to extend these ideas to generating
+three-dimensional plots by using two vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and
+<span class="math">\(\boldsymbol{d_2},\)</span> and varying two parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
 <div class="math">$$
-H(\boldsymbol{x})\, \boldsymbol{d} \approx
-\frac{1}{2 \varepsilon} \Big(
-  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
-- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
-\Big)
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$</div>
-<p>With this trick you never have to actually compute the gnarly Hessian! More on
-<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
+<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.</p>
+<p><strong>Further reading</strong>:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a></li>
+</ul>
+<h2>Notes</h2>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-sphericalgaussian">
+<p>More formally, vectors drawn from a spherical Gaussian are
+points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
+<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
+sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
+<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref-sphericalgaussian" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -205,6 +233,7 @@ $$</div>
 </script></div>
   		</article>
 <div class="pagination">
+    <a class="prev" href="https://timvieira.github.io/blog/index235.html">&larr; Older</a>
 
     <a class="next" href="https://timvieira.github.io/blog/index233.html">Newer &rarr;</a>
   <br />
@@ -214,6 +243,12 @@ $$</div>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
       <li class="post">
@@ -222,18 +257,12 @@ $$</div>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a>
-      </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -243,7 +272,7 @@ $$</div>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2019 Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
