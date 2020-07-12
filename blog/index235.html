@@ -95,7 +95,7 @@ impossible<span class="math">\(-\)</span>the largest number exponentiated after 
 </pre></div>
 
 
-<p>The exp-normalize trick avoid this common problem.</p>
+<p>The exp-normalize trick avoids this common problem.</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
