@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - rl</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/rl.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2019-04-20T00:00:00-04:00</updated><entry><title>The likelihood-ratio gradient</title><link href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"></link><published>2019-04-20T00:00:00-04:00</published><updated>2019-04-20T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-04-20:/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id><content type="html">&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: We're trying to optimize a function of the form&lt;/p&gt;
+&lt;div class="math"&gt;$$
+J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
+$$&lt;/div&gt;
+&lt;p&gt;The problem is that we can't just evaluate each &lt;span class="math"&gt;\(x \in \mathcal{X}\)&lt;/span&gt; because we
+don't have complete knowledge of &lt;span class="math"&gt;\(p_\theta\)&lt;/span&gt;.  For example, it is a mix of
+factors that are known and under our control via &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; (policy factors) and
+factors that are not known (environment factors).&lt;/p&gt;
+&lt;p&gt;Combined with stochastic gradient ascent, the likelihood-ratio gradient estimator is an approach for solving such a
+problem.  It appears in policy gradient methods for reinforcement learning
+(e.g.,
+&lt;a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf"&gt;Sutton et al. 1999&lt;/a&gt;),
+black-box optimization (e.g., &lt;a href="https://arxiv.org/abs/1106.4487"&gt;Wierstra et al. 2011&lt;/a&gt;), and &lt;a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/"&gt;causal reasoning&lt;/a&gt;. There are two main ideas in the
+trick: (1) the "score function" estimator and (2) the cancelation of
+complicating factors.&lt;/p&gt;
+&lt;h4&gt;Part 1: The score function gradient estimator&lt;/h4&gt;
+&lt;p&gt;Suppose we can sample &lt;span class="math"&gt;\(x^{(j)} \sim p_\theta\)&lt;/span&gt;. This opens up the following
+(unbiased) Monte Carlo estimators for &lt;span class="math"&gt;\(J\)&lt;/span&gt; and its gradient,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)})
+$$&lt;/div&gt;
+&lt;div class="math"&gt;$$
+\nabla_{\!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)}) \nabla_{\!\theta} \log p_{\theta}(x^{(j)}).
+$$&lt;/div&gt;
+&lt;p&gt;The derivation is pretty simple
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+  \nabla_{\!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
+  &amp;amp;=&amp;amp; \nabla_{\!\theta} \left[ \sum_x p_{\theta}(x) r(x) \right] \\
+  &amp;amp;=&amp;amp; \sum_x \nabla_{\!\theta} \left[ p_{\theta}(x) \right] r(x) \\
+  &amp;amp;=&amp;amp; \sum_x p_{\theta}(x) \frac{\nabla_{\!\theta} \left[ p_{\theta}(x) \right] }{ p_{\theta}(x) } r(x) \\
+  &amp;amp;=&amp;amp; \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;
+We use the identity &lt;span class="math"&gt;\(\nabla f = f\, \nabla \log f\)&lt;/span&gt;, assuming &lt;span class="math"&gt;\(f &amp;gt; 0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;To use this estimator, we only need two things (1) the ability to sample
+&lt;span class="math"&gt;\(x^{(j)} \sim p_{\theta}\)&lt;/span&gt;, (2) the ability to evaluate &lt;span class="math"&gt;\(\log
+p_{\theta}(x^{(j)})\)&lt;/span&gt; and &lt;span class="math"&gt;\(r(x^{(j)})\)&lt;/span&gt; for each sampled value.&lt;/p&gt;
+&lt;p&gt;This isn't even the entire method, but we can already use it to do some neat
+things.  For example, minimum risk training of structured prediction models.
+Assuming we can obtain good samples&amp;mdash;preferably exact samples, but MCMC
+samples might be ok&amp;mdash;the likelihood ratio can help us learning even with
+complicated blackbox cost functions (sometimes called "nondecomposable loss
+functions") like human annotators or impenetrable perl scripts. I had this idea
+back in 2012, but never got around to pushing it out. There appear to be some
+papers that picked up on this idea, including
+&lt;a href="http://www.cl.uni-heidelberg.de/~riezler/publications/papers/ACL2016.pdf"&gt;Sokolov et al. (2016)&lt;/a&gt;
+and &lt;a href="https://arxiv.org/abs/1609.00150"&gt;Norouzi et al. (2016)&lt;/a&gt; and even a few
+papers using it for "black box" variational inference
+&lt;a href="https://arxiv.org/abs/1401.0118"&gt;(Ranganath et al., 2013)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Remarks:&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Relaxing discrete actions into stochastic ones&lt;/strong&gt;: A common way to handle
+   discrete decisions is to put a &lt;em&gt;differentiable&lt;/em&gt; parametric density (like
+   &lt;span class="math"&gt;\(p_\theta\)&lt;/span&gt;) over the space of possible executions (paths &lt;span class="math"&gt;\(x\)&lt;/span&gt;). (Note: this
+   shouldn't be surprising&amp;mdash;it's already what we do in structured
+   prediction methods like conditional random fields!)  The likelihood-ratio
+   method can be used to estimate gradients in such settings.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Bandit feedback&lt;/strong&gt;: This approach naturally handles "bandit feedback"
+   (partial information about &lt;span class="math"&gt;\(r\)&lt;/span&gt;): you only see the values of only the
+   trajectories that you actually sample. In contrast with "full information",
+   which tells you the reward of all possible trajectories.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5&gt;The off-policy estimator&lt;/h5&gt;
+&lt;p&gt;Let's generalize this estimator to allow off-policy actions
+&lt;a href="https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/"&gt;importance-weighted estimator&lt;/a&gt;. Here
+&lt;span class="math"&gt;\(q\)&lt;/span&gt; is a distribution over the same space as &lt;span class="math"&gt;\(p\)&lt;/span&gt; with support at least
+everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; has support.  &lt;/p&gt;
+&lt;div class="math"&gt;$$ \begin{eqnarray*} \nabla_{\!\theta} \,
+\underset{p_\theta}{\mathbb{E}}\left[ r(x) \right] &amp;amp;=&amp;amp;
+\underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\\ &amp;amp;=&amp;amp; \sum_x p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x) \\ &amp;amp;=&amp;amp;
+\sum_x \frac{q(x)}{q(x)} p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x)
+\\ &amp;amp;=&amp;amp;
+\underset{q}{\mathbb{E}}\left[ \frac{p_{\theta}(x)}{q(x)} r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\\ &amp;amp;\approx&amp;amp; \frac{1}{n} \sum_{i=1}^n \frac{p_{\theta}(x^{(i)})}{q(x^{(i)})} r(x^{(i)}) \nabla_{\!\theta} \log p_\theta(x^{(i)})\quad \text{ where } x^{(i)} \sim q
+\end{eqnarray*} $$&lt;/div&gt;
+&lt;p&gt;Note that we recover the original estimator when &lt;span class="math"&gt;\(q=p\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h4&gt;Part 2: The convenient cancelation of complicating components&lt;/h4&gt;
+&lt;p&gt;The real power of the &lt;em&gt;likelihood-ratio&lt;/em&gt; part of this method comes when you have
+the ability to sample &lt;span class="math"&gt;\(x\)&lt;/span&gt;, but &lt;em&gt;not&lt;/em&gt; the ability to compute the probability of
+&lt;em&gt;all&lt;/em&gt; factors of the joint probability of &lt;span class="math"&gt;\(x\)&lt;/span&gt; (i.e., you can't compute the
+&lt;em&gt;complete&lt;/em&gt; score &lt;span class="math"&gt;\(p_{\theta}(x)\)&lt;/span&gt;). In other words, some components of the joint
+probability's &lt;em&gt;generative process&lt;/em&gt; might pass through factors which are &lt;em&gt;only
+accessible through sampling&lt;/em&gt;, e.g., because they require performing &lt;em&gt;actual
+experiments&lt;/em&gt; in the real world or a complex simulation! The factors that we can
+only sample from are what make this a true stochastic optimization problem.&lt;/p&gt;
+&lt;p&gt;Let's be a little more concrete by looking at a classic example from
+reinforcement learning: the Markov decision process (MDP). In this context, the
+random variable &lt;span class="math"&gt;\(x\)&lt;/span&gt; is an alternating sequence of states and actions, &lt;span class="math"&gt;\(x =
+\langle s_0, a_0, s_1, a_1, \ldots a_{T-1}, s_T \rangle\)&lt;/span&gt; and the generative
+process consists of an unknown transition function &lt;span class="math"&gt;\(p(s_{t+1}|s_t,a_t)\)&lt;/span&gt; that is
+only accessible through sampling and a policy &lt;span class="math"&gt;\(p_{\theta}(a_t|s_t)\)&lt;/span&gt; which we in
+control of. So the probability of an entire sequence in an MDP &lt;span class="math"&gt;\(p_{\theta}(x)\)&lt;/span&gt;
+is &lt;span class="math"&gt;\(p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t)\)&lt;/span&gt;. The
+likelihood-ratio method can be used to derive several "policy gradient" methods,
+which compute unbiased gradient estimates with no knowledge of the transition
+distribution.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The beauty of the likelihood ratio is the cancellation of unknown terms.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Aside: This fortunate cancellation occurs in many other contexts, e.g. the
+Metropolis-Hastings accept-reject criteria.&lt;/p&gt;
+&lt;p&gt;To make this explicit, let's consider the importance weight, &lt;span class="math"&gt;\(p/q\)&lt;/span&gt;.
+&lt;/p&gt;
+&lt;div class="math"&gt;\begin{eqnarray}
+\frac{p_\theta(x)}{q(x)}
+= \frac{ {\color{red}{ p(s_0) }} \prod_{t=0}^T {\color{red}{ p(s_{t+1}|s_t,a_t) }} \pi_\theta(a_t|s_t) }
+       { {\color{red}{ p(s_0) }} \prod_{t=0}^T {\color{red}{ p(s_{t+1}|s_t,a_t) }}  q(a_t|s_t) }
+= \frac{\prod_{t=0}^T \pi_\theta(a_t|s_t)}
+       {\prod_{t=0}^T q(a_t|s_t)}
+\end{eqnarray}&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;
+Common terms cancel! This implies that we don't need to compute them.&lt;/p&gt;
+&lt;p&gt;Those component cancel in &lt;span class="math"&gt;\(\nabla_{\!\theta} \log p_{\theta}(x)\)&lt;/span&gt; because terms
+that do not depend on &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; also disappear. Leaving you with just a sum of
+log-gradient terms that you &lt;em&gt;do&lt;/em&gt; know because they are part of the model you're
+tuning.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\nabla \log p(x)
+&amp;amp;=&amp;amp; \nabla \log \left( p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) \right) \\
+&amp;amp;=&amp;amp; \nabla \left(\log p(s_0) + \sum_{t=0}^T \log p(s_{t+1}|s_t,a_t)
+  + \log \pi_\theta(a_t|s_t) \right) \\
+&amp;amp;=&amp;amp; \sum_{t=0}^T \nabla \log \pi_\theta(a_t|s_t)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;h4&gt;The baseline trick&lt;/h4&gt;
+&lt;p&gt;These estimators should always be used in conjunction with a baseline function
+or more generally a control variate. There are many options for deriving control
+variates, which will depend on the specific structure of &lt;span class="math"&gt;\(x\)&lt;/span&gt;.  For example, in
+the MDP case, we can use any function that depends on &lt;span class="math"&gt;\(s_t\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;However, even without special structure, we can an always should use (at a
+minimum) a constant baseline,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\mathbb{E}_{x \sim q} \left[
+\frac{p_{\theta}(x)}{q(x)}
+r(x)
+\nabla_{\!\theta} \log p_\theta(x)
+\right]
+=
+\mathbb{E}_{x \sim q} \left[
+\frac{p_{\theta}(x)}{q(x)}
+(r(x) - {\color{red}{b}})
+\nabla_{\!\theta} \log p_\theta(x)
+\right]
+\text{for all } {\color{red}{b} \in \mathbb{R}}
+$$&lt;/div&gt;
+&lt;p&gt;
+The minimum variance choice for b is
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+b = \frac{\sum_k \mathrm{Cov}(r, \nabla_{\theta_k} \log p) }{\sum_k \mathrm{Var}(\nabla_{\theta_k} \log p) }
+$$&lt;/div&gt;
+&lt;p&gt;
+which we can compute with sampling-based estimators of the quantities.&lt;/p&gt;
+&lt;p&gt;Some folks use an estimate of &lt;span class="math"&gt;\(J\)&lt;/span&gt;, which is better than nothing.&lt;/p&gt;
+&lt;h4&gt;Important points&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Always use a baseline.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;This gradient estimate is "zero order" it is essentially probing the function
+   in &lt;span class="math"&gt;\(x\)&lt;/span&gt; space, which might be higher dimensional than &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;. As a result,
+   you might be better off with gradient estimators that are based on perturbing
+   &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; directly, e.g., zeroth-order methods (sometimes called &lt;em&gt;direct
+   search&lt;/em&gt; or &lt;em&gt;gradient-free&lt;/em&gt; optimization methods) like Nelder-Mead simplex,
+   FDSA, SPSA, and CMA-ES.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Often there is almost no signal. Consider the example of trying to solve a
+   maze by randomly running around in it.  In this case, it's very unlikely that
+   a random path will lead to a positive outcome.  Therefore, the gradient
+   really is essentially zero. So even with access to the &lt;em&gt;true&lt;/em&gt; gradient (i.e.,
+   no variance), optimization would have a lot of trouble finding a good
+   optimum.  Add to that some variance and you have useless on top of noisy.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Although the likelihood-ratio gives us an unbiased estimate of the gradient,
+   don't be fooled. The particular gradient estimate used in the
+   likelihood-ratio method has an impractical signal-to-noise ratio, which makes
+   it very hard use in optimization.  There are countless papers on tricks to
+   reduce the variance of the estimator.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;You can improve your data efficiency and algorithm stability using off-line
+   optimization (with your favorite deterministic optimization algorithm).  I
+   have written a long article about offline optimization
+   &lt;a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;There is still a lot to say about likelihood-ratio methods.  I didn't talk about
+control variates or "baseline" functions, which are very important to making
+things work.  I'll try to post my notes on those ideas soon.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Take home messages&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;If you can evaluate it, then you can take the gradient of it (assuming it
+   exists). This even holds if the evaluation is based on Monte Carlo.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The likelihood-ratio shows up all over the place, not just RL. It shows up in
+   &lt;a href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/"&gt;causal reasoning&lt;/a&gt;
+   more generally.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;We described a general way to learn from watching someone else act in a world
+   we don't understand (i.e., off-policy learning with no knowledge of the
+   environment just samples!). The only catch is that in order for us to learn
+   from them we need them to do a little bit of "exploration" (i.e., be a
+   stochastic policy that has support everywhere we do) and tell us their action
+   probabilities (so that we can important weight against our policy).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="optimization"></category><category term="rl"></category><category term="machine-learning"></category></entry></feed>

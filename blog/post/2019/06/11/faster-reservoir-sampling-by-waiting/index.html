@@ -76,9 +76,9 @@ p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
 \quad\text{where}\quad W = \sum_j w_j
 $$</div>
 <p>The following is a very simple and relatively famous algorithm due to <a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X">Efraimidis and Spirakis (2006)</a>.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (<a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Vieira,  2014</a>).</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">weighted_reservoir_sampling</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">weighted_reservoir_sampling</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">])</span>
-</pre></div>
+</code></pre></div>
 
 
 <p>Some cosmetic differences from E&amp;S'06: We use exponential random variates and <span class="math">\(\min\)</span> instead of <span class="math">\(\max\)</span>. E&amp;S'06 use a less-elegant and rather-mysterious (IMO) random key <span class="math">\(u_i^{1/w_i}\)</span>.</p>
@@ -88,7 +88,7 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
 <h2>Fewer random variates by waiting</h2>
 <p>One down-side of this one-pass algorithm is that it requires <span class="math">\(\mathcal{O}(n)\)</span> uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need <span class="math">\(\mathcal{O}(1)\)</span> samples.  E&amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires <span class="math">\(\mathcal{O}(\log(n))\)</span> random variates (in expectation).  That's <em>way</em> fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.</p>
 <p>Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">jump</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">jump</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="s2">&quot;Weighted-reservoir sampling by jumping&quot;</span>
     <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -103,12 +103,12 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
             <span class="c1"># sample the waiting time (size of the jump)</span>
             <span class="n">J</span> <span class="o">=</span> <span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">R</span>
-</pre></div>
+</code></pre></div>
 
 
 <p><strong>Why does exponential jumps work?</strong></p>
 <p>Let me first write the <code>weighted_reservoir_sampling</code> algorithm to be much more similar to the <code>jump</code> algorithm.  For fun, I'm going to refer to it as the <code>walk</code> algorithm.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
     <span class="s2">&quot;Weighted-reservoir sampling by walking&quot;</span>
     <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -119,7 +119,7 @@ When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span cla
             <span class="n">R</span> <span class="o">=</span> <span class="n">i</span>   <span class="c1"># i enters the reservoir</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">X</span>   <span class="c1"># threshold to enter the reservoir</span>
     <span class="k">return</span> <span class="n">R</span>
-</pre></div>
+</code></pre></div>
 
 
 <p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step <span class="math">\(i\)</span> the probability that it sees its next minimum at steps <span class="math">\(j \in \{ i+1, \ldots \}\)</span> can be reasoned about without needing to <em>actually</em> sample the various <span class="math">\(X_j\)</span> variables.</p>
@@ -297,7 +297,7 @@ $$</div>
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -306,7 +306,17 @@ $$</div>
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

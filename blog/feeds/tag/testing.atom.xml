@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - testing</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/testing.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2017-04-21T00:00:00-04:00</updated><entry><title>How to test gradient implementations</title><link href="https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"></link><published>2017-04-21T00:00:00-04:00</published><updated>2017-04-21T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-04-21:/blog/post/2017/04/21/how-to-test-gradient-implementations/</id><content type="html">&lt;!--
+**Who should read this?** Nowadays, you're probably just using automatic
+differentiation to compute the gradient of whatever function you're using. If
+that's you and you trust your software package wholeheartedly, then you probably
+don't need to read this. If you're rolling your own module/Op to put in to an
+auto-diff library, then you should read this. I find that none of the available
+libraries are any good for differentiating dynamic programs, so I still find
+this stuff useful. You'll probably have to write gradient code without the aid
+of an autodiff library someday... So either way, knowing this stuff is good for
+you. To answer the question, everyone.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: Suppose we have a function, &lt;span class="math"&gt;\(f: \mathbb{R}^n \rightarrow \mathbb{R}\)&lt;/span&gt;,
+and we want to test code that computes &lt;span class="math"&gt;\(\nabla f\)&lt;/span&gt;. (Note that these techniques
+also apply when &lt;span class="math"&gt;\(f\)&lt;/span&gt; has multivariate output.)&lt;/p&gt;
+&lt;h2&gt;Finite-difference approximation&lt;/h2&gt;
+&lt;p&gt;The main way that people test gradient computation is by comparing it against a
+finite-difference (FD) approximation to the gradient:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\boldsymbol{d}^\top\! \nabla f(\boldsymbol{x}) \approx \frac{1}{2 \varepsilon}(f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}))
+$$&lt;/div&gt;
+&lt;p&gt;
+&lt;br/&gt;
+where &lt;span class="math"&gt;\(\boldsymbol{d} \in \mathbb{R}^n\)&lt;/span&gt; is an arbitrary "direction" in parameter
+space. We will look at many directions when we test. Generally, people take the
+&lt;span class="math"&gt;\(n\)&lt;/span&gt; elementary vectors as the directions, but random directions are just as good
+(and you can catch bugs in all dimensions with less than &lt;span class="math"&gt;\(n\)&lt;/span&gt; of them).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Always use the two-sided difference formula&lt;/strong&gt;. There is a version which
+doesn't add &lt;em&gt;and&lt;/em&gt; subtract, just does one or the other. Do not use it ever.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Make sure you test multiple inputs&lt;/strong&gt; (values of &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;) or any thing
+else the function depends on (e.g., the minibatch).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What directions to use&lt;/strong&gt;: When debugging, I tend to use elementary directions
+because they tell me something about which dimensions that are wrong... this
+doesn't always help though. The random directions are best when you want the
+test cases to run really quickly. In that case, you can switch to check a few
+random directions using a
+&lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/util.py"&gt;spherical&lt;/a&gt;
+distribution&amp;mdash;do &lt;em&gt;not&lt;/em&gt; sample them from a multivariate uniform!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Always test your implementation of &lt;span class="math"&gt;\(f\)&lt;/span&gt;!&lt;/strong&gt; It's very easy to &lt;em&gt;correctly&lt;/em&gt;
+  compute the gradient of the &lt;em&gt;wrong&lt;/em&gt; function. The FD approximation is a
+  "self-consistency" test, it does not validate &lt;span class="math"&gt;\(f\)&lt;/span&gt; only the relationship
+  between &lt;span class="math"&gt;\(f\)&lt;/span&gt; and &lt;span class="math"&gt;\(\nabla\! f\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Obviously, how you test &lt;span class="math"&gt;\(f\)&lt;/span&gt; depends strongly on what it's supposed to compute.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Example: For a conditional random field (CRF), you can also test that your
+   implementation of a dynamic program for computing &lt;span class="math"&gt;\(\log Z_\theta(x)\)&lt;/span&gt; is
+   correctly by comparing against brute-force enumeration of &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; on
+   small examples.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Similarly, you can directly test the gradient code if you know a different way
+to compute it.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Example: In a CRF, we know that the &lt;span class="math"&gt;\(\nabla \log Z_\theta(x)\)&lt;/span&gt; is a feature
+   expectation, which you can also test against a brute-force enumeration on
+   small examples.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Why not just use the FD approximation as your gradient?&lt;/h3&gt;
+&lt;p&gt;For low-dimensional functions, you can straight-up use the finite-difference
+approximation instead of rolling code to compute the gradient. (Take &lt;span class="math"&gt;\(n\)&lt;/span&gt;
+axis-aligned unit vectors for &lt;span class="math"&gt;\(\boldsymbol{d}\)&lt;/span&gt;.) The FD approximation is very
+accurate. Of course, specialized code is probably a little more accurate, but
+that's not &lt;em&gt;really&lt;/em&gt; why we bother to do it! The reason why we write specialized
+gradient code is &lt;em&gt;not&lt;/em&gt; to improve numerical accuracy, it's to improve
+&lt;em&gt;efficiency&lt;/em&gt;. As I've
+&lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;ranted&lt;/a&gt;
+before, automatic differentiation techniques guarantee that evaluating &lt;span class="math"&gt;\(\nabla
+f(x)\)&lt;/span&gt; gradient should be as efficient as computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt; (with the caveat that
+&lt;em&gt;space&lt;/em&gt; complexity may increase substantially - i.e., space-time tradeoffs
+exists). FD is &lt;span class="math"&gt;\(\mathcal{O}(n \cdot \textrm{runtime } f(x))\)&lt;/span&gt;, where as autodiff
+is &lt;span class="math"&gt;\(\mathcal{O}(\textrm{runtime } f(x))\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;How to compare vectors&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Absolute difference is the devil.&lt;/strong&gt; You should never compare vectors in
+absolute difference (this is Lecture 1 of any numerical methods course). In this
+case, the problem is that gradients depend strongly on the scale of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. If &lt;span class="math"&gt;\(f\)&lt;/span&gt;
+takes tiny values then it's easy for differences to be lower than a tiny
+threshold.&lt;/p&gt;
+&lt;p&gt;Most people use &lt;strong&gt;relative error&lt;/strong&gt; &lt;span class="math"&gt;\(= \frac{|\textbf{want} -
+\textbf{got}|}{|\textbf{want}|}\)&lt;/span&gt;, to get a scale-free error measure, but
+unfortunately relative error chokes when &lt;span class="math"&gt;\(\textbf{want}\)&lt;/span&gt; is zero.&lt;/p&gt;
+&lt;p&gt;I compute several error measures with a script that you can import from my
+github
+&lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/checkgrad.py"&gt;arsenal.math.checkgrad.{fdcheck}&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I use two metrics to test gradients:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Relative error (skipping zeros): If relative error hits a zero, I skip
+   it. I'll rely on the other measure.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Pearson correlation: Checks the &lt;em&gt;direction&lt;/em&gt; of the gradient, but allows a
+   scale and shift transformation. This measure doesn't have trouble with zeros,
+   but allows scale and shift problems to pass by. &lt;em&gt;Make sure you fix those
+   errors!&lt;/em&gt; (e.g. In the CRF example, you might have forgotten to divide by
+   &lt;span class="math"&gt;\(Z(x)\)&lt;/span&gt;, which not really a constant... I've made this exact mistake a few
+   times.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I also look at some diagnostics, which help me debug stuff:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Accuracy of predicting the sign {+,-,0} of each dimension (or dot random product).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Absolute error (just as a diagnostic)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Scatter plot: When debugging, I like to scatter plot the elements of FD vs. my
+  implementation.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All these measurements (and the scatter plot) can be computed with
+&lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/compare.py"&gt;arsenal.math.compare.{compare}&lt;/a&gt;,
+which I find super useful when debugging absolutely anything numerical.&lt;/p&gt;
+&lt;h2&gt;Bonus tests&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Testing modules&lt;/strong&gt;: You can test the different modules of your code as well
+(assuming you have a composable module-based setup). E.g., I test my DP
+algorithm independent of how the features and downstream loss are computed. You
+can also test feature and downstream loss modules independent of one
+another. Note that autodiff (implicitly) computes Jacobian-vector products
+because modules are multivariate in general. We can reduce to the scalar case by
+taking a dot product of the outputs with a (fixed) random vector.&lt;/p&gt;
+&lt;p&gt;Something like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spherical&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# fixed random vector |output|=|m|&lt;/span&gt;
+&lt;span class="n"&gt;h&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fprop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dot&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;   &lt;span class="c1"&gt;# scalar function for use in fd&lt;/span&gt;
+
+&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fprop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# propagate&lt;/span&gt;
+&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;outputs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adjoint&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="c1"&gt;# set output adjoint to r, usually we set adjoint of scalar output=1&lt;/span&gt;
+&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;bprop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;ad&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adjoint&lt;/span&gt; &lt;span class="c1"&gt;# grab the gradient&lt;/span&gt;
+&lt;span class="n"&gt;fd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fdgrad&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;compare&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ad&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Integration tests&lt;/strong&gt;: Test that running a gradient-based optimization algorithm
+is successful with your gradient implementation. Use smaller versions of your
+problem if possible. A related test for machine learning applications is to make
+sure that your model and learning procedure can (over)fit small datasets.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Test that batch = minibatch&lt;/strong&gt; (if applicable). It's very easy to get this bit
+wrong. Broadcasting rules (in numpy, for example) make it easy to hide matrix
+conformability mishaps. So make sure you get the same results as manual
+minibatching (Of course, you should only do minibatching if are get a speed-up
+from vectorization or parallelism. You should probably test that it's actually
+faster.)&lt;/p&gt;
+&lt;!--
+Other common sources of bugs
+
+* Really look over your test cases. I often find that my errors are actually in
+  the test case themselves because either (1) I wrote it really quickly with
+  less care than the difficult function/gradient, or (2) there is a gap between
+  "what I want it to do" and "what I told it to do".
+
+* Random search in the space of programs can result in overfitting! This is a
+  general problem with test-driven development that always applies. If you are
+  hamfistedly twiddling bits of your code without thinking about why things
+  work, you can trick almost any test.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I've written about gradient approximations before, you might like these
+  articles:
+  &lt;a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/"&gt;Gradient-vector products&lt;/a&gt;,
+  &lt;a href="http://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/"&gt;Complex-step method&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The foundations of backprop:
+  &lt;a href="http://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/"&gt;Backprop is not just the chain rule&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;I strongly recommend&lt;/a&gt;
+  learning how automatic differentiation works, I learned it from
+  &lt;a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf"&gt;Justin Domke's course notes&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://justindomke.wordpress.com/2017/04/22/you-deserve-better-than-two-sided-finite-differences/"&gt;Justin Domke post&lt;/a&gt;:
+  Explains why we need bespoke finite-difference stencils (i.e., more than
+  two-sided differences) to prevent numerical demons from destroying our results!&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="testing"></category><category term="calculus"></category></entry></feed>

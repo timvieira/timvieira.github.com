@@ -122,14 +122,15 @@ plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
 <li>
 <p>Random:</p>
 <p>If all your parameters are on an equal scale, I recommend directions drawn
-from a spherical Gaussian.<sup id="fnref-sphericalgaussian"><a class="footnote-ref" href="#fn-sphericalgaussian">1</a></sup> The reason being that such a
+from a spherical Gaussian.<sup id="sf-visualizing-high-dimensional-functions-with-cross-sections-1-back"><a href="#sf-visualizing-high-dimensional-functions-with-cross-sections-1" class="simple-footnote" title="More formally, vectors drawn from a spherical Gaussian are points uniformly distributed on the surface of a \(d\)-dimensional unit sphere, \(\mathbb{S}^d\). Sampling a vector from a spherical Gaussian is straightforward: sample \(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\), \(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)">1</a></sup>
+ The reason being that such a
 vector is uniformly distributed across all unit-length directions (i.e., the
 angle of the vector, not it's length). We will vary the length ourselves via
 <span class="math">\(\alpha\)</span>.</p>
 <p>However, often components of <span class="math">\(\boldsymbol{x}\)</span> have different scales, so
 finding a "natural scale" is crucial if we are going to draw conclusions
 that require a comparison of the perturbation sensitivities across several
-dimensions&mdash;this is closely related to why we like second-order and
+dimensions—this is closely related to why we like second-order and
 adaptive optimization algorithms
 (<a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">discussion</a>);
 <span class="math">\(\boldsymbol{d}\)</span>'s units must match the units of <span class="math">\(\boldsymbol{x}\)</span> in each
@@ -156,19 +157,7 @@ algorithms.</p>
 <ul>
 <li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a></li>
 </ul>
-<h2>Notes</h2>
-<div class="footnote">
-<hr>
-<ol>
-<li id="fn-sphericalgaussian">
-<p>More formally, vectors drawn from a spherical Gaussian are
-points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
-<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
-sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
-<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span>&#160;<a class="footnote-backref" href="#fnref-sphericalgaussian" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div>
+<h2>Footnotes</h2>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -230,7 +219,11 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
     (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script></div>
+</script><ol class="simple-footnotes"><li id="sf-visualizing-high-dimensional-functions-with-cross-sections-1">More formally, vectors drawn from a spherical Gaussian are
+points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
+<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
+sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
+<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span> <a href="#sf-visualizing-high-dimensional-functions-with-cross-sections-1-back" class="simple-footnote-back">↩</a></li></ol></div>
   </article>
 
   <section>
@@ -290,7 +283,7 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -299,7 +292,17 @@ sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\bol
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

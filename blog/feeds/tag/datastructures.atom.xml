@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - datastructures</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/datastructures.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2016-11-21T00:00:00-05:00</updated><entry><title>Heaps for incremental computation</title><link href="https://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/" rel="alternate"></link><published>2016-11-21T00:00:00-05:00</published><updated>2016-11-21T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-11-21:/blog/post/2016/11/21/heaps-for-incremental-computation/</id><content type="html">&lt;p&gt;In this post, I'll describe a neat trick for maintaining a summary quantity
+(e.g., sum, product, max, log-sum-exp, concatenation, cross-product) under
+changes to its inputs. The trick and it's implementation are inspired by the
+well-known max-heap datastructure. I'll also describe a really elegant
+application to fast sampling under an evolving categorical distribution.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: Suppose we'd like to efficiently compute a summary quantity under
+changes to its &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional input vector &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;. The particular
+form of the quantity we're going to compute is &lt;span class="math"&gt;\(z = \bigoplus_{i=1}^n w_i\)&lt;/span&gt;,
+where &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; is some associative binary operator with identity element
+&lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#operator-mathy');"&gt;more formally...&lt;/button&gt;
+&lt;div id="operator-mathy" class="derivation" style="display:none"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\boldsymbol{w} \in \boldsymbol{K}^n\)&lt;/span&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Associative: &lt;span class="math"&gt;\((a \oplus b) \oplus c = a \oplus (b \oplus c)\)&lt;/span&gt; for all &lt;span class="math"&gt;\(a,b,c
+  \in \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Identity element: &lt;span class="math"&gt;\(\boldsymbol{0} \in \boldsymbol{K}\)&lt;/span&gt; such that &lt;span class="math"&gt;\(k \oplus
+  \boldsymbol{0} = \boldsymbol{0} \oplus k = k\)&lt;/span&gt;, for all &lt;span class="math"&gt;\(k \in \boldsymbol{K}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;The trick&lt;/strong&gt;: Essentially, the trick boils down to &lt;em&gt;parenthesis placement&lt;/em&gt; in
+the expression which computes &lt;span class="math"&gt;\(z\)&lt;/span&gt;. A freedom we assumed via the associative
+property.&lt;/p&gt;
+&lt;p&gt;I'll demonstrate by example with &lt;span class="math"&gt;\(n=8\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Linear structure: We generally compute something like &lt;span class="math"&gt;\(z\)&lt;/span&gt; with a simple
+loop. This looks like a right-branching binary tree when we think about the
+order of operations,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+z = (((((((w_1 \oplus w_2) \oplus w_3) \oplus w_4) \oplus w_5) \oplus w_6) \oplus w_7) \oplus w_8).
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt; Heap structure: Here the parentheses form a balanced tree, which looks
+much more like a recursive implementation that computes the left and right
+halves and &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt;s the results (divide-and-conquer style),&lt;/p&gt;
+&lt;div class="math"&gt;$$
+z = (((w_1 \oplus w_2) \oplus (w_3 \oplus w_4)) \oplus ((w_5 \oplus w_6) \oplus (w_7 \oplus w_8))).
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;
+The benefit of the heap structure is that there are &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;
+intermediate quantities that depend on any input, whereas the linear structure
+has &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt;. The intermediate quantities correspond to the values of each of the
+parenthesized expressions.&lt;/p&gt;
+&lt;p&gt;Since fewer intermediate quantities depend on a given input, fewer intermediates
+need to be adjusted upon a change to the input. Therefore, we get faster
+algorithms for &lt;em&gt;maintaining&lt;/em&gt; the output quantity &lt;span class="math"&gt;\(z\)&lt;/span&gt; as the inputs change.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Heap datastructure&lt;/strong&gt; (aka
+&lt;a href="https://en.wikipedia.org/wiki/Fenwick_tree"&gt;binary index tree or Fenwick tree&lt;/a&gt;):
+We're going to store the values of the intermediates quantities and inputs in a
+heap datastructure, which is a &lt;em&gt;complete&lt;/em&gt; binary tree. In our case, the tree has
+depth &lt;span class="math"&gt;\(1 + \lceil \log_2 n \rceil\)&lt;/span&gt;, with the values of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at it's
+leaves (aligned left) and padding with &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt; for remaining
+leaves. Thus, the array's length is &lt;span class="math"&gt;\(&amp;lt; 4 n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;This structure makes our implementation really nice and efficient because we
+don't need pointers to find the parent or children of a node (i.e., no need to
+wrap elements into a "node" class like in a general tree data structure). So, we
+can pack everything into an array, which means our implementation has great
+memory/cache locality and low storage overhead.&lt;/p&gt;
+&lt;p&gt;Traversing the tree is pretty simple: Let &lt;span class="math"&gt;\(d\)&lt;/span&gt; be the number of internal nodes,
+nodes &lt;span class="math"&gt;\(1 \le i \le d\)&lt;/span&gt; are internal. For node &lt;span class="math"&gt;\(i\)&lt;/span&gt;, left child &lt;span class="math"&gt;\(\rightarrow {2
+\cdot i},\)&lt;/span&gt; right child &lt;span class="math"&gt;\(\rightarrow {2 \cdot i + 1},\)&lt;/span&gt; parent &lt;span class="math"&gt;\(\rightarrow
+\lfloor i / 2 \rfloor.\)&lt;/span&gt; (Note that these operations assume the array's indices
+start at &lt;span class="math"&gt;\(1\)&lt;/span&gt;. We generally fake this by adding a dummy node at position &lt;span class="math"&gt;\(0\)&lt;/span&gt;,
+which makes implementation simpler.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Initializing the heap&lt;/strong&gt;: Here's code that initializes the heap structure we
+  just described.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sumheap&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Create sumheap from weights `w` in O(n) time.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ceil&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;  &lt;span class="c1"&gt;# number of intermediates&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;zeros&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;                &lt;span class="c1"&gt;# intermediates + leaves&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;                     &lt;span class="c1"&gt;# store `w` at leaves.&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;reversed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Updating &lt;span class="math"&gt;\(w_k\)&lt;/span&gt;&lt;/strong&gt; boils down to fixing intermediate sums that (transitively)
+  depend on &lt;span class="math"&gt;\(w_k.\)&lt;/span&gt; I won't go into all of the details here, instead I'll give
+  code (below). I'd like to quickly point out that the term "parents" is not
+  great for our purposes because they are actually the &lt;em&gt;dependents&lt;/em&gt;: when an
+  input changes the value the parents, grand parents, great grand parents, etc,
+  become stale and need to be recomputed bottom up (from the leaves). The code
+  below implements the update method for changing the value of &lt;span class="math"&gt;\(w_k\)&lt;/span&gt; and runs in
+  &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; time.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Update w[k] = v` in time O(log n).&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;
+    &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;   &lt;span class="c1"&gt;# fix parents in the tree.&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;//=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Numerical stability&lt;/strong&gt;: If the operations are noisy (e.g., floating point
+   operator), then the heap version may be better behaved. For example, if
+   operations have an independent, additive noise rate &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; then noise
+   of &lt;span class="math"&gt;\(z_{\text{heap}}\)&lt;/span&gt; is &lt;span class="math"&gt;\(\mathcal{O}(\varepsilon \cdot \log n)\)&lt;/span&gt;, whereas
+   &lt;span class="math"&gt;\(z_{\text{linear}}\)&lt;/span&gt; is &lt;span class="math"&gt;\(\mathcal{O}(\varepsilon \cdot n)\)&lt;/span&gt;. (Without further
+   assumptions about the underlying operator, I don't believe you can do better
+   than that.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Relationship to max-heap&lt;/strong&gt;: In the case of a max or min heap, we can avoid
+   allocating extra space for intermediate quantities because all intermediates
+   values are equal to exactly one element of &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Change propagation&lt;/strong&gt;: The general idea of &lt;em&gt;adjusting&lt;/em&gt; cached intermediate
+   quantities is a neat idea. In fact, we encounter it each time we type
+   &lt;code&gt;make&lt;/code&gt; at the command line! The general technique goes by many
+   names&amp;mdash;including change propagation, incremental maintenance, and
+   functional reactive programming&amp;mdash;and applies to basically &lt;em&gt;any&lt;/em&gt;
+   side-effect-free computation. However, it's most effective when the
+   dependency structure of the computation is sparse and requires little
+   overhead to find and refresh stale values. In our example of computing &lt;span class="math"&gt;\(z\)&lt;/span&gt;,
+   these considerations manifest themselves as the heap vs linear structures and
+   our fast array implementation instead of a generic tree datastructure.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Generalizations&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;No zero? No problem. We don't &lt;em&gt;actually&lt;/em&gt; require a zero element. So, it's
+   fair to augment &lt;span class="math"&gt;\(\boldsymbol{K} \cup \{ \textsf{null} \}\)&lt;/span&gt; where
+   &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt; is distinguished value (i.e., &lt;span class="math"&gt;\(\textsf{null} \notin
+   \boldsymbol{K}\)&lt;/span&gt;) that &lt;em&gt;acts&lt;/em&gt; just like a zero after we overload &lt;span class="math"&gt;\(\oplus\)&lt;/span&gt; to
+   satisfy the definition of a zero (e.g., by adding an if-statement).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Generalization to an arbitrary maps instead of fixed vectors is possible with
+   a "locator" map, which a bijective map from elements to indices in a dense
+   array.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Support for growing and shrinking: We support &lt;strong&gt;growing&lt;/strong&gt; by maintaining an
+   underlying array that is always slightly larger than we need&amp;mdash;which
+   we're &lt;em&gt;already&lt;/em&gt; doing in the heap datastructure. Doubling the size of the
+   underlying array (i.e., rounding up to the next power of two) has the added
+   benefit of allowing us to grow &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt; at no asymptotic cost!  This
+   is because the resize operation, which requires an &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; time to
+   allocate a new array and copying old values, happens so infrequently that
+   they can be completely amortized. We get of effect of &lt;strong&gt;shrinking&lt;/strong&gt; by
+   replacing the old value with &lt;span class="math"&gt;\(\textsf{null}\)&lt;/span&gt; (or &lt;span class="math"&gt;\(\boldsymbol{0}\)&lt;/span&gt;). We can
+   shrink the underlying array when the fraction of nonzeros dips below
+   &lt;span class="math"&gt;\(25\%\)&lt;/span&gt;. This prevents "thrashing" between shrinking and growing.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Application&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Sampling from an evolving distribution&lt;/strong&gt;: Suppose that &lt;span class="math"&gt;\(\boldsymbol{w}\)&lt;/span&gt;
+corresponds to a categorical distributions over &lt;span class="math"&gt;\(\{1, \ldots, n\}\)&lt;/span&gt; and that we'd
+like to sample elements from in proportion to this (unnormalized) distribution.&lt;/p&gt;
+&lt;p&gt;Other methods like the &lt;a href="http://www.keithschwarz.com/darts-dice-coins/"&gt;alias&lt;/a&gt; or
+inverse CDF methods are efficient after a somewhat costly initialization
+step. But! they are not as efficient as the heap sampler when the distribution
+is being updated. (I'm not sure about whether variants of alias that support
+updates exist.)&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;Sample&lt;/th&gt;
+&lt;th&gt;Update&lt;/th&gt;
+&lt;th&gt;Init&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;alias&lt;/td&gt;
+&lt;td&gt;O(1)&lt;/td&gt;
+&lt;td&gt;O(n)?&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;i-CDF&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;heap&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(log n)&lt;/td&gt;
+&lt;td&gt;O(n)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;Use cases include&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Gibbs_sampling"&gt;Gibbs sampling&lt;/a&gt;, where
+  distributions are constantly modified and sampled from (changes may not be
+  sparse so YMMV). The heap sampler is used in
+  &lt;a href="https://arxiv.org/abs/1412.4986"&gt;this paper&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://jeremykun.com/2013/11/08/adversarial-bandits-and-the-exp3-algorithm/"&gt;EXP3&lt;/a&gt;
+  (&lt;a href="https://en.wikipedia.org/wiki/Multi-armed_bandit"&gt;mutli-armed bandit algorithm&lt;/a&gt;)
+  is an excellent example of an algorithm that samples and modifies a single
+  weight in the distribution.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Stochastic priority queues&lt;/em&gt; where we sample proportional to priority and the
+  weights on items in the queue may change, elements are possibly removed after
+  they are sampled (i.e., sampling without replacement), and elements are added.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Again, I won't spell out all of the details of these algorithms. Instead, I'll
+just give the code.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Inverse CDF sampling&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Ordinary sampling method, O(n) init, O(log n) per sample.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cumsum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;            &lt;span class="c1"&gt;# build cdf, O(n)&lt;/span&gt;
+    &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;     &lt;span class="c1"&gt;# random probe, p ~ Uniform(0, z)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;searchsorted&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# binary search, O(log n)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Heap sampling&lt;/strong&gt; is essentially the same, except the cdf is stored as heap,
+which is perfect for binary search!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hsample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Sample from sumheap, O(log n) per sample.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="c1"&gt;# number of internal nodes.&lt;/span&gt;
+    &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;uniform&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;  &lt;span class="c1"&gt;# random probe, p ~ Uniform(0, z)&lt;/span&gt;
+    &lt;span class="c1"&gt;# Use binary search to find the index of the largest CDF (represented as a&lt;/span&gt;
+    &lt;span class="c1"&gt;# heap) value that is less than a random probe.&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# Determine if the value is in the left or right subtree.&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;*=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;         &lt;span class="c1"&gt;# Point at left child&lt;/span&gt;
+        &lt;span class="n"&gt;left&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;    &lt;span class="c1"&gt;# Probability mass under left subtree.&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;   &lt;span class="c1"&gt;# Value is in right subtree.&lt;/span&gt;
+            &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;  &lt;span class="c1"&gt;# Subtract mass from left subtree&lt;/span&gt;
+            &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;     &lt;span class="c1"&gt;# Point at right child&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Complete code and test cases for heap sampling are available in this
+&lt;a href="https://gist.github.com/timvieira/da31b56436045a3122f5adf5aafec515"&gt;gist&lt;/a&gt;.  A fast Cython &lt;a href="https://github.com/timvieira/arsenal/blob/master/arsenal/maths/sumheap.pyx"&gt;implementation&lt;/a&gt; is available in my Python &lt;a href="https://github.com/timvieira/arsenal/"&gt;arsenal&lt;/a&gt;.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="sampling"></category><category term="datastructures"></category><category term="incremental-computation"></category></entry><entry><title>Multidimensional array index</title><link href="https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/" rel="alternate"></link><published>2016-01-17T00:00:00-05:00</published><updated>2016-01-17T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-01-17:/blog/post/2016/01/17/multidimensional-array-index/</id><content type="html">&lt;p&gt;This is a simple note on how to compute a bijective mapping between the indices
+of an &lt;span class="math"&gt;\(n\)&lt;/span&gt;-dimensional array and a flat, one-dimensional array. We'll look at
+both directions of the mapping: &lt;code&gt;(tuple-&amp;gt;int)&lt;/code&gt; and &lt;code&gt;(int -&amp;gt; tuple)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We'll assume each dimension &lt;span class="math"&gt;\(a, b, c, \ldots\)&lt;/span&gt; is a positive integer and bounded
+&lt;span class="math"&gt;\(a \le A, b \le B, c \le C, \ldots\)&lt;/span&gt;&lt;/p&gt;
+&lt;h3&gt;Start small&lt;/h3&gt;
+&lt;p&gt;Let's start by looking at &lt;span class="math"&gt;\(n = 3\)&lt;/span&gt; and generalize from there.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;index_3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;J&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;K&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;K&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;inverse_3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ix&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;J&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;K&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;
+    &lt;span class="n"&gt;total&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;J&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;K&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+    &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+    &lt;span class="n"&gt;total&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;K&lt;/span&gt;
+    &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+    &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here's our test case:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;
+&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;-&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;
+            &lt;span class="k"&gt;assert&lt;/span&gt; &lt;span class="n"&gt;inverse_3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;assert&lt;/span&gt; &lt;span class="n"&gt;index_3&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;
+            &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note: This is not the only bijective mapping from &lt;code&gt;tuple&lt;/code&gt; to &lt;code&gt;int&lt;/code&gt; that we
+could have come up with. The one we chose corresponds to the particular layout,
+which is apparent in the test case.&lt;/p&gt;
+&lt;p&gt;For &lt;span class="math"&gt;\(n=4\)&lt;/span&gt; the pattern is &lt;span class="math"&gt;\(((a \cdot B + b) \cdot C + d) \cdot D + d\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Sidenote: We don't actually need the bound &lt;span class="math"&gt;\(a \le A\)&lt;/span&gt; in either &lt;code&gt;index&lt;/code&gt; or
+&lt;code&gt;inverse&lt;/code&gt;. This gives us a little extra flexibility because our first
+dimension can be infinite/unknown.&lt;/p&gt;
+&lt;h3&gt;General case&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Map tuple ``a`` to index with known bounds ``A``.&amp;quot;&lt;/span&gt;
+    &lt;span class="c1"&gt;# the pattern:&lt;/span&gt;
+    &lt;span class="c1"&gt;# ((i*J + j)*K + k)*L + l&lt;/span&gt;
+    &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;xrange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;*=&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ix&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Find key given index ``ix`` and bounds ``A``.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;total&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;total&lt;/span&gt; &lt;span class="o"&gt;*=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;
+    &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;xrange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="n"&gt;total&lt;/span&gt; &lt;span class="o"&gt;/=&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+        &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ix&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;total&lt;/span&gt;
+        &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Appendix&lt;/h2&gt;
+&lt;h3&gt;Testing the general case&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="nn"&gt;itertools&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test_layout&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Test that `index` produces the layout we expect.&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;itertools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;product&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;))]&lt;/span&gt;
+    &lt;span class="k"&gt;assert&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;product&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;got&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;assert&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;got&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;test_layout&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+    &lt;span class="n"&gt;test_layout&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+    &lt;span class="n"&gt;test_layout&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+    &lt;span class="n"&gt;test_layout&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+    &lt;span class="n"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,))&lt;/span&gt;
+    &lt;span class="n"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;test_inverse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;D&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="datastructures"></category></entry><entry><title>Gradient of a product</title><link href="https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><content type="html">&lt;div class="math"&gt;$$
+\newcommand{\gradx}[1]{\grad{x}{ #1 }}
+\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bigo}[0]{\mathcal{O}}
+$$&lt;/div&gt;
+&lt;p&gt;In this post we'll look at how to compute the gradient of a product. This is
+such a common subroutine in machine learning that it's worth careful
+consideration. In a later post, I'll describe the gradient of a
+sum-over-products, which is another interesting and common pattern in machine
+learning (e.g., exponential families, CRFs, context-free grammar, case-factor
+diagrams, semiring-weighted logic programming).&lt;/p&gt;
+&lt;p&gt;Given a collection of functions with a common argument &lt;span class="math"&gt;\(f_1, \cdots, f_n \in \{
+\R^d \mapsto \R \}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Define their product &lt;span class="math"&gt;\(p(x) = \prod_{i=1}^n f_i(x)\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Suppose, we'd like to compute the gradient of the product of these functions
+with respect to their common argument, &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \gradx{ \prod_{i=1}^n f_i(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;As you can see in the equation above, the gradient takes the form of a
+"leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
+&lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
+from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)&amp;mdash;resulting in a overall runtime of
+&lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
+computing this efficiently.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Division trick&lt;/strong&gt;: Before going down the dynamic programming rabbit hole, let's
+consider the following relatively simple method for computing the gradient,
+which uses division:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f \ne 0\)&lt;/span&gt;. No worries, we can handle zeros with three cases: (1) If
+   no zeros: the division trick works fine. (2) Only one zero: implies that only
+   one term in the sum will have a nonzero gradient, which we compute via
+   leave-one-out product. (3) Two or more zeros: all gradients are zero and
+   there is no work to be done.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Requires multiplicative inverse operator (division) &lt;em&gt;and&lt;/em&gt;
+   associative-commutative multiplication, which means it's not applicable to
+   matrices.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Log trick&lt;/strong&gt;: Suppose &lt;span class="math"&gt;\(f_i\)&lt;/span&gt; are very small numbers (e.g., probabilities), which
+we'd rather not multiply together because we'll quickly lose precision (e.g.,
+for large &lt;span class="math"&gt;\(n\)&lt;/span&gt;). It's common practice (especially in machine learning) to replace
+&lt;span class="math"&gt;\(f_i\)&lt;/span&gt; with &lt;span class="math"&gt;\(\log f_i\)&lt;/span&gt;, which turns products into sums, &lt;span class="math"&gt;\(\prod_{j=1}^n f_j(x) =
+\exp \left( \sum_{j=1}^n \log f_j(x) \right)\)&lt;/span&gt;, and tiny numbers (like
+&lt;span class="math"&gt;\(\texttt{3.72e-44}\)&lt;/span&gt;) into large ones (like &lt;span class="math"&gt;\(\texttt{-100}\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;Furthermore, using the identity &lt;span class="math"&gt;\((\nabla g) = g \cdot \nabla \log g\)&lt;/span&gt;, we can
+operate exclusively in the "&lt;span class="math"&gt;\(\log\)&lt;/span&gt;-domain".&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Numerically stable&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't require multiplicative inverse assuming you can compute &lt;span class="math"&gt;\(\gradx{ \log
+   f_i(x) }\)&lt;/span&gt; without it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f &amp;gt; 0\)&lt;/span&gt;. But, we can use
+   &lt;a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/"&gt;LogReal number class&lt;/a&gt;
+   to represent negative numbers in log-space, but we still need to be careful
+   about zeros (like in the division trick).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't easily generalize to other notions of multiplication.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Dynamic programming trick&lt;/strong&gt;: &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; runtime and &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space. You may
+recognize this as forward-backward algorithm for linear chain CRFs
+(cf. &lt;a href="http://www.inference.phy.cam.ac.uk/hmw26/papers/crf_intro.pdf"&gt;Wallach (2004)&lt;/a&gt;,
+section 7).&lt;/p&gt;
+&lt;p&gt;The trick is very straightforward when you think about it in isolation. Compute
+the products of all prefixes and suffixes. Then, multiply them together.&lt;/p&gt;
+&lt;p&gt;Here are the equations:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\alpha_0(x) &amp;amp;=&amp;amp; 1 \\
+\alpha_t(x)
+   &amp;amp;=&amp;amp; \prod_{i \le t} f_i(x)
+   = \alpha_{t-1}(x) \cdot f_t(x) \\
+\beta_{n+1}(x) &amp;amp;=&amp;amp; 1 \\
+\beta_t(x)
+  &amp;amp;=&amp;amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \prod_{j &amp;lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &amp;gt; i} f_j(x) \right) \\
+&amp;amp;=&amp;amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Clearly, this requires &lt;span class="math"&gt;\(O(n)\)&lt;/span&gt; additional space.&lt;/p&gt;
+&lt;p&gt;Only requires an associative operator (i.e., Does not require it to be
+commutative or invertible like earlier strategies).&lt;/p&gt;
+&lt;p&gt;Why do we care about the non-commutative multiplication? A common example is
+matrix multiplication where &lt;span class="math"&gt;\(A B C \ne B C A\)&lt;/span&gt;, even if all matrices have the
+conformable dimensions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Connections to automatic differentiation&lt;/strong&gt;: The theory behind reverse-mode
+automatic differentiation says that if you can compute a function, then you
+&lt;em&gt;can&lt;/em&gt; compute it's gradient with the same asymptotic complexity, &lt;em&gt;but&lt;/em&gt; you might
+need more space. That's exactly what we did here: We started with a naive
+algorithm for computing the gradient with &lt;span class="math"&gt;\(\bigo(n^2)\)&lt;/span&gt; time and &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt; space
+(other than the space to store the &lt;span class="math"&gt;\(n\)&lt;/span&gt; functions) and ended up with a &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt;
+time &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space algorithm with a little clever thinking. What I'm saying
+is autodiff&amp;mdash;even if you don't use a magical package&amp;mdash;tells us that an
+efficient algorithm for the gradient always exists. Furthermore, it tells you
+how to derive it manually, if you are so inclined. The key is to reuse
+intermediate quantities (hence the increase in space).&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sketch&lt;/em&gt;: In the gradient-of-a-product case, assuming we implemented
+multiplication left-to-right (forward pass) that already defines the prefix
+products (&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;). It turns out that the backward pass gives us &lt;span class="math"&gt;\(\beta\)&lt;/span&gt; as
+adjoints. Lastly, we'd propagate gradients through the &lt;span class="math"&gt;\(f\)&lt;/span&gt;'s to get
+&lt;span class="math"&gt;\(\frac{\partial p}{\partial x}\)&lt;/span&gt;. Essentially, we end up with exactly the dynamic
+programming algorithm we came up with.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category><category term="datastructures"></category></entry><entry><title>Log-Real number class</title><link href="https://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><published>2015-02-01T00:00:00-05:00</published><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-01:/blog/post/2015/02/01/log-real-number-class/</id><content type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+representing intermediate quantities in the log-domain. This trick turns
+"multiplication" into "addition", "addition" into "logsumexp", "0" into
+&lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
+reasonable-size numbers.&lt;/p&gt;
+&lt;p&gt;Unfortunately, without modification, this trick is limited to positive numbers
+because &lt;code&gt;log&lt;/code&gt; of a negative number is &lt;code&gt;NaN&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Well, there is good news! For the cost of an extra bit, we can extend this trick
+to the negative reals and furthermore, we get a bonafide ring instead of a mere
+semiring.&lt;/p&gt;
+&lt;p&gt;I first saw this trick in
+&lt;a href="http://www.aclweb.org/anthology/D09-1005"&gt;Li and Eisner (2009)&lt;/a&gt;. The trick is
+nicely summarized in Table 3 of that paper, which I've pasted below.&lt;/p&gt;
+&lt;div style="text-align:center"&gt;
+&lt;img src="/blog/images/logreal.png"/&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Why do I care?&lt;/strong&gt; When computing gradients (e.g., gradient of risk),
+intermediate values are rarely all positive. Furthermore, we're often
+multiplying small things together. I've recently found log-reals to be effective
+at squeaking a bit more numerical accuracy.&lt;/p&gt;
+&lt;p&gt;This trick is useful for almost all backprop computations because backprop is
+essentially:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;adjoint(u) += adjoint(v) * dv/du.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The only tricky bit is lifting all &lt;code&gt;du/dv&lt;/code&gt; computations into the log-reals.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;This trick is better suited to programming languages with structs. Using
+  objects will probably in an horrible slow down and using parallel arrays to
+  store the sign bit and double is probably too tedious and error prone. (Sorry
+  java folks.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Here's a &lt;a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h"&gt;C++ implementation&lt;/a&gt;
+  with operator overloading from Andre Martins&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Note that log-real &lt;code&gt;+=&lt;/code&gt; involves calls to &lt;code&gt;log&lt;/code&gt; and &lt;code&gt;exp&lt;/code&gt;, which will
+  definitely slow your code down a bit (these functions are much slower than
+  addition).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="numerical"></category><category term="datastructures"></category></entry></feed>

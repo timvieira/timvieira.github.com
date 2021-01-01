@@ -213,16 +213,24 @@ style="display:none;"> <strong>Proof of unbiasedness</strong>. The following pro
 little different from that in the priority sampling papers. I think it's more
 straightforward. More importantly, it shows how we can extend the method to
 sample from slightly different without-replacement distributions (as long as we
-can compute <span class="math">\(q_i = p(i \in S | \tau)\)</span>).</p>
+can compute <span class="math">\(q_i(\tau) = \mathrm{Pr}(i \in S \mid \tau) = \mathrm{Pr}(k_i \le \tau)\)</span>).</p>
 <div class="math">$$
 \begin{eqnarray}
 \mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
-&amp;=&amp; \mathbb{E}_{\tau, u_1, \ldots u_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \\
-&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \mathbb{E}_{u_i | \tau}\!\left[ \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S] \right] \right] \\
-&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \mathbb{E}_{u_i | \tau}\!\Big[ \boldsymbol{1}[ i \in S] \Big] \right] \\
-&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot q_i \right] \\
-&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n p_i \cdot f(i) \right] \\
-&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \mu \right] \\
+&amp;=&amp; \mathbb{E}_{\tau, k_1, \ldots k_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \boldsymbol{1}[ k_i \le \tau] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \mathbb{E}_{k_i | \tau}\!\Big[ \boldsymbol{1}[ k_i \le \tau  ] \Big] \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot
+   \mathrm{Pr}( k_i \le \tau )
+   \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot
+   q_i(\tau)
+   \right] \\
+&amp;=&amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n p_i \cdot f(i)
+   \right] \\
+&amp;=&amp; \sum_{i=1}^n p_i \cdot f(i) \\
 &amp;=&amp; \mu
 \end{eqnarray}
 $$</div>
@@ -448,7 +456,7 @@ tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -457,7 +465,17 @@ tagged with <a href="http://timvieira.github.io/blog/tag/sampling.html">sampling
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

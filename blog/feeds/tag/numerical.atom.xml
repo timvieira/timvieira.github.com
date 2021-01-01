@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - numerical</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/numerical.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2015-07-29T00:00:00-04:00</updated><entry><title>Gradient of a product</title><link href="https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><content type="html">&lt;div class="math"&gt;$$
+\newcommand{\gradx}[1]{\grad{x}{ #1 }}
+\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bigo}[0]{\mathcal{O}}
+$$&lt;/div&gt;
+&lt;p&gt;In this post we'll look at how to compute the gradient of a product. This is
+such a common subroutine in machine learning that it's worth careful
+consideration. In a later post, I'll describe the gradient of a
+sum-over-products, which is another interesting and common pattern in machine
+learning (e.g., exponential families, CRFs, context-free grammar, case-factor
+diagrams, semiring-weighted logic programming).&lt;/p&gt;
+&lt;p&gt;Given a collection of functions with a common argument &lt;span class="math"&gt;\(f_1, \cdots, f_n \in \{
+\R^d \mapsto \R \}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Define their product &lt;span class="math"&gt;\(p(x) = \prod_{i=1}^n f_i(x)\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Suppose, we'd like to compute the gradient of the product of these functions
+with respect to their common argument, &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \gradx{ \prod_{i=1}^n f_i(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;As you can see in the equation above, the gradient takes the form of a
+"leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
+&lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
+from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)&amp;mdash;resulting in a overall runtime of
+&lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
+computing this efficiently.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Division trick&lt;/strong&gt;: Before going down the dynamic programming rabbit hole, let's
+consider the following relatively simple method for computing the gradient,
+which uses division:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f \ne 0\)&lt;/span&gt;. No worries, we can handle zeros with three cases: (1) If
+   no zeros: the division trick works fine. (2) Only one zero: implies that only
+   one term in the sum will have a nonzero gradient, which we compute via
+   leave-one-out product. (3) Two or more zeros: all gradients are zero and
+   there is no work to be done.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Requires multiplicative inverse operator (division) &lt;em&gt;and&lt;/em&gt;
+   associative-commutative multiplication, which means it's not applicable to
+   matrices.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Log trick&lt;/strong&gt;: Suppose &lt;span class="math"&gt;\(f_i\)&lt;/span&gt; are very small numbers (e.g., probabilities), which
+we'd rather not multiply together because we'll quickly lose precision (e.g.,
+for large &lt;span class="math"&gt;\(n\)&lt;/span&gt;). It's common practice (especially in machine learning) to replace
+&lt;span class="math"&gt;\(f_i\)&lt;/span&gt; with &lt;span class="math"&gt;\(\log f_i\)&lt;/span&gt;, which turns products into sums, &lt;span class="math"&gt;\(\prod_{j=1}^n f_j(x) =
+\exp \left( \sum_{j=1}^n \log f_j(x) \right)\)&lt;/span&gt;, and tiny numbers (like
+&lt;span class="math"&gt;\(\texttt{3.72e-44}\)&lt;/span&gt;) into large ones (like &lt;span class="math"&gt;\(\texttt{-100}\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;Furthermore, using the identity &lt;span class="math"&gt;\((\nabla g) = g \cdot \nabla \log g\)&lt;/span&gt;, we can
+operate exclusively in the "&lt;span class="math"&gt;\(\log\)&lt;/span&gt;-domain".&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Numerically stable&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't require multiplicative inverse assuming you can compute &lt;span class="math"&gt;\(\gradx{ \log
+   f_i(x) }\)&lt;/span&gt; without it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f &amp;gt; 0\)&lt;/span&gt;. But, we can use
+   &lt;a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/"&gt;LogReal number class&lt;/a&gt;
+   to represent negative numbers in log-space, but we still need to be careful
+   about zeros (like in the division trick).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't easily generalize to other notions of multiplication.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Dynamic programming trick&lt;/strong&gt;: &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; runtime and &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space. You may
+recognize this as forward-backward algorithm for linear chain CRFs
+(cf. &lt;a href="http://www.inference.phy.cam.ac.uk/hmw26/papers/crf_intro.pdf"&gt;Wallach (2004)&lt;/a&gt;,
+section 7).&lt;/p&gt;
+&lt;p&gt;The trick is very straightforward when you think about it in isolation. Compute
+the products of all prefixes and suffixes. Then, multiply them together.&lt;/p&gt;
+&lt;p&gt;Here are the equations:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\alpha_0(x) &amp;amp;=&amp;amp; 1 \\
+\alpha_t(x)
+   &amp;amp;=&amp;amp; \prod_{i \le t} f_i(x)
+   = \alpha_{t-1}(x) \cdot f_t(x) \\
+\beta_{n+1}(x) &amp;amp;=&amp;amp; 1 \\
+\beta_t(x)
+  &amp;amp;=&amp;amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \prod_{j &amp;lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &amp;gt; i} f_j(x) \right) \\
+&amp;amp;=&amp;amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Clearly, this requires &lt;span class="math"&gt;\(O(n)\)&lt;/span&gt; additional space.&lt;/p&gt;
+&lt;p&gt;Only requires an associative operator (i.e., Does not require it to be
+commutative or invertible like earlier strategies).&lt;/p&gt;
+&lt;p&gt;Why do we care about the non-commutative multiplication? A common example is
+matrix multiplication where &lt;span class="math"&gt;\(A B C \ne B C A\)&lt;/span&gt;, even if all matrices have the
+conformable dimensions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Connections to automatic differentiation&lt;/strong&gt;: The theory behind reverse-mode
+automatic differentiation says that if you can compute a function, then you
+&lt;em&gt;can&lt;/em&gt; compute it's gradient with the same asymptotic complexity, &lt;em&gt;but&lt;/em&gt; you might
+need more space. That's exactly what we did here: We started with a naive
+algorithm for computing the gradient with &lt;span class="math"&gt;\(\bigo(n^2)\)&lt;/span&gt; time and &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt; space
+(other than the space to store the &lt;span class="math"&gt;\(n\)&lt;/span&gt; functions) and ended up with a &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt;
+time &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space algorithm with a little clever thinking. What I'm saying
+is autodiff&amp;mdash;even if you don't use a magical package&amp;mdash;tells us that an
+efficient algorithm for the gradient always exists. Furthermore, it tells you
+how to derive it manually, if you are so inclined. The key is to reuse
+intermediate quantities (hence the increase in space).&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sketch&lt;/em&gt;: In the gradient-of-a-product case, assuming we implemented
+multiplication left-to-right (forward pass) that already defines the prefix
+products (&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;). It turns out that the backward pass gives us &lt;span class="math"&gt;\(\beta\)&lt;/span&gt; as
+adjoints. Lastly, we'd propagate gradients through the &lt;span class="math"&gt;\(f\)&lt;/span&gt;'s to get
+&lt;span class="math"&gt;\(\frac{\partial p}{\partial x}\)&lt;/span&gt;. Essentially, we end up with exactly the dynamic
+programming algorithm we came up with.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category><category term="datastructures"></category></entry><entry><title>Log-Real number class</title><link href="https://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/" rel="alternate"></link><published>2015-02-01T00:00:00-05:00</published><updated>2015-02-01T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-01:/blog/post/2015/02/01/log-real-number-class/</id><content type="html">&lt;p&gt;Most people know how to avoid numerical underflow in probability computations by
+representing intermediate quantities in the log-domain. This trick turns
+"multiplication" into "addition", "addition" into "logsumexp", "0" into
+&lt;span class="math"&gt;\(-\infty\)&lt;/span&gt; and "1" into &lt;span class="math"&gt;\(0\)&lt;/span&gt;. Most importantly, it turns really small numbers into
+reasonable-size numbers.&lt;/p&gt;
+&lt;p&gt;Unfortunately, without modification, this trick is limited to positive numbers
+because &lt;code&gt;log&lt;/code&gt; of a negative number is &lt;code&gt;NaN&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Well, there is good news! For the cost of an extra bit, we can extend this trick
+to the negative reals and furthermore, we get a bonafide ring instead of a mere
+semiring.&lt;/p&gt;
+&lt;p&gt;I first saw this trick in
+&lt;a href="http://www.aclweb.org/anthology/D09-1005"&gt;Li and Eisner (2009)&lt;/a&gt;. The trick is
+nicely summarized in Table 3 of that paper, which I've pasted below.&lt;/p&gt;
+&lt;div style="text-align:center"&gt;
+&lt;img src="/blog/images/logreal.png"/&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Why do I care?&lt;/strong&gt; When computing gradients (e.g., gradient of risk),
+intermediate values are rarely all positive. Furthermore, we're often
+multiplying small things together. I've recently found log-reals to be effective
+at squeaking a bit more numerical accuracy.&lt;/p&gt;
+&lt;p&gt;This trick is useful for almost all backprop computations because backprop is
+essentially:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;adjoint(u) += adjoint(v) * dv/du.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The only tricky bit is lifting all &lt;code&gt;du/dv&lt;/code&gt; computations into the log-reals.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;This trick is better suited to programming languages with structs. Using
+  objects will probably in an horrible slow down and using parallel arrays to
+  store the sign bit and double is probably too tedious and error prone. (Sorry
+  java folks.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Here's a &lt;a href="https://github.com/andre-martins/TurboParser/blob/master/src/util/logval.h"&gt;C++ implementation&lt;/a&gt;
+  with operator overloading from Andre Martins&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Note that log-real &lt;code&gt;+=&lt;/code&gt; involves calls to &lt;code&gt;log&lt;/code&gt; and &lt;code&gt;exp&lt;/code&gt;, which will
+  definitely slow your code down a bit (these functions are much slower than
+  addition).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="numerical"></category><category term="datastructures"></category></entry><entry><title>Numerically stable p-norms</title><link href="https://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/" rel="alternate"></link><published>2014-11-10T00:00:00-05:00</published><updated>2014-11-10T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-11-10:/blog/post/2014/11/10/numerically-stable-p-norms/</id><content type="html">&lt;p&gt;Consider the p-norm
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+|| \boldsymbol{x} ||_p = \left( \sum_i |x_i|^p \right)^{\frac{1}{p}}
+$$&lt;/div&gt;
+&lt;p&gt;In python this translates to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;First-pass implementation of p-norm.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, suppose &lt;span class="math"&gt;\(|x_i|^p\)&lt;/span&gt; causes overflow (for some &lt;span class="math"&gt;\(i\)&lt;/span&gt;). This will occur for sufficiently large &lt;span class="math"&gt;\(p\)&lt;/span&gt; or sufficiently large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;&amp;mdash;even if &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; is representable (i.e., not NaN or &lt;span class="math"&gt;\(\infty\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e300&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="n"&gt;inf&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;   &lt;span class="c1"&gt;# expected: 1e+300&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This fails because we can't square &lt;code&gt;big&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;big&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="n"&gt;inf&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;A little math&lt;/h2&gt;
+&lt;p&gt;There is a way to avoid overflowing because of a few large &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Here's a little fact about p-norms: for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; and &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+|| \alpha \cdot \boldsymbol{x} ||_p = |\alpha| \cdot || \boldsymbol{x}   ||_p
+$$&lt;/div&gt;
+&lt;p&gt;We'll use the following version (harder to remember)
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+|| \boldsymbol{x} ||_p  = |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+$$&lt;/div&gt;
+&lt;p&gt;Don't believe it? Here's some algebra:
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+|| \boldsymbol{x} ||_p
+&amp;amp;=&amp;amp; \left( \sum_i |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; \left( \sum_i \frac{|\alpha|^p}{|\alpha|^p} \cdot |x_i|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot \left( \sum_i \left( \frac{|x_i| }{|\alpha|} \right)^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot \left( \sum_i \left| \frac{x_i }{\alpha} \right|^p \right)^{\frac{1}{p}} \\
+&amp;amp;=&amp;amp; |\alpha| \cdot || \boldsymbol{x} / \alpha ||_p
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;h2&gt;Back to numerical stability&lt;/h2&gt;
+&lt;p&gt;Suppose we pick &lt;span class="math"&gt;\(\alpha = \max_i |x_i|\)&lt;/span&gt;. Now, the largest number we have to take
+the power of is one&amp;mdash;making it very difficult to overflow on the account of
+&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. This should remind you of the infamous log-sum-exp trick.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;norm1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, our example from before works :-)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;1e+300&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;It appears as if &lt;code&gt;scipy.linalg.norm&lt;/code&gt; is robust to overflow, while &lt;code&gt;numpy.linalg.norm&lt;/code&gt; is not. Note that &lt;code&gt;scipy.linalg.norm&lt;/code&gt; appears to be a bit slower.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;code&gt;logsumexp&lt;/code&gt; trick is nearly identical, but operates in the log-domain, i.e., &lt;span class="math"&gt;\(\text{logsumexp}(\log(|x|) \cdot p) / p = \log || x ||_p\)&lt;/span&gt;. You can implement both tricks with the same code, if you use different number classes for log-domain and real-domain&amp;mdash;a trick you might have seen before.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;arsenal.math&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;abs&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;logsumexp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;abs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;
+&lt;span class="mf"&gt;1.91432069824&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;robust_norm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="mf"&gt;1.91432069824&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="numerical"></category></entry><entry><title>Complex-step derivative</title><link href="https://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/" rel="alternate"></link><published>2014-08-07T00:00:00-04:00</published><updated>2014-08-07T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-07:/blog/post/2014/08/07/complex-step-derivative/</id><content type="html">&lt;p&gt;Estimate derivatives by simply passing in a complex number to your function!&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;Recall, the centered-difference approximation is a fairly accurate method for
+approximating derivatives of a univariate function &lt;span class="math"&gt;\(f\)&lt;/span&gt;, which only requires two
+function evaluations. A similar derivation, based on the Taylor series expansion
+with a complex perturbation, gives us a similarly-accurate approximation with a
+single (complex) function evaluation instead of two (real-valued) function
+evaluations. Note: &lt;span class="math"&gt;\(f\)&lt;/span&gt; must support complex inputs (in frameworks, such as numpy
+or matlab, this often requires no modification to source code).&lt;/p&gt;
+&lt;p&gt;This post is based on
+&lt;a href="http://mdolab.engin.umich.edu/sites/default/files/Martins2003CSD.pdf"&gt;Martins+'03&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Derivation&lt;/strong&gt;: Start with the Taylor series approximation:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f(x + i \cdot \varepsilon) =
+  \frac{i^0 \varepsilon^0}{0!} f(x)
++ \frac{i^1 \varepsilon^1}{1!} f'(x)
++ \frac{i^2 \varepsilon^2}{2!} f''(x)
++ \frac{i^3 \varepsilon^3}{3!} f'''(x)
++ \cdots
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;Take the imaginary part of both sides and solve for &lt;span class="math"&gt;\(f'(x)\)&lt;/span&gt;. Note: the &lt;span class="math"&gt;\(f\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(f''\)&lt;/span&gt; term disappear because &lt;span class="math"&gt;\(i^0\)&lt;/span&gt; and &lt;span class="math"&gt;\(i^2\)&lt;/span&gt; are real-valued.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f'(x) = \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big] + \frac{\varepsilon^2}{3!} f'''(x) + \cdots
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;As usual, using a small &lt;span class="math"&gt;\(\varepsilon\)&lt;/span&gt; let's us throw out higher-order
+terms. And, we arrive at the following approximation:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f'(x) \approx \frac{1}{\varepsilon} \text{Im}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;If instead, we take the real part and solve for &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;, we get an approximation
+to the function's value at &lt;span class="math"&gt;\(x\)&lt;/span&gt;:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f(x) \approx \text{Re}\Big[ f(x + i \cdot \varepsilon) \Big]
+$$&lt;/div&gt;
+&lt;p&gt;&lt;br/&gt;In other words, a single (complex) function evaluations computes both the
+function's value and the derivative.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;complex_step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;1e-10&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;    Higher-order function takes univariate function which computes a value and&lt;/span&gt;
+&lt;span class="sd"&gt;    returns a function which returns value-derivative pair approximation.&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;f1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;complex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;         &lt;span class="c1"&gt;# convert input to complex number&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;real&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;imag&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# return function value and gradient&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;f1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A simple test:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;cos&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;  &lt;span class="c1"&gt;# function&lt;/span&gt;
+&lt;span class="n"&gt;g&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;     &lt;span class="c1"&gt;# gradient&lt;/span&gt;
+&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1.0&lt;/span&gt;
+&lt;span class="nb"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="nb"&gt;print&lt;/span&gt; &lt;span class="n"&gt;complex_step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Other comments&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Using the complex-step method to estimate the gradients of multivariate
+  functions requires independent approximations for each dimension of the
+  input.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Although the complex-step approximation only requires a single function
+  evaluation, it's unlikely faster than performing two function evaluations
+  because operations on complex numbers are generally much slower than on floats
+  or doubles.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Code&lt;/strong&gt;: Check out the
+&lt;a href="https://gist.github.com/timvieira/3d3db3e5e78e17cdd103"&gt;gist&lt;/a&gt; for this post.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="numerical"></category></entry><entry><title>Exp-normalize trick</title><link href="https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/" rel="alternate"></link><published>2014-02-11T00:00:00-05:00</published><updated>2014-02-11T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-02-11:/blog/post/2014/02/11/exp-normalize-trick/</id><content type="html">&lt;p&gt;This trick is the very close cousin of the infamous log-sum-exp trick
+(&lt;a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html"&gt;scipy.misc.logsumexp&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Supposed you'd like to evaluate a probability distribution &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt;
+parametrized by a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}^n\)&lt;/span&gt; as follows:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+$$&lt;/div&gt;
+&lt;p&gt;The exp-normalize trick leverages the following identity to avoid numerical
+overflow. For any &lt;span class="math"&gt;\(b \in \mathbb{R}\)&lt;/span&gt;,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\pi_i
+= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
+= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+$$&lt;/div&gt;
+&lt;p&gt;In other words, the &lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is shift-invariant. A reasonable choice
+is &lt;span class="math"&gt;\(b = \max_{i=1}^n x_i\)&lt;/span&gt;. With this choice, overflow due to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt; is
+impossible&lt;span class="math"&gt;\(-\)&lt;/span&gt;the largest number exponentiated after shifting is &lt;span class="math"&gt;\(0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;The naive implementation is terrible when there are large numbers!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;overflow&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;
+&lt;span class="ne"&gt;RuntimeWarning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;invalid&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="n"&gt;encountered&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;true_divide&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nan&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The exp-normalize trick avoids this common problem.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;exp_normalize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Log-sum-exp for computing the log-distibution&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
+$$&lt;/div&gt;
+&lt;p&gt;where
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
+$$&lt;/div&gt;
+&lt;p&gt;Typically with the same choice for &lt;span class="math"&gt;\(b\)&lt;/span&gt; as above.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Exp-normalize v. log-sum-exp&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
+tricks!&lt;/p&gt;
+&lt;p&gt;If what you want to remain in log-space, that is, compute
+&lt;span class="math"&gt;\(\log(\boldsymbol{\pi})\)&lt;/span&gt;, you should use logsumexp. However, if
+&lt;span class="math"&gt;\(\boldsymbol{\pi}\)&lt;/span&gt; is your goal, then exp-normalize trick is for you! Since it
+avoids additional calls to &lt;span class="math"&gt;\(\exp\)&lt;/span&gt;, which would be required if using log-sum-exp
+and more importantly exp-normalize is more numerically stable!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Numerically stable sigmoid function&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The sigmoid function can be computed with the exp-normalize trick in order to
+avoid numerical overflow. In the case of &lt;span class="math"&gt;\(\text{sigmoid}(x)\)&lt;/span&gt;, we have a
+distribution with unnormalized log probabilities &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt;, where we are only
+interested in the probability of the first event. From the exp-normalize
+identity, we know that the distributions &lt;span class="math"&gt;\([x,0]\)&lt;/span&gt; and &lt;span class="math"&gt;\([0,-x]\)&lt;/span&gt; are equivalent (to
+see why, plug in &lt;span class="math"&gt;\(b=\max(0,x)\)&lt;/span&gt;). This is why sigmoid is often expressed in one
+of two equivalent ways:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
+$$&lt;/div&gt;
+&lt;p&gt;Interestingly, each version covers an extreme case: &lt;span class="math"&gt;\(x=\infty\)&lt;/span&gt; and &lt;span class="math"&gt;\(x=-\infty\)&lt;/span&gt;,
+respectively. Below is some python code which implements the trick:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigmoid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Numerically stable sigmoid function.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# if x is less than zero then z will be small, denom can&amp;#39;t be&lt;/span&gt;
+        &lt;span class="c1"&gt;# zero because it&amp;#39;s 1+z.&lt;/span&gt;
+        &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Closing remarks:&lt;/strong&gt; The exp-normalize distribution is also known as a
+&lt;a href="https://en.wikipedia.org/wiki/Gibbs_measure"&gt;Gibbs measure&lt;/a&gt; (sometimes called a
+Boltzmann distribution) when it is augmented with a temperature
+parameter. Exp-normalize is often called "softmax," which is unfortunate because
+log-sum-exp is &lt;em&gt;also&lt;/em&gt; called "softmax." However, unlike exp-normalize, it
+&lt;em&gt;earned&lt;/em&gt; the name because it is acutally a soft version of the max function,
+where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
+still call exp-normalize "softmax."&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="numerical"></category></entry></feed>

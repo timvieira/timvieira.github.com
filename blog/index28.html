@@ -89,17 +89,17 @@ shortcut for finding <em>the direction of steepest descent</em> in Euclidean spa
 \mathbb{R}^d \mapsto \mathbb{R}\)</span>, a descent direction for <span class="math">\(f\)</span> is a
 <span class="math">\((d+1)\)</span>-dimensional hyperplane. The gradient gives a unique hyperplane that is
 tangent to the surface of <span class="math">\(f\)</span> at the point <span class="math">\(x\)</span>; the <span class="math">\((d+1)^{\text{th}}\)</span>
-coordinate comes from the value <span class="math">\(f(x)\)</span>&mdash;think of it like a first-order
+coordinate comes from the value <span class="math">\(f(x)\)</span>—think of it like a first-order
 Taylor approximation to <span class="math">\(f\)</span> at <span class="math">\(x\)</span>. (For an in-depth discussion on notions of
 <em>steepest</em> descent, check out
 <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">this post</a>.)</p>
 <p><strong>The baseline:</strong> Without access to gradient code, <em>approximating</em> the gradient
 takes <span class="math">\(d+1\)</span> function evaluations via the finite-difference approximation to the
-gradient,<sup id="fnref-twosidedfd"><a class="footnote-ref" href="#fn-twosidedfd">1</a></sup> which I've discussed a
+gradient,<sup id="sf-black-box-optimization-1-back"><a href="#sf-black-box-optimization-1" class="simple-footnote" title="Of course, it's better to use the two-sided difference approximation to the gradient in practice, which requires \(2 \cdot d\) function evaluations, not \(d+1\). ">1</a></sup> which I've discussed a
 <a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">few</a>
 <a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">times</a>. This
 shouldn't be surprising since that's the size of the object we're looking for
-anyways!<sup id="fnref-faster-but-noisy"><a class="footnote-ref" href="#fn-faster-but-noisy">2</a></sup></p>
+anyways!<sup id="sf-black-box-optimization-2-back"><a href="#sf-black-box-optimization-2" class="simple-footnote" title="Note that we can get noisy, approximations with much fewer than \(\mathcal{O}(d)\) evaluations, e.g., SPSA or even REINFORCE obtain gradients approximations with just \(\mathcal{O}(1)\) evaluations per iteration.">2</a></sup></p>
 <p><strong>Can we do better?</strong> Suppose we had <span class="math">\((d+1)\)</span> arbitrary points
 <span class="math">\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)</span> in <span class="math">\(\mathbb{R}^n\)</span> with
 values <span class="math">\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)</span> Can we find efficiently find a
@@ -123,8 +123,8 @@ process: pick the worst point, reflect it through the center of mass, etc.</p>
    <a href="https://en.wikipedia.org/wiki/Heap_(data_structure)">heap</a>.</p>
 </li>
 <li>
-<p>This NM direction might is not the steepest descent direction&mdash;like the
-   gradient&mdash;but it does give a reasonable descent direction to
+<p>This NM direction might is not the steepest descent direction—like the
+   gradient—but it does give a reasonable descent direction to
    follow. Often, the NM direction is more useful than the gradient direction
    because it is not based on an infinitesimal ball around the current point
    like the gradient. NM often "works" on noisy and nonsmooth functions where
@@ -145,10 +145,10 @@ process: pick the worst point, reflect it through the center of mass, etc.</p>
    other points stay stuck.</p>
 </li>
 </ul>
-<p><center>
+<p></p><center>
    <img alt="Nelder-Mead animation" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nelder-Mead_Himmelblau.gif/320px-Nelder-Mead_Himmelblau.gif">
-   <br/><em>(animation source: Wikipedia page for Nelder-Mead)</em>
-   </center></p>
+   <br><em>(animation source: Wikipedia page for Nelder-Mead)</em>
+   </center><p></p>
 <ul>
 <li>This is exactly the descent direction used in the
    <a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method">Nelder-Mead algorithm</a>
@@ -175,23 +175,7 @@ reasonable alternative to gradients when they are unavailable (or not useful).</
    <a href="https://en.wikipedia.org/wiki/Derivative-free_optimization">derivative-free optimization</a>
    is a good starting point for learning more.</li>
 </ul>
-<div class="footnote">
-<hr>
-<ol>
-<li id="fn-twosidedfd">
-<p>Of course, it's better to use the two-sided difference
-approximation to the gradient in practice, which requires <span class="math">\(2 \cdot d\)</span> function
-evaluations, not <span class="math">\(d+1\)</span>.&#160;<a class="footnote-backref" href="#fnref-twosidedfd" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-<li id="fn-faster-but-noisy">
-<p>Note that we can get noisy, approximations with much fewer
-than <span class="math">\(\mathcal{O}(d)\)</span> evaluations, e.g.,
-<a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation">SPSA</a>
-or even REINFORCE obtain gradients approximations with just <span class="math">\(\mathcal{O}(1)\)</span>
-evaluations per iteration.&#160;<a class="footnote-backref" href="#fnref-faster-but-noisy" title="Jump back to footnote 2 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div>
+<h3>Footnotes</h3>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -253,7 +237,14 @@ evaluations per iteration.&#160;<a class="footnote-backref" href="#fnref-faster-
     (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script></div>
+</script><ol class="simple-footnotes"><li id="sf-black-box-optimization-1">Of course, it's better to use the two-sided difference
+approximation to the gradient in practice, which requires <span class="math">\(2 \cdot d\)</span> function
+evaluations, not <span class="math">\(d+1\)</span>.
+ <a href="#sf-black-box-optimization-1-back" class="simple-footnote-back">↩</a></li><li id="sf-black-box-optimization-2">Note that we can get noisy, approximations with much fewer
+than <span class="math">\(\mathcal{O}(d)\)</span> evaluations, e.g.,
+<a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation">SPSA</a>
+or even REINFORCE obtain gradients approximations with just <span class="math">\(\mathcal{O}(1)\)</span>
+evaluations per iteration. <a href="#sf-black-box-optimization-2-back" class="simple-footnote-back">↩</a></li></ol></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index29.html">&larr; Older</a>
@@ -310,7 +301,7 @@ evaluations per iteration.&#160;<a class="footnote-backref" href="#fnref-faster-
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -319,7 +310,17 @@ evaluations per iteration.&#160;<a class="footnote-backref" href="#fnref-faster-
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

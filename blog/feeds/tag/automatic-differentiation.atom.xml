@@ -1,0 +1,993 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - automatic-differentiation</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/automatic-differentiation.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2017-08-18T00:00:00-04:00</updated><entry><title>Backprop is not just the chain rule</title><link href="https://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"></link><published>2017-08-18T00:00:00-04:00</published><updated>2017-08-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-08-18:/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id><content type="html">&lt;p&gt;Almost everyone I know says that "backprop is just the chain rule." Although
+that's &lt;em&gt;basically true&lt;/em&gt;, there are some subtle and beautiful things about
+automatic differentiation techniques (including backprop) that will not be
+appreciated with this &lt;em&gt;dismissive&lt;/em&gt; attitude.&lt;/p&gt;
+&lt;p&gt;This leads to a poor understanding. As
+&lt;a href="http://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/"&gt;I have ranted before&lt;/a&gt;:
+people do not understand basic facts about autodiff.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Evaluating &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; is provably as fast as evaluating &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- Let that sink in. Computing the gradient&amp;mdash;an essential ingredient to
+efficient optimization&amp;mdash;is no slower to compute than the function
+itself. Contrast that with the finite-difference gradient approximation, which
+is quite accurate, but its runtime is $\textrm{dim}(x)$ times slower than
+evaluating $f$
+([discussed here](http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/))!
+--&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Code for &lt;span class="math"&gt;\(\nabla f(x)\)&lt;/span&gt; can be derived by a rote program transformation, even
+  if the code has control flow structures like loops and intermediate variables
+  (as long as the control flow is independent of &lt;span class="math"&gt;\(x\)&lt;/span&gt;). You can even do this
+  "automatic" transformation by hand!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Autodiff &lt;span class="math"&gt;\(\ne\)&lt;/span&gt; what you learned in calculus&lt;/h3&gt;
+&lt;p&gt;Let's try to understand the difference between autodiff and the type of
+differentiation that you learned in calculus, which is called &lt;em&gt;symbolic&lt;/em&gt;
+differentiation.&lt;/p&gt;
+&lt;p&gt;I'm going to use an example from
+&lt;a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf"&gt;Justin Domke's notes&lt;/a&gt;,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+f(x) = \exp(\exp(x) + \exp(x)^2) + \sin(\exp(x) + \exp(x)^2).
+$$&lt;/div&gt;
+&lt;!--
+If we plug-and-chug with the chain rule, we get a correct expression for the
+derivative,
+$$\small
+\frac{\partial f}{\partial x} =
+\exp(\exp(x) + \exp(x)^2) (\exp(x) + 2 \exp(x) \exp(x)) \\
+\quad\quad\small+ \cos(\exp(x) + \exp(x)^2) (\exp(x) + 2 \exp(x) \exp(x)).
+$$
+
+However, this expression leaves something to be desired because it has a lot of
+repeated evaluations of the same function. This is clearly bad, if we want to
+turn it into source code.
+--&gt;
+
+&lt;p&gt;If we were writing &lt;em&gt;a program&lt;/em&gt; (e.g., in Python) to compute &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we'd take
+advantage of the fact that it has a lot of repeated evaluations for efficiency.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;
+    &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Symbolic differentiation would have to use the "flat" version of this function,
+so no intermediate variable &lt;span class="math"&gt;\(\Rightarrow\)&lt;/span&gt; slow.&lt;/p&gt;
+&lt;p&gt;Automatic differentiation lets us differentiate a program with &lt;em&gt;intermediate&lt;/em&gt;
+variables.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The rules for transforming the code for a function into code for the gradient
+  are really minimal (fewer things to memorize!). Additionally, the rules are
+  more general than in symbolic case because they handle as a superset of
+  programs.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Quite &lt;a href="http://conal.net/papers/beautiful-differentiation/"&gt;beautifully&lt;/a&gt;, the
+  program for the gradient &lt;em&gt;has exactly the same structure&lt;/em&gt; as the function,
+  which implies that we get the same runtime (up to some constants factors).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I won't give the details of how to execute the backpropagation transform to the
+program. You can get that from
+&lt;a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf"&gt;Justin Domke's notes&lt;/a&gt;
+and many other good
+resources. &lt;a href="https://gist.github.com/timvieira/39e27756e1226c2dbd6c36e83b648ec2"&gt;Here's some code&lt;/a&gt;
+that I wrote that accompanies to the &lt;code&gt;f(x)&lt;/code&gt; example, which has a bunch of
+comments describing the manual "automatic" differentiation process on &lt;code&gt;f(x)&lt;/code&gt;.&lt;/p&gt;
+&lt;!--
+Caveat: You might have seen some *limited* cases where an input variable was
+reused, but chances are that it was something really simple like multiplication
+or division, e.g., $\nabla\! \left[ f(x) \cdot g(x) \right] = f(x) \cdot g'(x)
++ f'(x) \cdot g(x)$, and you just memorized a rule. The rules of autodiff are
+simpler and actually explains why there is a sum in the product rule. You can
+also rederive the quotient rule without a hitch. I'm all about having fewer
+things to memorize!
+--&gt;
+
+&lt;!--
+You might hope that something like common subexpression elimination would save
+the symbolic approach. Indeed that could be leveraged to improve any chunk of
+code, but to match efficiency it's not needed! If we had needed to blow up the
+computation to then shrink it down that would be much less efficient! The "flat"
+version of a program can be exponentially larger than a version with reuse.
+--&gt;
+
+&lt;!-- Only sort of related: think of the exponential blow up in converting a
+Boolean expression from conjunctive normal form to and disjunction normal.  --&gt;
+
+&lt;h2&gt;Autodiff by the method of Lagrange multipliers&lt;/h2&gt;
+&lt;p&gt;Let's view the intermediate variables in our optimization problem as simple
+equality constraints in an equivalent &lt;em&gt;constrained&lt;/em&gt; optimization problem. It
+turns out that the de facto method for handling constraints, the method Lagrange
+multipliers, recovers &lt;em&gt;exactly&lt;/em&gt; the adjoints (intermediate derivatives) in the
+backprop algorithm!&lt;/p&gt;
+&lt;p&gt;Here's our example from earlier written in this constraint form:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{align*}
+\underset{x}{\text{argmax}}\ &amp;amp; f \\
+\text{s.t.} \quad
+a &amp;amp;= \exp(x) \\
+b &amp;amp;= a^2     \\
+c &amp;amp;= a + b   \\
+d &amp;amp;= \exp(c) \\
+e &amp;amp;= \sin(c) \\
+f &amp;amp;= d + e
+\end{align*}
+$$&lt;/div&gt;
+&lt;h4&gt;The general formulation&lt;/h4&gt;
+&lt;div class="math"&gt;\begin{align*}
+  &amp;amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp;amp; \\
+  &amp;amp; \text{s.t.}\quad z_i = x_i                          &amp;amp;\text{ for $1 \le i \le d$} \\
+  &amp;amp; \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &amp;amp;\text{ for $d &amp;lt; i \le n$} \\
+  \end{align*}&lt;/div&gt;
+&lt;p&gt;The first set of constraint (&lt;span class="math"&gt;\(1, \ldots, d\)&lt;/span&gt;) are a little silly. They are only
+there to keep our formulation tidy. The variables in the program fall into three
+categories:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): &lt;span class="math"&gt;\(x_1, \ldots, x_d\)&lt;/span&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;intermediate variables&lt;/strong&gt;: (&lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt;): &lt;span class="math"&gt;\(z_i = f_i(z_{\alpha(i)})\)&lt;/span&gt; for
+  &lt;span class="math"&gt;\(1 \le i \le n\)&lt;/span&gt;, where &lt;span class="math"&gt;\(\alpha(i)\)&lt;/span&gt; is a list of indices from &lt;span class="math"&gt;\(\{1, \ldots,
+  n-1\}\)&lt;/span&gt; and &lt;span class="math"&gt;\(z_{\alpha(i)}\)&lt;/span&gt; is the subvector of variables needed to evaluate
+  &lt;span class="math"&gt;\(f_i(\cdot)\)&lt;/span&gt;. Minor detail: take &lt;span class="math"&gt;\(f_{1:d}\)&lt;/span&gt; to be the identity function.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;output variable&lt;/strong&gt; (&lt;span class="math"&gt;\(z_n\)&lt;/span&gt;): We assume that our programs has a singled scalar
+  output variable, &lt;span class="math"&gt;\(z_n\)&lt;/span&gt;, which represents the quantity we'd like to maximize.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- (It is possible to generalize this story to compute Jacobians of functions
+with multivariate outputs by "scalarizing" the objective, e.g., multiply the
+outputs by a vector. This Gives an efficient program for computing Jacobian
+vector products that can be used to extra Jacobians.)  --&gt;
+
+&lt;p&gt;The relation &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is a
+&lt;a href="https://en.wikipedia.org/wiki/Dependency_graph"&gt;dependency graph&lt;/a&gt; among
+variables. Thus, &lt;span class="math"&gt;\(\alpha(i)\)&lt;/span&gt; is the list of &lt;em&gt;incoming&lt;/em&gt; edges to node &lt;span class="math"&gt;\(i\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(\beta(j) = \{ i: j \in \alpha(i) \}\)&lt;/span&gt; is the set of &lt;em&gt;outgoing&lt;/em&gt; edges. For now,
+we'll assume that the dependency graph given by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is ① acyclic: no &lt;span class="math"&gt;\(z_i\)&lt;/span&gt;
+can transitively depend on itself.  ② single-assignment: each &lt;span class="math"&gt;\(z_i\)&lt;/span&gt; appears on
+the left-hand side of &lt;em&gt;exactly one&lt;/em&gt; equation.  We'll discuss relaxing these
+assumptions in &lt;a href="#lagrange-backprop-generalization"&gt;§ Generalizations&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The standard way to solve a constrained optimization is to use the method
+Lagrange multipliers, which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into
+an &lt;em&gt;unconstrained&lt;/em&gt; problem with a few more variables &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; (one
+per &lt;span class="math"&gt;\(x_i\)&lt;/span&gt; constraint), called Lagrange multipliers.&lt;/p&gt;
+&lt;h4&gt;The Lagrangian&lt;/h4&gt;
+&lt;p&gt;To handle constraints, let's dig up a tool from our calculus class,
+&lt;a href="https://en.wikipedia.org/wiki/Lagrange_multiplier"&gt;the method of Lagrange multipliers&lt;/a&gt;,
+which converts a &lt;em&gt;constrained&lt;/em&gt; optimization problem into an &lt;em&gt;unconstrained&lt;/em&gt;
+one. The unconstrained version is called "the Lagrangian" of the constrained
+problem. Here is its form for our task,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right)
+= z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right).
+$$&lt;/div&gt;
+&lt;p&gt;Optimizing the Lagrangian amounts to solving the following nonlinear system of
+equations, which give necessary, but not sufficient, conditions for optimality,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\nabla \mathcal{L}\left(\boldsymbol{x}, \boldsymbol{z}, \boldsymbol{\lambda}\right) = 0.
+$$&lt;/div&gt;
+&lt;p&gt;Let's look a little closer at the Lagrangian conditions by breaking up the
+system of equations into salient parts, corresponding to which variable types
+are affected.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Intermediate variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt;): Optimizing the
+multipliers&amp;mdash;i.e., setting the gradient of Lagrangian
+w.r.t. &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; to zero&amp;mdash;ensures that the constraints on
+intermediate variables are satisfied.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\nabla_{\! \lambda_i} \mathcal{L}
+= z_i - f_i(z_{\alpha(i)}) = 0
+\quad\Leftrightarrow\quad z_i = f_i(z_{\alpha(i)})
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;We can use forward propagation to satisfy these equations, which we may regard
+as a block-coordinate step in the context of optimizing the &lt;span class="math"&gt;\(\mathcal{L}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;!--GENERALIZATION:
+However, if they are cyclic dependencies we may need to
+solve a nonlinear system of equations. (TODO: it's unclear what the more general
+cyclic setting is. Perhaps I should having a running example of a cyclic program
+and an acyclic program.)
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Lagrange multipliers&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt;, excluding &lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;):
+  Setting the gradient of the &lt;span class="math"&gt;\(\mathcal{L}\)&lt;/span&gt; w.r.t. the intermediate variables
+  equal to zeros tells us what to do with the intermediate multipliers.&lt;/p&gt;
+&lt;div class="math"&gt;\begin{eqnarray*}
+0 &amp;amp;=&amp;amp; \nabla_{\! z_j} \mathcal{L} \\
+&amp;amp;=&amp;amp; \nabla_{\! z_j}\! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&amp;amp;=&amp;amp; - \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&amp;amp;=&amp;amp; - \left( \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ z_i \right] \right) + \left( \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ f_i(z_{\alpha(i)}) \right] \right) \\
+&amp;amp;=&amp;amp; - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+&amp;amp;\Updownarrow&amp;amp; \\
+\lambda_j &amp;amp;=&amp;amp; \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+\end{eqnarray*}&lt;/div&gt;
+&lt;p&gt;Clearly, &lt;span class="math"&gt;\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} = 0\)&lt;/span&gt; for &lt;span class="math"&gt;\(j \notin
+\alpha(i)\)&lt;/span&gt;, which is why the &lt;span class="math"&gt;\(\beta(j)\)&lt;/span&gt; notation came in handy. By assumption,
+the local derivatives, &lt;span class="math"&gt;\(\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j}\)&lt;/span&gt; for &lt;span class="math"&gt;\(j
+\in \alpha(i)\)&lt;/span&gt;, are easy to calculate&amp;mdash;we don't even need the chain rule to
+compute them because they are simple function applications without
+composition. Similar to the equations for &lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt;, solving this linear
+system is another block-coordinate step.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Key observation&lt;/em&gt;: The last equation for &lt;span class="math"&gt;\(\lambda_j\)&lt;/span&gt; should look very familiar:
+It is exactly the equation used in backpropagation! It says that we sum
+&lt;span class="math"&gt;\(\lambda_i\)&lt;/span&gt; of nodes that immediately depend on &lt;span class="math"&gt;\(j\)&lt;/span&gt; where we scaled each
+&lt;span class="math"&gt;\(\lambda_i\)&lt;/span&gt; by the derivative of the function that directly relates &lt;span class="math"&gt;\(i\)&lt;/span&gt; and
+&lt;span class="math"&gt;\(j\)&lt;/span&gt;. You should think of the scaling as a "unit conversion" from derivatives of
+type &lt;span class="math"&gt;\(i\)&lt;/span&gt; to derivatives of type &lt;span class="math"&gt;\(j\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Output multiplier&lt;/strong&gt; (&lt;span class="math"&gt;\(\lambda_n\)&lt;/span&gt;): Here we follow the same pattern as for
+  intermediate multipliers.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+0 &amp;amp;=&amp;amp; \nabla_{\! z_n}\! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] &amp;amp;=&amp;amp; 1 - \lambda_n \\
+ &amp;amp;\Updownarrow&amp;amp; \\
+ \lambda_n &amp;amp;=&amp;amp; 1
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;Input multipliers&lt;/strong&gt; &lt;span class="math"&gt;\((\boldsymbol{\lambda}_{1:d})\)&lt;/span&gt;: Our dummy constraints
+  gives us &lt;span class="math"&gt;\(\boldsymbol{\lambda}_{1:d}\)&lt;/span&gt;, which are conveniently equal to the
+  gradient of the function we're optimizing:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\nabla_{\!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
+$$&lt;/div&gt;
+&lt;p&gt;Of course, this interpretation is only precise when ① the constraints are
+satisfied (&lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt; equations) and ② the linear system on multipliers is
+satisfied (&lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Input variables&lt;/strong&gt; (&lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;): Unfortunately, the there is no
+  closed-form solution to how to set &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;. For this we resort to
+  something like gradient ascent. Conveniently, &lt;span class="math"&gt;\(\nabla_{\!\boldsymbol{x}}
+  f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}\)&lt;/span&gt;, which we can use to optimize
+  &lt;span class="math"&gt;\(\boldsymbol{x}\)&lt;/span&gt;!&lt;/p&gt;
+&lt;div id="lagrange-backprop-generalization"&gt;&lt;/div&gt;
+
+&lt;h3&gt;Generalizations&lt;/h3&gt;
+&lt;p&gt;We can think of these equations for &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; as a simple &lt;em&gt;linear&lt;/em&gt;
+system of equations, which we are solving by back-substitution when we use the
+backpropagation method. The reason why back-substitution is sufficient for the
+linear system (i.e., we don't need a &lt;em&gt;full&lt;/em&gt; linear system solver) is that the
+dependency graph induced by the &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; relation is acyclic. If we had needed a
+full linear system solver, the solution would take &lt;span class="math"&gt;\(\mathcal{O}(n^3)\)&lt;/span&gt; time
+instead of linear time, seriously blowing-up our nice runtime!&lt;/p&gt;
+&lt;p&gt;This connection to linear systems is interesting: It tells us that we can
+compute &lt;em&gt;global&lt;/em&gt; gradients in cyclic graphs. All we'd need is to run a linear
+system solver to stitch together &lt;em&gt;local&lt;/em&gt; gradients! That is exactly what the
+&lt;a href="https://en.wikipedia.org/wiki/Implicit_function_theorem"&gt;implicit function theorem&lt;/a&gt;
+says!&lt;/p&gt;
+&lt;p&gt;Cyclic constraints add some expressive powerful to our "constraint language," and
+it's interesting that we can still efficiently compute gradients in this
+setting. An example of what a general type of cyclic constraint looks like is&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{align*}
+&amp;amp; \underset{\boldsymbol{x}}{\text{argmax}}\, z_n \\
+&amp;amp; \text{s.t.}\quad g(\boldsymbol{z}) = \boldsymbol{0} \\
+&amp;amp; \text{and}\quad \boldsymbol{z}_{1:d} = \boldsymbol{x}
+\end{align*}
+$$&lt;/div&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(g\)&lt;/span&gt; can be any smooth multivariate function of the intermediate variables!
+Of course, allowing cyclic constraints comes at the cost of a more-difficult
+analogue of "the forward pass" to satisfy the &lt;span class="math"&gt;\(\boldsymbol{z}\)&lt;/span&gt; equations (if we
+want to keep it a block-coordinate step). The &lt;span class="math"&gt;\(\boldsymbol{\lambda}\)&lt;/span&gt; equations
+are now a linear system that requires a linear solver (e.g., Gaussian
+elimination).&lt;/p&gt;
+&lt;p&gt;Example use cases:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Bi-level optimization: Solving an optimization problem with another one inside
+  it. For example,
+  &lt;a href="http://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/"&gt;gradient-based hyperparameter optimization&lt;/a&gt;
+  in machine learning. The implicit function theorem manages to get gradients of
+  hyperparameters without needing to store any of the intermediate states of the
+  optimization algorithm used in the inner optimization! This is a &lt;em&gt;huge&lt;/em&gt; memory
+  saver since direct backprop on the inner gradient descent algorithm would
+  require caching all intermediate states. Yikes!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Cyclic constraints are useful in many graph algorithms. For example, computing
+  gradients of edge weights in a general finite-state machine or, similarly,
+  computing the value function in a Markov decision process.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Other methods for optimization?&lt;/h3&gt;
+&lt;p&gt;The connection to Lagrangians brings tons of algorithms for constrained
+optimization into the mix! We can imagine using more general algorithms for
+optimizing our function and other ways of enforcing the constraints. We see
+immediately that we could run optimization with adjoints set to values other
+than those that backprop would set them to (i.e., we can optimize them like we'd
+do in other algorithms for optimizing general Lagrangians).&lt;/p&gt;
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Backprop does not directly fall out of the rules for differentiation that you
+learned in calculus (e.g., the chain rule).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is because it operates on a more general family of functions: &lt;em&gt;programs&lt;/em&gt;
+  which have &lt;em&gt;intermediate variables&lt;/em&gt;. Supporting intermediate variables is
+  crucial for implementing both functions and their gradients efficiently.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I described how we could use something we did learn from calculus 101, the
+method of Lagrange multipliers, to support optimization with intermediate
+variables.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;It turned out that backprop is a &lt;em&gt;particular instantiation&lt;/em&gt; of the method of
+  Lagrange multipliers, involving block-coordinate steps for solving for the
+  intermediates and multipliers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;I also described a neat generalization to support &lt;em&gt;cyclic&lt;/em&gt; programs and I
+  hinted at ideas for doing optimization a little differently, deviating from
+  the de facto block-coordinate strategy.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!--
+&lt;center&gt;
+![Levels of enlightenment](/blog/images/backprop-brain-meme.png)
+&lt;/center&gt;
+--&gt;
+
+&lt;h2&gt;Further reading&lt;/h2&gt;
+&lt;p&gt;After working out the connection between backprop and the method of Lagrange
+multipliers, I discovered following paper, which beat me to it. I don't think my
+version is too redundant.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Yann LeCun. (1988)
+&lt;a href="http://yann.lecun.com/exdb/publis/pdf/lecun-88.pdf"&gt;A Theoretical Framework from Back-Propagation&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Ben Recht has a great blog post that uses the implicit function theorem to
+&lt;em&gt;derive&lt;/em&gt; the method of Lagrange multipliers. He also touches on the connection
+to backpropagation.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Ben Recht. (2016)
+&lt;a href="http://www.argmin.net/2016/05/31/mechanics-of-lagrangians/"&gt;Mechanics of Lagrangians&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Tom Goldstein's group took the Lagrangian view of backprop and used it to design
+an ADMM approach for optimizing neural nets. The ADMM approach
+can run massively in parallel and can leverage highly optimized solvers for
+subproblems. This work nicely demonstrates that understanding automatic
+differentiation&amp;mdash;in the broader sense that I described in this
+post&amp;mdash;facilitates the development of novel optimization algorithms. &lt;!--
+ADMM is based on a cool reformulation trick, which takes a *big* circuit and
+breaks it up into several *small* circuits (subproblems), which are *decoupled*
+from the big problem because each subproblem gets to freely tune its own *local*
+version of the variables. There is, of course, a global equality constraint on
+the decoupled variables so that we get a correct solution. The global equality
+constraints iteratively bring the subproblems into agreement.--&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Gavin Taylor, Ryan Burmeister, Zheng Xu, Bharat Singh, Ankit Patel, Tom Goldstein. (2018)
+&lt;a href="https://arxiv.org/abs/1605.02026"&gt;Training Neural Networks Without Gradients: A Scalable ADMM Approach&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The backpropagation algorithm can be cleanly generalized from values to
+functionals!&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Alexander Grubb and J. Andrew Bagnell. (2010)
+&lt;a href="https://t.co/5OW5xBT4Y1"&gt;Boosted Backpropagation Learning for Training Deep Modular Networks&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;Code&lt;/h2&gt;
+&lt;p&gt;I have coded up and tested the Lagrangian perspective on automatic
+differentiation that I presented in this article. The code is available in this
+&lt;a href="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185"&gt;gist&lt;/a&gt;.&lt;/p&gt;
+&lt;script src="https://gist.github.com/timvieira/8addcb81dd622b0108e0e7e06af74185.js"&gt;&lt;/script&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="automatic-differentiation"></category><category term="implicit-function-theorem"></category><category term="Lagrange-multipliers"></category></entry><entry><title>Reversing a sequence with sublinear space</title><link href="https://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/" rel="alternate"></link><published>2016-10-01T00:00:00-04:00</published><updated>2016-10-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-10-01:/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</id><content type="html">&lt;p&gt;Suppose we have a computation which generates sequence of states &lt;span class="math"&gt;\(s_1 \ldots
+s_n\)&lt;/span&gt; according to &lt;span class="math"&gt;\(s_{t} = f(s_{t-1})\)&lt;/span&gt; where &lt;span class="math"&gt;\(s_0\)&lt;/span&gt; is given.&lt;/p&gt;
+&lt;p&gt;We'd like to devise an algorithm, which can reconstruct each point in the
+sequence efficiently as we traverse it backwards. You can think of this as
+"hitting undo" from the end of the sequence or reversing a singly linked list.&lt;/p&gt;
+&lt;p&gt;Obviously, we &lt;em&gt;could&lt;/em&gt; just record the entire sequence, but if &lt;span class="math"&gt;\(n\)&lt;/span&gt; is large &lt;em&gt;or&lt;/em&gt;
+the size of each state is large, this will be infeasible.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 0&lt;/strong&gt;: Rerun the forward pass &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. Runtime &lt;span class="math"&gt;\(\mathcal{O}(n^2)\)&lt;/span&gt;, space
+  &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 1&lt;/strong&gt;: Suppose we save &lt;span class="math"&gt;\(0 &amp;lt; k \le n\)&lt;/span&gt; evenly spaced "checkpoint" states.
+Clearly, this gives us &lt;span class="math"&gt;\(\mathcal{O}(k)\)&lt;/span&gt; space, but what does it do to the
+runtime?  Well, if we are at time &lt;span class="math"&gt;\(t\)&lt;/span&gt; the we have to "replay" computation from
+the last recorded checkpoint to get &lt;span class="math"&gt;\(s_t\)&lt;/span&gt;, which takes &lt;span class="math"&gt;\(O(n/k)\)&lt;/span&gt; time. Thus, the
+overall runtimes becomes &lt;span class="math"&gt;\(O(n^2/k)\)&lt;/span&gt;. This runtime is not ideal.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Idea 2&lt;/strong&gt;: &lt;em&gt;Idea 1&lt;/em&gt; did something kind of silly, within a chunk of size &lt;span class="math"&gt;\(n/k\)&lt;/span&gt;,
+it does each computation multiple times! Suppose we increase the memory
+requirement &lt;em&gt;just a little bit&lt;/em&gt; to remember the current chunk we're working on,
+making it now &lt;span class="math"&gt;\(\mathcal{O}(k + n/k)\)&lt;/span&gt;. Now, we compute each state at most &lt;span class="math"&gt;\(2\)&lt;/span&gt;
+times: once in the initial sequence and once in the reverse. This implies a
+&lt;em&gt;linear&lt;/em&gt; runtime.  Now, the question: how should we set &lt;span class="math"&gt;\(k\)&lt;/span&gt; so that we minimize
+extra space? Easy! Solve the following little optimization problem:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
+$$&lt;/div&gt;
+&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;button onclick="toggle('#derivation-optimal-space')" class="toggle-button"&gt;Derivation&lt;/button&gt;
+&lt;div id="derivation-optimal-space" style="display:none;" class="derivation"&gt;
+To get the minimum, we solve for &lt;span class="math"&gt;\(k\)&lt;/span&gt; that sets the derivative to zero.
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+    0 &amp;amp;=&amp;amp; \frac{\partial}{\partial k} \left[ k+n/k \right] \\
+      &amp;amp;=&amp;amp; 1-n/k^2 \\
+n/k^2 &amp;amp;=&amp;amp; 1 \\
+  k^2 &amp;amp;=&amp;amp; n \\
+    k &amp;amp;=&amp;amp; \sqrt{n}
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;
+&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;Since it's safe to assume that &lt;span class="math"&gt;\(n,k \ge 1\)&lt;/span&gt; and &lt;span class="math"&gt;\(\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &amp;gt; 0\)&lt;/span&gt; this is indeed a minimum. It's also global minimum
+because &lt;span class="math"&gt;\(k+n/k\)&lt;/span&gt; is convex in &lt;span class="math"&gt;\(k\)&lt;/span&gt; when &lt;span class="math"&gt;\(n,k &amp;gt; 0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;p&gt;That's nuts! We get away with &lt;em&gt;sublinear&lt;/em&gt; space &lt;span class="math"&gt;\(\mathcal{O}(\sqrt{n})\)&lt;/span&gt; and we
+only blow up our runtime by a factor of 2. Also, I really love the "introduce a
+parameter then optimize it out" trick.&lt;/p&gt;
+&lt;p&gt;&lt;button onclick="toggle('#code-sqrt-space')"&gt;Code&lt;/button&gt;
+&lt;div id="code-sqrt-space" style="display:none;"&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sqrt_space&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ceil&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sqrt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="n"&gt;memory&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+    &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# last chunk may be shorter than k.&lt;/span&gt;
+        &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;reversed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+            &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;step&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Take `k` steps from state `s`, save path. Cost: O(k) space, O(k) time.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="n"&gt;B&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;B&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Idea 3&lt;/strong&gt;: What if we apply "the remember &lt;span class="math"&gt;\(k\)&lt;/span&gt; states" trick &lt;em&gt;recursively&lt;/em&gt;? I'm
+going to work this out for &lt;span class="math"&gt;\(k=2\)&lt;/span&gt; (and then claim that the value of &lt;span class="math"&gt;\(k\)&lt;/span&gt; doesn't
+matter).&lt;/p&gt;
+&lt;p&gt;Run forward to get the midpoint at &lt;span class="math"&gt;\(s_{m}\)&lt;/span&gt;, where &lt;span class="math"&gt;\(m=b + \lfloor n/2
+\rfloor\)&lt;/span&gt;. Next, recurse on the left and right chunks &lt;span class="math"&gt;\([b,m)\)&lt;/span&gt; and &lt;span class="math"&gt;\([m,e)\)&lt;/span&gt;.
+We hit the base case when the width of the interval is
+one.&lt;/p&gt;
+&lt;p&gt;Note that we implicitly store midpoints as we recurse (thanks to the stack
+frame).  The max depth of the recursion is &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt;, which gives us
+a &lt;span class="math"&gt;\(\mathcal{O}(\log n)\)&lt;/span&gt; space bound.&lt;/p&gt;
+&lt;p&gt;We can characterize runtime with the following recurrence relation, &lt;span class="math"&gt;\(T(n) = 2
+\cdot T(n/2) + \mathcal{O}(n)\)&lt;/span&gt;. Since we recognize this as the recurrence for
+mergesort, we know that it flattens to &lt;span class="math"&gt;\(\mathcal{O}(n \log n)\)&lt;/span&gt; time. Also, just
+like in the case of sorting, the branching factor doesn't matter so we're happy
+with or initial assumption that &lt;span class="math"&gt;\(k=2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;button onclick="toggle('#code-recursive')"&gt;Code&lt;/button&gt;
+&lt;div id="code-recursive" style="display:none;"&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# do O(n/2) work to find the midpoint with O(1) space.&lt;/span&gt;
+        &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;
+        &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;recursive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;s0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;s&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/div&gt;
+
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;p&gt;The algorithms describe in this post are generic algorithmic tricks, which has
+been used in a number of place, including&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The classic computer science interview problem of reversing a singly linked list
+  under a tight budget on &lt;em&gt;additional&lt;/em&gt; memory.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Backpropagation for computing gradients in sequence models, including HMMs (&lt;a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2000/01/icslp00_logspace.pdf"&gt;Zweig &amp;amp; Padmanabhan, 2000&lt;/a&gt;)
+  and RNNs (&lt;a href="https://arxiv.org/abs/1604.06174v2"&gt;Chen et al., 2016&lt;/a&gt;). I have
+  sample code that illustrates the basic idea below.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Memory-efficient &lt;a href="https://arxiv.org/pdf/cs/0310016v1"&gt;omniscient debugging&lt;/a&gt;,
+  which allows a user to inspect program state while moving forward &lt;em&gt;and
+  backward&lt;/em&gt; in time.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Sample code&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/d2ac72ec3af7972d2471035011cbf1e2"&gt;The basics&lt;/a&gt;:
+  Simple implementation complete with test cases.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://gist.github.com/timvieira/aceb64047aed1b13bf4e4da3b9a4c0ea"&gt;Memory-efficient backprop in an RNN&lt;/a&gt;:
+  A simple application with test cases, of course.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="algorithms"></category><category term="automatic-differentiation"></category><category term="data-structures"></category></entry><entry><title>Evaluating ∇f(x) is as fast as f(x)</title><link href="https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"></link><published>2016-09-25T00:00:00-04:00</published><updated>2016-09-25T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-09-25:/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id><content type="html">&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
+because it makes it easy to rapidly prototype deep networks with plenty of
+doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
+f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
+most a &lt;em&gt;small&lt;/em&gt; constant factor more arithmetic operations than the function
+itself.  Furthermore, autodiff tells us how to derive and implement the gradient
+efficiently. This is a fascinating result that is perhaps not emphasized enough
+in machine learning.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The gradient should never be asymptotically slower than the function.&lt;/strong&gt; In my
+recent &lt;a href="/doc/2016-emnlp-vocrf.pdf"&gt;EMNLP'16 paper&lt;/a&gt;, my coauthors and I found a
+line of work on variable-order CRFs
+(&lt;a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf"&gt;Ye+'09&lt;/a&gt;;
+&lt;a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf"&gt;Cuong+'14&lt;/a&gt;), which
+had an unnecessarily slow and complicated algorithm for computing gradients,
+which was asymptotically (and practically) slower than their forward
+algorithm. Without breaking a sweat, we derived a simpler and more efficient
+gradient algorithm by simply applying backprop to the forward algorithm (and
+made some other contributions).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Many algorithms are just backprop.&lt;/strong&gt; For example, forward-backward and
+inside-outside, are actually just instances of automatic differentiation
+(&lt;a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf"&gt;Eisner,'16&lt;/a&gt;) (i.e.,
+outside is just backprop on inside). This shouldn't be a surprise because these
+algorithms are used to compute gradients. Basically, if you know backprop and
+the inside algorithm, then you can derive the outside algorithm by applying the
+backprop transform manually. I find it easier to understand the outside
+algorithm via its connection to backprop, then via
+&lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;. Note
+that inside-outside and forward-backward pre-date backpropagation and have
+additional uses beyond computing gradients.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
+through many approximate inference algorithms, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
+and many of Justin Domke's papers, to avoid issues I've mentioned
+&lt;a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/"&gt;before&lt;/a&gt;. You
+can even backprop through optimization algorithms to get gradients of dev loss wrt
+hyperparameters, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf"&gt;Domke'12&lt;/a&gt; and
+&lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;There's at least one catch!&lt;/strong&gt; Although the &lt;em&gt;time&lt;/em&gt; complexity of computing the
+gradient is as good as the function, the &lt;em&gt;space&lt;/em&gt; complexity may be much larger
+because the autodiff recipe (at least the default reverse-mode one) requires memoizing
+all intermediate quantities (e.g., the quantities you overwrite in a
+loop). There are generic methods for balancing the time-space tradeoff in
+autodiff, since you can (at least in theory) reconstruct the intermediate
+quantities by playing the forward computation again from intermediate
+checkpoints (at a cost to runtime, of course). A recent example is
+&lt;a href="https://arxiv.org/abs/1606.03401"&gt;Gruslys+'16&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;A final remark&lt;/strong&gt;. Despite the name "automatic" differentiation, there is no
+need to rely on software to "automatically" give you gradient routines. Applying
+the backprop transformation is generally easy to do manually and sometimes more
+efficient than using a library. Many autodiff libraries lack good support for
+dynamic computation graph, i.e., when the structure depends on quantities that
+vary with the input (e.g., sentence length).&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="automatic-differentiation"></category><category term="rant"></category></entry><entry><title>Gradient of a product</title><link href="https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><content type="html">&lt;div class="math"&gt;$$
+\newcommand{\gradx}[1]{\grad{x}{ #1 }}
+\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bigo}[0]{\mathcal{O}}
+$$&lt;/div&gt;
+&lt;p&gt;In this post we'll look at how to compute the gradient of a product. This is
+such a common subroutine in machine learning that it's worth careful
+consideration. In a later post, I'll describe the gradient of a
+sum-over-products, which is another interesting and common pattern in machine
+learning (e.g., exponential families, CRFs, context-free grammar, case-factor
+diagrams, semiring-weighted logic programming).&lt;/p&gt;
+&lt;p&gt;Given a collection of functions with a common argument &lt;span class="math"&gt;\(f_1, \cdots, f_n \in \{
+\R^d \mapsto \R \}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Define their product &lt;span class="math"&gt;\(p(x) = \prod_{i=1}^n f_i(x)\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Suppose, we'd like to compute the gradient of the product of these functions
+with respect to their common argument, &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \gradx{ \prod_{i=1}^n f_i(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;As you can see in the equation above, the gradient takes the form of a
+"leave-one-out product" sometimes called a "cavity."&lt;/p&gt;
+&lt;p&gt;A naive method for computing the gradient computes the leave-one-out products
+from scratch for each &lt;span class="math"&gt;\(i\)&lt;/span&gt; (outer loop)&amp;mdash;resulting in a overall runtime of
+&lt;span class="math"&gt;\(O(n^2)\)&lt;/span&gt; to compute the gradient. Later, we'll see a dynamic program for
+computing this efficiently.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Division trick&lt;/strong&gt;: Before going down the dynamic programming rabbit hole, let's
+consider the following relatively simple method for computing the gradient,
+which uses division:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f \ne 0\)&lt;/span&gt;. No worries, we can handle zeros with three cases: (1) If
+   no zeros: the division trick works fine. (2) Only one zero: implies that only
+   one term in the sum will have a nonzero gradient, which we compute via
+   leave-one-out product. (3) Two or more zeros: all gradients are zero and
+   there is no work to be done.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Requires multiplicative inverse operator (division) &lt;em&gt;and&lt;/em&gt;
+   associative-commutative multiplication, which means it's not applicable to
+   matrices.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Log trick&lt;/strong&gt;: Suppose &lt;span class="math"&gt;\(f_i\)&lt;/span&gt; are very small numbers (e.g., probabilities), which
+we'd rather not multiply together because we'll quickly lose precision (e.g.,
+for large &lt;span class="math"&gt;\(n\)&lt;/span&gt;). It's common practice (especially in machine learning) to replace
+&lt;span class="math"&gt;\(f_i\)&lt;/span&gt; with &lt;span class="math"&gt;\(\log f_i\)&lt;/span&gt;, which turns products into sums, &lt;span class="math"&gt;\(\prod_{j=1}^n f_j(x) =
+\exp \left( \sum_{j=1}^n \log f_j(x) \right)\)&lt;/span&gt;, and tiny numbers (like
+&lt;span class="math"&gt;\(\texttt{3.72e-44}\)&lt;/span&gt;) into large ones (like &lt;span class="math"&gt;\(\texttt{-100}\)&lt;/span&gt;).&lt;/p&gt;
+&lt;p&gt;Furthermore, using the identity &lt;span class="math"&gt;\((\nabla g) = g \cdot \nabla \log g\)&lt;/span&gt;, we can
+operate exclusively in the "&lt;span class="math"&gt;\(\log\)&lt;/span&gt;-domain".&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Pro:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Numerically stable&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Runtime &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; with space &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't require multiplicative inverse assuming you can compute &lt;span class="math"&gt;\(\gradx{ \log
+   f_i(x) }\)&lt;/span&gt; without it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Con:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Requires &lt;span class="math"&gt;\(f &amp;gt; 0\)&lt;/span&gt;. But, we can use
+   &lt;a href="http://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/"&gt;LogReal number class&lt;/a&gt;
+   to represent negative numbers in log-space, but we still need to be careful
+   about zeros (like in the division trick).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doesn't easily generalize to other notions of multiplication.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Dynamic programming trick&lt;/strong&gt;: &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; runtime and &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space. You may
+recognize this as forward-backward algorithm for linear chain CRFs
+(cf. &lt;a href="http://www.inference.phy.cam.ac.uk/hmw26/papers/crf_intro.pdf"&gt;Wallach (2004)&lt;/a&gt;,
+section 7).&lt;/p&gt;
+&lt;p&gt;The trick is very straightforward when you think about it in isolation. Compute
+the products of all prefixes and suffixes. Then, multiply them together.&lt;/p&gt;
+&lt;p&gt;Here are the equations:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+\alpha_0(x) &amp;amp;=&amp;amp; 1 \\
+\alpha_t(x)
+   &amp;amp;=&amp;amp; \prod_{i \le t} f_i(x)
+   = \alpha_{t-1}(x) \cdot f_t(x) \\
+\beta_{n+1}(x) &amp;amp;=&amp;amp; 1 \\
+\beta_t(x)
+  &amp;amp;=&amp;amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
+\gradx{ p(x) }
+&amp;amp;=&amp;amp; \sum_{i=1}^n \left( \prod_{j &amp;lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &amp;gt; i} f_j(x) \right) \\
+&amp;amp;=&amp;amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;Clearly, this requires &lt;span class="math"&gt;\(O(n)\)&lt;/span&gt; additional space.&lt;/p&gt;
+&lt;p&gt;Only requires an associative operator (i.e., Does not require it to be
+commutative or invertible like earlier strategies).&lt;/p&gt;
+&lt;p&gt;Why do we care about the non-commutative multiplication? A common example is
+matrix multiplication where &lt;span class="math"&gt;\(A B C \ne B C A\)&lt;/span&gt;, even if all matrices have the
+conformable dimensions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Connections to automatic differentiation&lt;/strong&gt;: The theory behind reverse-mode
+automatic differentiation says that if you can compute a function, then you
+&lt;em&gt;can&lt;/em&gt; compute it's gradient with the same asymptotic complexity, &lt;em&gt;but&lt;/em&gt; you might
+need more space. That's exactly what we did here: We started with a naive
+algorithm for computing the gradient with &lt;span class="math"&gt;\(\bigo(n^2)\)&lt;/span&gt; time and &lt;span class="math"&gt;\(\bigo(1)\)&lt;/span&gt; space
+(other than the space to store the &lt;span class="math"&gt;\(n\)&lt;/span&gt; functions) and ended up with a &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt;
+time &lt;span class="math"&gt;\(\bigo(n)\)&lt;/span&gt; space algorithm with a little clever thinking. What I'm saying
+is autodiff&amp;mdash;even if you don't use a magical package&amp;mdash;tells us that an
+efficient algorithm for the gradient always exists. Furthermore, it tells you
+how to derive it manually, if you are so inclined. The key is to reuse
+intermediate quantities (hence the increase in space).&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sketch&lt;/em&gt;: In the gradient-of-a-product case, assuming we implemented
+multiplication left-to-right (forward pass) that already defines the prefix
+products (&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;). It turns out that the backward pass gives us &lt;span class="math"&gt;\(\beta\)&lt;/span&gt; as
+adjoints. Lastly, we'd propagate gradients through the &lt;span class="math"&gt;\(f\)&lt;/span&gt;'s to get
+&lt;span class="math"&gt;\(\frac{\partial p}{\partial x}\)&lt;/span&gt;. Essentially, we end up with exactly the dynamic
+programming algorithm we came up with.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="numerical"></category><category term="automatic-differentiation"></category><category term="datastructures"></category></entry></feed>

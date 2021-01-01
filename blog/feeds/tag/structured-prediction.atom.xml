@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - structured-prediction</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/structured-prediction.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2015-02-05T00:00:00-05:00</updated><entry><title>Conditional random fields as deep learning models?</title><link href="https://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/" rel="alternate"></link><published>2015-02-05T00:00:00-05:00</published><updated>2015-02-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-02-05:/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/</id><content type="html">&lt;p&gt;This post is intended to convince conditional random field (CRF) lovers that
+deep learning might not be as crazy as it seems. And maybe even convince some
+deep learning lovers that the graphical models might have interesting things to
+offer.&lt;/p&gt;
+&lt;p&gt;In the world of structured prediction, we are plagued by the high-treewidth
+problem -- models with loopy factors are "bad" because exact inference is
+intractable. There are three common approaches for dealing with this problem:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Limit the expressiveness of the model (i.e., don't use to model you want)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Change the training objective&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Approximate inference&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Approximate inference is tricky. Things can easily go awry.&lt;/p&gt;
+&lt;p&gt;For example, structured perceptron training with loopy max-product BP instead of
+exact max product can diverge
+&lt;a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf"&gt;(Kulesza &amp;amp; Pereira, 2007)&lt;/a&gt;. Another
+example: using approximate marginals from sum-product loopy BP in place of the
+true marginals in the gradient of the log-likelihood. This results in a
+different nonconvex objective function. (Note:
+&lt;a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf"&gt;sometimes&lt;/a&gt; these loopy BP
+approximations work fine.)&lt;/p&gt;
+&lt;p&gt;It looks like using approximate inference during training changes the training
+objective.&lt;/p&gt;
+&lt;p&gt;So, here's a simple idea: learn a model which makes accurate predictions given
+the approximate inference algorithm that will be used at test-time. Furthermore,
+we should minimize empirical risk instead of log-likelihood because it is robust
+to model miss-specification and approximate inference. In other words, make
+training conditions as close as possible to test-time conditions.&lt;/p&gt;
+&lt;p&gt;Now, as long as everything is differentiable, you can apply automatic
+differentiation (backprop) to train the end-to-end system. This idea appears in
+a few publications, including a handful of papers by Justin Domke, and a few by
+Stoyanov &amp;amp; Eisner.&lt;/p&gt;
+&lt;p&gt;Unsuprisingly, it works pretty well.&lt;/p&gt;
+&lt;p&gt;I first saw this idea in
+&lt;a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov &amp;amp; Eisner (2011)&lt;/a&gt;. They
+use loopy belief propagation as their approximate inference algorithm. At the
+end of the day, their model is essentially a deep recurrent network, which came
+from unrolling inference in a graphical model. This idea really struck me
+because it's clearly right in the middle between graphical models and deep
+learning.&lt;/p&gt;
+&lt;p&gt;You can immediately imagine swapping in other approximate inference algorithms
+in place of loopy BP.&lt;/p&gt;
+&lt;p&gt;Deep learning approaches get a bad reputation because there are a lot of
+"tricks" to get nonconvex optimization to work and because model structures are
+more open ended. Unlike graphical models, deep learning models have more
+variation in model structures. Maybe being more open minded about model
+structures is a good thing. We seem to have hit a brick wall with
+likelihood-based training. At the same time, maybe we can port over some of the
+good work on approximate inference as deep architectures.&lt;/p&gt;</content><category term="misc"></category><category term="machine-learning"></category><category term="deep-learning"></category><category term="structured-prediction"></category></entry><entry><title>KL-divergence as an objective function</title><link href="https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/" rel="alternate"></link><published>2014-10-06T00:00:00-04:00</published><updated>2014-10-06T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-10-06:/blog/post/2014/10/06/kl-divergence-as-an-objective-function/</id><content type="html">&lt;p&gt;It's well-known that
+&lt;a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence"&gt;KL-divergence&lt;/a&gt;
+is not symmetric, but which direction is right for fitting your model?&lt;/p&gt;
+&lt;h4&gt;Which KL is which? A cheat sheet&lt;/h4&gt;
+&lt;p&gt;If we're fitting &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; to &lt;span class="math"&gt;\(p\)&lt;/span&gt; using&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;mean-seeking, &lt;em&gt;inclusive&lt;/em&gt; (more principled because approximates the &lt;em&gt;full&lt;/em&gt; distribution)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;requires normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., often &lt;em&gt;not&lt;/em&gt; computationally convenient)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textbf{KL}(q_\theta || p)\)&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;mode-seeking, &lt;em&gt;exclusive&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;no normalization wrt &lt;span class="math"&gt;\(p\)&lt;/span&gt; (i.e., computationally convenient)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Mnemonic&lt;/strong&gt;: "When the truth comes first, you get the whole truth" (h/t
+&lt;a href="https://www.umiacs.umd.edu/~resnik/"&gt;Philip Resnik&lt;/a&gt;). Here "whole truth"
+corresponds to the &lt;em&gt;inclusiveness&lt;/em&gt; of &lt;span class="math"&gt;\(\textbf{KL}(p || q)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;As far as remembering the equation, I pretend that "&lt;span class="math"&gt;\(||\)&lt;/span&gt;" is a division symbol,
+which happens to correspond nicely to a division symbol in the equation (I'm not
+sure it's intentional).&lt;/p&gt;
+&lt;h2&gt;Inclusive vs. exclusive divergence&lt;/h2&gt;
+&lt;div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;"&gt;
+
+&lt;img src="http://timvieira.github.io/blog/images/KL-inclusive-exclusive.png" /&gt;
+Figure by &lt;a href="http://www.johnwinn.org/"&gt;John Winn&lt;/a&gt;.
+&lt;/div&gt;
+
+&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;h2&gt;Computational perspecive&lt;/h2&gt;
+&lt;p&gt;Let's look at what's involved in fitting a model &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; in each
+direction. In this section, I'll describe the gradient and pay special attention
+to the issue of normalization.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Notation&lt;/strong&gt;: &lt;span class="math"&gt;\(p,q_\theta\)&lt;/span&gt; are probabilty distributions. &lt;span class="math"&gt;\(p = \bar{p} / Z_p\)&lt;/span&gt;,
+where &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; is the normalization constant. Similarly for &lt;span class="math"&gt;\(q\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h3&gt;The easy direction &lt;span class="math"&gt;\(\textbf{KL}(q_\theta || p)\)&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="math"&gt;\begin{align*}
+\textbf{KL}(q_\theta || p)
+&amp;amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&amp;amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&amp;amp;= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}&lt;/div&gt;
+&lt;p&gt;Let's look at normalization of &lt;span class="math"&gt;\(p\)&lt;/span&gt;, the entropy term is easy because there is no &lt;span class="math"&gt;\(p\)&lt;/span&gt; in it.
+&lt;/p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\sum_d q(d) \log p(d)
+&amp;amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&amp;amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&amp;amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&amp;amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}&lt;/div&gt;
+&lt;p&gt;In this case, &lt;span class="math"&gt;\(-\log Z_p\)&lt;/span&gt; is an additive constant, which can be dropped because
+we're optimizing.&lt;/p&gt;
+&lt;p&gt;This leaves us with the following optimization problem:
+&lt;/p&gt;
+&lt;div class="math"&gt;\begin{align*}
+&amp;amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
+&amp;amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}&lt;/div&gt;
+&lt;p&gt;Let's work out the gradient
+&lt;/p&gt;
+&lt;div class="math"&gt;\begin{align*}
+&amp;amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&amp;amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}&lt;/div&gt;
+&lt;p&gt;We killed the one in the last equality because &lt;span class="math"&gt;\(\sum_d \nabla
+\left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
+\left[ 1 \right] = 0\)&lt;/span&gt;, for any &lt;span class="math"&gt;\(q\)&lt;/span&gt; which is a probability distribution.&lt;/p&gt;
+&lt;p&gt;This direction is convenient because we don't need to normalize
+&lt;span class="math"&gt;\(p\)&lt;/span&gt;. Unfortunately, the "easy" direction is nonconvex in general&amp;mdash;unlike
+the "hard" direction, which (as we'll see shortly) is convex.&lt;/p&gt;
+&lt;h3&gt;Harder direction &lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="math"&gt;\begin{align*}
+\textbf{KL}(p || q_\theta)
+&amp;amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&amp;amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&amp;amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}&lt;/div&gt;
+&lt;p&gt;Clearly the first term (entropy) won't matter if we're just trying optimize wrt
+&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;. So, let's focus on the second term (cross-entropy).
+&lt;/p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\sum_d p(d) \log q(d)
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
+&amp;amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
+\end{align*}&lt;/div&gt;
+&lt;p&gt;The gradient, when &lt;span class="math"&gt;\(q\)&lt;/span&gt; is in the exponential family, is intuitive:&lt;/p&gt;
+&lt;div class="math"&gt;\begin{align*}
+\nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&amp;amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&amp;amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}&lt;/div&gt;
+&lt;p&gt;Why do we say this is hard to compute? Well, for most interesting models, we
+can't compute &lt;span class="math"&gt;\(Z_p = \sum_d \bar{p}(d)\)&lt;/span&gt;. This is because &lt;span class="math"&gt;\(p\)&lt;/span&gt; is presumed to be a
+complex model (e.g., the real world, an intricate factor graph, a complicated
+Bayesian posterior). If we can't compute &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt;, it's highly unlikely that we can
+compute another (nontrivial) integral under &lt;span class="math"&gt;\(\bar{p}\)&lt;/span&gt;, e.g., &lt;span class="math"&gt;\(\sum_d \bar{p}(d)
+\log \bar{q}(d)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Nonetheless, optimizing KL in this direction is still useful. Examples include:
+expectation propagation, variational decoding, and maximum likelihood
+estimation. In the case of maximum likelihood estimation, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the empirical
+distribution, so technically you don't have to compute its normalizing constant,
+but you do need samples from it, which can be just as hard to get as computing a
+normalization constant.&lt;/p&gt;
+&lt;p&gt;Optimization problem is &lt;em&gt;convex&lt;/em&gt; when &lt;span class="math"&gt;\(q_\theta\)&lt;/span&gt; is an exponential
+family&amp;mdash;i.e., for any &lt;span class="math"&gt;\(p\)&lt;/span&gt; the &lt;em&gt;optimization&lt;/em&gt; problem is "easy." You can
+think of maximum likelihood estimation (MLE) as a method which minimizes KL
+divergence based on samples of &lt;span class="math"&gt;\(p\)&lt;/span&gt;. In this case, &lt;span class="math"&gt;\(p\)&lt;/span&gt; is the true data
+distribution! The first term in the gradient is based on a sample instead of an
+exact estimate (often called "observed feature counts"). The downside, of
+course, is that computing &lt;span class="math"&gt;\(\mathbb{E}_p \left[ \phi_q \right]\)&lt;/span&gt; might not be
+tractable or, for MLE, require tons of samples.&lt;/p&gt;
+&lt;h2&gt;Remarks&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;In many ways, optimizing exclusive KL makes no sense at all! Except for the
+  fact that it's computable when inclusive KL is often not. Exclusive KL is
+  generally regarded as "an approximation" to inclusive KL. This bias in this
+  approximation can be quite large.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Inclusive vs. exclusive is an important distinction: Inclusive divergences
+  require &lt;span class="math"&gt;\(q &amp;gt; 0\)&lt;/span&gt; whenever &lt;span class="math"&gt;\(p &amp;gt; 0\)&lt;/span&gt; (i.e., no "false negatives"), whereas
+  exclusive divergences favor a single mode (i.e., only a good fit around a that
+  mode).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When &lt;span class="math"&gt;\(q\)&lt;/span&gt; is an exponential family, &lt;span class="math"&gt;\(\textbf{KL}(p || q_\theta)\)&lt;/span&gt; will be convex
+  in &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;, no matter how complicated &lt;span class="math"&gt;\(p\)&lt;/span&gt; is, whereas &lt;span class="math"&gt;\(\textbf{KL}(q_\theta
+  || p)\)&lt;/span&gt; is generally nonconvex (e.g., if &lt;span class="math"&gt;\(p\)&lt;/span&gt; is multimodal).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Computing the value of either KL divergence requires normalization. However,
+  in the "easy" (exclusive) direction, we can optimize KL without computing
+  &lt;span class="math"&gt;\(Z_p\)&lt;/span&gt; (as it results in only an additive constant difference).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Both directions of KL are special cases of
+  &lt;a href="https://en.wikipedia.org/wiki/R%C3%A9nyi_entropy"&gt;&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence&lt;/a&gt;. For a
+  unified account of both directions consider looking into &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;-divergence.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Acknowledgments&lt;/h3&gt;
+&lt;p&gt;I'd like to thank the following people:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/ryandcotterell"&gt;Ryan Cotterell&lt;/a&gt; for an email exchange
+  which spawned this article.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/adveisner"&gt;Jason Eisner&lt;/a&gt; for teaching me all this stuff.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/florian_shkurti"&gt;Florian Shkurti&lt;/a&gt; for a useful email
+  discussion, which caugh a bug in my explanation of why inclusive KL is hard to
+  compute/optimize.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/sjmielke"&gt;Sabrina Mielke&lt;/a&gt; for the suggesting the
+  "inclusive vs. exclusive" figure.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="statistics"></category><category term="machine-learning"></category><category term="structured-prediction"></category></entry></feed>

@@ -92,8 +92,8 @@ multiplying small things together. I've recently found log-reals to be effective
 at squeaking a bit more numerical accuracy.</p>
 <p>This trick is useful for almost all backprop computations because backprop is
 essentially:</p>
-<div class="highlight"><pre><span></span><span class="err">adjoint(u) += adjoint(v) * dv/du.</span>
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">adjoint(u) += adjoint(v) * dv/du.</span>
+</code></pre></div>
 
 
 <p>The only tricky bit is lifting all <code>du/dv</code> computations into the log-reals.</p>
@@ -233,7 +233,7 @@ essentially:</p>
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -242,7 +242,17 @@ essentially:</p>
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - hyperparameter-optimization</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/hyperparameter-optimization.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2016-03-05T00:00:00-05:00</updated><entry><title>Gradient-based hyperparameter optimization and the implicit function theorem</title><link href="https://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/" rel="alternate"></link><published>2016-03-05T00:00:00-05:00</published><updated>2016-03-05T00:00:00-05:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-03-05:/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/</id><content type="html">&lt;p&gt;The most approaches to hyperparameter optimization can be viewed as a bi-level
+optimization&amp;mdash;the "inner" optimization optimizes training loss (wrt &lt;span class="math"&gt;\(\theta\)&lt;/span&gt;),
+while the "outer" optimizes hyperparameters (&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;).&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\lambda^* = \underset{\lambda}{\textbf{argmin}}\
+\mathcal{L}_{\text{dev}}\left(
+\underset{\theta}{\textbf{argmin}}\
+\mathcal{L}_{\text{train}}(\theta, \lambda) \right)
+$$&lt;/div&gt;
+&lt;p&gt;Can we estimate &lt;span class="math"&gt;\(\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}\)&lt;/span&gt; so
+that we can run gradient-based optimization over &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;Well, what does it mean to have an &lt;span class="math"&gt;\(\textbf{argmin}\)&lt;/span&gt; inside a function?&lt;/p&gt;
+&lt;p&gt;Well, it means that there is a &lt;span class="math"&gt;\(\theta^*\)&lt;/span&gt; that gets passed to
+&lt;span class="math"&gt;\(\mathcal{L}_{\text{dev}}\)&lt;/span&gt;. And, &lt;span class="math"&gt;\(\theta^*\)&lt;/span&gt; is a function of &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;, denoted
+&lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt;. Furthermore, &lt;span class="math"&gt;\(\textbf{argmin}\)&lt;/span&gt; must set the derivative of the
+inner optimization to zero in order to be a local optimum of the inner
+function. So we can rephrase the problem as&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\lambda^* = \underset{\lambda}{\textbf{argmin}}\
+\mathcal{L}_{\text{dev}}\left(\theta(\lambda) \right),
+$$&lt;/div&gt;
+&lt;p&gt;
+where &lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt; is the solution to,
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\frac{\partial \mathcal{L}_{\text{train}}(\theta, \lambda)}{\partial \theta} = 0.
+$$&lt;/div&gt;
+&lt;p&gt;Now how does &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; change as the result of an infinitesimal change to
+&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;The constraint on the derivative implies a type of "equilibrium"&amp;mdash;the inner
+optimization process will continue to optimize regardless of how we change
+&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Assuming we don't change &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; too much, then the inner
+optimization shouldn't change &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; too much and it will change in a
+predictable way.&lt;/p&gt;
+&lt;p&gt;To do this, we'll appeal to the implicit function theorem. Let's look at the
+general case to simplify notation. Suppose &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; are related through a
+function &lt;span class="math"&gt;\(g\)&lt;/span&gt; as follows,&lt;/p&gt;
+&lt;div class="math"&gt;$$g(x,y) = 0.$$&lt;/div&gt;
+&lt;p&gt;Assuming &lt;span class="math"&gt;\(g\)&lt;/span&gt; is a smooth function in &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt;, we can perturb either
+argument, say &lt;span class="math"&gt;\(x\)&lt;/span&gt; by a small amount &lt;span class="math"&gt;\(\Delta_x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt; by &lt;span class="math"&gt;\(\Delta_y\)&lt;/span&gt;. Because
+system preserves the constraint, i.e.,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+g(x + \Delta_x, y + \Delta_y) = 0.
+$$&lt;/div&gt;
+&lt;p&gt;We can solve for the change of &lt;span class="math"&gt;\(x\)&lt;/span&gt; as a result of an infinitesimal change in
+&lt;span class="math"&gt;\(y\)&lt;/span&gt;. We take the first-order expansion,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+g(x, y) + \Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
+$$&lt;/div&gt;
+&lt;p&gt;Since &lt;span class="math"&gt;\(g(x,y)\)&lt;/span&gt; is already zero,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
+$$&lt;/div&gt;
+&lt;p&gt;Next, we solve for &lt;span class="math"&gt;\(\frac{\Delta_x}{\Delta_y}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\Delta_x \frac{\partial g}{\partial x} = - \Delta_y \frac{\partial g}{\partial y}.
+$$&lt;/div&gt;
+&lt;div class="math"&gt;$$
+\frac{\Delta_x}{\Delta_y}  = -\left( \frac{\partial g}{\partial y} \right)^{-1} \frac{\partial g}{\partial x}.
+$$&lt;/div&gt;
+&lt;p&gt;Back to the original problem: Now we can use the implicit function theorem to
+estimate how &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; varies in &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; by plugging in &lt;span class="math"&gt;\(g \mapsto
+\frac{\partial \mathcal{L}_{\text{train}}}{\partial \theta}\)&lt;/span&gt;, &lt;span class="math"&gt;\(x \mapsto \theta\)&lt;/span&gt;
+and &lt;span class="math"&gt;\(y \mapsto \lambda\)&lt;/span&gt;:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\frac{\partial \theta}{\partial \lambda} = - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top}
+$$&lt;/div&gt;
+&lt;p&gt;This tells us how &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; changes with respect to an infinitesimal change to
+&lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;. Now, we can apply the chain rule to get the gradient of the whole
+optimization problem wrt &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt;,&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}
+= \frac{\partial \mathcal{L}_{\text{dev}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top} \right)
+$$&lt;/div&gt;
+&lt;p&gt;Since we don't like (explicit) matrix inverses, we compute &lt;span class="math"&gt;\(- \left( \frac{
+\partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top
+} \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\,
+\partial \lambda^\top}\)&lt;/span&gt; as the solution to &lt;span class="math"&gt;\(\left( \frac{ \partial^2
+\mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right) x
+= -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
+\lambda^\top}\)&lt;/span&gt;. When the Hessian is positive definite, the linear system can be
+solved with conjugate gradient, which conveniently only requires matrix-vector
+products&amp;mdash;i.e., you never have to materialize the Hessian. (Apparently,
+&lt;a href="https://en.wikipedia.org/wiki/Matrix-free_methods"&gt;matrix-free linear algebra&lt;/a&gt;
+is a thing.) In fact, you don't even have to implement the Hessian-vector and
+Jacobian-vector products because they are accurately and efficiently
+approximated with centered differences (see
+&lt;a href="/blog/post/2014/02/10/gradient-vector-product/"&gt;earlier post&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;At the end of the day, this is an easy algorithm to implement! However, the
+estimate of the gradient can be temperamental if the linear system is
+ill-conditioned.&lt;/p&gt;
+&lt;p&gt;In a later post, I'll describe a more-robust algorithms based on automatic
+differentiation through the inner optimization algorithm, which make fewer and
+less-brittle assumptions about the inner optimization.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://justindomke.wordpress.com/2014/02/03/truncated-bi-level-optimization/"&gt;Truncated Bi-Level Optimization&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://ai.stanford.edu/~chuongdo/papers/learn_reg.pdf"&gt;Efficient multiple hyperparameter learning for log-linear models&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://arxiv.org/abs/1502.03492"&gt;Gradient-based Hyperparameter Optimization through Reversible Learning&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://fa.bianp.net/blog/2016/hyperparameter-optimization-with-approximate-gradient/"&gt;Hyperparameter optimization with approximate gradient&lt;/a&gt;
+   (&lt;a href="https://arxiv.org/pdf/1602.02355.pdf"&gt;paper&lt;/a&gt;): This paper looks at the implicit
+   differentiation approach where you have an &lt;em&gt;approximate&lt;/em&gt;
+   solution to the inner optimization problem. They are able to provide error bounds and
+   convergence guarantees under some reasonable conditions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="hyperparameter-optimization"></category><category term="implicit-function-theorem"></category></entry><entry><title>Rant against grid search</title><link href="https://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/" rel="alternate"></link><published>2014-07-22T00:00:00-04:00</published><updated>2014-07-22T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-07-22:/blog/post/2014/07/22/rant-against-grid-search/</id><content type="html">&lt;p&gt;Grid search is a simple and intuitive algorithm for optimizing and/or exploring
+the effects of parameters to a function. However, given its rigid definition
+grid search is susceptible to degenerate behavior. One type of unfortunate
+behavior occurs in the presence of unimportant parameters, which results in many
+(potentially expensive) function evaluations being wasted.&lt;/p&gt;
+&lt;p&gt;This is a very simple point, but nonetheless I'll illustrate with a simple
+example.&lt;/p&gt;
+&lt;p&gt;Consider the following simple example, let's find the argmax of &lt;span class="math"&gt;\(f(x,y) = -x^2\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Suppose we search over a &lt;span class="math"&gt;\(10\)&lt;/span&gt;-by-&lt;span class="math"&gt;\(10\)&lt;/span&gt; grid, resulting in a total of &lt;span class="math"&gt;\(100\)&lt;/span&gt;
+function evaluations. For this function, we expect precision which proportional
+of the number of samples in the &lt;span class="math"&gt;\(x\)&lt;/span&gt;-dimension, which is only &lt;span class="math"&gt;\(10\)&lt;/span&gt; samples! On
+the other hand, randomly sampling points over the same space results in &lt;span class="math"&gt;\(100\)&lt;/span&gt;
+samples in every dimension.&lt;/p&gt;
+&lt;p&gt;In other words, randomly sample instead of using a rigid grid. If you have
+points, which are not uniformly spaced, I'm willing to bet that an appropriate
+probability distribution exists.&lt;/p&gt;
+&lt;p&gt;This type of problem is common on hyperparameter optimizations. For futher
+reading see
+&lt;a href="http://jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf"&gt;Bergstra &amp;amp; Bengio (2012)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Other thoughts&lt;/strong&gt;:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Local search is often much more effective. For example, gradient-based
+   optimization, Nelder-Mead, stochastic local search, coordinate ascent.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Grid search tends to produce nicer-looking plots.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;What about variance in the results? Two things: (a) This is a concern for
+   replicability, but is easily remedied by making sampled parameters
+   available. (b) There is always some probability that the sampling gives you a
+   terrible set of points. This shouldn't be a problem if you use enough
+   samples.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="hyperparameter-optimization"></category></entry></feed>

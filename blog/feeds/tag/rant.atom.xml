@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - rant</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/rant.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2016-09-25T00:00:00-04:00</updated><entry><title>Evaluating ∇f(x) is as fast as f(x)</title><link href="https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"></link><published>2016-09-25T00:00:00-04:00</published><updated>2016-09-25T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2016-09-25:/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id><content type="html">&lt;p&gt;Automatic differentiation ('autodiff' or 'backprop') is great&amp;mdash;not just
+because it makes it easy to rapidly prototype deep networks with plenty of
+doodads and geegaws, but because it means that evaluating the gradient &lt;span class="math"&gt;\(\nabla
+f(x)\)&lt;/span&gt; is as fast of computing &lt;span class="math"&gt;\(f(x)\)&lt;/span&gt;. In fact, the gradient provably requires at
+most a &lt;em&gt;small&lt;/em&gt; constant factor more arithmetic operations than the function
+itself.  Furthermore, autodiff tells us how to derive and implement the gradient
+efficiently. This is a fascinating result that is perhaps not emphasized enough
+in machine learning.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The gradient should never be asymptotically slower than the function.&lt;/strong&gt; In my
+recent &lt;a href="/doc/2016-emnlp-vocrf.pdf"&gt;EMNLP'16 paper&lt;/a&gt;, my coauthors and I found a
+line of work on variable-order CRFs
+(&lt;a href="https://papers.nips.cc/paper/3815-conditional-random-fields-with-high-order-features-for-sequence-labeling.pdf"&gt;Ye+'09&lt;/a&gt;;
+&lt;a href="http://www.jmlr.org/papers/volume15/cuong14a/cuong14a.pdf"&gt;Cuong+'14&lt;/a&gt;), which
+had an unnecessarily slow and complicated algorithm for computing gradients,
+which was asymptotically (and practically) slower than their forward
+algorithm. Without breaking a sweat, we derived a simpler and more efficient
+gradient algorithm by simply applying backprop to the forward algorithm (and
+made some other contributions).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Many algorithms are just backprop.&lt;/strong&gt; For example, forward-backward and
+inside-outside, are actually just instances of automatic differentiation
+(&lt;a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf"&gt;Eisner,'16&lt;/a&gt;) (i.e.,
+outside is just backprop on inside). This shouldn't be a surprise because these
+algorithms are used to compute gradients. Basically, if you know backprop and
+the inside algorithm, then you can derive the outside algorithm by applying the
+backprop transform manually. I find it easier to understand the outside
+algorithm via its connection to backprop, then via
+&lt;a href="https://www.cs.jhu.edu/~jason/465/iobasics.pdf"&gt;the usual presentation&lt;/a&gt;. Note
+that inside-outside and forward-backward pre-date backpropagation and have
+additional uses beyond computing gradients.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Once you've grokked backprop, the world is your oyster!&lt;/strong&gt; You can backprop
+through many approximate inference algorithms, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v15/stoyanov11a/stoyanov11a.pdf"&gt;Stoyanov+'11&lt;/a&gt;
+and many of Justin Domke's papers, to avoid issues I've mentioned
+&lt;a href="http://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/"&gt;before&lt;/a&gt;. You
+can even backprop through optimization algorithms to get gradients of dev loss wrt
+hyperparameters, e.g.,
+&lt;a href="http://www.jmlr.org/proceedings/papers/v22/domke12/domke12.pdf"&gt;Domke'12&lt;/a&gt; and
+&lt;a href="https://arxiv.org/abs/1502.03492"&gt;Maclaurin+'15&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;There's at least one catch!&lt;/strong&gt; Although the &lt;em&gt;time&lt;/em&gt; complexity of computing the
+gradient is as good as the function, the &lt;em&gt;space&lt;/em&gt; complexity may be much larger
+because the autodiff recipe (at least the default reverse-mode one) requires memoizing
+all intermediate quantities (e.g., the quantities you overwrite in a
+loop). There are generic methods for balancing the time-space tradeoff in
+autodiff, since you can (at least in theory) reconstruct the intermediate
+quantities by playing the forward computation again from intermediate
+checkpoints (at a cost to runtime, of course). A recent example is
+&lt;a href="https://arxiv.org/abs/1606.03401"&gt;Gruslys+'16&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;A final remark&lt;/strong&gt;. Despite the name "automatic" differentiation, there is no
+need to rely on software to "automatically" give you gradient routines. Applying
+the backprop transformation is generally easy to do manually and sometimes more
+efficient than using a library. Many autodiff libraries lack good support for
+dynamic computation graph, i.e., when the structure depends on quantities that
+vary with the input (e.g., sentence length).&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="automatic-differentiation"></category><category term="rant"></category></entry><entry><title>Multiclass logistic regression and conditional random fields are the same thing</title><link href="https://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/" rel="alternate"></link><published>2015-04-29T00:00:00-04:00</published><updated>2015-04-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-04-29:/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/</id><content type="html">&lt;p&gt;A short rant: Multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."&lt;/p&gt;
+&lt;p&gt;Understanding this very basic connection not only deepens our understanding, but
+also suggests a method for testing complex CRF code.&lt;/p&gt;
+&lt;p&gt;Multiclass logistic regression is simple. The goal is to predict the correct
+label &lt;span class="math"&gt;\(y^*\)&lt;/span&gt; from handful of labels &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt; given the observation &lt;span class="math"&gt;\(x\)&lt;/span&gt; based
+on features &lt;span class="math"&gt;\(\phi(x,y)\)&lt;/span&gt;. Training this model typically requires computing the
+gradient:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+$$&lt;/div&gt;
+&lt;p&gt;where
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray*}
+p(y|x) &amp;amp;=&amp;amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp;amp; \ \ \ \ \text{and} \ \ \ \ &amp;amp;
+Z(x) &amp;amp;=&amp;amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
+$$&lt;/div&gt;
+&lt;p&gt;At test-time, we often take the highest-scoring label under the model.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
+$$&lt;/div&gt;
+&lt;p&gt;A conditional random field is &lt;em&gt;exactly&lt;/em&gt; multiclass logistic regression. The only
+difference is that the sums (&lt;span class="math"&gt;\(Z(x)\)&lt;/span&gt; and &lt;span class="math"&gt;\(\sum_{y \in \mathcal{Y}} p(y|x)
+\phi(x,y)\)&lt;/span&gt;) and the argmax &lt;span class="math"&gt;\(\widehat{y}(x)\)&lt;/span&gt; are inefficient to compute naively
+(i.e., by brute-force enumeration). This point is often lost when people first
+learn about CRFs. Some people never make this connection.&lt;/p&gt;
+&lt;p&gt;Brute-force enumeration is a very useful method for testing complex dynamic
+programming procedures for computing the sums and the argmax on relatively small
+examples. Don't just copy code for dynamic programming out of a paper! Test it!&lt;/p&gt;
+&lt;p&gt;Here's some stuff you'll see once we start talking about CRFs:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Graphical models (factor graphs, Bayes nets, Markov random fields)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Model templates (i.e., repeated feature functions)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over &lt;span class="math"&gt;\(\mathcal{Y}\)&lt;/span&gt;.)&lt;/p&gt;
+&lt;p&gt;Graphical models establish a notation and structural properties which allow
+efficient inference&amp;mdash;things like cycles and treewidth.&lt;/p&gt;
+&lt;p&gt;Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size"&amp;mdash;the set of outputs &lt;span class="math"&gt;\(\mathcal{Y}(x)\)&lt;/span&gt; now depends on &lt;span class="math"&gt;\(x\)&lt;/span&gt;. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$&lt;/div&gt;
+&lt;p&gt;where &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt; is a labeled subset of variables often called a factor and
+&lt;span class="math"&gt;\(\boldsymbol{y}_\alpha\)&lt;/span&gt; is the subvector containing values of variables
+&lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;. Basically, the feature function &lt;span class="math"&gt;\(\phi\)&lt;/span&gt; gets to look at some subset of
+the variables being predicted &lt;span class="math"&gt;\(y\)&lt;/span&gt; and the entire input &lt;span class="math"&gt;\(x\)&lt;/span&gt;. The ability to look
+at more of &lt;span class="math"&gt;\(y\)&lt;/span&gt; allows the model to make more coherent predictions.&lt;/p&gt;
+&lt;p&gt;Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="machine-learning"></category><category term="rant"></category><category term="crf"></category></entry></feed>

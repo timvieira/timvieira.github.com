@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Graduate Descent - reservoir-sampling</title><link href="https://timvieira.github.io/blog/" rel="alternate"></link><link href="/blog/feeds/tag/reservoir-sampling.atom.xml" rel="self"></link><id>https://timvieira.github.io/blog/</id><updated>2019-06-11T00:00:00-04:00</updated><entry><title>Faster reservoir sampling by waiting</title><link href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/" rel="alternate"></link><published>2019-06-11T00:00:00-04:00</published><updated>2019-06-11T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2019-06-11:/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/</id><content type="html">&lt;p&gt;We are interested in designing an efficient algorithm for sampling from a categorical distribution over &lt;span class="math"&gt;\(n\)&lt;/span&gt; items with weights &lt;span class="math"&gt;\(w_i &amp;gt; 0\)&lt;/span&gt;.  Define target sampling distribution &lt;span class="math"&gt;\(p\)&lt;/span&gt; as
+&lt;/p&gt;
+&lt;div class="math"&gt;$$
+p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
+\quad\text{where}\quad W = \sum_j w_j
+$$&lt;/div&gt;
+&lt;p&gt;The following is a very simple and relatively famous algorithm due to &lt;a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X"&gt;Efraimidis and Spirakis (2006)&lt;/a&gt;.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (&lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;Vieira,  2014&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;weighted_reservoir_sampling&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argmin&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Some cosmetic differences from E&amp;amp;S'06: We use exponential random variates and &lt;span class="math"&gt;\(\min\)&lt;/span&gt; instead of &lt;span class="math"&gt;\(\max\)&lt;/span&gt;. E&amp;amp;S'06 use a less-elegant and rather-mysterious (IMO) random key &lt;span class="math"&gt;\(u_i^{1/w_i}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why does it work?&lt;/strong&gt; The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
+When &lt;span class="math"&gt;\(X_i \sim \mathrm{Exponential}(w_i)\)&lt;/span&gt;, &lt;span class="math"&gt;\(R = {\mathrm{argmin}}_i X_i\)&lt;/span&gt;, and &lt;span class="math"&gt;\(T = \min_i X_i\)&lt;/span&gt; then
+&lt;span class="math"&gt;\(R \sim p\)&lt;/span&gt; and &lt;span class="math"&gt;\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;h2&gt;Fewer random variates by waiting&lt;/h2&gt;
+&lt;p&gt;One down-side of this one-pass algorithm is that it requires &lt;span class="math"&gt;\(\mathcal{O}(n)\)&lt;/span&gt; uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need &lt;span class="math"&gt;\(\mathcal{O}(1)\)&lt;/span&gt; samples.  E&amp;amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires &lt;span class="math"&gt;\(\mathcal{O}(\log(n))\)&lt;/span&gt; random variates (in expectation).  That's &lt;em&gt;way&lt;/em&gt; fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.&lt;/p&gt;
+&lt;p&gt;Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;jump&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by jumping&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c1"&gt;# Sample the key for item i, given that it is smaller than the current threshold&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample_truncated&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+            &lt;span class="c1"&gt;# sample the waiting time (size of the jump)&lt;/span&gt;
+            &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Why does exponential jumps work?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Let me first write the &lt;code&gt;weighted_reservoir_sampling&lt;/code&gt; algorithm to be much more similar to the &lt;code&gt;jump&lt;/code&gt; algorithm.  For fun, I'm going to refer to it as the &lt;code&gt;walk&lt;/code&gt; algorithm.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Weighted-reservoir sampling by walking&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+    &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inf&lt;/span&gt;
+    &lt;span class="n"&gt;J&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Exponential&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;w&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;R&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;   &lt;span class="c1"&gt;# i enters the reservoir&lt;/span&gt;
+            &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;   &lt;span class="c1"&gt;# threshold to enter the reservoir&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;The key idea&lt;/strong&gt; of the exponential jumps algorithm is to sample &lt;em&gt;waiting times&lt;/em&gt; between new minimum events.  In particular, if the algorithm is at step &lt;span class="math"&gt;\(i\)&lt;/span&gt; the probability that it sees its next minimum at steps &lt;span class="math"&gt;\(j \in \{ i+1, \ldots \}\)&lt;/span&gt; can be reasoned about without needing to &lt;em&gt;actually&lt;/em&gt; sample the various &lt;span class="math"&gt;\(X_j\)&lt;/span&gt; variables.&lt;/p&gt;
+&lt;p&gt;Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the &lt;code&gt;jump&lt;/code&gt; algorithm simulates the &lt;code&gt;walk&lt;/code&gt; algorithm.  The key to doing this is showing that the probability of jumping from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt; is the same as "walking" from &lt;span class="math"&gt;\(i\)&lt;/span&gt; to &lt;span class="math"&gt;\(k\)&lt;/span&gt;.  Let &lt;span class="math"&gt;\(W_{i,k} = \sum_{j=i}^k w_j\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;This proof is adapted from the original proof in E&amp;amp;S'06.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+\mathrm{Pr}\left( \text{walk to } k \mid i,T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( X_k &amp;lt; T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \\
+&amp;amp;=&amp;amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \\
+&amp;amp;=&amp;amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \\
+\\
+\mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; J \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( W_{i,k-1} &amp;lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \\
+&amp;amp;=&amp;amp; \mathrm{Pr}\left( \exp(-T W_{i,k-1}) &amp;gt; U \ge \exp(-T W_{i,k}) \right) \label{foo}\\
+&amp;amp;=&amp;amp; \exp(T W_{i,k-1}) - \exp(T W_{i,k} )
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that &lt;span class="math"&gt;\(X_k\)&lt;/span&gt; is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a &lt;em&gt;truncated&lt;/em&gt; random variate: a random variate that is guaranteed to less than the previous minimum.  In the &lt;a href="https://cmaddis.github.io/gumbel-machinery"&gt;Gumbel-max world&lt;/a&gt;, this is used in the top-down generative story.&lt;/p&gt;
+&lt;h2&gt;Closing thoughts&lt;/h2&gt;
+&lt;p&gt;Pros:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The jump algorithm saves a ton of random variates and gives practical savings
+  (at least, in my limited experiments).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Cons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The jump algorithm is harder to parallelize or vectorize, but it seems possible.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If you aren't in a setting that requires a one-pass algorithm or some other
+  special properties, you are probably better served by the two-pass algorithms
+  since they have lower overhead because it doesn't call expensive functions
+  like &lt;span class="math"&gt;\(\log\)&lt;/span&gt; and it uses a single random variate per sample.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Further reading:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I have several posts on the topic of fast sampling algorithms
+(&lt;a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/"&gt;1&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/"&gt;2&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/"&gt;3&lt;/a&gt;).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Jake VanderPlas (2018) &lt;a href="http://jakevdp.github.io/blog/2018/09/13/waiting-time-paradox/"&gt;The Waiting Time Paradox, or, Why Is My Bus Always Late?&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Interactive Notebook&lt;/h2&gt;
+&lt;script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"&gt;&lt;/script&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="sampling"></category><category term="reservoir-sampling"></category><category term="Gumbel"></category><category term="sampling-without-replacement"></category></entry><entry><title>Estimating means in a finite universe</title><link href="https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"></link><published>2017-07-03T00:00:00-04:00</published><updated>2017-07-03T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2017-07-03:/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id><content type="html">&lt;style&gt;
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+&lt;/script&gt;
+
+&lt;p&gt;&lt;strong&gt;Introduction&lt;/strong&gt;: In this post, I'm going to describe some efficient approaches
+to estimating the mean of a random variable that takes on only finitely many
+values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. I'll describe some lesser-known algorithms based on sampling
+without replacement that can be adapted to estimating means.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Setup&lt;/strong&gt;: Suppose we want to estimate an expectation of a derministic function
+&lt;span class="math"&gt;\(f\)&lt;/span&gt; over a (large) finite universe of &lt;span class="math"&gt;\(n\)&lt;/span&gt; elements where each element &lt;span class="math"&gt;\(i\)&lt;/span&gt; has
+probability &lt;span class="math"&gt;\(p_i\)&lt;/span&gt;:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\mu \overset{\tiny{\text{def}}}{=} \sum_{i=1}^n p_i f(i)
+$$&lt;/div&gt;
+&lt;p&gt;However, &lt;span class="math"&gt;\(f\)&lt;/span&gt; is too expensive to evaluate &lt;span class="math"&gt;\(n\)&lt;/span&gt; times. So let's say that we have
+&lt;span class="math"&gt;\(m \le n\)&lt;/span&gt; evaluations to form our estimate. (Obviously, if we're happy
+evaluating &lt;span class="math"&gt;\(f\)&lt;/span&gt; a total of &lt;span class="math"&gt;\(n\)&lt;/span&gt; times, then we should just compute &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; exactly
+with the definition above.)&lt;/p&gt;
+&lt;!--
+**Why I'm writing this post**: Monte Carlo is often used in designing algorithms
+as a means to cheaply approximate intermediate expectations, think of stochastic
+gradient descent as a prime example. However, in many cases, we have a *finite*
+universe, i.e., we *could* enumerate all elements, but it's just inefficient to
+do so. In other words, sampling is merely a choice made by the algorithm
+designer, not a fundamental property of the environment, as it is typically in
+statistics. What can we do to improve estimation in this special setting? I
+won't get into bigger questions of how to design these algorithms, instead I'll
+focus on this specific type of estimation problem.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Monte Carlo:&lt;/strong&gt; The most well-known approach to this type of problem is Monte
+Carlo (MC) estimation: sample &lt;span class="math"&gt;\(x^{(1)}, \ldots, x^{(m)}
+\overset{\tiny\text{i.i.d.}}{\sim} p\)&lt;/span&gt;, return &lt;span class="math"&gt;\(\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})\)&lt;/span&gt;. &lt;em&gt;Remarks&lt;/em&gt;: (1) Monte Carlo can be very
+inefficient because it resamples high-probability items over and over again. (2)
+We can improve efficiency&amp;mdash;measured in &lt;span class="math"&gt;\(f\)&lt;/span&gt; evaluations&amp;mdash;somewhat by
+caching past evaluations of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. However, this introduces a serious &lt;em&gt;runtime&lt;/em&gt;
+inefficiency and requires modifying the method to account for the fact that &lt;span class="math"&gt;\(m\)&lt;/span&gt;
+is not fixed ahead of time. (3) Even in our simple setting, MC never reaches
+&lt;em&gt;zero&lt;/em&gt; error; it only converges in an &lt;span class="math"&gt;\(\epsilon\)&lt;/span&gt;-&lt;span class="math"&gt;\(\delta\)&lt;/span&gt; sense.&lt;/p&gt;
+&lt;!--
+Remarks
+
+ - We saw a similar problem where we kept sampling the same individuals over and
+   over again in my
+   [sqrt-biased sampling post](http://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/).
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Sampling without replacement:&lt;/strong&gt; We can get around the problem of resampling
+the same elements multiple times by sampling &lt;span class="math"&gt;\(m\)&lt;/span&gt; distinct elements. This is
+called a sampling &lt;em&gt;without replacement&lt;/em&gt; (SWOR) scheme. Note that there is no
+unique sampling without replacement scheme; although, there does seem to be a
+&lt;em&gt;de facto&lt;/em&gt; method (more on that later). There are lots of ways to do sampling
+without replacement, e.g., any point process over the universe will do as long
+as we can control the size.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;An alternative formulation:&lt;/strong&gt; We can also formulate our estimation problem as
+seeking a sparse, unbiased approximation to a vector &lt;span class="math"&gt;\(\boldsymbol{x} \in \mathbb{R}_{&amp;gt;0}^n\)&lt;/span&gt;. We want
+our approximation, &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; to satisfy &lt;span class="math"&gt;\(\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}\)&lt;/span&gt; and while &lt;span class="math"&gt;\(|| \boldsymbol{s} ||_0 \le m\)&lt;/span&gt;. This will suffice for
+estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; (above) when &lt;span class="math"&gt;\(\boldsymbol{x}=\boldsymbol{p}\)&lt;/span&gt;, the vector of
+probabillties, because &lt;span class="math"&gt;\(\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
+\boldsymbol{f} = \mu\)&lt;/span&gt; where &lt;span class="math"&gt;\(\boldsymbol{f}\)&lt;/span&gt; is a vector of all &lt;span class="math"&gt;\(n\)&lt;/span&gt; values of
+the function &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Obviously, we don't need to evaluate &lt;span class="math"&gt;\(f\)&lt;/span&gt; in places where
+&lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; is zero so it works for our budgeted estimation task. Of
+course, unbiased estimation of all probabillties is not &lt;em&gt;necessary&lt;/em&gt; for unbiased
+estimation of &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; alone. However, this characterization is a good model for
+when we have zero knowledge of &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Additionally, this formulation might be of
+independent interest, since a sparse, unbiased representation of a vector might
+be useful in some applications (e.g., replacing a dense vector with a sparse
+vector can lead to more efficient computations).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Priority sampling&lt;/strong&gt;: Priority sampling (Duffield et al., 2005;
+&lt;a href="http://nickduffield.net/download/papers/priority.pdf"&gt;Duffield et al., 2007&lt;/a&gt;)
+is a remarkably simple algorithm, which is essentially optimal for our task, if
+we assume no prior knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;. Here is pseudocode for priority sampling
+(PS), based on the &lt;em&gt;alternative formulation&lt;/em&gt;.&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{align*}
+&amp;amp;\textbf{procedure } \textrm{PrioritySample} \\
+&amp;amp;\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}_{&amp;gt;0}^n, \text{budget } m \in \{1, \ldots, n\}\\
+&amp;amp;\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
+&amp;amp;\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&amp;amp;\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
+&amp;amp;\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
+&amp;amp;\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
+&amp;amp;\quad  s_i \gets \begin{cases}
+  \max\left( x_i, 1/\tau \right)  &amp;amp; \text{ if } i \in S \\
+  0                               &amp;amp; \text{ otherwise}
+\end{cases} \\
+&amp;amp;\quad \textbf{return }\boldsymbol{s}
+\end{align*}
+$$&lt;/div&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\textrm{PrioritySample}\)&lt;/span&gt; can be applied to obtain a sparse and unbiased
+representation of any vector in &lt;span class="math"&gt;\(\mathbb{R}^n\)&lt;/span&gt;. We make use of such a
+representation for our original problem of budgeted mean estimation (&lt;span class="math"&gt;\(\mu\)&lt;/span&gt;) as
+follows:&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{align*}
+&amp;amp; \boldsymbol{s} \gets \textrm{PrioritySample}(\boldsymbol{p}, m) \\
+&amp;amp; \widehat{\mu}_{\text{PS}} = \sum_{i \in S} s_i \!\cdot\! f(i)
+\end{align*}
+$$&lt;/div&gt;
+&lt;p&gt;Explanation: The definition of &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; might look a little mysterious. In the &lt;span class="math"&gt;\((i
+\in S)\)&lt;/span&gt; case, it comes from &lt;span class="math"&gt;\(s_i = \frac{p_i}{p(i \in S | \tau)} =
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)\)&lt;/span&gt;. The factor &lt;span class="math"&gt;\(p(i \in S
+| \tau)\)&lt;/span&gt; is an importance-weighting correction that comes from the
+&lt;a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator"&gt;Horvitz-Thompson estimator&lt;/a&gt;
+(modified slightly from its usual presentation to estimate means),
+&lt;span class="math"&gt;\(\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]\)&lt;/span&gt;, where
+&lt;span class="math"&gt;\(S\)&lt;/span&gt; is sampled according to some process with inclusion probabilities &lt;span class="math"&gt;\(q_i = p(i
+\in S)\)&lt;/span&gt;. In the case of priority sampling, we have an auxiliary variable for
+&lt;span class="math"&gt;\(\tau\)&lt;/span&gt; that makes computing &lt;span class="math"&gt;\(q_i\)&lt;/span&gt; easy. Thus, for priority sampling, we can use
+&lt;span class="math"&gt;\(q_i = p(i \in S | \tau)\)&lt;/span&gt;. This auxillary variable adds a tiny bit extra noise
+in our estimator, which is tantamount to one extra sample.&lt;/p&gt;
+&lt;p&gt;&lt;button class="toggle-button" onclick="toggle('#ps-unbiased');"&gt;Show proof of
+unbiasedness&lt;/button&gt; &lt;div id="ps-unbiased" class="derivation"
+style="display:none;"&gt; &lt;strong&gt;Proof of unbiasedness&lt;/strong&gt;. The following proof is a
+little different from that in the priority sampling papers. I think it's more
+straightforward. More importantly, it shows how we can extend the method to
+sample from slightly different without-replacement distributions (as long as we
+can compute &lt;span class="math"&gt;\(q_i(\tau) = \mathrm{Pr}(i \in S \mid \tau) = \mathrm{Pr}(k_i \le \tau)\)&lt;/span&gt;).&lt;/p&gt;
+&lt;div class="math"&gt;$$
+\begin{eqnarray}
+\mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau, k_1, \ldots k_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \boldsymbol{1}[ k_i \le \tau] \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \mathbb{E}_{k_i | \tau}\!\Big[ \boldsymbol{1}[ k_i \le \tau  ] \Big] \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot
+   \mathrm{Pr}( k_i \le \tau )
+   \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot
+   q_i(\tau)
+   \right] \\
+&amp;amp;=&amp;amp; \mathbb{E}_{\tau}\! \left[
+   \sum_{i=1}^n p_i \cdot f(i)
+   \right] \\
+&amp;amp;=&amp;amp; \sum_{i=1}^n p_i \cdot f(i) \\
+&amp;amp;=&amp;amp; \mu
+\end{eqnarray}
+$$&lt;/div&gt;
+&lt;p&gt;
+&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Remarks&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling satisfies our task criteria: it is both unbiased and sparse
+   (i.e., under the evaluation budget).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling can be straighforwardly generalized to support streaming
+   &lt;span class="math"&gt;\(x_i\)&lt;/span&gt;, since the keys and threshold can be computed as we run, which means it
+   can be stopped at any time, in principle.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Priority sampling was designed for estimating subset sums, i.e., estimating
+   &lt;span class="math"&gt;\(\sum_{i \in I} x_i\)&lt;/span&gt; for some &lt;span class="math"&gt;\(I \subseteq \{1,\ldots,n\}\)&lt;/span&gt;. In this setting,
+   the set of sampled items &lt;span class="math"&gt;\(S\)&lt;/span&gt; is chosen to be "representative" of the
+   population, albeit much smaller. In the subset sum setting, priority sampling
+   has been shown to have near-optimal variance
+   &lt;a href="https://www.cs.rutgers.edu/~szegedy/PUBLICATIONS/full1.pdf"&gt;(Szegedy, 2005)&lt;/a&gt;.
+   Specifically, priority sampling with &lt;span class="math"&gt;\(m\)&lt;/span&gt; samples is no worse than the best
+   possible &lt;span class="math"&gt;\((m-1)\)&lt;/span&gt;-sparse estimator in terms of variance. Of course,
+   if we have some knowledge about &lt;span class="math"&gt;\(f\)&lt;/span&gt;, we may be able to beat
+   PS. &lt;!-- We can relate subset sums to estimating &lt;span class="math"&gt;\(\mu\)&lt;/span&gt; by interpreting
+   &lt;span class="math"&gt;\(\boldsymbol{x} = \alpha\!\cdot\! \boldsymbol{p}\)&lt;/span&gt; for some &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, scaling
+   &lt;span class="math"&gt;\(f\)&lt;/span&gt; appropriately by &lt;span class="math"&gt;\(\alpha\)&lt;/span&gt;, and encoding the subset via indicators in
+   &lt;span class="math"&gt;\(f\)&lt;/span&gt;'s dimensions. --&gt;
+   &lt;!-- (e.g.,. via
+   &lt;a href="http://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/"&gt;importance sampling&lt;/a&gt;
+   or by modifying PS to sample proportional to &lt;span class="math"&gt;\(x_i = p_i \!\cdot\! |f_i|\)&lt;/span&gt; (as
+   well as other straightforward modifications), but presumably with a surrogate
+   for &lt;span class="math"&gt;\(f_i\)&lt;/span&gt; because we don't want to evaluate it). --&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Components of the estimate &lt;span class="math"&gt;\(\boldsymbol{s}\)&lt;/span&gt; are uncorrelated, i.e.,
+   &lt;span class="math"&gt;\(\textrm{Cov}[s_i, s_j] = 0\)&lt;/span&gt; for &lt;span class="math"&gt;\(i \ne j\)&lt;/span&gt; and &lt;span class="math"&gt;\(m \ge 2\)&lt;/span&gt;. This is surprising
+   since &lt;span class="math"&gt;\(s_i\)&lt;/span&gt; and &lt;span class="math"&gt;\(s_j\)&lt;/span&gt; are related via the threshold &lt;span class="math"&gt;\(\tau\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If we instead sample &lt;span class="math"&gt;\(u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
+   -\textrm{Exponential}(1)\)&lt;/span&gt;, then &lt;span class="math"&gt;\(S\)&lt;/span&gt; will be sampled according to the &lt;em&gt;de facto&lt;/em&gt;
+   sampling without replacement scheme (e.g., &lt;code&gt;numpy.random.sample(..., replace=False)&lt;/code&gt;),
+   known as probability proportional to size without replacement (PPSWOR).
+   To we can then adjust our estimator
+   &lt;div class="math"&gt;$$
+   \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
+   $$&lt;/div&gt;
+   where &lt;span class="math"&gt;\(q_i = p(i \in S|\tau) = p(k_i &amp;gt; \tau) = 1-\exp(-x_i \!\cdot\!
+   \tau)\)&lt;/span&gt;. This estimator performs about as well as priority sampling. It
+   inherits my proof of unbiasedness (above).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(\tau\)&lt;/span&gt; is an auxiliary variable that is introduced to break complex
+   dependencies between keys. Computing &lt;span class="math"&gt;\(\tau\)&lt;/span&gt;'s distribution is complicated
+   because it is an order statistic of non-identically distributed random
+   variates; this means we can't rely on symmetry to make summing over
+   permutations efficient.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!--
+ - The one downside of this method is that sampling seems to require looking at
+   all $n$ items.
+--&gt;
+
+&lt;h2&gt;Experiments&lt;/h2&gt;
+&lt;p&gt;You can get the Jupyter notebook for replicating this experiment
+&lt;a href="https://github.com/timvieira/blog/blob/master/content/notebook/Priority%20Sampling.ipynb"&gt;here&lt;/a&gt;.
+So download the notebook and play with it!&lt;/p&gt;
+&lt;p&gt;The improvement of priority sampling (PS) over Monte Carlo (MC) is pretty
+nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
+I won't really bother to discuss it. Check out the results!&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;
+&lt;img alt="Priority sampling vs. Monte Carlo" src="http://timvieira.github.io/blog/images/ps-mc.png"&gt;
+&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;The shaded region indicates the 10% and 90% percentiles over 20,000
+replications, which gives a sense of the variability of each estimator. The
+x-axis is the sampling budget, &lt;span class="math"&gt;\(m \le n\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;The plot shows a small example with &lt;span class="math"&gt;\(n=50\)&lt;/span&gt;. We see that PS's variability
+actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
+at &lt;span class="math"&gt;\(m=n\)&lt;/span&gt;. (Note that MC's x-axis measures raw evaluations, not distinct ones.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Further reading:&lt;/strong&gt; If you liked this post, you might like my other posts
+tagged with &lt;a href="http://timvieira.github.io/blog/tag/sampling.html"&gt;sampling&lt;/a&gt; and
+&lt;a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html"&gt;reservoir sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Edith Cohen, "The Magic of Random Sampling"
+   (&lt;a href="http://www.cohenwang.com/edith/Talks/MagicSampling201611.pdf"&gt;slides&lt;/a&gt;,
+   &lt;a href="https://www.youtube.com/watch?v=jp83HyDs8fs"&gt;talk&lt;/a&gt;)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://nickduffield.net/download/papers/priority.pdf"&gt;Duffield et al., (2007)&lt;/a&gt;
+   has plenty good stuff that I didn't cover.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Alex Smola's &lt;a href="http://blog.smola.org/post/1078486350/priority-sampling"&gt;post&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Suresh Venkatasubramanian's
+   &lt;a href="http://blog.geomblog.org/2005/10/priority-sampling.html"&gt;post&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="sampling"></category><category term="statistics"></category><category term="reservoir-sampling"></category><category term="sampling-without-replacement"></category></entry><entry><title>Gumbel-max trick and weighted reservoir sampling</title><link href="https://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/" rel="alternate"></link><published>2014-08-01T00:00:00-04:00</published><updated>2014-08-01T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2014-08-01:/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/</id><content type="html">&lt;p&gt;A while back, &lt;a href="http://people.cs.umass.edu/~wallach/"&gt;Hanna&lt;/a&gt; and I stumbled upon
+the following blog post:
+&lt;a href="http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm"&gt;Algorithms Every Data Scientist Should Know: Reservoir Sampling&lt;/a&gt;,
+which got us excited about reservoir sampling.&lt;/p&gt;
+&lt;p&gt;Around the same time, I attended a talk by
+&lt;a href="http://cs.haifa.ac.il/~tamir/"&gt;Tamir Hazan&lt;/a&gt; about some of his work on
+perturb-and-MAP
+&lt;a href="http://cs.haifa.ac.il/~tamir/papers/mean-width-icml12.pdf"&gt;(Hazan &amp;amp; Jaakkola, 2012)&lt;/a&gt;,
+which is inspired by the
+&lt;a href="https://hips.seas.harvard.edu/blog/2013/04/06/the-gumbel-max-trick-for-discrete-distributions/"&gt;Gumbel-max-trick&lt;/a&gt;
+(see &lt;a href="/blog/post/2014/07/31/gumbel-max-trick/"&gt;previous post&lt;/a&gt;). The apparent similarity between weighted reservoir sampling and the Gumbel-max trick lead us to make some cute connections, which I'll describe in this post.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The problem&lt;/strong&gt;: We're given a stream of unnormalized probabilities, &lt;span class="math"&gt;\(x_1, x_2, \cdots\)&lt;/span&gt;. At any point in time &lt;span class="math"&gt;\(t\)&lt;/span&gt; we'd like to have a sampled index &lt;span class="math"&gt;\(i\)&lt;/span&gt; available, where the probability of &lt;span class="math"&gt;\(i\)&lt;/span&gt; is given by &lt;span class="math"&gt;\(\pi_t(i) = \frac{x_i}{
+\sum_{j=1}^t x_j}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Assume, without loss of generality, that &lt;span class="math"&gt;\(x_i &amp;gt; 0\)&lt;/span&gt; for all &lt;span class="math"&gt;\(i\)&lt;/span&gt;. (If any element has a zero weight we can safely ignore it since it should never be sampled.)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Streaming Gumbel-max sampler&lt;/strong&gt;: I came up with the following algorithm, which is a simple "modification" of the Gumbel-max-trick for handling streaming data:&lt;/p&gt;
+&lt;dl&gt;
+&lt;dt&gt;&lt;span class="math"&gt;\(a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}\)&lt;/span&gt;&lt;/dt&gt;
+&lt;dt&gt;for &lt;span class="math"&gt;\(i=1,2,\cdots;\)&lt;/span&gt; do:&lt;/dt&gt;
+&lt;dd&gt;# Compute log-unnormalized probabilities&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(w_i = \log(x_i)\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;# Additively perturb each weight by a Gumbel random variate&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(z_i \sim \text{Gumbel}(0,1)\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(k_i = w_i + z_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest &lt;span class="math"&gt;\(k_i\)&lt;/span&gt; (i.e. the argmax)&lt;/dd&gt;
+&lt;dd&gt;if &lt;span class="math"&gt;\(k_i &amp;gt; a\)&lt;/span&gt;:&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = k_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;If we interrupt this algorithm at any point, we have a sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;After convincing myself this algorithm was correct, I sat down to try to
+understand the algorithm in the blog post, which is due to Efraimidis and
+Spirakis (2005) (&lt;a href="http://dl.acm.org/citation.cfm?id=1138834"&gt;paywall&lt;/a&gt;,
+&lt;a href="http://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf"&gt;free summary&lt;/a&gt;). They
+looked similar in many ways but used different sorting keys/perturbations.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Efraimidis and Spirakis (2005)&lt;/strong&gt;: Here is the ES algorithm for weighted
+reservoir sampling&lt;/p&gt;
+&lt;dl&gt;
+&lt;dt&gt;&lt;span class="math"&gt;\(a = -\infty; b = \text{null}\)&lt;/span&gt;&lt;/dt&gt;
+&lt;dt&gt;for &lt;span class="math"&gt;\(i=1,2,\cdots;\)&lt;/span&gt; do:&lt;/dt&gt;
+&lt;dd&gt;# compute randomized key&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(u_i \sim \text{Uniform}(0,1)\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(e_i = u_i^{(\frac{1}{x_i})}\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;# Keep around the largest &lt;span class="math"&gt;\(e_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;if &lt;span class="math"&gt;\(e_i &amp;gt; a\)&lt;/span&gt;:&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ a = e_i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;span class="math"&gt;\(\ \ \ \ b = i\)&lt;/span&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;Again, if we interrupt this algorithm at any point, we have our sample &lt;span class="math"&gt;\(b\)&lt;/span&gt;. Note
+that you can simplify &lt;span class="math"&gt;\(e_i\)&lt;/span&gt; so that you don't have to compute &lt;code&gt;pow&lt;/code&gt; (which is nice
+because &lt;code&gt;pow&lt;/code&gt; is pretty slow). It's equivalent to use &lt;span class="math"&gt;\(e'_i = \log(e_i) =
+\log(u_i)/x_i\)&lt;/span&gt; because &lt;span class="math"&gt;\(\log\)&lt;/span&gt; is monotonic. (Note that &lt;span class="math"&gt;\(-e'_i \sim
+\textrm{Exponential}(x_i)\)&lt;/span&gt;.)&lt;/p&gt;
+&lt;!--
+I find this version of the algorithm more intuitive, since it's well-known that
+$\left(\underset{{i=1 \ldots t}}{\min} \textrm{Exponential}(x_i) \right) =
+\textrm{Exponential}\left(\sum_{i=1}^t x_i \right)$. This version makes it clear
+that minimizing is actually summing. However, we want the argmin, which is
+distributed according to $\pi_t$.
+--&gt;
+
+&lt;p&gt;&lt;strong&gt;Relationship&lt;/strong&gt;: At a high level, we can see that both algorithms compute a
+randomized key and take an argmax. What's the relationship between the keys?&lt;/p&gt;
+&lt;p&gt;First, note that a &lt;span class="math"&gt;\(\text{Gumbel}(0,1)\)&lt;/span&gt; variate can be generated via
+&lt;span class="math"&gt;\(-\log(-\log(\text{Uniform}(0,1)))\)&lt;/span&gt;. This is a straightforward application of
+the
+&lt;a href="http://en.wikipedia.org/wiki/Inverse_transform_sampling"&gt;inverse transform sampling&lt;/a&gt;
+method for random number generation. This means that if we use the same sequence
+of uniform random variates then, &lt;span class="math"&gt;\(z_i = -\log(-\log(u_i))\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;However, this does not give use equality between &lt;span class="math"&gt;\(k_i\)&lt;/span&gt; and &lt;span class="math"&gt;\(e_i\)&lt;/span&gt;, but it does
+turn out that &lt;span class="math"&gt;\(k_i = -\log(-\log(e_i))\)&lt;/span&gt;, which is useful because this is a
+monotonic transformation on the interval &lt;span class="math"&gt;\((0,1)\)&lt;/span&gt;. Since monotonic
+transformations preserve ordering, the sequences &lt;span class="math"&gt;\(k\)&lt;/span&gt; and &lt;span class="math"&gt;\(e\)&lt;/span&gt; result in the same
+comparison decisions, as well as, the same argmax. In summary, the algorithms
+are the same!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Extensions&lt;/strong&gt;: After reading a little further along in the ES paper, we see
+that the same algorithm can be used to perform &lt;em&gt;sampling without replacement&lt;/em&gt; by
+sorting and taking the elements with the highest keys. This same modification applies to the Gumbel-max-trick because the keys have precisely the same ordering as ES. In practice, we don't sort the key, but instead, use a bounded priority queue.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Closing&lt;/strong&gt;: To the best of my knowledge, the connection between the
+Gumbel-max trick and ES is undocumented. Furthermore, the Gumbel-max-trick is not known as a streaming algorithm, much less known to perform sampling without replacement! If you know of a reference, let me know.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How to cite this article&lt;/strong&gt;: If you found this article useful, please cite it as&lt;/p&gt;
+&lt;pre style="background-color: white; color: black; border: #333;"&gt;
+@misc{vieira2014gumbel,
+    title = {Gumbel-max trick and weighted reservoir sampling},
+    author = {Tim Vieira},
+    url = {http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/},
+    year = {2014}
+}
+&lt;/pre&gt;
+
+&lt;h2&gt;Further reading&lt;/h2&gt;
+&lt;p&gt;I have a few other articles that are related to
+&lt;a href="http://timvieira.github.io/blog/tag/sampling-without-replacement.html"&gt;sampling without replacement&lt;/a&gt;,
+&lt;a href="http://timvieira.github.io/blog/tag/reservoir-sampling.html"&gt;reservoir sampling&lt;/a&gt;,
+and &lt;a href="http://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel tricks&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here are a few interesting papers that build on the ideas in this article.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Wouter Kool, Herke van Hoof, and Max Welling. 2019.
+&lt;a href="https://arxiv.org/abs/1903.06059"&gt;Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for Sampling Sequences Without Replacement&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Sang Michael Xie and Stefano Ermon. 2019. &lt;a href="https://arxiv.org/abs/1901.10517"&gt;Reparameterizable Subset Sampling via Continuous Relaxations&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="misc"></category><category term="sampling"></category><category term="Gumbel"></category><category term="reservoir-sampling"></category><category term="sampling-without-replacement"></category></entry></feed>

@@ -191,7 +191,7 @@ another. Note that autodiff (implicitly) computes Jacobian-vector products
 because modules are multivariate in general. We can reduce to the scalar case by
 taking a dot product of the outputs with a (fixed) random vector.</p>
 <p>Something like this:</p>
-<div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">spherical</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># fixed random vector |output|=|m|</span>
+<div class="highlight"><pre><span></span><code><span class="n">r</span> <span class="o">=</span> <span class="n">spherical</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># fixed random vector |output|=|m|</span>
 <span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>   <span class="c1"># scalar function for use in fd</span>
 
 <span class="n">module</span><span class="o">.</span><span class="n">fprop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># propagate</span>
@@ -200,7 +200,7 @@ taking a dot product of the outputs with a (fixed) random vector.</p>
 <span class="n">ad</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">adjoint</span> <span class="c1"># grab the gradient</span>
 <span class="n">fd</span> <span class="o">=</span> <span class="n">fdgrad</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 <span class="n">compare</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">ad</span><span class="p">)</span>
-</pre></div>
+</code></pre></div>
 
 
 <p><strong>Integration tests</strong>: Test that running a gradient-based optimization algorithm
@@ -371,7 +371,7 @@ Other common sources of bugs
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -380,7 +380,17 @@ Other common sources of bugs
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>

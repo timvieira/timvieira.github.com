@@ -80,7 +80,7 @@ explained.</p>
 <li>
 <p>Explanations are littered with distracting model-specific details and messy
    variational inference notation that make it hard to see the signal in the
-   noise.<sup id="fnref-why-the-noise"><a class="footnote-ref" href="#fn-why-the-noise">1</a></sup></p>
+   noise.<sup id="sf-hot-take-expectation-maximization-1-back"><a href="#sf-hot-take-expectation-maximization-1" class="simple-footnote" title="Why such a messy presentation?  My guess is that it is      because the theoretical foundations for EM are based on an iterative      lower-bound maximization algorithm.  The theory is bleeding into the      presentation.  This view is useful because they tie EM to a theoretical      optimization foundation that is used to prove convergence properties, but      at the end of the day they are just some dude's hot take.">1</a></sup></p>
 </li>
 <li>
 <p>Today, I will give my hot take.  I will create a bridge between EM and MLE,
@@ -110,7 +110,7 @@ the function, <span class="math">\(g\)</span> and that <span class="math">\(g(x)
 <li>
 <p>Incomplete, interval observation: be <span class="math">\(g(X_i) = \ind{a_i \le X_i &lt; b_i}\)</span> for some
    constants <span class="math">\(a_i &lt; b_i\)</span>.  We recover the complete case as <span class="math">\(a_i\)</span> approachs <span class="math">\(b_i\)</span>
-   for all <span class="math">\(i\)</span>.<sup id="fnref-interval"><a class="footnote-ref" href="#fn-interval">2</a></sup></p>
+   for all <span class="math">\(i\)</span>.<sup id="sf-hot-take-expectation-maximization-2-back"><a href="#sf-hot-take-expectation-maximization-2" class="simple-footnote" title="Interval observations are used in estimation for censored      observations.">2</a></sup></p>
 </li>
 <li>
 <p>Incomplete, subset observations: we could observe non-empty subsets,
@@ -124,7 +124,7 @@ the function, <span class="math">\(g\)</span> and that <span class="math">\(g(x)
 functions).  Every choice will result is some set of details that you will have
 to work out in order to accomodate.  For example, to accommodate intervals we
 can use the cumulative distribution function, <span class="math">\(F(\cdot; \theta)\)</span>, <span class="math">\(p(a_i \le X &lt;
-b_i) = F(b_i; \theta) \cdot (1 - F(a_i; \theta))\)</span>.<sup id="fnref-a-equals-b"><a class="footnote-ref" href="#fn-a-equals-b">3</a></sup></p>
+b_i) = F(b_i; \theta) \cdot (1 - F(a_i; \theta))\)</span>.<sup id="sf-hot-take-expectation-maximization-3-back"><a href="#sf-hot-take-expectation-maximization-3" class="simple-footnote" title="To support \(a_i = b_i\), you swap in the pdf via a piecewise function when \(a_i = b_i\) happens to be observed.">3</a></sup></p>
 <p>The obvious thing to optimize is the <strong>incomplete log-likelihood</strong>
 </p>
 <div class="math">$$
@@ -146,7 +146,7 @@ algorithm which has different convergence guarantees.</p>
 </li>
 </ol>
 <p>That's basically what EM is going to do:</p>
-<p>initialize: guess model parameters, \theta.<sup id="fnref-ME-alg"><a class="footnote-ref" href="#fn-ME-alg">4</a></sup></p>
+<p>initialize: guess model parameters, \theta.<sup id="sf-hot-take-expectation-maximization-4-back"><a href="#sf-hot-take-expectation-maximization-4" class="simple-footnote" title='Alternatively, one can   initialize with a guess of the data completions and reorder the two steps   below "M-E" rather than "E-M."'>4</a></sup></p>
 <p>repeat until some convergence criterion is met</p>
 <ul>
 <li>
@@ -186,31 +186,6 @@ if you need the extra accuracy (no sampling error that results from the
 approximate E step) and efficiency (no need to take lots of samples).  That
 said, the MCEM algorithm is a pretty good algorithm since it is very fast to
 implement.</p>
-<div class="footnote">
-<hr>
-<ol>
-<li id="fn-why-the-noise">
-<p>Why such a messy presentation?  My guess is that it is
- because the theoretical foundations for EM are based on an iterative
- lower-bound maximization algorithm.  The theory is bleeding into the
- presentation.  This view is useful because they tie EM to a theoretical
- optimization foundation that is used to prove convergence properties, but
- at the end of the day they are just some dude's hot take.&#160;<a class="footnote-backref" href="#fnref-why-the-noise" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-<li id="fn-interval">
-<p>Interval observations are used in estimation for censored
- observations.&#160;<a class="footnote-backref" href="#fnref-interval" title="Jump back to footnote 2 in the text">&#8617;</a></p>
-</li>
-<li id="fn-a-equals-b">
-<p>To support <span class="math">\(a_i = b_i\)</span>, you swap in the pdf via a piecewise
-  function when <span class="math">\(a_i = b_i\)</span> happens to be observed.&#160;<a class="footnote-backref" href="#fnref-a-equals-b" title="Jump back to footnote 3 in the text">&#8617;</a></p>
-</li>
-<li id="fn-ME-alg">
-<p>Alternatively, one can initialize with a guess of the data
-  completions and reorder the two steps below "M-E" rather than "E-M."&#160;<a class="footnote-backref" href="#fnref-ME-alg" title="Jump back to footnote 4 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -272,7 +247,15 @@ implement.</p>
     (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script></div>
+</script><ol class="simple-footnotes"><li id="sf-hot-take-expectation-maximization-1">Why such a messy presentation?  My guess is that it is
+     because the theoretical foundations for EM are based on an iterative
+     lower-bound maximization algorithm.  The theory is bleeding into the
+     presentation.  This view is useful because they tie EM to a theoretical
+     optimization foundation that is used to prove convergence properties, but
+     at the end of the day they are just some dude's hot take. <a href="#sf-hot-take-expectation-maximization-1-back" class="simple-footnote-back">↩</a></li><li id="sf-hot-take-expectation-maximization-2">Interval observations are used in estimation for censored
+     observations. <a href="#sf-hot-take-expectation-maximization-2-back" class="simple-footnote-back">↩</a></li><li id="sf-hot-take-expectation-maximization-3">To support <span class="math">\(a_i = b_i\)</span>, you swap in the pdf via a piecewise function when <span class="math">\(a_i = b_i\)</span> happens to be observed. <a href="#sf-hot-take-expectation-maximization-3-back" class="simple-footnote-back">↩</a></li><li id="sf-hot-take-expectation-maximization-4">Alternatively, one can
+  initialize with a guess of the data completions and reorder the two steps
+  below "M-E" rather than "E-M." <a href="#sf-hot-take-expectation-maximization-4-back" class="simple-footnote-back">↩</a></li></ol></div>
   </article>
 
 </div>
@@ -328,7 +311,7 @@ implement.</p>
      })();
   </script>
 
-
+<!--
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -337,7 +320,17 @@ implement.</p>
   ga('create', 'UA-8781169-1', 'auto');
   ga('send', 'pageview');
 </script>
+-->
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
 
 </body>
 </html>
