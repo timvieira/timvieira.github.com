@@ -1119,7 +1119,7 @@ function. So we can rephrase the problem as&lt;/p&gt;
 \mathcal{L}_{\text{dev}}\left(\theta(\lambda) \right),
 $$&lt;/div&gt;
 &lt;p&gt;
-where &lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt; is the solution to,
+where &lt;span class="math"&gt;\(\theta(\lambda)\)&lt;/span&gt; is the solution to
 &lt;/p&gt;
 &lt;div class="math"&gt;$$
 \frac{\partial \mathcal{L}_{\text{train}}(\theta, \lambda)}{\partial \theta} = 0.

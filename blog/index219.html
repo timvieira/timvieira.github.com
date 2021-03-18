@@ -50,91 +50,43 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a>
+        <a href="https://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
       </h1>
     <p class="meta">
-<time datetime="2016-05-27T00:00:00-04:00" pubdate>May 27, 2016</time>  <span class="byline author vcard">
+<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2016-05-27T00:00:00-04:00" pubdate>May 27, 2016</time>  <span class="categories">
+<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>In physical sciences, numbers are paired with units and called quantities. In
-this augmented number system, dimensional analysis provides a crucial sanity
-check, much like type checking in a programming language. There are simple rules
-for building up units and constraints on what operations are allowed. For
-example, you can't multiply quantities which are not conformable or add
-quantities with different units. Also, we generally know the units of the input
-and desired output, which allows us to check that our computations at least
-produce the right units.</p>
-<p>In this post, we'll discuss the dimensional analysis of gradient ascent, which
-will hopefully help us understand why the "step size" is parameter so finicky
-and why it even exists.</p>
-<p>Gradient ascent is an iterative procedure for (locally) maximizing a function,
-<span class="math">\(f: \mathbb{R}^d \mapsto \mathbb{R}\)</span>.</p>
-<div class="math">$$
-x_{t+1} = x_t + \alpha \frac{\partial f(x_t)}{\partial x}
-$$</div>
-<p>In general, <span class="math">\(\alpha\)</span> is a <span class="math">\(d \times d\)</span> matrix, but often we constrain the matrix
-to be simple, e.g., <span class="math">\(a\cdot I\)</span> for some scalar <span class="math">\(a\)</span> or <span class="math">\(\text{diag}(a)\)</span> for some
-vector <span class="math">\(a\)</span>.</p>
-<p>Now, let's look at the units of the change in <span class="math">\(\Delta x=x_{t+1} - x_t\)</span>,
-</p>
-<div class="math">$$
-(\textbf{units }\Delta x) = \left(\textbf{units }\alpha\cdot \frac{\partial f(x_t)}{\partial x}\right) = (\textbf{units }\alpha) \frac{(\textbf{units }f)}{(\textbf{units }x)}.
-$$</div>
-<p>The units of <span class="math">\(\Delta x\)</span> must be <span class="math">\((\textbf{units }x)\)</span>. However, if we assume <span class="math">\(f\)</span>
-is unit free, we're happy with <span class="math">\((\textbf{units }x) / (\textbf{units }f)\)</span>.</p>
-<p>Solving for the units of <span class="math">\(\alpha\)</span> we get,
-</p>
-<div class="math">$$
-(\textbf{units }\alpha) = \frac{(\textbf{units }x)^2}{(\textbf{units }f)}.
-$$</div>
-<p>This gives us an idea for what <span class="math">\(\alpha\)</span> should be.</p>
-<p>For example, the inverse Hessian passes the unit check (if we assume <span class="math">\(f\)</span> unit
-free). The disadvantages of the Hessian is that it needs to be positive-definite
-(or at least invertible) in order to be a valid "step size" (i.e., we need
-step sizes to be <span class="math">\(&gt; 0\)</span>).</p>
-<p>Another method for handling step sizes is line search. However, line search
-won't let us run online. Furthermore, line search would be too slow in the case
-where we want a step size for each dimension.</p>
-<p>In machine learning, we've become fond of online methods, which adapt the step
-size as they go. The general idea is to estimate a step size matrix that passes
-the unit check (for each dimension of <span class="math">\(x\)</span>). Furthermore, we want do as little
-extra work as possible to get this estimate (e.g., we want to avoid computing a
-Hessian because that would be extra work). So, the step size should be based
-only iterates and gradients up to time <span class="math">\(t\)</span>.</p>
-<ul>
-<li>
-<p><a href="http://www.magicbroom.info/Papers/DuchiHaSi10.pdf">AdaGrad</a> doesn't doesn't
-  pass the unit check. This motivated AdaDelta.</p>
-</li>
-<li>
-<p><a href="https://arxiv.org/abs/1212.5701">AdaDelta</a> uses the ratio of (running
-  estimates of) the root-mean-squares of <span class="math">\(\Delta x\)</span> and <span class="math">\(\partial f / \partial
-  x\)</span>. The mean is taken using an exponentially weighted moving average. See
-  paper for actual implementation.</p>
-</li>
-<li>
-<p><a href="http://arxiv.org/abs/1412.6980">Adam</a> came later and made some tweaks to
-  remove (unintended) bias in the AdaDelta estimates of the numerator and
-  denominator.</p>
-</li>
-</ul>
-<p>In summary, it's important/useful to analyze the units of numerical algorithms
-in order to get a sanity check (i.e., catch mistakes) as well as to develop an
-understanding of why certain parameters exist and how properties of a problem
-affect the values we should use for them.</p>
+  <div class="entry-content"><p>The following is a quick rant about
+<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
+(see that post for notation).</p>
+<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
+<blockquote>
+<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
+</blockquote>
+<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
+<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
+<p>With importance sampling, it is possible to achieve a variance reduction over
+Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
+for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
+variance</em> estimate <em>with a single sample</em>!</p>
+<p>Of course, this is an unreasonable distribution to use because the normalizing
+constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
+proposal distributions exist</em>.</p>
+<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
+"importance sampling for variance reduction" to learn more.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -209,6 +161,9 @@ affect the values we should use for them.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-function-of-order-statistics/">On the Distribution Function of Order Statistics</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
       </li>
       <li class="post">
@@ -220,15 +175,12 @@ affect the values we should use for them.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -238,7 +190,7 @@ affect the values we should use for them.</p>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2021  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

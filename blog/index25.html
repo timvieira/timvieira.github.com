@@ -50,194 +50,26 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
+        <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </h1>
     <p class="meta">
-<time datetime="2019-06-11T00:00:00-04:00" pubdate>Jun 11, 2019</time>  <span class="byline author vcard">
+<time datetime="2019-09-06T00:00:00-04:00" pubdate>Sep 06, 2019</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2019-06-11T00:00:00-04:00" pubdate>Jun 11, 2019</time>  <span class="categories">
+<time datetime="2019-09-06T00:00:00-04:00" pubdate>Sep 06, 2019</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>We are interested in designing an efficient algorithm for sampling from a categorical distribution over <span class="math">\(n\)</span> items with weights <span class="math">\(w_i &gt; 0\)</span>.  Define target sampling distribution <span class="math">\(p\)</span> as
-</p>
-<div class="math">$$
-p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
-\quad\text{where}\quad W = \sum_j w_j
-$$</div>
-<p>The following is a very simple and relatively famous algorithm due to <a href="https://www.sciencedirect.com/science/article/pii/S002001900500298X">Efraimidis and Spirakis (2006)</a>.  It has several useful properties (e.g., it is a one-pass "streaming" algorithm, separates data from noise, can be easily extended for streaming sampling without replacement).  It is also very closely related to the Gumbel-max trick (<a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Vieira,  2014</a>).</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">weighted_reservoir_sampling</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">])</span>
-</code></pre></div>
-
-
-<p>Some cosmetic differences from E&amp;S'06: We use exponential random variates and <span class="math">\(\min\)</span> instead of <span class="math">\(\max\)</span>. E&amp;S'06 use a less-elegant and rather-mysterious (IMO) random key <span class="math">\(u_i^{1/w_i}\)</span>.</p>
-<p><strong>Why does it work?</strong> The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
-When <span class="math">\(X_i \sim \mathrm{Exponential}(w_i)\)</span>, <span class="math">\(R = {\mathrm{argmin}}_i X_i\)</span>, and <span class="math">\(T = \min_i X_i\)</span> then
-<span class="math">\(R \sim p\)</span> and <span class="math">\(T \sim \mathrm{Exponential}\left( \sum_i w_i \right)\)</span>.</p>
-<h2>Fewer random variates by waiting</h2>
-<p>One down-side of this one-pass algorithm is that it requires <span class="math">\(\mathcal{O}(n)\)</span> uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need <span class="math">\(\mathcal{O}(1)\)</span> samples.  E&amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires <span class="math">\(\mathcal{O}(\log(n))\)</span> random variates (in expectation).  That's <em>way</em> fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.</p>
-<p>Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">jump</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-    <span class="s2">&quot;Weighted-reservoir sampling by jumping&quot;</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-    <span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-        <span class="n">J</span> <span class="o">-=</span> <span class="n">w</span>
-        <span class="k">if</span> <span class="n">J</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Sample the key for item i, given that it is smaller than the current threshold</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">Exponential</span><span class="o">.</span><span class="n">sample_truncated</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-            <span class="c1"># i enters the reservoir</span>
-            <span class="n">R</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="c1"># sample the waiting time (size of the jump)</span>
-            <span class="n">J</span> <span class="o">=</span> <span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">R</span>
-</code></pre></div>
-
-
-<p><strong>Why does exponential jumps work?</strong></p>
-<p>Let me first write the <code>weighted_reservoir_sampling</code> algorithm to be much more similar to the <code>jump</code> algorithm.  For fun, I'm going to refer to it as the <code>walk</code> algorithm.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-    <span class="s2">&quot;Weighted-reservoir sampling by walking&quot;</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-    <span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">Exponential</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">X</span> <span class="o">&lt;</span> <span class="n">T</span><span class="p">:</span>
-            <span class="n">R</span> <span class="o">=</span> <span class="n">i</span>   <span class="c1"># i enters the reservoir</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">X</span>   <span class="c1"># threshold to enter the reservoir</span>
-    <span class="k">return</span> <span class="n">R</span>
-</code></pre></div>
-
-
-<p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step <span class="math">\(i\)</span> the probability that it sees its next minimum at steps <span class="math">\(j \in \{ i+1, \ldots \}\)</span> can be reasoned about without needing to <em>actually</em> sample the various <span class="math">\(X_j\)</span> variables.</p>
-<p>Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the <code>jump</code> algorithm simulates the <code>walk</code> algorithm.  The key to doing this is showing that the probability of jumping from <span class="math">\(i\)</span> to <span class="math">\(k\)</span> is the same as "walking" from <span class="math">\(i\)</span> to <span class="math">\(k\)</span>.  Let <span class="math">\(W_{i,k} = \sum_{j=i}^k w_j\)</span>.</p>
-<p>This proof is adapted from the original proof in E&amp;S'06.</p>
-<div class="math">$$
-\begin{eqnarray}
-\mathrm{Pr}\left( \text{walk to } k \mid i,T \right)
-&amp;=&amp; \mathrm{Pr}\left( X_k &lt; T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \\
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \\
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \\
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \\
-&amp;=&amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \\
-&amp;=&amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \\
-\\
-\mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
-&amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; J \le W_{i,k} \right) \\
-&amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \\
-&amp;=&amp; \mathrm{Pr}\left( \exp(-T W_{i,k-1}) &gt; U \ge \exp(-T W_{i,k}) \right) \label{foo}\\
-&amp;=&amp; \exp(T W_{i,k-1}) - \exp(T W_{i,k} )
-\end{eqnarray}
-$$</div>
-<p>Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that <span class="math">\(X_k\)</span> is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a <em>truncated</em> random variate: a random variate that is guaranteed to less than the previous minimum.  In the <a href="https://cmaddis.github.io/gumbel-machinery">Gumbel-max world</a>, this is used in the top-down generative story.</p>
-<h2>Closing thoughts</h2>
-<p>Pros:</p>
-<ul>
-<li>The jump algorithm saves a ton of random variates and gives practical savings
-  (at least, in my limited experiments).</li>
-</ul>
-<p>Cons:</p>
-<ul>
-<li>
-<p>The jump algorithm is harder to parallelize or vectorize, but it seems possible.</p>
-</li>
-<li>
-<p>If you aren't in a setting that requires a one-pass algorithm or some other
-  special properties, you are probably better served by the two-pass algorithms
-  since they have lower overhead because it doesn't call expensive functions
-  like <span class="math">\(\log\)</span> and it uses a single random variate per sample.</p>
-</li>
-</ul>
-<p>Further reading:</p>
-<ul>
-<li>
-<p>I have several posts on the topic of fast sampling algorithms
-(<a href="http://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/">1</a>,
-<a href="http://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/">2</a>,
-<a href="http://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">3</a>).</p>
-</li>
-<li>
-<p>Jake VanderPlas (2018) <a href="http://jakevdp.github.io/blog/2018/09/13/waiting-time-paradox/">The Waiting Time Paradox, or, Why Is My Bus Always Late?</a>.</p>
-</li>
-</ul>
-<h2>Interactive Notebook</h2>
-<script src="https://gist.github.com/timvieira/44edfaf97cb2e191e4618f0d25401bf4.js"></script>
-
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
-
-    var configscript = document.createElement('script');
-    configscript.type = 'text/x-mathjax-config';
-    configscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        availableFonts: ['STIX', 'TeX']," +
-        "        preferredFont: 'STIX'," +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script></div>
+  <div class="entry-content"><p>{% notebook Restart-acceleration.ipynb cells[1:] %}</p></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index26.html">&larr; Older</a>
@@ -250,6 +82,9 @@ $$</div>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-function-of-order-statistics/">On the Distribution Function of Order Statistics</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
       </li>
       <li class="post">
@@ -261,15 +96,12 @@ $$</div>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -279,7 +111,7 @@ $$</div>
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2021  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>

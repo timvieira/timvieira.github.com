@@ -225,7 +225,7 @@ multiplying small things together. I've recently found log-reals to be effective
 at squeaking a bit more numerical accuracy.&lt;/p&gt;
 &lt;p&gt;This trick is useful for almost all backprop computations because backprop is
 essentially:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;adjoint(u) += adjoint(v) * dv/du.&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;adjoint(u) += adjoint(v) * dv/du.
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 

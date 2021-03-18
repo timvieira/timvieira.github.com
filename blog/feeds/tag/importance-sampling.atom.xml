@@ -448,8 +448,8 @@ different random variable &lt;span class="math"&gt;\(f^*(x)=\frac{p(x)}{q(x)}\! 
 &lt;div class="math"&gt;$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
 $$&lt;/div&gt;
-&lt;p&gt;&lt;br/&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(p(x) &amp;gt; 0
-\Rightarrow q(x) &amp;gt; 0.\)&lt;/span&gt; Without this condition, the equation is biased! Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
+&lt;p&gt;&lt;br/&gt;Technical condition: &lt;span class="math"&gt;\(q\)&lt;/span&gt; must have support everywhere &lt;span class="math"&gt;\(p\)&lt;/span&gt; does, &lt;span class="math"&gt;\(f(x) p(x) &amp;gt; 0
+\Rightarrow q(x) &amp;gt; 0.\)&lt;/span&gt;  Without this condition, the equation is biased!  Note: &lt;span class="math"&gt;\(q\)&lt;/span&gt;
 can support things that &lt;span class="math"&gt;\(p\)&lt;/span&gt; doesn't.&lt;/p&gt;
 &lt;p&gt;Terminology: The quantity &lt;span class="math"&gt;\(w(x) = \frac{p(x)}{q(x)}\)&lt;/span&gt; is often referred to as the
 "importance weight" or "importance correction". We often refer to &lt;span class="math"&gt;\(p\)&lt;/span&gt; as the

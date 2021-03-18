@@ -50,201 +50,26 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/">Black-box optimization</a>
+        <a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">Steepest ascent</a>
       </h1>
     <p class="meta">
-<time datetime="2018-03-16T00:00:00-04:00" pubdate>Mar 16, 2018</time>  <span class="byline author vcard">
+<time datetime="2019-04-19T00:00:00-04:00" pubdate>Apr 19, 2019</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2018-03-16T00:00:00-04:00" pubdate>Mar 16, 2018</time>  <span class="categories">
+<time datetime="2019-04-19T00:00:00-04:00" pubdate>Apr 19, 2019</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>Black-box optimization algorithms are a fantastic tool that everyone should be
-aware of. I frequently use black-box optimization algorithms for prototyping and
-when gradient-based algorithms fail,
-e.g., because the function is not differentiable,
-because the function is truly opaque (no gradients),
-because the gradient would require too much memory to compute efficiently.</p>
-<p>From a young age, we are taught to love gradients and never learn about any
-optimization algorithms other than gradient descent. I believe this obsession
-has put us in a local optimum. I've been amazed at how few people know about
-non-gradient algorithms for optimization. Although, this is slowly improving
-thanks to the prevalence of hyperparameter optimization, so most people have
-used random search and at least know of Bayesian optimization.</p>
-<p>There are many ways to optimize a function! The gradient just happens to have a
-<a href="/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/">beautiful</a> and
-<a href="/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">computationally efficient</a>
-shortcut for finding <em>the direction of steepest descent</em> in Euclidean space.</p>
-<p><strong>What is a descent direction anyway?</strong> For minimizing an function <span class="math">\(f:
-\mathbb{R}^d \mapsto \mathbb{R}\)</span>, a descent direction for <span class="math">\(f\)</span> is a
-<span class="math">\((d+1)\)</span>-dimensional hyperplane. The gradient gives a unique hyperplane that is
-tangent to the surface of <span class="math">\(f\)</span> at the point <span class="math">\(x\)</span>; the <span class="math">\((d+1)^{\text{th}}\)</span>
-coordinate comes from the value <span class="math">\(f(x)\)</span>—think of it like a first-order
-Taylor approximation to <span class="math">\(f\)</span> at <span class="math">\(x\)</span>. (For an in-depth discussion on notions of
-<em>steepest</em> descent, check out
-<a href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/">this post</a>.)</p>
-<p><strong>The baseline:</strong> Without access to gradient code, <em>approximating</em> the gradient
-takes <span class="math">\(d+1\)</span> function evaluations via the finite-difference approximation to the
-gradient,<sup id="sf-black-box-optimization-1-back"><a href="#sf-black-box-optimization-1" class="simple-footnote" title="Of course, it's better to use the two-sided difference approximation to the gradient in practice, which requires \(2 \cdot d\) function evaluations, not \(d+1\). ">1</a></sup> which I've discussed a
-<a href="http://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">few</a>
-<a href="http://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/">times</a>. This
-shouldn't be surprising since that's the size of the object we're looking for
-anyways!<sup id="sf-black-box-optimization-2-back"><a href="#sf-black-box-optimization-2" class="simple-footnote" title="Note that we can get noisy, approximations with much fewer than \(\mathcal{O}(d)\) evaluations, e.g., SPSA or even REINFORCE obtain gradients approximations with just \(\mathcal{O}(1)\) evaluations per iteration.">2</a></sup></p>
-<p><strong>Can we do better?</strong> Suppose we had <span class="math">\((d+1)\)</span> arbitrary points
-<span class="math">\(\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}\)</span> in <span class="math">\(\mathbb{R}^n\)</span> with
-values <span class="math">\(f^{(i)} = f(\boldsymbol{x}^{(i)}).\)</span> Can we find efficiently find a
-descent direction without extra <span class="math">\(f\)</span> evaluations?</p>
-<p><strong>The Nelder-Mead trick:</strong> Take the worst-performing point in this set
-<span class="math">\(\boldsymbol{x}^{(\text{worst})}\)</span> and consider moving that point through the
-center-of-mass of the <span class="math">\(d\)</span> remaining points. Call this the NM direction. At some
-point along that direction (think line search) there will be a good place to put
-that point, which will make it the new best point. We can now repeat this
-process: pick the worst point, reflect it through the center of mass, etc.</p>
-<ul>
-<li>
-<p>The cost of finding the NM descent direction requires no additional function
-   evaluations, which allows the method to be very frugal with function
-   evaluations. Of course, stepping in the search direction should use line
-   search, which will require additional function evaluations; gradient-based
-   methods also benefit from line search.</p>
-</li>
-<li>
-<p>Finding the worst point can be done in time <span class="math">\(\mathcal{O}(\log d)\)</span> using a
-   <a href="https://en.wikipedia.org/wiki/Heap_(data_structure)">heap</a>.</p>
-</li>
-<li>
-<p>This NM direction might is not the steepest descent direction—like the
-   gradient—but it does give a reasonable descent direction to
-   follow. Often, the NM direction is more useful than the gradient direction
-   because it is not based on an infinitesimal ball around the current point
-   like the gradient. NM often "works" on noisy and nonsmooth functions where
-   gradients do not exist.</p>
-</li>
-<li>
-<p>On high-dimensional problems, NM requires a significant number of "warm up"
- <em>function</em> evaluations before it can take its first informed step. Whereas,
- gradient descent could plausibly CONVERGE in fewer <em>gradient</em> evaluations
- (assuming sufficiently "nice" functions)! So, if you have high-dimensional
- problem and efficient gradients, use them.</p>
-</li>
-<li>
-<p>In three dimensions, we can visualize this as a tetrahedron with corners that
-   "stick" to the surface of the function. At each iterations, the highest
-   (i.e., worst performing) point is the one most likely to be affected by
-   "gravity" which causes it to flip through the middle of the blob, as the
-   other points stay stuck.</p>
-</li>
-</ul>
-<p></p><center>
-   <img alt="Nelder-Mead animation" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nelder-Mead_Himmelblau.gif/320px-Nelder-Mead_Himmelblau.gif">
-   <br><em>(animation source: Wikipedia page for Nelder-Mead)</em>
-   </center><p></p>
-<ul>
-<li>This is exactly the descent direction used in the
-   <a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method">Nelder-Mead algorithm</a>
-   (Nelder &amp; Mead, 1965), which happens to be a great default algorithm for
-   locally optimizing functions without access to gradients. Matlab and scipy
-   users may know it better as
-   <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin.html"><code>fmin</code></a>.
-   There are some additional "search moves" required to turn NM into a robust
-   algorithm; these include shrinking and growing the set of points. I won't try
-   to make yet another tutorial on the specifics of Nelder-Mead, as several
-   already exist, but rather bring it to your attention as a plausible approach
-   for efficiently finding descent directions. You can find a tutorial with
-   plenty of visualization on its
-   <a href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method">Wikipedia page</a>.</li>
-</ul>
-<h3>Summary</h3>
-<p>I described the Nelder-Mead search direction as an efficient way to leverage
-past function evaluations to find a descent directions, which serves as a
-reasonable alternative to gradients when they are unavailable (or not useful).</p>
-<h3>Further reading</h3>
-<ul>
-<li>There are plenty of other black-box optimization algorithms out there. The
-   wiki page on
-   <a href="https://en.wikipedia.org/wiki/Derivative-free_optimization">derivative-free optimization</a>
-   is a good starting point for learning more.</li>
-</ul>
-<h3>Footnotes</h3>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
-
-    var configscript = document.createElement('script');
-    configscript.type = 'text/x-mathjax-config';
-    configscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        availableFonts: ['STIX', 'TeX']," +
-        "        preferredFont: 'STIX'," +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script><ol class="simple-footnotes"><li id="sf-black-box-optimization-1">Of course, it's better to use the two-sided difference
-approximation to the gradient in practice, which requires <span class="math">\(2 \cdot d\)</span> function
-evaluations, not <span class="math">\(d+1\)</span>.
- <a href="#sf-black-box-optimization-1-back" class="simple-footnote-back">↩</a></li><li id="sf-black-box-optimization-2">Note that we can get noisy, approximations with much fewer
-than <span class="math">\(\mathcal{O}(d)\)</span> evaluations, e.g.,
-<a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation">SPSA</a>
-or even REINFORCE obtain gradients approximations with just <span class="math">\(\mathcal{O}(1)\)</span>
-evaluations per iteration. <a href="#sf-black-box-optimization-2-back" class="simple-footnote-back">↩</a></li></ol></div>
+  <div class="entry-content"><p>{% notebook Steepest-ascent.ipynb cells[1:] %}</p></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index29.html">&larr; Older</a>
@@ -257,6 +82,9 @@ evaluations per iteration. <a href="#sf-black-box-optimization-2-back" class="si
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-function-of-order-statistics/">On the Distribution Function of Order Statistics</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
       </li>
       <li class="post">
@@ -268,15 +96,12 @@ evaluations per iteration. <a href="#sf-black-box-optimization-2-back" class="si
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
@@ -286,7 +111,7 @@ evaluations per iteration. <a href="#sf-black-box-optimization-2-back" class="si
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2014&ndash;2020  Tim Vieira &mdash;
+    Copyright &copy;  2014&ndash;2021  Tim Vieira &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
