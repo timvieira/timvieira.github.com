@@ -42,12 +42,11 @@ $$
 \int_t \sum_{j}
 \mathrm{Pr}\left( Z_j = t, R_{(k)} = j, Y_{(k)} = y\right) \\
 &amp;amp;= 
-\int_{-\infty}^{\infty}
+\int_{t}
 \sum_{j \in y}
 f_j(t) 
 \prod_{i \in y: i \ne j} F_i(t) 
 \prod_{i \in \overline{y}: i \ne j} (1-F_i(t)) 
-\, dt
 \end{align*}
 $$&lt;/p&gt;
 &lt;p&gt;The sum $j \in y$ partitions the event space by which index $j$ is the is the $k^{\mathrm{th}}$ smallest element, $R_{(k)} = j$.  Now, with $j$ is fixed, we integrate over the density of values $t$ that $Z_j$ can take on.  Since $j$ is decided as the $k^{\mathrm{th}}$, it must be in the set.  Additionally, we don't want to multiply the probability of $t$ twice, so we exclude $j$ for the two products.  $\prod_{i \in y: i \ne j} F_i(t)$ is the probability that all $i \in y$ that aren't $i=j$ are larger than the threshold $t$.  It is a product because they are independently drawn.  Similarly, the other product is the probability that $i \in \overline{y}: i \ne j$ are all smaller.&lt;/p&gt;
@@ -492,7 +491,7 @@ frozenset({0, 1, 6}): 0.0001, 0.0001 &lt;span class="ansi-green-fg"&gt;ok&lt;/sp
   &lt;span class="na"&gt;author&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;{Tim Vieira}&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
   &lt;span class="na"&gt;title&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;{On the Distribution of the Smallest Indices}&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
   &lt;span class="na"&gt;year&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;{2021}&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-  &lt;span class="na"&gt;url&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;{https://github.com/timvieira/blog/blob/master/content/Distribution-of-Smallest-Indices.ipynb}&lt;/span&gt;
+  &lt;span class="na"&gt;url&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;{https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/}&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 

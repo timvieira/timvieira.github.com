@@ -112,12 +112,11 @@ $$
 \int_t \sum_{j}
 \mathrm{Pr}\left( Z_j = t, R_{(k)} = j, Y_{(k)} = y\right) \\
 &amp;= 
-\int_{-\infty}^{\infty}
+\int_{t}
 \sum_{j \in y}
 f_j(t) 
 \prod_{i \in y: i \ne j} F_i(t) 
 \prod_{i \in \overline{y}: i \ne j} (1-F_i(t)) 
-\, dt
 \end{align*}
 $$</p>
 <p>The sum $j \in y$ partitions the event space by which index $j$ is the is the $k^{\mathrm{th}}$ smallest element, $R_{(k)} = j$.  Now, with $j$ is fixed, we integrate over the density of values $t$ that $Z_j$ can take on.  Since $j$ is decided as the $k^{\mathrm{th}}$, it must be in the set.  Additionally, we don't want to multiply the probability of $t$ twice, so we exclude $j$ for the two products.  $\prod_{i \in y: i \ne j} F_i(t)$ is the probability that all $i \in y$ that aren't $i=j$ are larger than the threshold $t$.  It is a product because they are independently drawn.  Similarly, the other product is the probability that $i \in \overline{y}: i \ne j$ are all smaller.</p>
@@ -562,7 +561,7 @@ frozenset({0, 1, 6}): 0.0001, 0.0001 <span class="ansi-green-fg">ok</span>
   <span class="na">author</span> <span class="p">=</span> <span class="s">{Tim Vieira}</span><span class="p">,</span>
   <span class="na">title</span> <span class="p">=</span> <span class="s">{On the Distribution of the Smallest Indices}</span><span class="p">,</span>
   <span class="na">year</span> <span class="p">=</span> <span class="s">{2021}</span><span class="p">,</span>
-  <span class="na">url</span> <span class="p">=</span> <span class="s">{https://github.com/timvieira/blog/blob/master/content/Distribution-of-Smallest-Indices.ipynb}</span>
+  <span class="na">url</span> <span class="p">=</span> <span class="s">{https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/}</span>
 <span class="p">}</span>
 </pre></div>
 
