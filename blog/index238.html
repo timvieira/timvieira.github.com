@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Graduate Descent</title>
+
+  <link href="https://fonts.googleapis.com/css?family=EB+Garamond&display=swap"
+        rel="stylesheet">
+
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="https://timvieira.github.io/blog/favicon.png" rel="icon">
+
+  <link href="https://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="https://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <!--
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Feed</a></li>
+  -->
+</ul>
+
+
+<ul class="main-navigation">
+    <li><a href="https://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/index.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div class="blog-index">
+  		<article>
+<header>
+      <h1 class="entry-title">
+        <a href="https://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/">Gradient-vector product</a>
+      </h1>
+    <p class="meta">
+<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>  <span class="byline author vcard">
+    by <span class="fn">
+        Tim Vieira
+    </span>
+  </span>
+  <!--
+<time datetime="2014-02-10T00:00:00-05:00" pubdate>Feb 10, 2014</time>  <span class="categories">
+    <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
+  </span>
+  -->
+
+  <span class="tags">
+    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>  </span>
+    </p>
+</header>
+
+  <div class="entry-content"><p>We've all written the following test for our gradient code (known as the
+finite-difference approximation).</p>
+<div class="math">$$
+\frac{\partial}{\partial x_i} f(\boldsymbol{x}) \approx
+ \frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{e_i})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
+ \Big)
+$$</div>
+<p>where <span class="math">\(\varepsilon &gt; 0\)</span> and <span class="math">\(\boldsymbol{e_i}\)</span> is a vector of zeros except at
+<span class="math">\(i\)</span> where it is <span class="math">\(1\)</span>. This approximation is exact in the limit, and accurate to
+<span class="math">\(o(\varepsilon)\)</span> additive error.</p>
+<p>This is a specific instance of a more general approximation! The dot product of
+the gradient and any (conformable) vector <span class="math">\(\boldsymbol{d}\)</span> can be approximated
+with the following formula,</p>
+<div class="math">$$
+\nabla f(\boldsymbol{x})^{\top} \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+   f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+ - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+ \Big)
+$$</div>
+<p>We get the special case above when <span class="math">\(\boldsymbol{d}=\boldsymbol{e_i}\)</span>. This also
+exact in the limit and just as accurate.</p>
+<p><strong>Runtime?</strong> Finite-difference approximation is probably too slow for
+  approximating a high-dimensional gradient because the number of function
+  evaluations required is <span class="math">\(2 n\)</span> where <span class="math">\(n\)</span> is the dimensionality of <span class="math">\(x\)</span>. However,
+  if the end goal is to approximate a gradient-vector product, a mere <span class="math">\(2\)</span>
+  function evaluations is probably faster than specialized code for computing
+  the gradient.</p>
+<p><strong>How to set <span class="math">\(\varepsilon\)</span>?</strong> The second approach is more sensitive to
+  <span class="math">\(\varepsilon\)</span> because <span class="math">\(\boldsymbol{d}\)</span> is arbitrary, unlike
+  <span class="math">\(\boldsymbol{e_i}\)</span>, which is a simple unit-norm vector. Luckily some guidance
+  is available. Andrei (2009) reccommends</p>
+<div class="math">$$
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
+$$</div>
+<p>where <span class="math">\(\epsilon_{\text{mach}}\)</span> is
+<a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:
+<code>numpy.finfo(x.dtype).eps</code>).</p>
+<h2>Why do I care?</h2>
+<ol>
+<li>
+<p>Well, I tend to work on sparse, but high-dimensional problems where
+   finite-difference would be too slow. Thus, my usual solution is to only test
+   several randomly selected dimensions<span class="math">\(-\)</span>biasing samples toward dimensions
+   which should be nonzero. With the new trick, I can effectively test more
+   dimensions at once by taking random vectors <span class="math">\(\boldsymbol{d}\)</span>. I recommend
+   sampling <span class="math">\(\boldsymbol{d}\)</span> from a spherical Gaussian so that we're uniform on
+   the angle of the vector.</p>
+</li>
+<li>
+<p>Sometimes the gradient-vector dot product is the end goal. This is the case
+   with Hessian-vector products, which arises in many optimization algorithms,
+   such as stochastic meta descent. Hessian-vector products are an instance of
+   the gradient-vector dot product because the Hessian is just the gradient of
+   the gradient.</p>
+</li>
+</ol>
+<h2>Hessian-vector product</h2>
+<p>Hessian-vector products are an instance of the gradient-vector dot product
+because since the Hessian is just the gradient of the gradient! Now you only
+need to remember one formula!</p>
+<div class="math">$$
+H(\boldsymbol{x})\, \boldsymbol{d} \approx
+\frac{1}{2 \varepsilon} \Big(
+  \nabla f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d})
+- \nabla f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d})
+\Big)
+$$</div>
+<p>With this trick you never have to actually compute the gnarly Hessian! More on
+<a href="http://justindomke.wordpress.com/2009/01/17/hessian-vector-products/">Justin Domke's blog</a></p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  		</article>
+<div class="pagination">
+
+    <a class="next" href="https://timvieira.github.io/blog/index237.html">Newer &rarr;</a>
+  <br />
+</div></div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+  <h1>Tags</h1>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+
+
+
+<section>
+    <a href="http://twitter.com/xtimv" class="twitter-follow-button" data-show-count="true">Follow @xtimv</a>
+</section>
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014&ndash;2021  Tim Vieira &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="https://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="https://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
+
+<!--
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-8781169-1', 'auto');
+  ga('send', 'pageview');
+</script>
+-->
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
+
+</body>
+</html>

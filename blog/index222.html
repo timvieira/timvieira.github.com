@@ -50,122 +50,138 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a>
+        <a href="https://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based hyperparameter optimization and the implicit function theorem</a>
       </h1>
     <p class="meta">
-<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>  <span class="byline author vcard">
+<time datetime="2016-03-05T00:00:00-05:00" pubdate>Mar 05, 2016</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2016-01-17T00:00:00-05:00" pubdate>Jan 17, 2016</time>  <span class="categories">
+<time datetime="2016-03-05T00:00:00-05:00" pubdate>Mar 05, 2016</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>This is a simple note on how to compute a bijective mapping between the indices
-of an <span class="math">\(n\)</span>-dimensional array and a flat, one-dimensional array. We'll look at
-both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
-<p>We'll assume each dimension <span class="math">\(a, b, c, \ldots\)</span> is a positive integer and bounded
-<span class="math">\(a \le A, b \le B, c \le C, \ldots\)</span></p>
-<h3>Start small</h3>
-<p>Let's start by looking at <span class="math">\(n = 3\)</span> and generalize from there.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
-    <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">a</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="n">J</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">inverse_3</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
-    <span class="n">total</span> <span class="o">=</span> <span class="n">J</span><span class="o">*</span><span class="n">K</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
-    <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
-    <span class="n">total</span> <span class="o">=</span> <span class="n">K</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-</code></pre></div>
-
-
-<p>Here's our test case:</p>
-<div class="highlight"><pre><span></span><code><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span>
-<span class="n">key</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
-            <span class="nb">print</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">key</span>
-            <span class="k">assert</span> <span class="n">inverse_3</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">index_3</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">))</span> <span class="o">==</span> <span class="n">key</span>
-            <span class="n">key</span> <span class="o">+=</span> <span class="mi">1</span>
-</code></pre></div>
-
-
-<p>Note: This is not the only bijective mapping from <code>tuple</code> to <code>int</code> that we
-could have come up with. The one we chose corresponds to the particular layout,
-which is apparent in the test case.</p>
-<p>For <span class="math">\(n=4\)</span> the pattern is <span class="math">\(((a \cdot B + b) \cdot C + d) \cdot D + d\)</span>.</p>
-<p>Sidenote: We don't actually need the bound <span class="math">\(a \le A\)</span> in either <code>index</code> or
-<code>inverse</code>. This gives us a little extra flexibility because our first
-dimension can be infinite/unknown.</p>
-<h3>General case</h3>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="s2">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
-    <span class="c1"># the pattern:</span>
-    <span class="c1"># ((i*J + j)*K + k)*L + l</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
-        <span class="n">key</span> <span class="o">*=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">key</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">key</span>
-
-<span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-    <span class="s2">&quot;Find key given index ``ix`` and bounds ``A``.&quot;</span>
-    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">A</span><span class="p">:</span>
-        <span class="n">total</span> <span class="o">*=</span> <span class="n">x</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
-        <span class="n">total</span> <span class="o">/=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">//</span> <span class="n">total</span>
-        <span class="n">ix</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">%</span> <span class="n">total</span>
-        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">key</span>
-</code></pre></div>
-
-
-<h2>Appendix</h2>
-<h3>Testing the general case</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">itertools</span>
-
-<span class="k">def</span> <span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
-    <span class="s2">&quot;Test that `index` produces the layout we expect.&quot;</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">D</span><span class="p">))]</span>
-    <span class="k">assert</span> <span class="n">z</span> <span class="o">==</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
-
-<span class="k">def</span> <span class="nf">test_inverse</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
-    <span class="n">got</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">got</span><span class="p">)</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
-    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
-    <span class="n">test_layout</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>
-
-    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,))</span>
-    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">test_inverse</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
-</code></pre></div>
-
-
+  <div class="entry-content"><p>The most approaches to hyperparameter optimization can be viewed as a bi-level
+optimization&mdash;the "inner" optimization optimizes training loss (wrt <span class="math">\(\theta\)</span>),
+while the "outer" optimizes hyperparameters (<span class="math">\(\lambda\)</span>).</p>
+<div class="math">$$
+\lambda^* = \underset{\lambda}{\textbf{argmin}}\
+\mathcal{L}_{\text{dev}}\left(
+\underset{\theta}{\textbf{argmin}}\
+\mathcal{L}_{\text{train}}(\theta, \lambda) \right)
+$$</div>
+<p>Can we estimate <span class="math">\(\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}\)</span> so
+that we can run gradient-based optimization over <span class="math">\(\lambda\)</span>?</p>
+<p>Well, what does it mean to have an <span class="math">\(\textbf{argmin}\)</span> inside a function?</p>
+<p>Well, it means that there is a <span class="math">\(\theta^*\)</span> that gets passed to
+<span class="math">\(\mathcal{L}_{\text{dev}}\)</span>. And, <span class="math">\(\theta^*\)</span> is a function of <span class="math">\(\lambda\)</span>, denoted
+<span class="math">\(\theta(\lambda)\)</span>. Furthermore, <span class="math">\(\textbf{argmin}\)</span> must set the derivative of the
+inner optimization to zero in order to be a local optimum of the inner
+function. So we can rephrase the problem as</p>
+<div class="math">$$
+\lambda^* = \underset{\lambda}{\textbf{argmin}}\
+\mathcal{L}_{\text{dev}}\left(\theta(\lambda) \right),
+$$</div>
+<p>
+where <span class="math">\(\theta(\lambda)\)</span> is the solution to
+</p>
+<div class="math">$$
+\frac{\partial \mathcal{L}_{\text{train}}(\theta, \lambda)}{\partial \theta} = 0.
+$$</div>
+<p>Now how does <span class="math">\(\theta\)</span> change as the result of an infinitesimal change to
+<span class="math">\(\lambda\)</span>?</p>
+<p>The constraint on the derivative implies a type of "equilibrium"&mdash;the inner
+optimization process will continue to optimize regardless of how we change
+<span class="math">\(\lambda\)</span>. Assuming we don't change <span class="math">\(\lambda\)</span> too much, then the inner
+optimization shouldn't change <span class="math">\(\theta\)</span> too much and it will change in a
+predictable way.</p>
+<p>To do this, we'll appeal to the implicit function theorem. Let's look at the
+general case to simplify notation. Suppose <span class="math">\(x\)</span> and <span class="math">\(y\)</span> are related through a
+function <span class="math">\(g\)</span> as follows,</p>
+<div class="math">$$g(x,y) = 0.$$</div>
+<p>Assuming <span class="math">\(g\)</span> is a smooth function in <span class="math">\(x\)</span> and <span class="math">\(y\)</span>, we can perturb either
+argument, say <span class="math">\(x\)</span> by a small amount <span class="math">\(\Delta_x\)</span> and <span class="math">\(y\)</span> by <span class="math">\(\Delta_y\)</span>. Because
+system preserves the constraint, i.e.,</p>
+<div class="math">$$
+g(x + \Delta_x, y + \Delta_y) = 0.
+$$</div>
+<p>We can solve for the change of <span class="math">\(x\)</span> as a result of an infinitesimal change in
+<span class="math">\(y\)</span>. We take the first-order expansion,</p>
+<div class="math">$$
+g(x, y) + \Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
+$$</div>
+<p>Since <span class="math">\(g(x,y)\)</span> is already zero,</p>
+<div class="math">$$
+\Delta_x \frac{\partial g}{\partial x} + \Delta_y \frac{\partial g}{\partial y} = 0.
+$$</div>
+<p>Next, we solve for <span class="math">\(\frac{\Delta_x}{\Delta_y}\)</span>.</p>
+<div class="math">$$
+\Delta_x \frac{\partial g}{\partial x} = - \Delta_y \frac{\partial g}{\partial y}.
+$$</div>
+<div class="math">$$
+\frac{\Delta_x}{\Delta_y}  = -\left( \frac{\partial g}{\partial y} \right)^{-1} \frac{\partial g}{\partial x}.
+$$</div>
+<p>Back to the original problem: Now we can use the implicit function theorem to
+estimate how <span class="math">\(\theta\)</span> varies in <span class="math">\(\lambda\)</span> by plugging in <span class="math">\(g \mapsto
+\frac{\partial \mathcal{L}_{\text{train}}}{\partial \theta}\)</span>, <span class="math">\(x \mapsto \theta\)</span>
+and <span class="math">\(y \mapsto \lambda\)</span>:</p>
+<div class="math">$$
+\frac{\partial \theta}{\partial \lambda} = - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top}
+$$</div>
+<p>This tells us how <span class="math">\(\theta\)</span> changes with respect to an infinitesimal change to
+<span class="math">\(\lambda\)</span>. Now, we can apply the chain rule to get the gradient of the whole
+optimization problem wrt <span class="math">\(\lambda\)</span>,</p>
+<div class="math">$$
+\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}
+= \frac{\partial \mathcal{L}_{\text{dev}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top} \right)
+$$</div>
+<p>Since we don't like (explicit) matrix inverses, we compute <span class="math">\(- \left( \frac{
+\partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top
+} \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\,
+\partial \lambda^\top}\)</span> as the solution to <span class="math">\(\left( \frac{ \partial^2
+\mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right) x
+= -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
+\lambda^\top}\)</span>. When the Hessian is positive definite, the linear system can be
+solved with conjugate gradient, which conveniently only requires matrix-vector
+products&mdash;i.e., you never have to materialize the Hessian. (Apparently,
+<a href="https://en.wikipedia.org/wiki/Matrix-free_methods">matrix-free linear algebra</a>
+is a thing.) In fact, you don't even have to implement the Hessian-vector and
+Jacobian-vector products because they are accurately and efficiently
+approximated with centered differences (see
+<a href="/blog/post/2014/02/10/gradient-vector-product/">earlier post</a>).</p>
+<p>At the end of the day, this is an easy algorithm to implement! However, the
+estimate of the gradient can be temperamental if the linear system is
+ill-conditioned.</p>
+<p>In a later post, I'll describe a more-robust algorithms based on automatic
+differentiation through the inner optimization algorithm, which make fewer and
+less-brittle assumptions about the inner optimization.</p>
+<p><strong>Further reading</strong>:</p>
+<ul>
+<li>
+<p><a href="https://justindomke.wordpress.com/2014/02/03/truncated-bi-level-optimization/">Truncated Bi-Level Optimization</a></p>
+</li>
+<li>
+<p><a href="http://ai.stanford.edu/~chuongdo/papers/learn_reg.pdf">Efficient multiple hyperparameter learning for log-linear models</a></p>
+</li>
+<li>
+<p><a href="http://arxiv.org/abs/1502.03492">Gradient-based Hyperparameter Optimization through Reversible Learning</a></p>
+</li>
+<li>
+<p><a href="http://fa.bianp.net/blog/2016/hyperparameter-optimization-with-approximate-gradient/">Hyperparameter optimization with approximate gradient</a>
+   (<a href="https://arxiv.org/pdf/1602.02355.pdf">paper</a>): This paper looks at the implicit
+   differentiation approach where you have an <em>approximate</em>
+   solution to the inner optimization problem. They are able to provide error bounds and
+   convergence guarantees under some reasonable conditions.</p>
+</li>
+</ul>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -240,6 +256,9 @@ dimension can be infinite/unknown.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a>
       </li>
       <li class="post">
@@ -251,15 +270,12 @@ dimension can be infinite/unknown.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 

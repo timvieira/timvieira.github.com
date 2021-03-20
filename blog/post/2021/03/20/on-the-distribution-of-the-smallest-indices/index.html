@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>On the Distribution of the Smallest Indices &mdash; Graduate Descent</title>
+
+  <link href="https://fonts.googleapis.com/css?family=EB+Garamond&display=swap"
+        rel="stylesheet">
+
+  <meta name="author" content="Tim Vieira">
+
+  <link href="/blog/atom.xml" type="application/atom+xml" rel="alternate"
+        title="Graduate Descent Atom Feed" />
+
+
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="https://timvieira.github.io/blog/favicon.png" rel="icon">
+
+  <link href="https://timvieira.github.io/blog/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="https://timvieira.github.io/blog/">Graduate Descent</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <!--
+  <li><a href="/blog/atom.xml" rel="subscribe-atom">Feed</a></li>
+  -->
+</ul>
+
+
+<ul class="main-navigation">
+    <li><a href="https://timvieira.github.io/">About</a></li>
+    <li><a href="/blog/index.html">Archive</a></li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">On the Distribution of the Smallest Indices</h1>
+    <p class="meta">
+<time datetime="2021-03-20T00:00:00-04:00" pubdate>Mar 20, 2021</time>  <span class="byline author vcard">
+    by <span class="fn">
+        Tim Vieira
+    </span>
+  </span>
+  <!--
+<time datetime="2021-03-20T00:00:00-04:00" pubdate>Mar 20, 2021</time>  <span class="categories">
+    <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
+  </span>
+  -->
+
+  <span class="tags">
+    <a class="tag" href="https://timvieira.github.io/blog/tag/swor.html">swor</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>  </span>
+    </p>
+</header>
+
+  <div class="entry-content"><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">Earlier</a>, I wrote about the distribution functions of order statistics.  Today, we will look at the distribution of rankings, $R_{(1)}, \ldots, R_{(n)}$: the indices of the smallest to largest items. Let $Z_{1}, \ldots, Z_{n}$ be independent random variables distribution functions $F_1, \ldots F_n$ and density functions $f_1, \ldots f_n$.</p>
+<p>The ranking is generated as follows:
+$$
+\begin{align*}
+&amp; Z_{1} \sim F_1; \ldots; Z_{n} \sim F_n \\
+&amp; R_{(1)}, \ldots, R_{(n)} = \mathrm{argsort}\left( Z_{1}, \ldots, Z_{n} \right)
+\end{align*}
+$$</p>
+<p>We will look at</p>
+<ul>
+<li><p>the probability mass function for the (unordered) set of $K$ smallest elements, $Y_{(K)} = \{ R_{(1)}, \ldots, R_{(K)} \}$</p>
+</li>
+<li><p>the probability that index $i$ is included in $Y_{(K)}$</p>
+</li>
+</ul>
+<p>I care about the inclusion probabilities because they are crucial to estimation under sampling without replacement designs <a href="https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/">(Vieira, 2017)</a>.  Previously, I was only able to (efficiently) use noisy estimates of the inclusion probabilities.  This post develops an algorithm for efficiently approximating the inclusion probabilities of ordered sampling without replacement designs.  The algorithm will require a one-dimensional numerical quadrature, which is preferable to summing over permutations.</p>
+<p>The probability of the set $R_{(k)}$ is useful for other estimators, e.g., <a href="https://arxiv.org/abs/2002.06043">Kool+ (2020)</a>.</p>
+<p>As with yesterday's post, I'd like to acknowledge that my derivation and implementation draws heavily on <a href="https://link.springer.com/article/10.1023/A:1010091628740">Aires (1999)</a> and <a href="https://www.sciencedirect.com/science/article/abs/pii/S0378375803001502">Traat+ (2004)</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="PMF-of-$Y_{(K)}$-.">PMF of $Y_{(K)}$ .<a class="anchor-link" href="#PMF-of-$Y_{(K)}$-.">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also compute the probability mass function for the entire set.
+$$
+\begin{align*}
+\mathrm{Pr}\left( Y_{(k)} = y \right) 
+&amp;=
+\int_t \sum_{j}
+\mathrm{Pr}\left( Z_j = t, R_{(k)} = j, Y_{(k)} = y\right) \\
+&amp;= 
+\int_{-\infty}^{\infty}
+\sum_{j \in y}
+f_j(t) 
+\prod_{i \in y: i \ne j} F_i(t) 
+\prod_{i \in \overline{y}: i \ne j} (1-F_i(t)) 
+\, dt
+\end{align*}
+$$</p>
+<p>The sum $j \in y$ partitions the event space by which index $j$ is the is the $k^{\mathrm{th}}$ smallest element, $R_{(k)} = j$.  Now, with $j$ is fixed, we integrate over the density of values $t$ that $Z_j$ can take on.  Since $j$ is decided as the $k^{\mathrm{th}}$, it must be in the set.  Additionally, we don't want to multiply the probability of $t$ twice, so we exclude $j$ for the two products.  $\prod_{i \in y: i \ne j} F_i(t)$ is the probability that all $i \in y$ that aren't $i=j$ are larger than the threshold $t$.  It is a product because they are independently drawn.  Similarly, the other product is the probability that $i \in \overline{y}: i \ne j$ are all smaller.</p>
+<p>As a minor touch up on this formula to simplify implementation, we apply a change of variables $t=F^{-1}_j(u)$ to integrate over $u \in [0, 1]$ instead of $t \in \mathrm{domain}(Z_i)$.  The change of variables formula means that we end up dividing by the density because of the usual "determinant of the Jacobian thing," $d t / du = d/du F^{-1}_j(u) = 1/f_j(u)$ by the <a href="https://en.wikipedia.org/wiki/Inverse_function_theorem">inverse function theorem</a>).  Our final result is
+$$
+\int_0^1
+\sum_{j \in y}
+\prod_{i \in y: i \ne j} F_i(F^{-1}_j(u)) \prod_{i \in \overline{y}: i \ne j} (1-F_i(F^{-1}_j(u))) \, du
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Although this equation involves an integral, it is a massive speedup over summing permutations of the indices.  I should say that in some exceptional cases, the integral may simplify further. This equation is implemented and tested in the Code and Tests sections.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Lastly, I'd like to give a shout-out to Dan Marthaler, a helpful commenter on this blog, who pointed out that the PMF of the multivariate noncentral hypergeometric distribution would help evaluate the PMF of the Gumbel sorting scheme.  I'd also like to point out that Appendix B of <a href="https://arxiv.org/abs/2002.06043">Kool+2020</a> gives a very similar derivation for the PMF of the Gumbel sorting scheme.  My version gives a generic recipe for any collection of independent variables, not just Gumbels.  The general does not have closed-form integrals, so using numerical integration may be the best we can do.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Inclusion-probabilities">Inclusion probabilities<a class="anchor-link" href="#Inclusion-probabilities">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also ask for the inclusion probability of $i$ in the bottom $k$ (i.e., the set of $k$ smallest indices).  Let $Y_{(k)} = \{ R_{(1)}, \ldots, R_{(n)} \}$.
+$$
+\mathrm{Pr}\left( i \in Y_{(k)} \right) 
+$$</p>
+<p>Given the distribution function for the order statistics that we worked out <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">yesterday</a>, the inclusion probability of each item can be computed by the following integral (<a href="https://link.springer.com/article/10.1023/A:1010091628740">Aires, 1999</a>, Eq. 6).</p>
+$$
+\begin{align*}
+\mathrm{Pr}\left( i \in Y_{(k)} \right) 
+&amp;= \int_{t} f_i(t) \, \mathrm{Pr}\left[ \underset{{j \in [n]\smallsetminus\{i\}}}{\overset{(k-1)}{\mathrm{smallest}}}\ Z_j &gt; t \right] \\
+&amp;= \int_{t} f_i(t) \, (1-F^{[n] \smallsetminus \{i\}}_{(k-1)}(t)) 
+\end{align*}
+$$<p>where $F^{[n] \smallsetminus \{i\}}_{(k-1)}$ is the distribution function of the $(k-1)^{\mathrm{th}}$ order statistic with index $i$ removed from the set $[n]\overset{\mathrm{def}}{=}\{1,\ldots,n\}$.  The reason for this removal is that have have forced $i$ to be in $Y_{(k)}$, so we're only sampling from what remains; namely, $(k-1)$ from the set of remaining elements $[n] \smallsetminus \{i\}$.</p>
+<p>Now, integrating over the density of values $t$ of $Z_i$, we will cover all the ways that $i$ can be the $k^{\mathrm{th}}$ smallest element.</p>
+<p>As a final step, we apply a change of variables $t = F^{-1}_i(u)$ to make the integral over $u$ from $0$ to $1$ instead of t, which ranges over the entire domain of $Z_i$.  (See the earlier explanation for with the pdf disappears.) 
+$$
+= 1 - \int_0^1 F^{[n] \smallsetminus \{i\}}_{(k-1)}(F^{-1}_i(u)) \, du
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Code">Code<a class="anchor-link" href="#Code">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Code from <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">order statistics post</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">njit</span>
+
+<span class="k">class</span> <span class="nc">Ordered</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="s1">&#39;list of distributions&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span>
+    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_keys</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">def</span> <span class="nf">sample_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the CDF of the order statistics, </span>
+<span class="sd">          Pr[ Z_{(k)} ≤ t ] for k = 1 ... N</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">prob_binom</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">]))</span>
+    
+<span class="nd">@njit</span>
+<span class="k">def</span> <span class="nf">prob_binom</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate the probabilistic binomial coefficients, </span>
+<span class="sd">    {p \choose k} for k=1...n.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="n">N</span><span class="p">]</span>   <span class="c1"># remove padding</span>
+    <span class="k">return</span> <span class="n">F</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>New code</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quadrature</span>
+
+<span class="k">class</span> <span class="nc">Ranks</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="s1">&#39;list of distributions&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span>
+        
+    <span class="k">def</span> <span class="nf">sample_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_keys</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    
+    <span class="k">def</span> <span class="nf">sample_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">])</span>
+ 
+    <span class="k">def</span> <span class="nf">inclusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+        <span class="s2">&quot;Pr[ i \in Y_{(K)} ]&quot;</span>
+        <span class="k">if</span> <span class="n">K</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">):</span> <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">))</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ppf</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">);</span> <span class="n">ds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>   <span class="c1"># remove i from the ensemble</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">Ordered</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="o">.</span><span class="n">cdf</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">quadrature</span><span class="p">(</span><span class="k">lambda</span> <span class="n">u</span><span class="p">:</span> <span class="n">F</span><span class="p">(</span><span class="n">target</span><span class="p">(</span><span class="n">u</span><span class="p">))[</span><span class="n">K</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="n">maxiter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">vec_func</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">pmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="s2">&quot;Pr[ Y_{(K)} = y ]&quot;</span>
+        <span class="k">return</span> <span class="n">quadrature</span><span class="p">(</span><span class="k">lambda</span> <span class="n">u</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pmf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">u</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">200</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_pmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">y</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span> <span class="k">pass</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y</span><span class="p">:</span>
+                    <span class="n">z</span> <span class="o">*=</span> <span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">z</span> <span class="o">*=</span> <span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">+=</span> <span class="n">z</span>
+        <span class="k">return</span> <span class="n">c</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Tests">Tests<a class="anchor-link" href="#Tests">&#182;</a></h2><p>Below, we test out our analytical method for computing the distribution function of independent normal distributions.  The method should work for any collection of distributions in <code>scipy.stats</code>.  You can even mix and match the distribution types.  We will compare the analytical $F_{(k)}$ to the empirical distribution of $Z_{(k)}$ using a large sample size.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">st</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">uniform</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Ranks</span><span class="p">([</span><span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">arsenal</span> <span class="kn">import</span> <span class="n">ok</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+
+<span class="n">reps</span> <span class="o">=</span> <span class="mi">10_000</span>
+<span class="n">tol</span> <span class="o">=</span> <span class="n">reps</span><span class="o">**-</span><span class="mf">0.5</span>
+
+<span class="n">K</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="c1">#K = int(np.random.randint(1, N+1))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;N=</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s1">, K=</span><span class="si">{</span><span class="n">K</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">pmf_</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<span class="n">incl_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="n">Rs</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sample_indices</span><span class="p">(</span><span class="n">reps</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">[</span><span class="n">Rs</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="p">:</span><span class="n">K</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">incl_</span> <span class="o">+=</span> <span class="n">x</span> <span class="o">/</span> <span class="n">reps</span>
+    <span class="n">pmf_</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">Rs</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="p">:</span><span class="n">K</span><span class="p">])]</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">reps</span>
+    
+<span class="c1"># sanity check: incl probs for a size K sample should sum to K</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">incl_</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">K</span><span class="p">)</span>  
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>N=8, K=3
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Below, we compare Monte Carlo inclusion probabilities to our numerical integration approach.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">incl_</span><span class="p">):</span>
+    <span class="n">have</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">inclusion</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">-2d</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">have</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">incl_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> 
+          <span class="n">ok</span> <span class="k">if</span> <span class="mf">0.5</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">have</span> <span class="o">-</span> <span class="n">incl_</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">tol</span> <span class="k">else</span> <span class="n">warn</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> 5: 0.9738, 0.9716 <span class="ansi-green-fg">ok</span>
+ 1: 0.4229, 0.4198 <span class="ansi-green-fg">ok</span>
+ 7: 0.4001, 0.3982 <span class="ansi-green-fg">ok</span>
+ 2: 0.3466, 0.3495 <span class="ansi-green-fg">ok</span>
+ 6: 0.2924, 0.2929 <span class="ansi-green-fg">ok</span>
+ 0: 0.2241, 0.2284 <span class="ansi-green-fg">ok</span>
+ 4: 0.1901, 0.1932 <span class="ansi-green-fg">ok</span>
+ 3: 0.1501, 0.1464 <span class="ansi-green-fg">ok</span>
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Below, we compare the Monte Carlo estimate of the PMF to our numerical integration approach.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">Y</span> <span class="ow">in</span> <span class="n">pmf_</span><span class="p">:</span>
+    <span class="n">want</span> <span class="o">=</span> <span class="n">pmf_</span><span class="p">[</span><span class="n">Y</span><span class="p">]</span>
+    <span class="n">have</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">Y</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">have</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">want</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> 
+          <span class="n">ok</span> <span class="k">if</span> <span class="mf">0.5</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">have</span> <span class="o">-</span> <span class="n">want</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span> <span class="k">else</span> <span class="n">warn</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>frozenset({0, 1, 5}): 0.0720, 0.0732 <span class="ansi-green-fg">ok</span>
+frozenset({1, 5, 7}): 0.1105, 0.1079 <span class="ansi-green-fg">ok</span>
+frozenset({2, 3, 7}): 0.0018, 0.0025 <span class="ansi-green-fg">ok</span>
+frozenset({0, 5, 7}): 0.0485, 0.0466 <span class="ansi-green-fg">ok</span>
+frozenset({0, 4, 5}): 0.0188, 0.0195 <span class="ansi-green-fg">ok</span>
+frozenset({2, 6, 7}): 0.0045, 0.0049 <span class="ansi-green-fg">ok</span>
+frozenset({1, 2, 5}): 0.0873, 0.0833 <span class="ansi-green-fg">ok</span>
+frozenset({2, 5, 7}): 0.0838, 0.0860 <span class="ansi-green-fg">ok</span>
+frozenset({5, 6, 7}): 0.0679, 0.0650 <span class="ansi-green-fg">ok</span>
+frozenset({1, 4, 5}): 0.0436, 0.0458 <span class="ansi-green-fg">ok</span>
+frozenset({3, 4, 5}): 0.0130, 0.0121 <span class="ansi-green-fg">ok</span>
+frozenset({2, 3, 5}): 0.0269, 0.0272 <span class="ansi-green-fg">ok</span>
+frozenset({0, 5, 6}): 0.0303, 0.0337 <span class="ansi-green-fg">ok</span>
+frozenset({0, 2, 5}): 0.0381, 0.0405 <span class="ansi-green-fg">ok</span>
+frozenset({2, 5, 6}): 0.0583, 0.0597 <span class="ansi-green-fg">ok</span>
+frozenset({4, 5, 7}): 0.0409, 0.0417 <span class="ansi-green-fg">ok</span>
+frozenset({1, 3, 5}): 0.0334, 0.0328 <span class="ansi-green-fg">ok</span>
+frozenset({1, 5, 6}): 0.0696, 0.0702 <span class="ansi-green-fg">ok</span>
+frozenset({3, 5, 6}): 0.0219, 0.0203 <span class="ansi-green-fg">ok</span>
+frozenset({1, 3, 7}): 0.0004, 0.0006 <span class="ansi-green-fg">ok</span>
+frozenset({2, 4, 5}): 0.0348, 0.0353 <span class="ansi-green-fg">ok</span>
+frozenset({3, 5, 7}): 0.0316, 0.0314 <span class="ansi-green-fg">ok</span>
+frozenset({0, 3, 5}): 0.0143, 0.0126 <span class="ansi-green-fg">ok</span>
+frozenset({2, 3, 6}): 0.0016, 0.0013 <span class="ansi-green-fg">ok</span>
+frozenset({1, 6, 7}): 0.0010, 0.0016 <span class="ansi-green-fg">ok</span>
+frozenset({4, 5, 6}): 0.0282, 0.0268 <span class="ansi-green-fg">ok</span>
+frozenset({3, 4, 7}): 0.0008, 0.0011 <span class="ansi-green-fg">ok</span>
+frozenset({3, 4, 6}): 0.0007, 0.0007 <span class="ansi-green-fg">ok</span>
+frozenset({0, 6, 7}): 0.0003, 0.0003 <span class="ansi-green-fg">ok</span>
+frozenset({3, 6, 7}): 0.0015, 0.0016 <span class="ansi-green-fg">ok</span>
+frozenset({1, 4, 7}): 0.0005, 0.0007 <span class="ansi-green-fg">ok</span>
+frozenset({2, 4, 7}): 0.0023, 0.0023 <span class="ansi-green-fg">ok</span>
+frozenset({4, 6, 7}): 0.0019, 0.0022 <span class="ansi-green-fg">ok</span>
+frozenset({1, 4, 6}): 0.0004, 0.0007 <span class="ansi-green-fg">ok</span>
+frozenset({1, 2, 6}): 0.0011, 0.0007 <span class="ansi-green-fg">ok</span>
+frozenset({2, 4, 6}): 0.0021, 0.0021 <span class="ansi-green-fg">ok</span>
+frozenset({0, 2, 6}): 0.0003, 0.0003 <span class="ansi-green-fg">ok</span>
+frozenset({2, 3, 4}): 0.0008, 0.0009 <span class="ansi-green-fg">ok</span>
+frozenset({0, 4, 7}): 0.0001, 0.0004 <span class="ansi-green-fg">ok</span>
+frozenset({0, 2, 7}): 0.0004, 0.0004 <span class="ansi-green-fg">ok</span>
+frozenset({0, 3, 6}): 0.0001, 0.0001 <span class="ansi-green-fg">ok</span>
+frozenset({1, 2, 4}): 0.0005, 0.0003 <span class="ansi-green-fg">ok</span>
+frozenset({0, 2, 4}): 0.0002, 0.0003 <span class="ansi-green-fg">ok</span>
+frozenset({0, 4, 6}): 0.0001, 0.0001 <span class="ansi-green-fg">ok</span>
+frozenset({1, 2, 7}): 0.0012, 0.0010 <span class="ansi-green-fg">ok</span>
+frozenset({1, 2, 3}): 0.0004, 0.0003 <span class="ansi-green-fg">ok</span>
+frozenset({1, 3, 6}): 0.0004, 0.0005 <span class="ansi-green-fg">ok</span>
+frozenset({0, 3, 4}): 0.0000, 0.0001 <span class="ansi-green-fg">ok</span>
+frozenset({0, 2, 3}): 0.0001, 0.0002 <span class="ansi-green-fg">ok</span>
+frozenset({1, 3, 4}): 0.0000, 0.0001 <span class="ansi-green-fg">ok</span>
+frozenset({0, 1, 6}): 0.0001, 0.0001 <span class="ansi-green-fg">ok</span>
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Closing">Closing<a class="anchor-link" href="#Closing">&#182;</a></h2><p>This Jupyter notebook is available for <a href="https://github.com/timvieira/blog/blob/master/content/Distribution-of-Smallest-Indices.ipynb">download</a>.</p>
+<p>I am very happy to answer questions! There are many ways to do that: comment at the end of this document, Tweet at @xtimv, or email tim.f.vieira@gmail.com.</p>
+<p>If you found this article interesting please consider sharing it on social media. If you found this article useful please cite it</p>
+<div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">vieira2021smallest</span><span class="p">,</span>
+  <span class="na">author</span> <span class="p">=</span> <span class="s">{Tim Vieira}</span><span class="p">,</span>
+  <span class="na">title</span> <span class="p">=</span> <span class="s">{On the Distribution of the Smallest Indices}</span><span class="p">,</span>
+  <span class="na">year</span> <span class="p">=</span> <span class="s">{2021}</span><span class="p">,</span>
+  <span class="na">url</span> <span class="p">=</span> <span class="s">{https://github.com/timvieira/blog/blob/master/content/Distribution-of-Smallest-Indices.ipynb}</span>
+<span class="p">}</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+ 
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['$','$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        " linebreaks: { automatic: true, width: '95% container' }, " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
+  </article>
+
+  <section>
+    <h1 class="comments">Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
+      </li>
+      <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+  <h1>Tags</h1>
+    <a href="https://timvieira.github.io/blog/tag/swor.html">swor</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+
+
+
+<section>
+    <a href="http://twitter.com/xtimv" class="twitter-follow-button" data-show-count="true">Follow @xtimv</a>
+</section>
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2014&ndash;2021  Tim Vieira &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="https://timvieira.github.io/blog/theme/js/modernizr-2.0.js"></script>
+  <script src="https://timvieira.github.io/blog/theme/js/ender.js"></script>
+  <script src="https://timvieira.github.io/blog/theme/js/octopress.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    var disqus_identifier = 'https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/';
+    var disqus_url = 'https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/';
+    var disqus_title = 'On the Distribution of the Smallest Indices';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+  </script>
+
+<!--
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-8781169-1', 'auto');
+  ga('send', 'pageview');
+</script>
+-->
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8781169-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-8781169-1');
+</script>
+
+</body>
+</html>
