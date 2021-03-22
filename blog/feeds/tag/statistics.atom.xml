@@ -583,7 +583,7 @@ f_{(k)}(t)
   \sum_{ Y \in {n \choose k} }
   \left( \prod_{i \in Y: i \ne j} F_i(t) \right)
   \left( \prod_{i \in \overline{Y}: i \ne j } \left(1-F_i(t)\right) \right) \\
-&amp;amp;= \sum_j \left(F^{[n] - j}_{(k-1)}(t) - F^{[n] - j}_{(k)}\right) f_j(t)
+&amp;amp;= \sum_j \left(F^{[n] - j}_{(k-1)}(t) - F^{[n] - j}_{(k)}(t)\right) f_j(t)
 \end{align}
 where $F^{[n] - j}_{(k-1)}$ and $F^{[n] - j}_{(k)}$ are the distribution functions for the order statistics $k-1$ and $k$ over the set of elements excluding the random variable $Z_j$.&lt;/p&gt;
 
