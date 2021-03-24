@@ -558,8 +558,8 @@ f_{(k)}(t)
 \right] \\
 &amp;amp;= 
 \sum_j
-  (-1)^{1[j \notin Y]} f_j(t)
   \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+  (-1)^{1[j \notin Y]} f_j(t)  
   \left( \prod_{i \in Y: i \ne j} F_i(t) \right)
   \left( \prod_{i \in \overline{Y}: i \ne j } \left(1-F_i(t)\right) \right) \\
 &amp;amp;= \sum_j \left(F^{[n] - j}_{(k-1)}(t) - F^{[n] - j}_{(k)}(t)\right) f_j(t)
