@@ -542,19 +542,20 @@ frozenset({0, 2, 7}): 0.0001, 0.0001 &lt;span class="ansi-green-fg"&gt;ok&lt;/sp
 &lt;/script&gt;</content><category term="misc"></category><category term="sampling-without-replacement"></category><category term="statistics"></category><category term="notebook"></category><category term="ordered-sampling"></category></entry><entry><title>On the Distribution Functions of Order Statistics</title><link href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/" rel="alternate"></link><published>2021-03-18T00:00:00-04:00</published><updated>2021-03-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2021-03-18:/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/</id><content type="html">&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let $Z_{(1)}, \ldots, Z_{(n)}$ denote the &lt;a href="https://en.wikipedia.org/wiki/Order_statistic"&gt;order statistics&lt;/a&gt; of a collection of independent random variables, $Z_{1}, \ldots, Z_{n}$ with distribution functions $F_1, \ldots F_n$.&lt;/p&gt;
-&lt;p&gt;In other words, the order statistics are drawn as follows:
+&lt;p&gt;Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the &lt;a href="https://en.wikipedia.org/wiki/Order_statistic"&gt;order statistics&lt;/a&gt; of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution functions for each $i$.&lt;/p&gt;
+&lt;p&gt;To generate, the order statistics we do the following:
 $$
 \begin{align*}
-&amp;amp; Z_{1} \sim F_1; \ldots; Z_{n} \sim F_n \\
-&amp;amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left( Z_{1}, \ldots, Z_{n} \right)
+&amp;amp; Z_{i} \sim F_i\quad\textbf{for } i \in N \\
+&amp;amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left([ Z_{i} \textbf{ for }i \in N ] \right)
 \end{align*}
 $$&lt;/p&gt;
 &lt;p&gt;In this short post, we look at the distribution function of $Z_{(k)}$.
 $$
-F_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
+F^N_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
 $$&lt;/p&gt;
-&lt;p&gt;There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(0)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used.  The more general case turns out to not be too much harder.  Why do &lt;em&gt;I&lt;/em&gt; care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the &lt;a href="https://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel-top-k design&lt;/a&gt; that I have written about many times.&lt;/p&gt;
+&lt;p&gt;There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(1)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used; similarly, for the case of identically distributed random variables (where the $F_i$s are equal).
+The more general (non-identical, but still independent) case turns out to not be too much harder.  Why do &lt;em&gt;I&lt;/em&gt; care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the &lt;a href="https://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel-top-k design&lt;/a&gt; that I have written about many times.&lt;/p&gt;
 &lt;p&gt;Before continuing, I should note that my derivation and implementation draws heavily on &lt;a href="https://link.springer.com/article/10.1023/A:1010091628740"&gt;Aires (1999)&lt;/a&gt;; specifically, Lemma 2.&lt;/p&gt;
 &lt;p&gt;Without further ado...&lt;/p&gt;
 
@@ -567,15 +568,16 @@ $$&lt;/p&gt;
 &lt;p&gt;We can expand the distribution function as follows,
 $$
 \begin{align*}
-\mathrm{Pr}\left( Z_{(k)} \le t \right) 
+F^N_{(k)}(t)
+&amp;amp;\overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) \\
 &amp;amp;= \mathrm{Pr}\left( \text{at least } k \text{ of } Z_1 \ldots Z_n \text{ are } \le t \right)  \\
-&amp;amp;= \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+&amp;amp;= \sum_{\substack{ Y \subseteq N \\ |Y| \ge k}}
   \underbrace{\left( \prod_{i \in Y} F_i(t) \right)}_{ \text{ values } \le t}
-  \underbrace{\left( \prod_{i \in \overline{Y} } \left(1-F_i(t)\right) \right)}_{ \text{ values } &amp;gt; t}
+  \, \underbrace{\left( \prod_{i \in N \smallsetminus Y } \left( 1-F_i(t) \right) \right)}_{ \text{ values } &amp;gt; t}
 \end{align*}
 $$
 It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order statistics: there must be &lt;em&gt;at least&lt;/em&gt; $k$ values that are $\le t$, and the remaining values that are $&amp;gt; t$.  These events are mutually exclusive and exhaustive.  Let $Y$ be the set of variables that are $\le t$. Clearly, we require $|Y| \ge k$.  Because the $Z_i$s are independent, the probability of the event that $Y$ is the set of $k$ smallest elements is simply the product of the $F_i$s in $Y$ and $(1-F_i)$s in the complement of $Y$.&lt;/p&gt;
-&lt;p&gt;It turns out that we can evaluate the exponential-size sum in $\mathcal{O}(n k)$ time with a simple algorithm, which is essentially a &lt;em&gt;probabilistic generalization&lt;/em&gt; of the dynamic program for evaluating the binomial coefficients, ${n \choose k}$.  Furthermore, we can evaluate the distribution function for &lt;em&gt;all&lt;/em&gt; $n$ order statistics in $\mathcal{O}(n^2)$ time.  The code for doing this computation is below.&lt;/p&gt;
+&lt;p&gt;It turns out that we can evaluate the exponential-size sum in $\mathcal{O}(n k)$ time with a simple algorithm, which is essentially a &lt;em&gt;probabilistic generalization&lt;/em&gt; of the dynamic program for evaluating the binomial coefficients, ${n \choose k}$.  Furthermore, we can evaluate the distribution function for &lt;em&gt;all&lt;/em&gt; $n$ order statistics in $\mathcal{O}(n^2)$ time.  The algorithm for doing this computation efficiently is in the code section of this article.&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/div&gt;
@@ -583,24 +585,24 @@ It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order stat
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;The corresponding density function $f_{(k)}(t)$ is
+&lt;p&gt;The corresponding density function $f^N_{(k)}(t)$ is
 \begin{align}
-f_{(k)}(t)
+f^N_{(k)}(t)
 &amp;amp;= \frac{\partial}{\partial t} \left[
-  \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+  \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   \left( \prod_{i \in Y} F_i(t) \right)
-  \left( \prod_{i \in \overline{Y} } \left(1-F_i(t)\right) \right)
+  \left( \prod_{i \in N \smallsetminus Y } \left(1-F_i(t)\right) \right)
 \right] \\
 &amp;amp;= 
 \sum_j
-  \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+  \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   (-1)^{1[j \notin Y]} f_j(t)  
-  \left( \prod_{i \in Y: i \ne j} F_i(t) \right)
-  \left( \prod_{i \in \overline{Y}: i \ne j } \left(1-F_i(t)\right) \right) \\
-&amp;amp;= \sum_j \left(F^{[n] - j}_{(k-1)}(t) - F^{[n] - j}_{(k)}(t)\right) f_j(t)
+  \left( \prod_{\substack{i \in Y \\ i \ne j}} F_i(t) \right)
+  \left( \prod_{\substack{i \in N \smallsetminus Y \\ i \ne j}} \left(1-F_i(t)\right) \right) \\
+&amp;amp;= \sum_j \left(F^{N - j}_{(k-1)}(t) - F^{N - j}_{(k)}(t)\right) f_j(t)
 \end{align}
-where $f_j$ is the density function for $Z_j$,
-and $F^{[n] - j}_{(k-1)}$ and $F^{[n] - j}_{(k)}$ are the distribution functions for the order statistics $k-1$ and $k$ over the set of elements excluding the random variable $Z_j$.&lt;/p&gt;
+where
+$F^{N - j}_{(k-1)}$ and $F^{N - j}_{(k)}$ are the distribution functions for the order statistics $k-1$ and $k$ over the set of elements &lt;em&gt;excluding&lt;/em&gt; the random variable $Z_j$.&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/div&gt;
@@ -621,9 +623,8 @@ and $F^{[n] - j}_{(k-1)}$ and $F^{[n] - j}_{(k)}$ are the distribution functions
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;list of distributions&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ds&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;rvs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sort&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample_keys&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sample_keys&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rvs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="s2"&gt;&amp;quot;Generate a sample of the order statistics&amp;quot;&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sort&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rvs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="s2"&gt;&amp;quot;Evaluate the CDF of the order statistics.&amp;quot;&lt;/span&gt;
         &lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cdf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
@@ -1215,7 +1216,7 @@ $$&lt;/p&gt;
 &lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test_gradient_interpretations&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="n"&gt;N&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ds&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
-        &lt;span class="n"&gt;ts&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sort&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample_keys&lt;/span&gt;&lt;span class="p"&gt;())[&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+        &lt;span class="n"&gt;ts&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rvs&lt;/span&gt;&lt;span class="p"&gt;()[&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
 
         &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;ts&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
             &lt;span class="n"&gt;w&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pdf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;

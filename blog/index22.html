@@ -72,19 +72,20 @@
   <div class="entry-content"><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let $Z_{(1)}, \ldots, Z_{(n)}$ denote the <a href="https://en.wikipedia.org/wiki/Order_statistic">order statistics</a> of a collection of independent random variables, $Z_{1}, \ldots, Z_{n}$ with distribution functions $F_1, \ldots F_n$.</p>
-<p>In other words, the order statistics are drawn as follows:
+<p>Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the <a href="https://en.wikipedia.org/wiki/Order_statistic">order statistics</a> of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution functions for each $i$.</p>
+<p>To generate, the order statistics we do the following:
 $$
 \begin{align*}
-&amp; Z_{1} \sim F_1; \ldots; Z_{n} \sim F_n \\
-&amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left( Z_{1}, \ldots, Z_{n} \right)
+&amp; Z_{i} \sim F_i\quad\textbf{for } i \in N \\
+&amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left([ Z_{i} \textbf{ for }i \in N ] \right)
 \end{align*}
 $$</p>
 <p>In this short post, we look at the distribution function of $Z_{(k)}$.
 $$
-F_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
+F^N_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
 $$</p>
-<p>There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(0)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used.  The more general case turns out to not be too much harder.  Why do <em>I</em> care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel-top-k design</a> that I have written about many times.</p>
+<p>There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(1)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used; similarly, for the case of identically distributed random variables (where the $F_i$s are equal).
+The more general (non-identical, but still independent) case turns out to not be too much harder.  Why do <em>I</em> care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel-top-k design</a> that I have written about many times.</p>
 <p>Before continuing, I should note that my derivation and implementation draws heavily on <a href="https://link.springer.com/article/10.1023/A:1010091628740">Aires (1999)</a>; specifically, Lemma 2.</p>
 <p>Without further ado...</p>
 
@@ -97,15 +98,16 @@ $$</p>
 <p>We can expand the distribution function as follows,
 $$
 \begin{align*}
-\mathrm{Pr}\left( Z_{(k)} \le t \right) 
+F^N_{(k)}(t)
+&amp;\overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) \\
 &amp;= \mathrm{Pr}\left( \text{at least } k \text{ of } Z_1 \ldots Z_n \text{ are } \le t \right)  \\
-&amp;= \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+&amp;= \sum_{\substack{ Y \subseteq N \\ |Y| \ge k}}
   \underbrace{\left( \prod_{i \in Y} F_i(t) \right)}_{ \text{ values } \le t}
-  \underbrace{\left( \prod_{i \in \overline{Y} } \left(1-F_i(t)\right) \right)}_{ \text{ values } &gt; t}
+  \, \underbrace{\left( \prod_{i \in N \smallsetminus Y } \left( 1-F_i(t) \right) \right)}_{ \text{ values } &gt; t}
 \end{align*}
 $$
 It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order statistics: there must be <em>at least</em> $k$ values that are $\le t$, and the remaining values that are $&gt; t$.  These events are mutually exclusive and exhaustive.  Let $Y$ be the set of variables that are $\le t$. Clearly, we require $|Y| \ge k$.  Because the $Z_i$s are independent, the probability of the event that $Y$ is the set of $k$ smallest elements is simply the product of the $F_i$s in $Y$ and $(1-F_i)$s in the complement of $Y$.</p>
-<p>It turns out that we can evaluate the exponential-size sum in $\mathcal{O}(n k)$ time with a simple algorithm, which is essentially a <em>probabilistic generalization</em> of the dynamic program for evaluating the binomial coefficients, ${n \choose k}$.  Furthermore, we can evaluate the distribution function for <em>all</em> $n$ order statistics in $\mathcal{O}(n^2)$ time.  The code for doing this computation is below.</p>
+<p>It turns out that we can evaluate the exponential-size sum in $\mathcal{O}(n k)$ time with a simple algorithm, which is essentially a <em>probabilistic generalization</em> of the dynamic program for evaluating the binomial coefficients, ${n \choose k}$.  Furthermore, we can evaluate the distribution function for <em>all</em> $n$ order statistics in $\mathcal{O}(n^2)$ time.  The algorithm for doing this computation efficiently is in the code section of this article.</p>
 
 </div>
 </div>
@@ -113,24 +115,24 @@ It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order stat
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The corresponding density function $f_{(k)}(t)$ is
+<p>The corresponding density function $f^N_{(k)}(t)$ is
 \begin{align}
-f_{(k)}(t)
+f^N_{(k)}(t)
 &amp;= \frac{\partial}{\partial t} \left[
-  \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+  \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   \left( \prod_{i \in Y} F_i(t) \right)
-  \left( \prod_{i \in \overline{Y} } \left(1-F_i(t)\right) \right)
+  \left( \prod_{i \in N \smallsetminus Y } \left(1-F_i(t)\right) \right)
 \right] \\
 &amp;= 
 \sum_j
-  \sum_{\substack{ Y \subseteq [n]: \\ |Y| \ge k}}
+  \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   (-1)^{1[j \notin Y]} f_j(t)  
-  \left( \prod_{i \in Y: i \ne j} F_i(t) \right)
-  \left( \prod_{i \in \overline{Y}: i \ne j } \left(1-F_i(t)\right) \right) \\
-&amp;= \sum_j \left(F^{[n] - j}_{(k-1)}(t) - F^{[n] - j}_{(k)}(t)\right) f_j(t)
+  \left( \prod_{\substack{i \in Y \\ i \ne j}} F_i(t) \right)
+  \left( \prod_{\substack{i \in N \smallsetminus Y \\ i \ne j}} \left(1-F_i(t)\right) \right) \\
+&amp;= \sum_j \left(F^{N - j}_{(k-1)}(t) - F^{N - j}_{(k)}(t)\right) f_j(t)
 \end{align}
-where $f_j$ is the density function for $Z_j$,
-and $F^{[n] - j}_{(k-1)}$ and $F^{[n] - j}_{(k)}$ are the distribution functions for the order statistics $k-1$ and $k$ over the set of elements excluding the random variable $Z_j$.</p>
+where
+$F^{N - j}_{(k-1)}$ and $F^{N - j}_{(k)}$ are the distribution functions for the order statistics $k-1$ and $k$ over the set of elements <em>excluding</em> the random variable $Z_j$.</p>
 
 </div>
 </div>
@@ -151,9 +153,8 @@ and $F^{[n] - j}_{(k-1)}$ and $F^{[n] - j}_{(k)}$ are the distribution functions
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="s1">&#39;list of distributions&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span>
     <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_keys</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">sample_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">])</span>
+        <span class="s2">&quot;Generate a sample of the order statistics&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
         <span class="s2">&quot;Evaluate the CDF of the order statistics.&quot;</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">])</span>
@@ -745,7 +746,7 @@ $$</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_gradient_interpretations</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">ds</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">ds</span><span class="p">)):</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">sample_keys</span><span class="p">())[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">rvs</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
 
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">:</span>
             <span class="n">w</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
