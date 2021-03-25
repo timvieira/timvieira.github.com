@@ -542,7 +542,7 @@ frozenset({0, 2, 7}): 0.0001, 0.0001 &lt;span class="ansi-green-fg"&gt;ok&lt;/sp
 &lt;/script&gt;</content><category term="misc"></category><category term="sampling-without-replacement"></category><category term="statistics"></category><category term="notebook"></category><category term="ordered-sampling"></category></entry><entry><title>On the Distribution Functions of Order Statistics</title><link href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/" rel="alternate"></link><published>2021-03-18T00:00:00-04:00</published><updated>2021-03-18T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2021-03-18:/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/</id><content type="html">&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the &lt;a href="https://en.wikipedia.org/wiki/Order_statistic"&gt;order statistics&lt;/a&gt; of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution functions for each $i$.&lt;/p&gt;
+&lt;p&gt;Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the &lt;a href="https://en.wikipedia.org/wiki/Order_statistic"&gt;order statistics&lt;/a&gt; of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution and density functions for each $i$.&lt;/p&gt;
 &lt;p&gt;To generate, the order statistics we do the following:
 $$
 \begin{align*}
@@ -550,10 +550,7 @@ $$
 &amp;amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left([ Z_{i} \textbf{ for }i \in N ] \right)
 \end{align*}
 $$&lt;/p&gt;
-&lt;p&gt;In this short post, we look at the distribution function of $Z_{(k)}$.
-$$
-F^N_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
-$$&lt;/p&gt;
+&lt;p&gt;In this post, we work out the distribution and density functions for each $Z_{(k)}$.&lt;/p&gt;
 &lt;p&gt;There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(1)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used; similarly, for the case of identically distributed random variables (where the $F_i$s are equal).
 The more general (non-identical, but still independent) case turns out to not be too much harder.  Why do &lt;em&gt;I&lt;/em&gt; care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the &lt;a href="https://timvieira.github.io/blog/tag/gumbel.html"&gt;Gumbel-top-k design&lt;/a&gt; that I have written about many times.&lt;/p&gt;
 &lt;p&gt;Before continuing, I should note that my derivation and implementation draws heavily on &lt;a href="https://link.springer.com/article/10.1023/A:1010091628740"&gt;Aires (1999)&lt;/a&gt;; specifically, Lemma 2.&lt;/p&gt;
@@ -585,9 +582,10 @@ It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order stat
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;The corresponding density function $f^N_{(k)}(t)$ is
+&lt;p&gt;The corresponding density function is
 \begin{align}
 f^N_{(k)}(t)
+&amp;amp;\overset{\mathrm{def}}{=} \frac{\partial}{\partial t} F^N_{(k)}(t) \\
 &amp;amp;= \frac{\partial}{\partial t} \left[
   \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   \left( \prod_{i \in Y} F_i(t) \right)

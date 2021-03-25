@@ -72,7 +72,7 @@
   <div class="entry-content"><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the <a href="https://en.wikipedia.org/wiki/Order_statistic">order statistics</a> of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution functions for each $i$.</p>
+<p>Let $Z_{(1)} \le \ldots \le Z_{(n)}$ denote the <a href="https://en.wikipedia.org/wiki/Order_statistic">order statistics</a> of a collection of independent random variables, $Z_{i}$ indexed by $i \in N$ where $|N| = n$.  Let $F_i$ and $f_i$ be the distribution and density functions for each $i$.</p>
 <p>To generate, the order statistics we do the following:
 $$
 \begin{align*}
@@ -80,10 +80,7 @@ $$
 &amp; Z_{(1)}, \ldots, Z_{(n)} = \mathrm{sort}\left([ Z_{i} \textbf{ for }i \in N ] \right)
 \end{align*}
 $$</p>
-<p>In this short post, we look at the distribution function of $Z_{(k)}$.
-$$
-F^N_{(k)}(t) \overset{\mathrm{def}}{=} \mathrm{Pr}\left( Z_{(k)} \le t \right) 
-$$</p>
+<p>In this post, we work out the distribution and density functions for each $Z_{(k)}$.</p>
 <p>There is no shortage of lecture notes and books online that describe the distribution functions for $Z_{(1)}$ (min) and $Z_{(n)}$ (max) as these cases are particularly simple and more commonly used; similarly, for the case of identically distributed random variables (where the $F_i$s are equal).
 The more general (non-identical, but still independent) case turns out to not be too much harder.  Why do <em>I</em> care about this problem?  These distribution functions arise when analyzing order-based sampling without replacement designs, such as the <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel-top-k design</a> that I have written about many times.</p>
 <p>Before continuing, I should note that my derivation and implementation draws heavily on <a href="https://link.springer.com/article/10.1023/A:1010091628740">Aires (1999)</a>; specifically, Lemma 2.</p>
@@ -115,9 +112,10 @@ It is a sum over all the ways in which $t$ can be the $k^{\text{th}}$ order stat
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The corresponding density function $f^N_{(k)}(t)$ is
+<p>The corresponding density function is
 \begin{align}
 f^N_{(k)}(t)
+&amp;\overset{\mathrm{def}}{=} \frac{\partial}{\partial t} F^N_{(k)}(t) \\
 &amp;= \frac{\partial}{\partial t} \left[
   \sum_{\substack{ Y \subseteq N: \\ |Y| \ge k}}
   \left( \prod_{i \in Y} F_i(t) \right)
