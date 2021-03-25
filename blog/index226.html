@@ -50,80 +50,156 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a>
+        <a href="https://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a>
       </h1>
     <p class="meta">
-<time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time>  <span class="byline author vcard">
+<time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2015-02-05T00:00:00-05:00" pubdate>Feb 05, 2015</time>  <span class="categories">
+<time datetime="2015-04-29T00:00:00-04:00" pubdate>Apr 29, 2015</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/rant.html">rant</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/crf.html">crf</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>This post is intended to convince conditional random field (CRF) lovers that
-deep learning might not be as crazy as it seems. And maybe even convince some
-deep learning lovers that the graphical models might have interesting things to
-offer.</p>
-<p>In the world of structured prediction, we are plagued by the high-treewidth
-problem -- models with loopy factors are "bad" because exact inference is
-intractable. There are three common approaches for dealing with this problem:</p>
+  <div class="entry-content"><p>A short rant: Multiclass logistic regression and conditional random fields (CRF)
+are the same thing. This comes to a surprise to many people because CRFs tend to
+be surrounded by additional "stuff."</p>
+<p>Understanding this very basic connection not only deepens our understanding, but
+also suggests a method for testing complex CRF code.</p>
+<p>Multiclass logistic regression is simple. The goal is to predict the correct
+label <span class="math">\(y^*\)</span> from handful of labels <span class="math">\(\mathcal{Y}\)</span> given the observation <span class="math">\(x\)</span> based
+on features <span class="math">\(\phi(x,y)\)</span>. Training this model typically requires computing the
+gradient:</p>
+<div class="math">$$
+\nabla \log p(y^* \mid x) = \phi(x,y^*) - \sum_{y \in \mathcal{Y}} p(y|x) \phi(x,y)
+$$</div>
+<p>where
+</p>
+<div class="math">$$
+\begin{eqnarray*}
+p(y|x) &amp;=&amp; \frac{1}{Z(x)} \exp(\theta^\top \phi(x,y)) &amp; \ \ \ \ \text{and} \ \ \ \ &amp;
+Z(x) &amp;=&amp; \sum_{y \in \mathcal{Y}} \exp(\theta^\top \phi(x,y))
+\end{eqnarray*}
+$$</div>
+<p>At test-time, we often take the highest-scoring label under the model.</p>
+<div class="math">$$
+\widehat{y}(x) = \underset{y \in \mathcal{Y}}{\textrm{argmax}}\ \theta^\top \phi(x,y)
+$$</div>
+<p>A conditional random field is <em>exactly</em> multiclass logistic regression. The only
+difference is that the sums (<span class="math">\(Z(x)\)</span> and <span class="math">\(\sum_{y \in \mathcal{Y}} p(y|x)
+\phi(x,y)\)</span>) and the argmax <span class="math">\(\widehat{y}(x)\)</span> are inefficient to compute naively
+(i.e., by brute-force enumeration). This point is often lost when people first
+learn about CRFs. Some people never make this connection.</p>
+<p>Brute-force enumeration is a very useful method for testing complex dynamic
+programming procedures for computing the sums and the argmax on relatively small
+examples. Don't just copy code for dynamic programming out of a paper! Test it!</p>
+<p>Here's some stuff you'll see once we start talking about CRFs:</p>
 <ol>
 <li>
-<p>Limit the expressiveness of the model (i.e., don't use to model you want)</p>
+<p>Inference algorithms (e.g., Viterbi decoding, forward-backward, Junction
+   tree)</p>
 </li>
 <li>
-<p>Change the training objective</p>
+<p>Graphical models (factor graphs, Bayes nets, Markov random fields)</p>
 </li>
 <li>
-<p>Approximate inference</p>
+<p>Model templates (i.e., repeated feature functions)</p>
 </li>
 </ol>
-<p>Approximate inference is tricky. Things can easily go awry.</p>
-<p>For example, structured perceptron training with loopy max-product BP instead of
-exact max product can diverge
-<a href="http://papers.nips.cc/paper/3162-structured-learning-with-approximate-inference.pdf">(Kulesza &amp; Pereira, 2007)</a>. Another
-example: using approximate marginals from sum-product loopy BP in place of the
-true marginals in the gradient of the log-likelihood. This results in a
-different nonconvex objective function. (Note:
-<a href="http://aclweb.org/anthology/C/C12/C12-1122.pdf">sometimes</a> these loopy BP
-approximations work fine.)</p>
-<p>It looks like using approximate inference during training changes the training
-objective.</p>
-<p>So, here's a simple idea: learn a model which makes accurate predictions given
-the approximate inference algorithm that will be used at test-time. Furthermore,
-we should minimize empirical risk instead of log-likelihood because it is robust
-to model miss-specification and approximate inference. In other words, make
-training conditions as close as possible to test-time conditions.</p>
-<p>Now, as long as everything is differentiable, you can apply automatic
-differentiation (backprop) to train the end-to-end system. This idea appears in
-a few publications, including a handful of papers by Justin Domke, and a few by
-Stoyanov &amp; Eisner.</p>
-<p>Unsuprisingly, it works pretty well.</p>
-<p>I first saw this idea in
-<a href="http://proceedings.mlr.press/v15/stoyanov11a/stoyanov11a.pdf">Stoyanov &amp; Eisner (2011)</a>. They
-use loopy belief propagation as their approximate inference algorithm. At the
-end of the day, their model is essentially a deep recurrent network, which came
-from unrolling inference in a graphical model. This idea really struck me
-because it's clearly right in the middle between graphical models and deep
-learning.</p>
-<p>You can immediately imagine swapping in other approximate inference algorithms
-in place of loopy BP.</p>
-<p>Deep learning approaches get a bad reputation because there are a lot of
-"tricks" to get nonconvex optimization to work and because model structures are
-more open ended. Unlike graphical models, deep learning models have more
-variation in model structures. Maybe being more open minded about model
-structures is a good thing. We seem to have hit a brick wall with
-likelihood-based training. At the same time, maybe we can port over some of the
-good work on approximate inference as deep architectures.</p></div>
+<p>In the logistic regression case, we'd never use the term "inference" to describe
+the "sum" and "max" over a handful of categories. Once we move to a structured
+label space, this term gets throw around. (BTW, this isn't "statistical
+inference," just algorithms to compute sum and max over <span class="math">\(\mathcal{Y}\)</span>.)</p>
+<p>Graphical models establish a notation and structural properties which allow
+efficient inference&mdash;things like cycles and treewidth.</p>
+<p>Model templating is the only essential trick to move from logistic regression to
+a CRF. Templating "solves" the problem that not all training examples have the
+same "size"&mdash;the set of outputs <span class="math">\(\mathcal{Y}(x)\)</span> now depends on <span class="math">\(x\)</span>. A model
+template specifies how to compute the features for an entire output, by looking
+at interactions between subsets of variables.</p>
+<div class="math">$$
+\phi(x,\boldsymbol{y}) = \sum_{\alpha \in A(x)} \phi_\alpha(x,
+\boldsymbol{y}_\alpha)
+$$</div>
+<p>where <span class="math">\(\alpha\)</span> is a labeled subset of variables often called a factor and
+<span class="math">\(\boldsymbol{y}_\alpha\)</span> is the subvector containing values of variables
+<span class="math">\(\alpha\)</span>. Basically, the feature function <span class="math">\(\phi\)</span> gets to look at some subset of
+the variables being predicted <span class="math">\(y\)</span> and the entire input <span class="math">\(x\)</span>. The ability to look
+at more of <span class="math">\(y\)</span> allows the model to make more coherent predictions.</p>
+<p>Anywho, it's often useful to take a step back and think about what you are
+trying to compute instead of how you're computing it. In this post, this allowed
+us see the similarity between logistic regression and CRFs even though they seem
+quite different.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index227.html">&larr; Older</a>
@@ -136,6 +212,9 @@ good work on approximate inference as deep architectures.</p></div>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
       </li>
       <li class="post">
@@ -147,15 +226,12 @@ good work on approximate inference as deep architectures.</p></div>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/efficiency.html">efficiency</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 

@@ -787,7 +787,7 @@ vary with the input (e.g., sentence length).&lt;/p&gt;
     (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="automatic-differentiation"></category><category term="rant"></category></entry><entry><title>Gradient of a product</title><link href="https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><content type="html">&lt;div class="math"&gt;$$
+&lt;/script&gt;</content><category term="misc"></category><category term="calculus"></category><category term="automatic-differentiation"></category><category term="rant"></category><category term="efficiency"></category></entry><entry><title>Gradient of a product</title><link href="https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/" rel="alternate"></link><published>2015-07-29T00:00:00-04:00</published><updated>2015-07-29T00:00:00-04:00</updated><author><name>Tim Vieira</name></author><id>tag:timvieira.github.io,2015-07-29:/blog/post/2015/07/29/gradient-of-a-product/</id><content type="html">&lt;div class="math"&gt;$$
 \newcommand{\gradx}[1]{\grad{x}{ #1 }}
 \newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
 \newcommand{\R}{\mathbb{R}}

@@ -50,114 +50,114 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a>
+        <a href="https://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a>
       </h1>
     <p class="meta">
-<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>  <span class="byline author vcard">
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2014-02-11T00:00:00-05:00" pubdate>Feb 11, 2014</time>  <span class="categories">
+<time datetime="2014-02-12T00:00:00-05:00" pubdate>Feb 12, 2014</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>This trick is the very close cousin of the infamous log-sum-exp trick
-(<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.misc.logsumexp.html">scipy.misc.logsumexp</a>).</p>
-<p>Supposed you'd like to evaluate a probability distribution <span class="math">\(\boldsymbol{\pi}\)</span>
-parametrized by a vector <span class="math">\(\boldsymbol{x} \in \mathbb{R}^n\)</span> as follows:</p>
+  <div class="entry-content"><p>Last September, I gave a talk which included a bunch of two-dimensional plots of
+a high-dimensional objective I was developing specialized algorithms for
+optimizing. A month later, at least three of my colleagues told me that my plots
+had inspired them to make similar plots. The plotting trick is really simple and
+not original, but nonetheless I'll still write it up for all to enjoy.</p>
+<p><strong>Example plot</strong>: This image shows cross-sections of two related functions: a
+non-smooth (black) and a smooth approximating function (blue). The plot shows
+that the approximation is faithful to the overall shape, but sometimes
+over-smooths. In this case, we miss the maximum, which happens near the middle
+of the figure.</p>
+<p><img alt="Alt text" src="/blog/images/cross-section.png"></p>
+<p><strong>Details</strong>: Let <span class="math">\(f: \mathbb{R}^d \rightarrow \mathbb{R}\)</span> be a high-dimensional
+function (<span class="math">\(d \gg 2\)</span>), which you'd like to visualize. Unfortunately, you are like
+me and can't see in high-dimensions what do you do?</p>
+<p>One simple thing to do is take a nonzero vector <span class="math">\(\boldsymbol{d} \in
+\mathbb{R}^d\)</span>, take a point of interest <span class="math">\(\boldsymbol{x}\)</span>, and build a local
+picture of <span class="math">\(f\)</span> by evaluating it at various intervals along the chosen direction
+as follows,</p>
 <div class="math">$$
-\pi_i = \frac{ \exp(x_i) }{ \sum_{j=1}^n \exp(x_j) }
+f_i = f(\boldsymbol{x} + \alpha_i \ \boldsymbol{d}) \ \ \text{for } \alpha_i \in [\alpha_\min, \alpha_\max]
 $$</div>
-<p>The exp-normalize trick leverages the following identity to avoid numerical
-overflow. For any <span class="math">\(b \in \mathbb{R}\)</span>,</p>
+<p>Of course, you'll have to pick a reasonable range and discretize it. Note,
+<span class="math">\(\boldsymbol{x}\)</span> and <span class="math">\(\boldsymbol{d}\)</span> are fixed for all <span class="math">\(\alpha_i\)</span>. Now, you can
+plot <span class="math">\((\alpha_i,f_i)\)</span>.</p>
+<p><strong>Picking directions</strong>: There are many alternatives for picking
+<span class="math">\(\boldsymbol{d}\)</span>, my favorites are:</p>
+<ol>
+<li>
+<p>Coordinate vectors: Varying one (or two) dimensions.</p>
+</li>
+<li>
+<p>Gradient (if it exists), this direction is guaranteed to show a local
+    increase/decrease in the objective, unless it's zero because we're at a
+    local optimum. Some variations on "descent" directions:</p>
+<ul>
+<li>
+<p>Use the gradient direction of a <em>different</em> objective, e.g., plot
+  (nondifferentiable) accuracy on dev data along the (differentiable)
+  likelihood direction on training data.</p>
+</li>
+<li>
+<p>Optimizer trajectory: Use PCA on the optimizer's trajectory to find the
+  directions which summarize the most variation.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>The difference of two interesting points, e.g., the start and end points of
+    your optimization, two different solutions.</p>
+</li>
+<li>
+<p>Random:</p>
+<p>If all your parameters are on an equal scale, I recommend directions drawn
+from a spherical Gaussian.<sup id="sf-visualizing-high-dimensional-functions-with-cross-sections-1-back"><a href="#sf-visualizing-high-dimensional-functions-with-cross-sections-1" class="simple-footnote" title="More formally, vectors drawn from a spherical Gaussian are points uniformly distributed on the surface of a \(d\)-dimensional unit sphere, \(\mathbb{S}^d\). Sampling a vector from a spherical Gaussian is straightforward: sample \(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\), \(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)">1</a></sup>
+ The reason being that such a
+vector is uniformly distributed across all unit-length directions (i.e., the
+angle of the vector, not it's length). We will vary the length ourselves via
+<span class="math">\(\alpha\)</span>.</p>
+<p>However, often components of <span class="math">\(\boldsymbol{x}\)</span> have different scales, so
+finding a "natural scale" is crucial if we are going to draw conclusions
+that require a comparison of the perturbation sensitivities across several
+dimensions—this is closely related to why we like second-order and
+adaptive optimization algorithms
+(<a href="https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/">discussion</a>);
+<span class="math">\(\boldsymbol{d}\)</span>'s units must match the units of <span class="math">\(\boldsymbol{x}\)</span> in each
+coordinate!</p>
+</li>
+<li>
+<p>Maximize "interestingness": You can also use a direction-optimization
+    procedure to maximize some measure of "interestingness" (e.g., the direction
+    in which training and dev loss differ the most; the "bumpiest" direction or
+    direction taking the biggest range of values).</p>
+</li>
+</ol>
+<p><strong>Extension to 3d</strong>: It's pretty easy to extend these ideas to generating
+three-dimensional plots by using two vectors, <span class="math">\(\boldsymbol{d_1}\)</span> and
+<span class="math">\(\boldsymbol{d_2},\)</span> and varying two parameters <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>,</p>
 <div class="math">$$
-\pi_i
-= \frac{ \exp(x_i - b) \exp(b) }{ \sum_{j=1}^n \exp(x_j - b) \exp(b) }
-= \frac{ \exp(x_i - b) }{ \sum_{j=1}^n \exp(x_j - b) }
+f(\boldsymbol{x} + \alpha \ \boldsymbol{d_1} + \beta \ \boldsymbol{d_2})
 $$</div>
-<p>In other words, the <span class="math">\(\boldsymbol{\pi}\)</span> is shift-invariant. A reasonable choice
-is <span class="math">\(b = \max_{i=1}^n x_i\)</span>. With this choice, overflow due to <span class="math">\(\exp\)</span> is
-impossible<span class="math">\(-\)</span>the largest number exponentiated after shifting is <span class="math">\(0\)</span>.</p>
-<p>The naive implementation is terrible when there are large numbers!</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">overflow</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">exp</span>
-<span class="ne">RuntimeWarning</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">value</span> <span class="n">encountered</span> <span class="ow">in</span> <span class="n">true_divide</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="n">nan</span><span class="p">])</span>
-</code></pre></div>
-
-
-<p>The exp-normalize trick avoids this common problem.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">exp_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
-</code></pre></div>
-
-
-<p><strong>Log-sum-exp for computing the log-distibution</strong></p>
-<div class="math">$$
-\log \pi_i = x_i - \mathrm{logsumexp}(\boldsymbol{x})
-$$</div>
-<p>where
-</p>
-<div class="math">$$
-\mathrm{logsumexp}(\boldsymbol{x}) = b + \log \sum_{j=1}^n \exp(x_j - b)
-$$</div>
-<p>Typically with the same choice for <span class="math">\(b\)</span> as above.</p>
-<p><strong>Exp-normalize v. log-sum-exp</strong></p>
-<p>Exp-normalize is the gradient of log-sum-exp. So you probably need to know both
-tricks!</p>
-<p>If what you want to remain in log-space, that is, compute
-<span class="math">\(\log(\boldsymbol{\pi})\)</span>, you should use logsumexp. However, if
-<span class="math">\(\boldsymbol{\pi}\)</span> is your goal, then exp-normalize trick is for you! Since it
-avoids additional calls to <span class="math">\(\exp\)</span>, which would be required if using log-sum-exp
-and more importantly exp-normalize is more numerically stable!</p>
-<p><strong>Numerically stable sigmoid function</strong></p>
-<p>The sigmoid function can be computed with the exp-normalize trick in order to
-avoid numerical overflow. In the case of <span class="math">\(\text{sigmoid}(x)\)</span>, we have a
-distribution with unnormalized log probabilities <span class="math">\([x,0]\)</span>, where we are only
-interested in the probability of the first event. From the exp-normalize
-identity, we know that the distributions <span class="math">\([x,0]\)</span> and <span class="math">\([0,-x]\)</span> are equivalent (to
-see why, plug in <span class="math">\(b=\max(0,x)\)</span>). This is why sigmoid is often expressed in one
-of two equivalent ways:</p>
-<div class="math">$$
-\text{sigmoid}(x) = 1/(1+\exp(-x)) = \exp(x) / (\exp(x) + 1)
-$$</div>
-<p>Interestingly, each version covers an extreme case: <span class="math">\(x=\infty\)</span> and <span class="math">\(x=-\infty\)</span>,
-respectively. Below is some python code which implements the trick:</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="s2">&quot;Numerically stable sigmoid function.&quot;</span>
-    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># if x is less than zero then z will be small, denom can&#39;t be</span>
-        <span class="c1"># zero because it&#39;s 1+z.</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
-</code></pre></div>
-
-
-<p><strong>Closing remarks:</strong> The exp-normalize distribution is also known as a
-<a href="https://en.wikipedia.org/wiki/Gibbs_measure">Gibbs measure</a> (sometimes called a
-Boltzmann distribution) when it is augmented with a temperature
-parameter. Exp-normalize is often called "softmax," which is unfortunate because
-log-sum-exp is <em>also</em> called "softmax." However, unlike exp-normalize, it
-<em>earned</em> the name because it is acutally a soft version of the max function,
-where as exp-normalize is closer to "soft argmax."  Nonetheless, most people
-still call exp-normalize "softmax."</p>
+<p><strong>Closing remarks</strong>: These types of plots are probably best used to: empirically
+verify/explore properties of an objective function, compare approximations, test
+sensitivity to certain parameters/hyperparameters, visually debug optimization
+algorithms.</p>
+<p><strong>Further reading</strong>:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a></li>
+</ul>
+<h2>Footnotes</h2>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -219,7 +219,11 @@ still call exp-normalize "softmax."</p>
     (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script></div>
+</script><ol class="simple-footnotes"><li id="sf-visualizing-high-dimensional-functions-with-cross-sections-1">More formally, vectors drawn from a spherical Gaussian are
+points uniformly distributed on the surface of a <span class="math">\(d\)</span>-dimensional unit sphere,
+<span class="math">\(\mathbb{S}^d\)</span>. Sampling a vector from a spherical Gaussian is straightforward:
+sample <span class="math">\(\boldsymbol{d'} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})\)</span>,
+<span class="math">\(\boldsymbol{d} = \boldsymbol{d'} / \| \boldsymbol{d'} \|_2\)</span> <a href="#sf-visualizing-high-dimensional-functions-with-cross-sections-1-back" class="simple-footnote-back">↩</a></li></ol></div>
   		</article>
 <div class="pagination">
     <a class="prev" href="https://timvieira.github.io/blog/index238.html">&larr; Older</a>
@@ -232,6 +236,9 @@ still call exp-normalize "softmax."</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
       </li>
       <li class="post">
@@ -243,15 +250,12 @@ still call exp-normalize "softmax."</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/efficiency.html">efficiency</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 

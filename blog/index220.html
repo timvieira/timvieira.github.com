@@ -50,43 +50,274 @@
   		<article>
 <header>
       <h1 class="entry-title">
-        <a href="https://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a>
+        <a href="https://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a>
       </h1>
     <p class="meta">
-<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>  <span class="byline author vcard">
+<time datetime="2016-06-28T00:00:00-04:00" pubdate>Jun 28, 2016</time>  <span class="byline author vcard">
     by <span class="fn">
         Tim Vieira
     </span>
   </span>
   <!--
-<time datetime="2016-05-28T00:00:00-04:00" pubdate>May 28, 2016</time>  <span class="categories">
+<time datetime="2016-06-28T00:00:00-04:00" pubdate>Jun 28, 2016</time>  <span class="categories">
     <a class='category' href='https://timvieira.github.io/blog/category/misc.html'>misc</a>
   </span>
   -->
 
   <span class="tags">
-    <a class="tag" href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>  </span>
+    <a class="tag" href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a><!--,-->    <a class="tag" href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>  </span>
     </p>
 </header>
 
-  <div class="entry-content"><p>The following is a quick rant about
-<a href="http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/">importance sampling</a>
-(see that post for notation).</p>
-<p>I've heard the following <strong>incorrect</strong> statement one too many times,</p>
-<blockquote>
-<p>We chose <span class="math">\(q \approx p\)</span> because <span class="math">\(q=p\)</span> is the "optimal" proposal distribution.</p>
-</blockquote>
-<p>While it is certainly a good idea to pick <span class="math">\(q\)</span> to be as similar as possible to
-<span class="math">\(p\)</span>, it is by no means <em>optimal</em> because it is oblivious to <span class="math">\(f\)</span>!</p>
-<p>With importance sampling, it is possible to achieve a variance reduction over
-Monte Carlo estimation. The optimal proposal distribution, assuming <span class="math">\(f(x) \ge 0\)</span>
-for all <span class="math">\(x\)</span>, is <span class="math">\(q(x) \propto p(x) f(x).\)</span> This choice of <span class="math">\(q\)</span> gives us a <em>zero
-variance</em> estimate <em>with a single sample</em>!</p>
-<p>Of course, this is an unreasonable distribution to use because the normalizing
-constant <em>is the thing you are trying to estimate</em>, but it is proof that <em>better
-proposal distributions exist</em>.</p>
-<p>The key to doing better than <span class="math">\(q=p\)</span> is to take <span class="math">\(f\)</span> into account. Look up
-"importance sampling for variance reduction" to learn more.</p>
+  <div class="entry-content"><p>The following post is about instance of "sampling in proportion to <span class="math">\(p\)</span> is not
+optimal, but you probably think it is." It's surprising how few people seem to
+know this trick. Myself included! It was brought to my attention recently by
+<a href="http://lowrank.net/nikos/">Nikos Karampatziakis</a>. (Thanks, Nikos!)</p>
+<p>The paper credited for this trick is
+<a href="http://www.pnas.org/content/106/6/1716.full.pdf">Press (2008)</a>. I'm borrowing
+heavily from that paper as well as an email exchange from Nikos.</p>
+<p><strong>Setting</strong>: Suppose you're an aspiring chef with a severe head injury affecting
+  your long- and short- term memory trying to find a special recipe from a
+  cookbook that you made one time but just can't remember exactly which recipe
+  it was. So, based on the ingredients of each recipe, you come up with a prior
+  probability <span class="math">\(p_i\)</span> that recipe <span class="math">\(i\)</span> is the one you're looking for. In total, the
+  cookbook has <span class="math">\(n\)</span> recipes and <span class="math">\(\sum_{i=1}^n p_i = 1.\)</span></p>
+<p>A good strategy would be to sort recipes by <span class="math">\(p_i\)</span> and cook the most promising
+ones first. Unfortunately, you're not a great chef so there is some probability
+that you'll mess-up the recipe. So, it's a good idea to try recipes multiple
+times. Also, you have no short term memory...</p>
+<p>This suggests a <em>sampling with replacement</em> strategy, where we sample a recipe
+from the cookbook to try <em>independently</em> of whether we've tried it before
+(called a <em>memoryless</em> strategy). Let's give this strategy the name
+<span class="math">\(\boldsymbol{q}.\)</span> Note that <span class="math">\(\boldsymbol{q}\)</span> is a probability distribution over
+the recipes in the cookbook, just like <span class="math">\(\boldsymbol{p}.\)</span></p>
+<p><strong>How many recipes until we find the special one?</strong> To start, suppose the
+special recipe is <span class="math">\(j.\)</span> Then, the expected number of recipes we have to make
+until we find <span class="math">\(j\)</span> under the strategy <span class="math">\(\boldsymbol{q}\)</span> is</p>
+<div class="math">$$
+\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
+$$</div>
+<style>
+.toggle-button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+.derivation {
+  background-color: #f2f2f2;
+  border: thin solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+// workaround for when markdown/mathjax gets confused by the
+// javascript dollar function.
+function toggle(x) { $(x).toggle(); }
+</script>
+
+<p><button onclick="toggle('#derivation-series')" class="toggle-button">Derivation</button>
+<div id="derivation-series" style="display:none;" class="derivation">
+<strong>Derivation</strong>:</p>
+<p>We start with
+</p>
+<div class="math">$$
+\sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j},
+$$</div>
+<p>Let <span class="math">\(a = (1-q_j)\)</span>, to clean up notation.
+</p>
+<div class="math">$$
+= q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
+$$</div>
+<p>Use the identity <span class="math">\(\nabla_a [ a^t ] = t \cdot a^{t-1}\)</span>,
+</p>
+<div class="math">$$
+= q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
+$$</div>
+<p>Fish the gradient out of the sum and tweak summation index,
+</p>
+<div class="math">$$
+= q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
+= q_{j} \nabla_a\left[ -1 + \sum_{t=0}^\infty a^{t}\right]
+$$</div>
+<p>Plugin in the solution to the geometric series,
+</p>
+<div class="math">$$
+= q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
+$$</div>
+<p>Take derivative, expand <span class="math">\(a\)</span> and simplify,
+</p>
+<div class="math">$$
+= q_{j} \frac{1}{(1-a)^2}
+= \frac{1}{q_j}
+$$</div>
+</div>
+
+<p>The equation says that expected time it takes to sample <span class="math">\(j\)</span> for <em>the first time</em>
+is the probability we didn't sample <span class="math">\(j\)</span> for <span class="math">\((t-1)\)</span> steps times the probability we
+sample <span class="math">\(j\)</span> at time <span class="math">\(t.\)</span>  We multiply this probability by the time <span class="math">\(t\)</span> to get the
+<em>expected</em> time.</p>
+<p>Note that this equation assumes that we know <span class="math">\(j\)</span> is the special recipe <em>with
+certainty</em> when we sample it. We'll revisit this assumption later when we
+consider potential errors in executing the recipe.</p>
+<p>Since we don't known which <span class="math">\(j\)</span> is the right one, we take an expectation over it
+according to the prior distribution, which yields the following equation,
+</p>
+<div class="math">$$
+f(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{q_i}.
+$$</div>
+<p><strong>The first surprising thing</strong>: Uniform is just as good as <span class="math">\(\boldsymbol{p}\)</span>,
+  yikes! <span class="math">\(f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n\)</span> and
+  <span class="math">\(f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n.\)</span> (Assume, without
+  loss of generality, that <span class="math">\(p_i &gt; 0\)</span> since we can just drop these elements from
+  <span class="math">\(\boldsymbol{p}.\)</span>)</p>
+<p><strong>What's the <em>optimal</em> <span class="math">\(\boldsymbol{q}\)</span>?</strong> We can address this question by
+solving the following optimization (which will have a nice closed form
+solution),</p>
+<div class="math">$$
+\begin{eqnarray*}
+&amp;&amp; \boldsymbol{q}^* = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
+&amp;&amp; \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \\
+&amp;&amp; \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
+\end{eqnarray*}
+$$</div>
+<p>The optimization problem says minimize the expected time to find the special
+recipe. The constraints enforce that <span class="math">\(\boldsymbol{q}\)</span> is a valid probability
+distribution.</p>
+<p>The optimal strategy, which we get via Lagrange multipliers, turns out to be,
+</p>
+<div class="math">$$
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+$$</div>
+<p><button onclick="toggle('#Lagrange')" class="toggle-button">Derivation</button>
+<div id="Lagrange" style="display:none;" class="derivation">
+To solve this constrained optimization problem, we form the
+Lagrangian,</p>
+<div class="math">$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$</div>
+<p>and solve for <span class="math">\(\boldsymbol{q}\)</span> and multiplier <span class="math">\(\lambda\)</span> such that partial
+derivatives are all equal to zero. This gives us the following system of
+nonlinear equations,</p>
+<div class="math">$$
+\begin{eqnarray*}
+&amp;&amp; \lambda - \frac{p_i}{q_i^2} = 0 \ \ \ \text{for } 1 \le i \le n \\
+&amp;&amp; \lambda \cdot \left(1 - \sum_{i=1}^n q_i \right) = 0.
+\end{eqnarray*}
+$$</div>
+<p>We see that <span class="math">\(q_i = \pm \sqrt{\frac{p_i}{\lambda}}\)</span> works for the first set of
+equations, but since we need <span class="math">\(q_i \ge 0\)</span>, we take the positive one. Solving for
+<span class="math">\(\lambda\)</span> and plugging it in, we get a normalized distribution,</p>
+<div class="math">$$
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+$$</div>
+</div>
+
+<p><strong>How much better is <span class="math">\(q^*\)</span>?</strong>
+</p>
+<div class="math">$$
+f(q^*) = \sum_i \frac{p_i}{q^*_i}
+= \sum_i \frac{p_i}{ \frac{\sqrt{p_i} }{ \sum_j \sqrt{p_j}} }
+= \left( \sum_i \frac{p_i}{ \sqrt{p_i} } \right) \left( \sum_j \sqrt{p_j} \right)
+= \left( \sum_i \sqrt{p_i} \right)^2
+$$</div>
+<p>which sometimes equals <span class="math">\(n\)</span>, e.g., when <span class="math">\(\boldsymbol{p}\)</span> is uniform, but is never
+bigger than <span class="math">\(n.\)</span></p>
+<p><strong>What's the intuition?</strong> The reason why the <span class="math">\(\sqrt{p}\)</span>-scheme is preferred is
+because we save on <em>additional</em> cooking experiments. For example, if a recipe
+has <span class="math">\(k\)</span> times higher prior probability than the average recipe, then we will try
+that recipe <span class="math">\(\sqrt{k}\)</span> times more often; compared to <span class="math">\(k\)</span>, which we'd get under
+<span class="math">\(\boldsymbol{p}.\)</span> Additional cooking experiments are not so advantageous.</p>
+<p><strong>Allowing for noise in the cooking process</strong>: Suppose that for each recipe we
+  had a prior belief about how hard that recipe is for us to cook. Denote that
+  belief <span class="math">\(s_i\)</span>, these beliefs are between zero (never get it right) and one
+  (perfect every time) and do not necessarily sum to one over the cookbook.</p>
+<p>Following a similar derivation to before, the time to cook the special recipe
+<span class="math">\(j\)</span> and cook it correctly is,
+</p>
+<div class="math">$$
+\sum_{t=1}^\infty t \cdot (1 - \color{red}{s_j} q_j)^{t-1} q_{j} \color{red}{s_j} = \frac{1}{s_j \cdot q_j}
+$$</div>
+<p>
+That gives rise to a modified objective,
+</p>
+<div class="math">$$
+f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
+$$</div>
+<p>This is exactly the same as the previous objective, except we've replaced <span class="math">\(p_i\)</span>
+with <span class="math">\(p_i/s_i.\)</span> Thus, we can reuse our previous derivation to get the optimal
+strategy, <span class="math">\(q^*_i \propto \sqrt{p_i / s_i}.\)</span> If noise is constant, then we
+recover the original solution, <span class="math">\(q^*_i \propto \sqrt{p_i}.\)</span></p>
+<p><strong>Extension to finding multiple tasty recipes</strong>: Suppose we're trying to find
+  several tasty recipes, not just a single special one. Now, <span class="math">\(p_i\)</span> is our prior
+  belief that we'll like the recipe at all. How do we minimize the time until we
+  find a tasty one? It turns out the same trick works without modification
+  because all derivations apply to each recipe independently. The same trick
+  works if <span class="math">\(p_i\)</span> does not sums to one over <span class="math">\(n.\)</span> For example, if <span class="math">\(p_i\)</span> is the
+  independent probability that you'll like recipe <span class="math">\(i\)</span> at all, not the
+  probability that it's the special one.</p>
+<p><strong>Beyond memoryless policies</strong>: Clearly, our choice of a memoryless policy can
+  be beat by a policy family that balances exploration (trying new recipes) and
+  exploitation (trying our best guess).</p>
+<ul>
+<li>
+<p>Overall, the problem we've posed is similar to a
+    <a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">multi-armed bandit</a>. In
+    our case, the arms are the recipes, pulling the arm is trying the recipe and
+    the reward is whether or not we liked the recipe (possibly noisy). The key
+    difference between our setup and multi-armed bandits is that we trust our
+    prior distribution <span class="math">\(\boldsymbol{p}\)</span> and noise model <span class="math">\(\boldsymbol{s}.\)</span></p>
+</li>
+<li>
+<p>If the amount of noise <span class="math">\(s_i\)</span> is known and we trust the prior <span class="math">\(p_i\)</span> then
+    there is an optimal deterministic (without-replacement) strategy that we can
+    get by sorting the recipes by <span class="math">\(p_i\)</span> accounting for the error rates
+    <span class="math">\(s_i.\)</span> This approach is described in the original paper.</p>
+</li>
+</ul>
+<p><strong>A more realistic application</strong>: In certain language modeling applications, we
+  avoid computing normalization constants (which require summing over a massive
+  vocabulary) by using importance sampling, negative sampling or noise
+  contrastive estimation techniques (e.g.,
+  <a href="https://arxiv.org/pdf/1511.06909.pdf">Ji+,16</a>;
+  <a href="http://www.aclweb.org/anthology/Q15-1016">Levy+,15</a>). These techniques depend
+  on a proposal distribution, which folks often take to be the unigram
+  distribution. Unfortunately, this gives too many samples of stop words (e.g.,
+  "the", "an", "a"), so practitioners "anneal" the unigram distribution (to
+  increase the entropy), that is sample from <span class="math">\(q_i \propto
+  p_{\text{unigram},i}^\alpha.\)</span> Typically, <span class="math">\(\alpha\)</span> is set by grid search and
+  (no surprise) <span class="math">\(\alpha \approx 1/2\)</span> tends to work best! The <span class="math">\(\sqrt{p}\)</span>-sampling
+  trick is possibly a reverse-engineered justification in favor of annealing as
+  "the right thing to do" (e.g., why not do additive smoothing?) and it even
+  tells us how to set the annealing parameter <span class="math">\(\alpha.\)</span> The key assumption is
+  that we want to sample the actual word at a given position as often as
+  possible while still being diverse thanks to the coverage of unigram
+  prior. (Furthermore, memoryless sampling leads to simpler algorithms.)</p>
+<!--
+Actually, many word2vec papers use $\alpha=3/4$, which was suggested in
+[Levy+,15](http://www.aclweb.org/anthology/Q15-1016), including the default
+value in
+[gensim](https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/models/word2vec.py#L462). So,
+[Ryan Cotterell](https://ryancotterell.github.io/) ran a quick experiment with
+gensim, which confirmed the suspicion that $1/2$ may be better than $3/4.$
+
+    Word similarity accuracy (avg of 10 runs)
+    | alpha | accuracy |
+    +==================+
+    |  0.00 |    0.354 |
+    |  0.25 |    0.403 |
+    |  0.50 |    0.414 |
+    |  0.75 |    0.395 |
+    |  1.00 |    0.345 |
+-->
+
+<p><strong>Final remarks</strong>: I have uploaded a <a href="https://github.com/timvieira/blog/blob/master/content/notebook/Sqrt-biased-sampling.ipynb">Jupyter notebook</a> with test cases that illustrate the ideas in this article.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -161,6 +392,9 @@ proposal distributions exist</em>.</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a>
+      </li>
+      <li class="post">
           <a href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a>
       </li>
       <li class="post">
@@ -172,15 +406,12 @@ proposal distributions exist</em>.</p>
       <li class="post">
           <a href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a>
       </li>
-      <li class="post">
-          <a href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a>
-      </li>
     </ul>
   </section>
 
   <section>
   <h1>Tags</h1>
-    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
+    <a href="https://timvieira.github.io/blog/tag/numerical.html">numerical</a>,    <a href="https://timvieira.github.io/blog/tag/efficiency.html">efficiency</a>,    <a href="https://timvieira.github.io/blog/tag/sampling-without-replacement.html">sampling-without-replacement</a>,    <a href="https://timvieira.github.io/blog/tag/statistics.html">statistics</a>,    <a href="https://timvieira.github.io/blog/tag/notebook.html">notebook</a>,    <a href="https://timvieira.github.io/blog/tag/ordered-sampling.html">ordered-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/sampling.html">sampling</a>,    <a href="https://timvieira.github.io/blog/tag/algorithms.html">algorithms</a>,    <a href="https://timvieira.github.io/blog/tag/gumbel.html">Gumbel</a>,    <a href="https://timvieira.github.io/blog/tag/decision-making.html">decision-making</a>,    <a href="https://timvieira.github.io/blog/tag/reservoir-sampling.html">reservoir-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/optimization.html">optimization</a>,    <a href="https://timvieira.github.io/blog/tag/rl.html">rl</a>,    <a href="https://timvieira.github.io/blog/tag/machine-learning.html">machine-learning</a>,    <a href="https://timvieira.github.io/blog/tag/calculus.html">calculus</a>,    <a href="https://timvieira.github.io/blog/tag/automatic-differentiation.html">automatic-differentiation</a>,    <a href="https://timvieira.github.io/blog/tag/implicit-function-theorem.html">implicit-function-theorem</a>,    <a href="https://timvieira.github.io/blog/tag/lagrange-multipliers.html">Lagrange-multipliers</a>,    <a href="https://timvieira.github.io/blog/tag/testing.html">testing</a>,    <a href="https://timvieira.github.io/blog/tag/counterfactual-reasoning.html">counterfactual-reasoning</a>,    <a href="https://timvieira.github.io/blog/tag/importance-sampling.html">importance-sampling</a>,    <a href="https://timvieira.github.io/blog/tag/datastructures.html">datastructures</a>,    <a href="https://timvieira.github.io/blog/tag/incremental-computation.html">incremental-computation</a>,    <a href="https://timvieira.github.io/blog/tag/data-structures.html">data-structures</a>,    <a href="https://timvieira.github.io/blog/tag/rant.html">rant</a>,    <a href="https://timvieira.github.io/blog/tag/hyperparameter-optimization.html">hyperparameter-optimization</a>,    <a href="https://timvieira.github.io/blog/tag/crf.html">crf</a>,    <a href="https://timvieira.github.io/blog/tag/deep-learning.html">deep-learning</a>,    <a href="https://timvieira.github.io/blog/tag/structured-prediction.html">structured-prediction</a>,    <a href="https://timvieira.github.io/blog/tag/visualization.html">visualization</a>  </section>
 
 
 
