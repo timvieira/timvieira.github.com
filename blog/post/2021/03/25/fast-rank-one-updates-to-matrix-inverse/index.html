@@ -257,14 +257,14 @@ $$<p>So, coders, please be careful when translating math into code.  Mathers, pl
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Bonus">Bonus<a class="anchor-link" href="#Bonus">&#182;</a></h3>
+<h3 id="Bonus-&#128293;">Bonus &#128293;<a class="anchor-link" href="#Bonus-&#128293;">&#182;</a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>If you really want this method to be very fast 🔥, we can use specialized <a href="https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms">BLAS</a> routines for rank-one updates.  Thanks to 
+<p>To make this method really fast, we can use specialized <a href="https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms">BLAS</a> routines for rank-one updates.  Thanks to 
 Dr. Nikos Karampatziakis for suggesting it on <a href="https://twitter.com/eigenikos/status/1375143742064062464">Twitter</a>.</p>
 <p>Specifically, <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.blas.dger.html">DGER</a>, which computes
 $$
@@ -427,7 +427,7 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Closing">Closing<a class="anchor-link" href="#Closing">&#182;</a></h2><p>If you have a symmetric matrix, such as a covariance or Kernel matrix, it is generally more efficient to perform rank-one updates to the Cholesky factorization.</p>
+<h2 id="Closing">Closing<a class="anchor-link" href="#Closing">&#182;</a></h2><p>Be careful translating math into code.  Also, if you have a <em>symmetric</em> matrix, such as a covariance or Kernel matrix, it is generally more efficient (in terms of constant factors) and numerically stable to perform rank-one updates to the Cholesky factorization.</p>
 <p><strong>Acknowledgements</strong>: I'd like to thank <a href="http://lowrank.net/nikos/index.html">Nikos Karampatziakis</a> and <a href="https://suzyahyah.github.io/about/">Suzanna Sia</a> for comments, corrections, and/or suggestions that improved this article.</p>
 
 </div>

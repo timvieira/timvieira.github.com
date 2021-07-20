@@ -54,10 +54,10 @@ $$&lt;/div&gt;
 $$&lt;/div&gt;
 &lt;p&gt;Next, we solve for &lt;span class="math"&gt;\(\frac{\Delta_x}{\Delta_y}\)&lt;/span&gt;.&lt;/p&gt;
 &lt;div class="math"&gt;$$
-\Delta_x \frac{\partial g}{\partial x} = - \Delta_y \frac{\partial g}{\partial y}.
-$$&lt;/div&gt;
-&lt;div class="math"&gt;$$
-\frac{\Delta_x}{\Delta_y}  = -\left( \frac{\partial g}{\partial y} \right)^{-1} \frac{\partial g}{\partial x}.
+\begin{align}
+\Delta_x \frac{\partial g}{\partial x} &amp;amp;= - \Delta_y \frac{\partial g}{\partial y} \\
+\frac{\Delta_x}{\Delta_y}  &amp;amp;= -\left( \frac{\partial g}{\partial x} \right)^{-1} \frac{\partial g}{\partial y}.
+\end{align}
 $$&lt;/div&gt;
 &lt;p&gt;Back to the original problem: Now we can use the implicit function theorem to
 estimate how &lt;span class="math"&gt;\(\theta\)&lt;/span&gt; varies in &lt;span class="math"&gt;\(\lambda\)&lt;/span&gt; by plugging in &lt;span class="math"&gt;\(g \mapsto
