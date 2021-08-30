@@ -1,6 +1,6 @@
 /* ------------- GENERAL ------------- */
 
-*, html, body {
+*, html, body{
   margin: 0;
   padding: 0;
 }
@@ -12,6 +12,11 @@ html {
   background-color: #f9f9f9;
 //  font-family:"PT Sans","Helvetica Neue",Arial,sans-serif;
 //  color: #888;
+  background-image: url("img/squirt.png");
+//  background-repeat: no-repeat;
+//  background-position: right bottom; /*Positioning*/
+  background-attachment: fixed;
+//  background-size: cover; /* Resize the background image to cover the entire container */
 }
 
 body {
@@ -62,13 +67,15 @@ a:hover{
 /* ------- */
 
 #column-1 {
-  width: 430px;
-  float: right;
+    width: 420px;
+    background-color: rgba(255, 255, 255, 0.7);
+    float: right;
 }
 
 #column-2 {
   width: 470px;
   float: left;
+  background-color: rgba(255, 255, 255, 0.7);
   margin-left: 15px;
 }
 
