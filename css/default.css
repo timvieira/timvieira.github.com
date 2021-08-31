@@ -14,10 +14,11 @@ html {
 //  font-family:"PT Sans","Helvetica Neue",Arial,sans-serif;
 //  color: #888;
   background-image: url("/img/squirt.png");
-//  background-repeat: no-repeat;
+  background-repeat: no-repeat;
 //  background-position: right bottom; /*Positioning*/
+  background-position: center; /*Positioning*/
   background-attachment: fixed;
-//  background-size: cover; /* Resize the background image to cover the entire container */
+  background-size: contain; /* Resize the background image to cover the entire container */
 }
 
 body {
@@ -69,15 +70,20 @@ a:hover{
 
 #column-1 {
     width: 420px;
-    background-color: rgba(255, 255, 255, 0.7);
     float: right;
 }
 
 #column-2 {
   width: 470px;
   float: left;
-  background-color: rgba(255, 255, 255, 0.7);
   margin-left: 15px;
+}
+
+#interests, #fun, #name-container, #publications, #mugshot {
+    background-color: rgba(255, 255, 255, 0.7);
+    -moz-box-shadow: 1px 2px 3px rgba(0,0,0,.1);
+    -webkit-box-shadow: 1px 2px 3px rgba(0,0,0,.1);
+    box-shadow: 1px 2px 3px rgba(0,0,0,.1);
 }
 
 h1, h2, h3, h4 {
@@ -131,7 +137,8 @@ h2 {
 #mugshot {}
   #mugshot img { width: 100%; }
 
-#about {}
+  #about {
+  }
 
   #bunchoflinks {
     padding: 18px 0 5px 0;
