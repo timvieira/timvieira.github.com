@@ -132,7 +132,9 @@ h2 {
   }
 
 #mugshot {}
-  #mugshot img { width: 100%; }
+  #mugshot img {
+      width: 100%;      
+  }
 
   #about {
   }
@@ -205,6 +207,6 @@ h2 {
 
 
 img {
-  -webkit-filter: grayscale(65%); /* Safari 6.0 - 9.0 */
-  filter: grayscale(65%);
+//  -webkit-filter: grayscale(65%); /* Safari 6.0 - 9.0 */
+//  filter: grayscale(65%);
 }
