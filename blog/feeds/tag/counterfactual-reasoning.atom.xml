@@ -16,7 +16,7 @@ from a older one.&lt;/p&gt;
 &lt;p&gt;In this post, I'll discuss some basic techniques for learning from logged
 data. For the large part, this post is based on things I learned from
 &lt;a href="http://www.cs.ucr.edu/~cshelton/papers/docs/icml02.pdf"&gt;Peshkin &amp;amp; Shelton (2002)&lt;/a&gt;
-and &lt;a href="https://arxiv.org/abs/1209.2355"&gt;Bottou et al. (2013)&lt;/a&gt; (two of my all-time
+and &lt;a href="https://arxiv.org/abs/1209.2355"&gt;Bottou et al. (2013)&lt;/a&gt; (two of all-time
 favorite papers).&lt;/p&gt;
 &lt;p&gt;After reading, have a look at the
 &lt;a href="https://gist.github.com/timvieira/788c2c25c94663c49abada60f2e107e9"&gt;Jupyter notebook&lt;/a&gt;
