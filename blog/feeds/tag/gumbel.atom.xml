@@ -16,7 +16,7 @@ $$
 \mathrm{Pr}(z) = \prod_{t=1}^{k} p(z_t \mid z_{:t})
 \quad\text{ where }\quad
 p(z_t \mid z_{:t}) = \frac{ w_{z_t} }{ W_t(z) }  \quad\text{ and }\quad
-W_t(z) = \sum_{i=t}^n w_{z_{t}}
+W_t(z) = \sum_{i=t}^n w_{z_{i}}
 $$&lt;/p&gt;
 &lt;p&gt;Note that $w_{z_t}$ is the weight of the $t^{\text{th}}$ item sampled in $z$ and $W_t(z)$ is the normalizing constant at time $t$.&lt;/p&gt;
 &lt;p&gt;This probability is evaluated by &lt;code&gt;p_perm&lt;/code&gt; (below), and it can be used to test that $z$ is sampled according to the correct sampling without replacement process.&lt;/p&gt;
