@@ -70,12 +70,12 @@
 </header>
 
   <div class="entry-content"><p>Importance sampling is a powerful and pervasive technique in statistics, machine
-learning and randomized algorithms.</p>
+learning, and randomized algorithms.</p>
 <h2>Basics</h2>
 <p>Importance sampling is a technique for estimating the expectation <span class="math">\(\mu\)</span> of a
 random variable <span class="math">\(f(x)\)</span> under distribution <span class="math">\(p\)</span> from samples of a different
 distribution <span class="math">\(q.\)</span></p>
-<p>The key observation is that <span class="math">\(\mu\)</span> is can expressed as the expectation of a
+<p>The key observation is that <span class="math">\(\mu\)</span> can be expressed as the expectation of a
 different random variable <span class="math">\(f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)\)</span> under <span class="math">\(q.\)</span></p>
 <div class="math">$$
 \mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
@@ -85,20 +85,20 @@ $$</div>
 can support things that <span class="math">\(p\)</span> doesn't.</p>
 <p>Terminology: The quantity <span class="math">\(w(x) = \frac{p(x)}{q(x)}\)</span> is often referred to as the
 "importance weight" or "importance correction". We often refer to <span class="math">\(p\)</span> as the
-target density and <span class="math">\(q\)</span> the proposal density.</p>
+target density and <span class="math">\(q\)</span> as the proposal density.</p>
 <p>Now, given samples <span class="math">\(\{ x^{(i)} \}_{i=1}^{n}\)</span> from <span class="math">\(q,\)</span> we can use the Monte
 Carlo estimate, <span class="math">\(\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)}),\)</span> as
 an unbiased estimator of <span class="math">\(\mu.\)</span></p>
 <h2>Remarks</h2>
-<p>There are a few reasons we might want use importance sampling:</p>
+<p>There are a few reasons we might want to use importance sampling:</p>
 <ol>
 <li>
 <p><strong>Convenience</strong>: It might be trickier to sample directly from <span class="math">\(p.\)</span></p>
 </li>
 <li>
-<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm which requires
+<p><strong>Bias-correction</strong>: Suppose, we're developing an algorithm that requires
      samples to satisfy some "safety" condition (e.g., a minimum support
-     threshold) and be unbiased. Importance sampling can be used to remove bias,
+     threshold) and be unbiased. Importance sampling can be used to remove bias
      while satisfying the condition.</p>
 </li>
 <li>
@@ -123,7 +123,7 @@ an unbiased estimator of <span class="math">\(\mu.\)</span></p>
 <ol>
 <li>
 <p><strong>Control over <span class="math">\(q\)</span></strong>: This is the case in experimental design, variance
-     reduction, active learning and reinforcement learning. It's often difficult
+     reduction, active learning, and reinforcement learning. It's often difficult
      to design <span class="math">\(q,\)</span> which results in an estimator with "reasonable" variance. A
      very difficult case is in off-policy evaluation because it (essentially)
      requires a good exploratory distribution for every possible policy. (I have
@@ -138,7 +138,7 @@ an unbiased estimator of <span class="math">\(\mu.\)</span></p>
 <p><strong>Unknown <span class="math">\(q\)</span></strong>: In this case, we want to estimate <span class="math">\(q\)</span> (typically referred
      to as the propensity score) and use it in the importance sampling
      estimator. This technique, as far as I can tell, is widely used to remove
-     selection bias when estimating effects of different treatments.</p>
+     selection bias when estimating the effects of different treatments.</p>
 </li>
 </ol>
 <p><strong>Drawbacks</strong>: The main drawback of importance sampling is variance. A few bad
