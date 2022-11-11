@@ -1830,18 +1830,20 @@ swor_exp is 10.4478x faster than swor_numpy &lt;span class="ansi-yellow-fg"&gt;(
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In&amp;nbsp;[&amp;nbsp;]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; 
-&lt;/pre&gt;&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;strong&gt;How to cite this article&lt;/strong&gt;: If you found this article useful, please cite it as&lt;/p&gt;
 
-    &lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;@misc{vieira2019swor-algs,
+    title = {Algorithms for sampling without replacement},
+    author = {Tim Vieira},
+    url = "https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/",
+    year = {2019}
+}&lt;/code&gt;&lt;/pre&gt;
+
 &lt;/div&gt;
 &lt;/div&gt;
-
 &lt;/div&gt;
  
 
