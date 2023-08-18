@@ -145,9 +145,12 @@ h2 {
    }
 
   .project div {
-      width: 175px;
-      height: 135px;
-      float:left;
+      width: 190px;
+      height: 125px;
+      float:  left;
+      margin: 0 0 5px 0;
+      max-height: 135px;
+      overflow: hidden;
   }
 
   .project img {
