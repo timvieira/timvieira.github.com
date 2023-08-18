@@ -104,23 +104,15 @@ h2 {
 }
 
 .box {
-  overflow: hidden;
   padding: 10px;
-/*  background-color: #fffff9; /*#f7f7f7;*/
-  margin-bottom: 5px;
-  margin-bottom: 10px;
-//  box-shadow: 5px 5px 5px rgba(34,25,25,0.25);
 }
 
 #name-container {
   padding-top: 20px;
-/*  background-color: #333;
-  color: #f2f2f2;*/
   font-size: 20px;
 }
 
   #name-container a {
-/*      color: #f2f2f2; */
       text-decoration: none;
   }
 
@@ -133,7 +125,7 @@ h2 {
 
 #mugshot {}
   #mugshot img {
-      width: 100%;      
+      width: 100%;
   }
 
   #about {
@@ -154,10 +146,8 @@ h2 {
 
   .project div {
       width: 175px;
-      height: 115px;
-      overflow: hidden;
-      float: left;
-      margin-bottom: 10px;
+      height: 135px;
+      float:left;
   }
 
   .project img {
@@ -165,13 +155,9 @@ h2 {
   }
 
   .project .thumbnail {
-    display: inline;
-    float: left;
-  }
 
-  .project .blurb {
-      width: 55%;
-      float: right;
+    padding: 5px;
+
   }
 
 #footer {
