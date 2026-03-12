@@ -195,7 +195,62 @@ h2 {
 }
 
 
+#mug-inline {
+  display: none;
+}
+
 img {
 //  -webkit-filter: grayscale(65%); /* Safari 6.0 - 9.0 */
 //  filter: grayscale(65%);
+}
+
+@media (max-width: 960px) {
+  #container {
+    width: auto;
+    max-width: 600px;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  #column-1, #column-2 {
+    display: contents;
+  }
+  #name-container { order: 1; }
+  #mugshot { display: none; }
+  #name-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  #mug-inline {
+    display: block;
+    width: 30%;
+    flex-shrink: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: width 0.3s ease;
+    order: 1;
+  }
+  #mug-inline.expanded {
+    width: 100%;
+    order: 2;
+  }
+  #name-links {
+    flex: 1;
+    order: 2;
+    transition: all 0.3s ease;
+  }
+  #mug-inline.expanded ~ #name-links {
+    order: 1;
+    flex-basis: 100%;
+    transition: all 0.3s ease;
+  }
+  #interests { order: 3; }
+  #blogbox { order: 4; }
+  #publications { order: 5; }
+  #fun { order: 6; }
+  .project div {
+    width: 45%;
+  }
 }
