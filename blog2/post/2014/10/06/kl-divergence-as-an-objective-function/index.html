@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1745,66 +1789,66 @@ direction. In this section, I'll describe the gradient and pay special attention
 to the issue of normalization.</p>
 <p><strong>Notation</strong>: $p,q_\theta$ are probabilty distributions. $p = \bar{p} / Z_p$,
 where $Z_p$ is the normalization constant. Similarly for $q$.</p>
-<h3 id="the-easy-direction-textbfklq_theta-p">The Easy Direction $\textbf{KL}(q_\theta || p)$</h3>
-<p>\begin{align<em>}
+<h3 id="the-easy-direction-math20">The Easy Direction $\textbf{KL}(q_\theta || p)$</h3>
+<p>\begin{align*}
 \textbf{KL}(q_\theta || p)
-&amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \
-&amp;= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \
-&amp;= \underbrace{\sum_d q(d) \log q(d)}<em _text_cross-entropy="\text{cross-entropy">{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}</em> \
-\end{align}</em>}</p>
+&= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \\
+&= \sum_d q(d) \left( \log q(d) - \log p(d) \right) \\
+&= \underbrace{\sum_d q(d) \log q(d)}_{-\text{entropy}} - \underbrace{\sum_d q(d) \log p(d)}_{\text{cross-entropy}} \\
+\end{align*}</p>
 <p>Let's look at normalization of $p$, the entropy term is easy because there is no $p$ in it.
-\begin{align<em>}
+\begin{align*}
 \sum_d q(d) \log p(d)
-&amp;= \sum_d q(d) \log (\bar{p}(d) / Z_p) \
-&amp;= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \
-&amp;= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \
-&amp;= \sum_d q(d) \log \bar{p}(d) - \log Z_p
-\end{align</em>}</p>
+&= \sum_d q(d) \log (\bar{p}(d) / Z_p) \\
+&= \sum_d q(d) \left( \log \bar{p}(d) - \log Z_p) \right) \\
+&= \sum_d q(d) \log \bar{p}(d) - \sum_d q(d) \log Z_p \\
+&= \sum_d q(d) \log \bar{p}(d) - \log Z_p
+\end{align*}</p>
 <p>In this case, $-\log Z_p$ is an additive constant, which can be dropped because
 we're optimizing.</p>
 <p>This leaves us with the following optimization problem:
-\begin{align<em>}
-&amp; \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \
-&amp;\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
-\end{align</em>}</p>
+\begin{align*}
+& \underset{\theta}{\text{argmin}}\, \textbf{KL}(q_\theta || p) \\
+&\qquad = \underset{\theta}{\text{argmin}}\, \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d)
+\end{align*}</p>
 <p>Let's work out the gradient
-\begin{align<em>}
-&amp; \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \
-&amp;\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \
-\end{align</em>}</p>
+\begin{align*}
+& \nabla\left[ \sum_d q_\theta(d) \log q_\theta(d) - \sum_d q_\theta(d) \log \bar{p}(d) \right] \\
+&\qquad = \sum_d \nabla \left[ q_\theta(d) \log q_\theta(d) \right] - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) \right) - \sum_d \nabla\left[ q_\theta(d) \right] \log \bar{p}(d) \\
+&\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( 1 + \log q_\theta(d) - \log \bar{p}(d) \right) \\
+&\qquad = \sum_d \nabla \left[ q_\theta(d) \right] \left( \log q_\theta(d) - \log \bar{p}(d) \right) \\
+\end{align*}</p>
 <p>We killed the one in the last equality because $\sum_d \nabla
 \left[ q(d) \right] = \nabla \left[ \sum_d q(d) \right] = \nabla
 \left[ 1 \right] = 0$, for any $q$ which is a probability distribution.</p>
 <p>This direction is convenient because we don't need to normalize
 $p$. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
 the "hard" direction, which (as we'll see shortly) is convex.</p>
-<h3 id="harder-direction-textbfklp-q_theta">Harder Direction $\textbf{KL}(p || q_\theta)$</h3>
-<p>\begin{align<em>}
+<h3 id="harder-direction-math26">Harder Direction $\textbf{KL}(p || q_\theta)$</h3>
+<p>\begin{align*}
 \textbf{KL}(p || q_\theta)
-&amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \
-&amp;= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \
-&amp;= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \
-\end{align</em>}</p>
+&= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \\
+&= \sum_d p(d) \left( \log p(d) - \log q(d) \right) \\
+&= \sum_d p(d) \log p(d) - \sum_d p(d) \log q(d) \\
+\end{align*}</p>
 <p>Clearly the first term (entropy) won't matter if we're just trying optimize wrt
 $\theta$. So, let's focus on the second term (cross-entropy).
-\begin{align<em>}
+\begin{align*}
 \sum_d p(d) \log q(d)
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \
-&amp;= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
-\end{align</em>}</p>
+&= \frac{1}{Z_p} \sum_d \bar{p}(d) \log \left( \bar{q}(d)/Z_q \right) \\
+&= \frac{1}{Z_p} \sum_d \bar{p}(d) \left( \log \bar{q}(d) - \log Z_q \right) \\
+&= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log Z_q\right) \\
+&= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \left( \log Z_q \right) \left( \frac{1}{Z_p} \sum_d \bar{p}(d)\right) \\
+&= \left(\frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d)\right) - \log Z_q
+\end{align*}</p>
 <p>The gradient, when $q$ is in the exponential family, is intuitive:</p>
-<p>\begin{align<em>}
+<p>\begin{align*}
 \nabla \left[ \frac{1}{Z_p} \sum_d \bar{p}(d) \log \bar{q}(d) - \log Z_q \right]
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \
-&amp;= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \
-&amp;= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
-\end{align</em>}</p>
+&= \frac{1}{Z_p} \sum_d \bar{p}(d) \nabla \left[ \log \bar{q}(d) \right] - \nabla \log Z_q \\
+&= \frac{1}{Z_p} \sum_d \bar{p}(d) \phi_q(d) - \mathbb{E}_q \left[ \phi_q \right] \\
+&= \mathbb{E}_p \left[ \phi_q \right] - \mathbb{E}_q \left[ \phi_q \right]
+\end{align*}</p>
 <p>Why do we say this is hard to compute? Well, for most interesting models, we
 can't compute $Z_p = \sum_d \bar{p}(d)$. This is because $p$ is presumed to be a
 complex model (e.g., the real world, an intricate factor graph, a complicated
@@ -1835,7 +1879,7 @@ tractable or, for MLE, require tons of samples.</p>
 </li>
 <li>
 <p>Inclusive vs. exclusive is an important distinction: Inclusive divergences
-  require $q &gt; 0$ whenever $p &gt; 0$ (i.e., no "false negatives"), whereas
+  require $q > 0$ whenever $p > 0$ (i.e., no "false negatives"), whereas
   exclusive divergences favor a single mode (i.e., only a good fit around a that
   mode).</p>
 </li>

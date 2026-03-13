@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1703,17 +1747,7 @@ body > header nav a:hover {
       </p>
     </header>
     <div class="entry-content" style="view-transition-name: article-body">
-      <style> .toggle-button { background-color: #555555; border: none; color: white;
-padding: 10px 15px; border-radius: 6px; text-align: center; text-decoration:
-none; display: inline-block; font-size: 16px; cursor: pointer; } .derivation {
-background-color: #f2f2f2; border: thin solid #ddd; padding: 10px;
-margin-bottom: 10px; } </style>
-<script>
-/* workaround for when markdown/mathjax gets confused by the javascript dollar function. */
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
+      <p>Counterfactual reasoning is <em>reasoning about data that we did not observe</em>. For
 example, reasoning about the expected reward of new policy given data collected
 from a older one.</p>
 <p>In this post, I'll discuss some basic techniques for learning from logged
@@ -1730,7 +1764,7 @@ function of the form,</p>
 J(\theta) = \underset{p_\theta}{\mathbb{E}} \left[ r(x) \right] = \sum_{x \in \mathcal{X}} p_\theta(x) r(x).
 $$</p>
 <p><br/> But! We only have a <em>fixed</em> sample of size $m$ from a data collection
-policy $q$, ${ (r^{(j)}, x^{(j)} ) }_{j=1}^m \overset{\text{i.i.d.}} \sim q.$</p>
+policy $q$, $\{ (r^{(j)}, x^{(j)} ) \}_{j=1}^m \overset{\text{i.i.d.}} \sim q.$</p>
 <ul>
 <li>
 <p>Although, it's not <em>necessarily</em> the case, you can think of $q = p_{\theta'}$
@@ -1750,7 +1784,7 @@ policy $q$, ${ (r^{(j)}, x^{(j)} ) }_{j=1}^m \overset{\text{i.i.d.}} \sim q.$</p
   can't evaluate $r$ at $x$ values other than those in the sample.</p>
 </li>
 <li>
-<p>We'll assume that $q$ assigns positive probability everywhere, $q(x) &gt; 0$ for
+<p>We'll assume that $q$ assigns positive probability everywhere, $q(x) > 0$ for
   all $x \in \mathcal{X}$. This means is that the data collection process must
   be randomized and eventually sample all possible configurations. Later, I
   discuss relaxing this assumption.</p>
@@ -1791,10 +1825,10 @@ with
 <a href="../../../../../post/2014/12/21/importance-sampling/">importance sampling</a>,</p>
 <p>$$
 J(\theta)
-\approx \hat{J}<em j="1">{!\text{IS}}(\theta)
-= \frac{1}{m} \sum</em>}^m r^{(j)} !\cdot! w^{(j)<em _theta="\theta">{\theta}
-\quad \text{ where } w^{(j)}</em>.
-$$} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) </p>
+\approx \hat{J}_{\!\text{IS}}(\theta)
+= \frac{1}{m} \sum_{j=1}^m r^{(j)} \!\cdot\! w^{(j)}_{\theta}
+\quad \text{ where } w^{(j)}_{\theta} = \frac{p_{\theta}(x^{(j)}) }{ q(x^{(j)}) }.
+$$</p>
 <p><br/> This estimator is remarkable: it uses importance sampling as a function
 approximator! We have an <em>unbiased</em> estimate of $J(\theta)$ for any value of
 $\theta$ that we like. <em>The catch</em> is that we have to pick $\theta$ a priori,
@@ -1806,15 +1840,15 @@ q(x)>0$ for all $x \in \mathcal{X}$, which is why we made assumption A1.
 -->
 
 <p>After we've collected a (large) sample it's possible to optimize
-$\hat{J}<em _33_text_IS="!\text{IS">{!\text{IS}}$ using any optimization algorithm (e.g., L-BFGS). Of
+$\hat{J}_{\!\text{IS}}$ using any optimization algorithm (e.g., L-BFGS). Of
 course, we risk overfitting to the sample if we evaluate
-$\hat{J}</em>$. Actually, it's a bit worse: this objective tends to
+$\hat{J}_{\!\text{IS}}$. Actually, it's a bit worse: this objective tends to
 favor regions of $\theta$, which are not well represented in the sample because
 the importance sampling estimator has high variance in these regions resulting
 from large importance weights (when $q(x)$ is small and $p_{\theta}(x)$ is
-large, $w(x)$ is large and consequently so is $\hat{J}_{!\text{IS}}$ regardless
+large, $w(x)$ is large and consequently so is $\hat{J}_{\!\text{IS}}$ regardless
 of whether $r(x)$ is high!). Thus, we want some type of "regularization" to keep
-the optimizer in regions which are sufficiently well-represented by the sample.}</p>
+the optimizer in regions which are sufficiently well-represented by the sample.</p>
 <!--
 **Visual example**: We can visualize this phenomena in a simple example. Let $q
 = \mathcal{N}(0, \sigma=5)$, $r(x) = 1 \text{ if } x \in [2, 3], 0.2 \text{
@@ -1829,8 +1863,8 @@ space, e.g., $\mathcal{X}$ may be discrete.
 <p><strong>Better surrogate</strong> [V2]: There are many ways to improve the variance of the
 estimator and <em>confidently</em> obtain improvements to the system. One of my
 favorites is Bottou et al.'s lower bound on $J(\theta)$, which we get by
-clipping importance weights, replace $w^{(j)}<em _theta="\theta">{\theta}$ with $\min(R,
-w^{(j)}</em>)$.</p>
+clipping importance weights, replace $w^{(j)}_{\theta}$ with $\min(R,
+w^{(j)}_{\theta})$.</p>
 <p><strong>Confidence intervals</strong> [V3]: We can augment the V2 lower bound with confidence
 intervals derived from the empirical Bernstein bound (EBB). We'll require that
 $r$ is bounded and that we know its max/min values. The EBB <em>penalizes</em>

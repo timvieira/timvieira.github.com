@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1713,48 +1757,25 @@ changes to its $n$-dimensional input vector $\boldsymbol{w}$. The particular
 form of the quantity we're going to compute is $z = \bigoplus_{i=1}^n w_i$,
 where $\oplus$ is some associative binary operator with identity element
 $\boldsymbol{0}$.</p>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
-
-<script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p><button class="toggle-button" onclick="toggle('#operator-mathy');">more formally...</button></p>
-<div id="operator-mathy" class="derivation" style="display:none">
-
-* $\boldsymbol{w} \in \boldsymbol{K}^n$
-
-* $\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}$.
-
-* Associative: $(a \oplus b) \oplus c = a \oplus (b \oplus c)$ for all $a,b,c
-  \in \boldsymbol{K}$.
-
-* Identity element: $\boldsymbol{0} \in \boldsymbol{K}$ such that $k \oplus
-  \boldsymbol{0} = \boldsymbol{0} \oplus k = k$, for all $k \in \boldsymbol{K}$.
-
-</div>
-
+<details class="derivation">
+<summary>Formal definition</summary>
+<ul>
+<li>
+<p>$\boldsymbol{w} \in \boldsymbol{K}^n$</p>
+</li>
+<li>
+<p>$\oplus: \boldsymbol{K} \times \boldsymbol{K} \mapsto \boldsymbol{K}$.</p>
+</li>
+<li>
+<p>Associative: $(a \oplus b) \oplus c = a \oplus (b \oplus c)$ for all $a,b,c
+  \in \boldsymbol{K}$.</p>
+</li>
+<li>
+<p>Identity element: $\boldsymbol{0} \in \boldsymbol{K}$ such that $k \oplus
+  \boldsymbol{0} = \boldsymbol{0} \oplus k = k$, for all $k \in \boldsymbol{K}$.</p>
+</li>
+</ul>
+</details>
 <p><strong>The trick</strong>: Essentially, the trick boils down to <em>parenthesis placement</em> in
 the expression which computes $z$. A freedom we assumed via the associative
 property.</p>
@@ -1785,7 +1806,7 @@ We're going to store the values of the intermediates quantities and inputs in a
 heap datastructure, which is a <em>complete</em> binary tree. In our case, the tree has
 depth $1 + \lceil \log_2 n \rceil$, with the values of $\boldsymbol{w}$ at it's
 leaves (aligned left) and padding with $\boldsymbol{0}$ for remaining
-leaves. Thus, the array's length is $&lt; 4 n$.</p>
+leaves. Thus, the array's length is $< 4 n$.</p>
 <p>This structure makes our implementation really nice and efficient because we
 don't need pointers to find the parent or children of a node (i.e., no need to
 wrap elements into a "node" class like in a general tree data structure). So, we
@@ -1861,9 +1882,9 @@ which makes implementation simpler.)</p>
 <ul>
 <li>
 <p>No zero? No problem. We don't <em>actually</em> require a zero element. So, it's
-   fair to augment $\boldsymbol{K} \cup { \textsf{null} }$ where
+   fair to augment $\boldsymbol{K} \cup \{ \textsf{null} \}$ where
    $\textsf{null}$ is distinguished value (i.e., $\textsf{null} \notin
-   \boldsymbol{K}$) that <em>acts</em> just like a zero after we overload $\oplus$ to
+   \boldsymbol{K}$) that *acts* just like a zero after we overload $\oplus$ to
    satisfy the definition of a zero (e.g., by adding an if-statement).</p>
 </li>
 <li>
@@ -1887,7 +1908,7 @@ which makes implementation simpler.)</p>
 </ul>
 <h2 id="application">Application</h2>
 <p><strong>Sampling from an evolving distribution</strong>: Suppose that $\boldsymbol{w}$
-corresponds to a categorical distributions over ${1, \ldots, n}$ and that we'd
+corresponds to a categorical distributions over $\{1, \ldots, n\}$ and that we'd
 like to sample elements from in proportion to this (unnormalized) distribution.</p>
 <p>Other methods like the <a href="http://www.keithschwarz.com/darts-dice-coins/">alias</a> or
 inverse CDF methods are efficient after a somewhat costly initialization

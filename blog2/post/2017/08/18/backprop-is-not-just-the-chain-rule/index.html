@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1727,7 +1771,7 @@ evaluating $f$
   (as long as the control flow is independent of $x$). You can even do this
   "automatic" transformation by hand!</li>
 </ul>
-<h3 id="autodiff-ne-what-you-learned-in-calculus">Autodiff $\ne$ What You Learned in Calculus</h3>
+<h3 id="autodiff-math17-what-you-learned-in-calculus">Autodiff $\ne$ What You Learned in Calculus</h3>
 <p>Let's try to understand the difference between autodiff and the type of
 differentiation that you learned in calculus, which is called <em>symbolic</em>
 differentiation.</p>
@@ -1814,23 +1858,23 @@ multipliers, recovers <em>exactly</em> the adjoints (intermediate derivatives) i
 backprop algorithm!</p>
 <p>Here's our example from earlier written in this constraint form:</p>
 <p>$$
-\begin{align<em>}
-\underset{x}{\text{argmax}}\ &amp; f \
+\begin{align*}
+\underset{x}{\text{argmax}}\ & f \\
 \text{s.t.} \quad
-a &amp;= \exp(x) \
-b &amp;= a^2     \
-c &amp;= a + b   \
-d &amp;= \exp(c) \
-e &amp;= \sin(c) \
-f &amp;= d + e
-\end{align</em>}
+a &= \exp(x) \\
+b &= a^2     \\
+c &= a + b   \\
+d &= \exp(c) \\
+e &= \sin(c) \\
+f &= d + e
+\end{align*}
 $$</p>
 <h4 id="the-general-formulation">The General Formulation</h4>
-<p>\begin{align<em>}
-  &amp; \underset{\boldsymbol{x}}{\text{argmax}}\ z_n &amp; \
-  &amp; \text{s.t.}\quad z_i = x_i                          &amp;\text{ for $1 \le i \le d$} \
-  &amp; \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &amp;\text{ for $d &lt; i \le n$} \
-  \end{align</em>}</p>
+<p>\begin{align*}
+  & \underset{\boldsymbol{x}}{\text{argmax}}\ z_n & \\
+  & \text{s.t.}\quad z_i = x_i                          &\text{ for $1 \le i \le d$} \\
+  & \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &\text{ for $d < i \le n$} \\
+  \end{align*}</p>
 <p>The first set of constraint ($1, \ldots, d$) are a little silly. They are only
 there to keep our formulation tidy. The variables in the program fall into three
 categories:</p>
@@ -1857,7 +1901,7 @@ vector products that can be used to extra Jacobians.)  -->
 <p>The relation $\alpha$ is a
 <a href="https://en.wikipedia.org/wiki/Dependency_graph">dependency graph</a> among
 variables. Thus, $\alpha(i)$ is the list of <em>incoming</em> edges to node $i$ and
-$\beta(j) = { i: j \in \alpha(i) }$ is the set of <em>outgoing</em> edges. For now,
+$\beta(j) = \{ i: j \in \alpha(i) \}$ is the set of <em>outgoing</em> edges. For now,
 we'll assume that the dependency graph given by $\alpha$ is ① acyclic: no $z_i$
 can transitively depend on itself.  ② single-assignment: each $z_i$ appears on
 the left-hand side of <em>exactly one</em> equation.  We'll discuss relaxing these
@@ -1889,11 +1933,11 @@ multipliers&mdash;i.e., setting the gradient of Lagrangian
 w.r.t. $\boldsymbol{\lambda}$ to zero&mdash;ensures that the constraints on
 intermediate variables are satisfied.</p>
 <p>$$
-\begin{eqnarray<em>}
-\nabla_{! \lambda_i} \mathcal{L}
+\begin{eqnarray*}
+\nabla_{\! \lambda_i} \mathcal{L}
 = z_i - f_i(z_{\alpha(i)}) = 0
 \quad\Leftrightarrow\quad z_i = f_i(z_{\alpha(i)})
-\end{eqnarray</em>}
+\end{eqnarray*}
 $$</p>
 <p>We can use forward propagation to satisfy these equations, which we may regard
 as a block-coordinate step in the context of optimizing the $\mathcal{L}$.</p>
@@ -1907,15 +1951,15 @@ and an acyclic program.)
 <p><strong>Lagrange multipliers</strong> ($\boldsymbol{\lambda}$, excluding $\lambda_n$):
   Setting the gradient of the $\mathcal{L}$ w.r.t. the intermediate variables
   equal to zeros tells us what to do with the intermediate multipliers.</p>
-<p>\begin{eqnarray<em>}
-0 &amp;=&amp; \nabla_{! z_j} \mathcal{L} \
-&amp;=&amp; \nabla_{! z_j}! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \
-&amp;=&amp; - \sum_{i=1}^n \lambda_i \nabla_{! z_j}! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \
-&amp;=&amp; - \left( \sum_{i=1}^n \lambda_i \nabla_{! z_j}! \left[ z_i \right] \right) + \left( \sum_{i=1}^n \lambda_i \nabla_{! z_j}! \left[ f_i(z_{\alpha(i)}) \right] \right) \
-&amp;=&amp; - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \
-&amp;\Updownarrow&amp; \
-\lambda_j &amp;=&amp; \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \
-\end{eqnarray</em>}</p>
+<p>\begin{eqnarray*}
+0 &=& \nabla_{\! z_j} \mathcal{L} \\
+&=& \nabla_{\! z_j}\! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&=& - \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
+&=& - \left( \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ z_i \right] \right) + \left( \sum_{i=1}^n \lambda_i \nabla_{\! z_j}\! \left[ f_i(z_{\alpha(i)}) \right] \right) \\
+&=& - \lambda_j + \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+&\Updownarrow& \\
+\lambda_j &=& \sum_{i \in \beta(j)} \lambda_i \frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} \\
+\end{eqnarray*}</p>
 <p>Clearly, $\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j} = 0$ for $j \notin
 \alpha(i)$, which is why the $\beta(j)$ notation came in handy. By assumption,
 the local derivatives, $\frac{\partial f_i(z_{\alpha(i)})}{\partial z_j}$ for $j
@@ -1932,17 +1976,17 @@ type $i$ to derivatives of type $j$.</p>
 <p><strong>Output multiplier</strong> ($\lambda_n$): Here we follow the same pattern as for
   intermediate multipliers.</p>
 <p>$$
-\begin{eqnarray<em>}
-0 &amp;=&amp; \nabla_{! z_n}! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] &amp;=&amp; 1 - \lambda_n \
- &amp;\Updownarrow&amp; \
- \lambda_n &amp;=&amp; 1
-\end{eqnarray</em>}
+\begin{eqnarray*}
+0 &=& \nabla_{\! z_n}\! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] &=& 1 - \lambda_n \\
+ &\Updownarrow& \\
+ \lambda_n &=& 1
+\end{eqnarray*}
 $$</p>
-<p><strong>Input multipliers</strong> $(\boldsymbol{\lambda}<em 1:d="1:d">{1:d})$: Our dummy constraints
-  gives us $\boldsymbol{\lambda}</em>$, which are conveniently equal to the
+<p><strong>Input multipliers</strong> $(\boldsymbol{\lambda}_{1:d})$: Our dummy constraints
+  gives us $\boldsymbol{\lambda}_{1:d}$, which are conveniently equal to the
   gradient of the function we're optimizing:</p>
 <p>$$
-\nabla_{!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
+\nabla_{\!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
 $$</p>
 <p>Of course, this interpretation is only precise when ① the constraints are
 satisfied ($\boldsymbol{z}$ equations) and ② the linear system on multipliers is
@@ -1970,11 +2014,11 @@ says!</p>
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is</p>
 <p>$$
-\begin{align<em>}
-&amp; \underset{\boldsymbol{x}}{\text{argmax}}\, z_n \
-&amp; \text{s.t.}\quad g(\boldsymbol{z}) = \boldsymbol{0} \
-&amp; \text{and}\quad \boldsymbol{z}_{1:d} = \boldsymbol{x}
-\end{align</em>}
+\begin{align*}
+& \underset{\boldsymbol{x}}{\text{argmax}}\, z_n \\
+& \text{s.t.}\quad g(\boldsymbol{z}) = \boldsymbol{0} \\
+& \text{and}\quad \boldsymbol{z}_{1:d} = \boldsymbol{x}
+\end{align*}
 $$</p>
 <p>where $g$ can be any smooth multivariate function of the intermediate variables!
 Of course, allowing cyclic constraints comes at the cost of a more-difficult

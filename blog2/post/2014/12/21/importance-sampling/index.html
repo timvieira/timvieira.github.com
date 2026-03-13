@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1706,13 +1750,13 @@ body > header nav a:hover {
       <p>Importance sampling is a powerful and pervasive technique in statistics, machine learning, and randomized algorithms.</p>
 <h2 id="basics">Basics</h2>
 <p>Importance sampling is a technique for estimating the expectation $\mu$ of a random variable $f(x)$ under distribution $p$ from samples of a different distribution $q.$</p>
-<p>The key observation is that $\mu$ can be expressed as the expectation of a different random variable $f^*(x)=\frac{p(x)}{q(x)}! \cdot! f(x)$ under $q.$</p>
+<p>The key observation is that $\mu$ can be expressed as the expectation of a different random variable $f^*(x)=\frac{p(x)}{q(x)}\! \cdot\! f(x)$ under $q.$</p>
 <p>$$
-\mathbb{E}<em q="q">{q}! \left[ f^*(x) \right] = \mathbb{E}</em>! \left[ f(x) \right] = \mu
-$$}! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p</p>
-<p><br/>Technical condition: $q$ must have support everywhere $p$ does, $f(x) p(x) &gt; 0 \Rightarrow q(x) &gt; 0.$  Without this condition, the equation is biased!  Note: $q$ can support things that $p$ doesn't.</p>
+\mathbb{E}_{q}\! \left[ f^*(x) \right] = \mathbb{E}_{q}\! \left[ \frac{p(x)}{q(x)} f(x) \right] = \sum_{x} q(x) \frac{p(x)}{q(x)} f(x) = \sum_{x} p(x) f(x) = \mathbb{E}_{p}\! \left[ f(x) \right] = \mu
+$$</p>
+<p><br/>Technical condition: $q$ must have support everywhere $p$ does, $f(x) p(x) > 0 \Rightarrow q(x) > 0.$  Without this condition, the equation is biased!  Note: $q$ can support things that $p$ doesn't.</p>
 <p>Terminology: The quantity $w(x) = \frac{p(x)}{q(x)}$ is often referred to as the <em>importance weight</em> or <em>importance correction</em>. We often refer to $p$ as the target density and $q$ as the proposal density.</p>
-<p>Now, given samples ${ x^{(i)} }<em i="1">{i=1}^{n}$ from $q,$ we can use the Monte Carlo estimate, $\hat{\mu} \approx \frac{1}{n} \sum</em>),$ as an unbiased estimator of $\mu.$}^n f^{*}(x^{(i)</p>
+<p>Now, given samples $\{ x^{(i)} \}_{i=1}^{n}$ from $q,$ we can use the Monte Carlo estimate, $\hat{\mu} \approx \frac{1}{n} \sum_{i=1}^n f^{*}(x^{(i)}),$ as an unbiased estimator of $\mu.$</p>
 <h2 id="remarks">Remarks</h2>
 <p>There are a few reasons we might want to use importance sampling:</p>
 <ol>

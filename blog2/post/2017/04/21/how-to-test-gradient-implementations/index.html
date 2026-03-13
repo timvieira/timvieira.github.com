@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1722,7 +1766,7 @@ also apply when $f$ has multivariate output.)</p>
 <p>The main way that people test gradient computation is by comparing it against a
 finite-difference (FD) approximation to the gradient:</p>
 <p>$$
-\boldsymbol{d}^\top! \nabla f(\boldsymbol{x}) \approx \frac{1}{2 \varepsilon}(f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}))
+\boldsymbol{d}^\top\! \nabla f(\boldsymbol{x}) \approx \frac{1}{2 \varepsilon}(f(\boldsymbol{x} + \varepsilon \cdot \boldsymbol{d}) - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{d}))
 $$
 <br/>
 where $\boldsymbol{d} \in \mathbb{R}^n$ is an arbitrary "direction" in parameter
@@ -1743,7 +1787,7 @@ distribution&mdash;do <em>not</em> sample them from a multivariate uniform!</p>
 <p><strong>Always test your implementation of $f$!</strong> It's very easy to <em>correctly</em>
   compute the gradient of the <em>wrong</em> function. The FD approximation is a
   "self-consistency" test, it does not validate $f$ only the relationship
-  between $f$ and $\nabla! f$.</p>
+  between $f$ and $\nabla\! f$.</p>
 <p>Obviously, how you test $f$ depends strongly on what it's supposed to compute.</p>
 <ul>
 <li>Example: For a conditional random field (CRF), you can also test that your

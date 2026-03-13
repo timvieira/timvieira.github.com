@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1703,7 +1747,7 @@ body > header nav a:hover {
       </p>
     </header>
     <div class="entry-content" style="view-transition-name: article-body">
-      <p>We are interested in designing an efficient algorithm for sampling from a categorical distribution over $n$ items with weights $w_i &gt; 0$.  Define target sampling distribution $p$ as
+      <p>We are interested in designing an efficient algorithm for sampling from a categorical distribution over $n$ items with weights $w_i > 0$.  Define target sampling distribution $p$ as
 $$
 p = \mathrm{Categorical}\left( \frac{1}{W} \cdot \vec{w} \right)
 \quad\text{where}\quad W = \sum_j w_j
@@ -1752,24 +1796,24 @@ $R \sim p$ and $T \sim \mathrm{Exponential}\left( \sum_i w_i \right)$.</p>
     <span class="k">return</span> <span class="n">R</span>
 </code></pre></div>
 
-<p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step $i$ the probability that it sees its next minimum at steps $j \in { i+1, \ldots }$ can be reasoned about without needing to <em>actually</em> sample the various $X_j$ variables.</p>
+<p><strong>The key idea</strong> of the exponential jumps algorithm is to sample <em>waiting times</em> between new minimum events.  In particular, if the algorithm is at step $i$ the probability that it sees its next minimum at steps $j \in \{ i+1, \ldots \}$ can be reasoned about without needing to <em>actually</em> sample the various $X_j$ variables.</p>
 <p>Rather than going into a full-blown tutorial on waiting times of exponential variates, I will get to the point and show that the <code>jump</code> algorithm simulates the <code>walk</code> algorithm.  The key to doing this is showing that the probability of jumping from $i$ to $k$ is the same as "walking" from $i$ to $k$.  Let $W_{i,k} = \sum_{j=i}^k w_j$.</p>
 <p>This proof is adapted from the original proof in E&amp;S'06.</p>
 <p>$$
 \begin{eqnarray}
 \mathrm{Pr}\left( \text{walk to } k \mid i,T \right)
-&amp;=&amp; \mathrm{Pr}\left( X_k &lt; T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \
-&amp;=&amp; \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \
-&amp;=&amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \
-&amp;=&amp; \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \
-\
+&=& \mathrm{Pr}\left( X_k < T \right) \prod_{j=i}^{k-1} \mathrm{Pr}\left( X_j \ge T \right) \\
+&=& \left(1 - \exp\left( T w_k \right) \right) \prod_{j=i}^{k-1} \exp\left( T w_j \right) \\
+&=& \left(1 - \exp\left( T w_k \right) \right) \exp\left( T \sum_{j=i}^{k-1}  w_j \right) \\
+&=& \left(1 - \exp\left( T w_k \right) \right) \exp\left( T W_{i,k-1} \right) \\
+&=& \exp\left( T W_{i,k-1} \right) - \exp\left( T w_k \right) \exp\left( T W_{i,k-1} \right) \\
+&=& \exp\left( T W_{i,k-1} \right) - \exp\left( T W_{i,k} \right) \\
+\\
 \mathrm{Pr}\left( \text{jump to } k \mid i, T \right)
-&amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; J \le W_{i,k} \right) \
-&amp;=&amp; \mathrm{Pr}\left( W_{i,k-1} &lt; -\frac{\log(U)}{T} \le W_{i,k} \right) \
-&amp;=&amp; \mathrm{Pr}\left( \exp(-T W_{i,k-1}) &gt; U \ge \exp(-T W_{i,k}) \right) \label{foo}\
-&amp;=&amp; \exp(T W_{i,k-1}) - \exp(T W_{i,k} )
+&=& \mathrm{Pr}\left( W_{i,k-1} < J \le W_{i,k} \right) \\
+&=& \mathrm{Pr}\left( W_{i,k-1} < -\frac{\log(U)}{T} \le W_{i,k} \right) \\
+&=& \mathrm{Pr}\left( \exp(-T W_{i,k-1}) > U \ge \exp(-T W_{i,k}) \right) \label{foo}\\
+&=& \exp(T W_{i,k-1}) - \exp(T W_{i,k} )
 \end{eqnarray}
 $$</p>
 <p>Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that $X_k$ is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a <em>truncated</em> random variate: a random variate that is guaranteed to less than the previous minimum.  In the <a href="https://cmaddis.github.io/gumbel-machinery">Gumbel-max world</a>, this is used in the top-down generative story.</p>

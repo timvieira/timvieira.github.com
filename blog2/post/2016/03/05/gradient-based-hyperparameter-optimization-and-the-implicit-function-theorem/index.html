@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1708,26 +1752,26 @@ optimization&mdash;the "inner" optimization optimizes training loss (wrt $\theta
 while the "outer" optimizes hyperparameters ($\lambda$).</p>
 <p>$$
 \lambda^* = \underset{\lambda}{\textbf{argmin}}\
-\mathcal{L}<em _text_train="\text{train">{\text{dev}}\left(
+\mathcal{L}_{\text{dev}}\left(
 \underset{\theta}{\textbf{argmin}}\
-\mathcal{L}</em>(\theta, \lambda) \right)
-$$}</p>
+\mathcal{L}_{\text{train}}(\theta, \lambda) \right)
+$$</p>
 <p>Can we estimate $\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}$ so
 that we can run gradient-based optimization over $\lambda$?</p>
 <p>Well, what does it mean to have an $\textbf{argmin}$ inside a function?</p>
-<p>Well, it means that there is a $\theta^<em>$ that gets passed to
-$\mathcal{L}_{\text{dev}}$. And, $\theta^</em>$ is a function of $\lambda$, denoted
+<p>Well, it means that there is a $\theta^*$ that gets passed to
+$\mathcal{L}_{\text{dev}}$. And, $\theta^*$ is a function of $\lambda$, denoted
 $\theta(\lambda)$. Furthermore, $\textbf{argmin}$ must set the derivative of the
 inner optimization to zero in order to be a local optimum of the inner
 function. So we can rephrase the problem as</p>
 <p>$$
 \lambda^* = \underset{\lambda}{\textbf{argmin}}\
-\mathcal{L}<em _text_train="\text{train">{\text{dev}}\left(\theta(\lambda) \right),
+\mathcal{L}_{\text{dev}}\left(\theta(\lambda) \right),
 $$
 where $\theta(\lambda)$ is the solution to
 $$
-\frac{\partial \mathcal{L}</em> = 0.
-$$}}(\theta, \lambda)}{\partial \theta</p>
+\frac{\partial \mathcal{L}_{\text{train}}(\theta, \lambda)}{\partial \theta} = 0.
+$$</p>
 <p>Now how does $\theta$ change as the result of an infinitesimal change to
 $\lambda$?</p>
 <p>The constraint on the derivative implies a type of "equilibrium"&mdash;the inner
@@ -1757,8 +1801,8 @@ $$</p>
 <p>Next, we solve for $\frac{\Delta_x}{\Delta_y}$.</p>
 <p>$$
 \begin{align}
-\Delta_x \frac{\partial g}{\partial x} &amp;= - \Delta_y \frac{\partial g}{\partial y} \
-\frac{\Delta_x}{\Delta_y}  &amp;= -\left( \frac{\partial g}{\partial x} \right)^{-1} \frac{\partial g}{\partial y}.
+\Delta_x \frac{\partial g}{\partial x} &= - \Delta_y \frac{\partial g}{\partial y} \\
+\frac{\Delta_x}{\Delta_y}  &= -\left( \frac{\partial g}{\partial x} \right)^{-1} \frac{\partial g}{\partial y}.
 \end{align}
 $$</p>
 <p>Back to the original problem: Now we can use the implicit function theorem to
@@ -1766,15 +1810,15 @@ estimate how $\theta$ varies in $\lambda$ by plugging in $g \mapsto
 \frac{\partial \mathcal{L}_{\text{train}}}{\partial \theta}$, $x \mapsto \theta$
 and $y \mapsto \lambda$:</p>
 <p>$$
-\frac{\partial \theta}{\partial \lambda} = - \left( \frac{ \partial^2 \mathcal{L}<em _text_train="\text{train">{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}</em>
-$$}} }{ \partial \theta\, \partial \lambda^\top</p>
+\frac{\partial \theta}{\partial \lambda} = - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top}
+$$</p>
 <p>This tells us how $\theta$ changes with respect to an infinitesimal change to
 $\lambda$. Now, we can apply the chain rule to get the gradient of the whole
 optimization problem wrt $\lambda$,</p>
 <p>$$
-\frac{\partial \mathcal{L}<em _text_dev="\text{dev">{\text{dev}}}{\partial \lambda}
-= \frac{\partial \mathcal{L}</em>}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L<em _text_train="\text{train">{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}</em> \right)
-$$}} }{ \partial \theta\, \partial \lambda^\top</p>
+\frac{\partial \mathcal{L}_{\text{dev}}}{\partial \lambda}
+= \frac{\partial \mathcal{L}_{\text{dev}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top} \right)
+$$</p>
 <p>Since we don't like (explicit) matrix inverses, we compute $- \left( \frac{
 \partial^2 \mathcal{L}<em _text_train="\text{train">{\text{train}} }{ \partial \theta\, \partial \theta^\top
 } \right)^{-1} \frac{ \partial^2 \mathcal{L}</em>{ \partial \theta\,

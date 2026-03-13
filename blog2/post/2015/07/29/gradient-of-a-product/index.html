@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1705,7 +1749,7 @@ body > header nav a:hover {
     <div class="entry-content" style="view-transition-name: article-body">
       <p>$$
 \newcommand{\gradx}[1]{\grad{x}{ #1 }}
-\newcommand{\grad}[2]{\nabla_{! #1}! \left[ #2 \right]}
+\newcommand{\grad}[2]{\nabla_{\! #1}\! \left[ #2 \right]}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\bigo}[0]{\mathcal{O}}
 $$</p>
@@ -1721,11 +1765,11 @@ diagrams, semiring-weighted logic programming).</p>
 <p>Suppose, we'd like to compute the gradient of the product of these functions
 with respect to their common argument, $x$.</p>
 <p>$$
-\begin{eqnarray<em>}
+\begin{eqnarray*}
 \gradx{ p(x) }
-&amp;=&amp; \gradx{ \prod_{i=1}^n f_i(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
-\end{eqnarray</em>}
+&=& \gradx{ \prod_{i=1}^n f_i(x) }
+&=& \sum_{i=1}^n \left( \gradx{f_i(x)} \prod_{i \ne j} f_j(x)  \right)
+\end{eqnarray*}
 $$</p>
 <p>As you can see in the equation above, the gradient takes the form of a
 "leave-one-out product" sometimes called a "cavity."</p>
@@ -1737,11 +1781,11 @@ computing this efficiently.</p>
 consider the following relatively simple method for computing the gradient,
 which uses division:</p>
 <p>$$
-\begin{eqnarray<em>}
+\begin{eqnarray*}
 \gradx{ p(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
-&amp;=&amp; \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
-\end{eqnarray</em>}
+&=& \sum_{i=1}^n \left( \frac{\gradx{f_i(x)} }{ f_i(x) } \prod_{j=1}^n f_j(x) \right)
+&=& \left( \sum_{i=1}^n \frac{\gradx{f_i(x)} }{ f_i(x) } \right) \left( \prod_{j=1}^n f_j(x) \right)
+\end{eqnarray*}
 $$</p>
 <p>Pro:</p>
 <ul>
@@ -1771,10 +1815,10 @@ $\texttt{3.72e-44}$) into large ones (like $\texttt{-100}$).</p>
 <p>Furthermore, using the identity $(\nabla g) = g \cdot \nabla \log g$, we can
 operate exclusively in the "$\log$-domain".</p>
 <p>$$
-\begin{eqnarray<em>}
+\begin{eqnarray*}
 \gradx{ p(x) }
-&amp;=&amp; \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
-\end{eqnarray</em>}
+&=& \left( \sum_{i=1}^n \gradx{ \log f_i(x) } \right) \exp\left( \sum_{j=1}^n \log f_j(x) \right)
+\end{eqnarray*}
 $$</p>
 <p>Pro:</p>
 <ul>
@@ -1792,7 +1836,7 @@ $$</p>
 <p>Con:</p>
 <ul>
 <li>
-<p>Requires $f &gt; 0$. But, we can use
+<p>Requires $f > 0$. But, we can use
    <a href="../../../../../post/2015/02/01/log-real-number-class/">LogReal number class</a>
    to represent negative numbers in log-space, but we still need to be careful
    about zeros (like in the division trick).</p>
@@ -1809,18 +1853,18 @@ section 7).</p>
 the products of all prefixes and suffixes. Then, multiply them together.</p>
 <p>Here are the equations:</p>
 <p>$$
-\begin{eqnarray<em>}
-\alpha_0(x) &amp;=&amp; 1 \
+\begin{eqnarray*}
+\alpha_0(x) &=& 1 \\
 \alpha_t(x)
-   &amp;=&amp; \prod_{i \le t} f_i(x)
-   = \alpha_{t-1}(x) \cdot f_t(x) \
-\beta_{n+1}(x) &amp;=&amp; 1 \
+   &=& \prod_{i \le t} f_i(x)
+   = \alpha_{t-1}(x) \cdot f_t(x) \\
+\beta_{n+1}(x) &=& 1 \\
 \beta_t(x)
-  &amp;=&amp; \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\
+  &=& \prod_{i \ge t} f_i(x) = f_t(x) \cdot \beta_{t+1}(x)\\
 \gradx{ p(x) }
-&amp;=&amp; \sum_{i=1}^n \left( \prod_{j &lt; i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j &gt; i} f_j(x) \right) \
-&amp;=&amp; \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
-\end{eqnarray</em>}
+&=& \sum_{i=1}^n \left( \prod_{j < i} f_j(x) \right) \gradx{f_i(x)} \left( \prod_{j > i} f_j(x) \right) \\
+&=& \sum_{i=1}^n \alpha_{i-1}(x) \cdot \gradx{f_i(x)} \cdot \beta_{i+1}(x)
+\end{eqnarray*}
 $$</p>
 <p>Clearly, this requires $O(n)$ additional space.</p>
 <p>Only requires an associative operator (i.e., Does not require it to be

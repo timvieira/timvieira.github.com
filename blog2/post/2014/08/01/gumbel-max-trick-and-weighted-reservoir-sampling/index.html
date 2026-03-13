@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1716,7 +1760,7 @@ which is inspired by the
 (see <a href="/blog/post/2014/07/31/gumbel-max-trick/">previous post</a>). The apparent similarity between weighted reservoir sampling and the Gumbel-max trick lead us to make some cute connections, which I'll describe in this post.</p>
 <p><strong>The problem</strong>: We're given a stream of unnormalized probabilities, $x_1, x_2, \cdots$. At any point in time $t$ we'd like to have a sampled index $i$ available, where the probability of $i$ is given by $\pi_t(i) = \frac{x_i}{
 \sum_{j=1}^t x_j}$.</p>
-<p>Assume, without loss of generality, that $x_i &gt; 0$ for all $i$. (If any element has a zero weight we can safely ignore it since it should never be sampled.)</p>
+<p>Assume, without loss of generality, that $x_i > 0$ for all $i$. (If any element has a zero weight we can safely ignore it since it should never be sampled.)</p>
 <p><strong>Streaming Gumbel-max sampler</strong>: I came up with the following algorithm, which is a simple "modification" of the Gumbel-max-trick for handling streaming data:</p>
 <dl>
 <dt>$a = -\infty; b = \text{null}  \ \ \text{# maximum value and index}$</dt>
@@ -1727,7 +1771,7 @@ which is inspired by the
 <dd>$z_i \sim \text{Gumbel}(0,1)$</dd>
 <dd>$k_i = w_i + z_i$</dd>
 <dd># Keep around the largest $k_i$ (i.e. the argmax)</dd>
-<dd>if $k_i &gt; a$:</dd>
+<dd>if $k_i > a$:</dd>
 <dd>$\ \ \ \ a = k_i$</dd>
 <dd>$\ \ \ \ b = i$</dd>
 </dl>
@@ -1746,7 +1790,7 @@ reservoir sampling</p>
 <dd>$u_i \sim \text{Uniform}(0,1)$</dd>
 <dd>$e_i = u_i^{(\frac{1}{x_i})}$</dd>
 <dd># Keep around the largest $e_i$</dd>
-<dd>if $e_i &gt; a$:</dd>
+<dd>if $e_i > a$:</dd>
 <dd>$\ \ \ \ a = e_i$</dd>
 <dd>$\ \ \ \ b = i$</dd>
 </dl>

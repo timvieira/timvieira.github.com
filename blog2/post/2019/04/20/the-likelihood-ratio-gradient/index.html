@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1725,20 +1769,20 @@ complicating factors.</p>
 J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)})
 $$</p>
 <p>$$
-\nabla_{!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)}) \nabla_{!\theta} \log p_{\theta}(x^{(j)}).
+\nabla_{\!\theta} J(\theta) \approx \frac{1}{m} \sum_{j=1}^m r(x^{(j)}) \nabla_{\!\theta} \log p_{\theta}(x^{(j)}).
 $$</p>
 <p>The derivation is pretty simple
 $$
-\begin{eqnarray<em>}
-  \nabla_{!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
-  &amp;=&amp; \nabla_{!\theta} \left[ \sum_x p_{\theta}(x) r(x) \right] \
-  &amp;=&amp; \sum_x \nabla_{!\theta} \left[ p_{\theta}(x) \right] r(x) \
-  &amp;=&amp; \sum_x p_{\theta}(x) \frac{\nabla_{!\theta} \left[ p_{\theta}(x) \right] }{ p_{\theta}(x) } r(x) \
-  &amp;=&amp; \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{!\theta} \log p_\theta(x) \right]
-\end{eqnarray</em>}
+\begin{eqnarray*}
+  \nabla_{\!\theta} \, \underset{p_\theta}{\mathbb{E}}\left[ r(x) \right]
+  &=& \nabla_{\!\theta} \left[ \sum_x p_{\theta}(x) r(x) \right] \\
+  &=& \sum_x \nabla_{\!\theta} \left[ p_{\theta}(x) \right] r(x) \\
+  &=& \sum_x p_{\theta}(x) \frac{\nabla_{\!\theta} \left[ p_{\theta}(x) \right] }{ p_{\theta}(x) } r(x) \\
+  &=& \underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\end{eqnarray*}
 $$</p>
 <p><br/>
-We use the identity $\nabla f = f\, \nabla \log f$, assuming $f &gt; 0$.</p>
+We use the identity $\nabla f = f\, \nabla \log f$, assuming $f > 0$.</p>
 <p>To use this estimator, we only need two things (1) the ability to sample
 $x^{(j)} \sim p_{\theta}$, (2) the ability to evaluate $\log
 p_{\theta}(x^{(j)})$ and $r(x^{(j)})$ for each sampled value.</p>
@@ -1775,15 +1819,15 @@ papers using it for "black box" variational inference
 <p>Let's generalize this estimator to allow off-policy actions
 <a href="../../../../../post/2014/12/21/importance-sampling/">importance-weighted estimator</a>. Here
 $q$ is a distribution over the same space as $p$ with support at least
-everywhere $p$ has support.  $$ \begin{eqnarray<em>} \nabla_{!\theta} \,
-\underset{p_\theta}{\mathbb{E}}\left[ r(x) \right] &amp;=&amp;
-\underset{p}{\mathbb{E}}\left[ r(x) \nabla_{!\theta} \log p_\theta(x) \right]
-\ &amp;=&amp; \sum_x p_{\theta}(x) r(x) \nabla_{!\theta} \log p_\theta(x) \ &amp;=&amp;
-\sum_x \frac{q(x)}{q(x)} p_{\theta}(x) r(x) \nabla_{!\theta} \log p_\theta(x)
-\ &amp;=&amp;
-\underset{q}{\mathbb{E}}\left[ \frac{p_{\theta}(x)}{q(x)} r(x) \nabla_{!\theta} \log p_\theta(x) \right]
-\ &amp;\approx&amp; \frac{1}{n} \sum_{i=1}^n \frac{p_{\theta}(x^{(i)})}{q(x^{(i)})} r(x^{(i)}) \nabla_{!\theta} \log p_\theta(x^{(i)})\quad \text{ where } x^{(i)} \sim q
-\end{eqnarray</em>} $$</p>
+everywhere $p$ has support.  $$ \begin{eqnarray*} \nabla_{\!\theta} \,
+\underset{p_\theta}{\mathbb{E}}\left[ r(x) \right] &=&
+\underset{p}{\mathbb{E}}\left[ r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\\ &=& \sum_x p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x) \\ &=&
+\sum_x \frac{q(x)}{q(x)} p_{\theta}(x) r(x) \nabla_{\!\theta} \log p_\theta(x)
+\\ &=&
+\underset{q}{\mathbb{E}}\left[ \frac{p_{\theta}(x)}{q(x)} r(x) \nabla_{\!\theta} \log p_\theta(x) \right]
+\\ &\approx& \frac{1}{n} \sum_{i=1}^n \frac{p_{\theta}(x^{(i)})}{q(x^{(i)})} r(x^{(i)}) \nabla_{\!\theta} \log p_\theta(x^{(i)})\quad \text{ where } x^{(i)} \sim q
+\end{eqnarray*} $$</p>
 <p>Note that we recover the original estimator when $q=p$.</p>
 <h4 id="part-2-the-convenient-cancelation-of-complicating-components">Part 2: The Convenient Cancelation of Complicating Components</h4>
 <p>The real power of the <em>likelihood-ratio</em> part of this method comes when you have
@@ -1820,18 +1864,18 @@ Metropolis-Hastings accept-reject criteria.</p>
 \end{eqnarray}</p>
 <p><br/>
 Common terms cancel! This implies that we don't need to compute them.</p>
-<p>Those component cancel in $\nabla_{!\theta} \log p_{\theta}(x)$ because terms
+<p>Those component cancel in $\nabla_{\!\theta} \log p_{\theta}(x)$ because terms
 that do not depend on $\theta$ also disappear. Leaving you with just a sum of
 log-gradient terms that you <em>do</em> know because they are part of the model you're
 tuning.</p>
 <p>$$
-\begin{eqnarray<em>}
+\begin{eqnarray*}
 \nabla \log p(x)
-&amp;=&amp; \nabla \log \left( p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) \right) \
-&amp;=&amp; \nabla \left(\log p(s_0) + \sum_{t=0}^T \log p(s_{t+1}|s_t,a_t)
-  + \log \pi_\theta(a_t|s_t) \right) \
-&amp;=&amp; \sum_{t=0}^T \nabla \log \pi_\theta(a_t|s_t)
-\end{eqnarray</em>}
+&=& \nabla \log \left( p(s_0) \prod_{t=0}^T p(s_{t+1}|s_t,a_t) \pi_\theta(a_t|s_t) \right) \\
+&=& \nabla \left(\log p(s_0) + \sum_{t=0}^T \log p(s_{t+1}|s_t,a_t)
+  + \log \pi_\theta(a_t|s_t) \right) \\
+&=& \sum_{t=0}^T \nabla \log \pi_\theta(a_t|s_t)
+\end{eqnarray*}
 $$</p>
 <h4 id="the-baseline-trick">The Baseline Trick</h4>
 <p>These estimators should always be used in conjunction with a baseline function
@@ -1841,16 +1885,16 @@ the MDP case, we can use any function that depends on $s_t$.</p>
 <p>However, even without special structure, we can an always should use (at a
 minimum) a constant baseline,
 $$
-\mathbb{E}<em _theta="\theta">{x \sim q} \left[
-\frac{p</em>
+\mathbb{E}_{x \sim q} \left[
+\frac{p_{\theta}(x)}{q(x)}
 r(x)
-\nabla_{!\theta} \log p_\theta(x)
+\nabla_{\!\theta} \log p_\theta(x)
 \right]
 =
-\mathbb{E}}(x)}{q(x)<em _theta="\theta">{x \sim q} \left[
-\frac{p</em>
+\mathbb{E}_{x \sim q} \left[
+\frac{p_{\theta}(x)}{q(x)}
 (r(x) - {\color{red}{b}})
-\nabla_{!\theta} \log p_\theta(x)
+\nabla_{\!\theta} \log p_\theta(x)
 \right]
 \text{for all } {\color{red}{b} \in \mathbb{R}}
 $$
@@ -1858,7 +1902,7 @@ The minimum variance choice for b is
 $$
 b = \frac{\sum_k \mathrm{Cov}(r, \nabla_{\theta_k} \log p) }{\sum_k \mathrm{Var}(\nabla_{\theta_k} \log p) }
 $$
-which we can compute with sampling-based estimators of the quantities.}(x)}{q(x)</p>
+which we can compute with sampling-based estimators of the quantities.</p>
 <p>Some folks use an estimate of $J$, which is better than nothing.</p>
 <h4 id="important-points">Important Points</h4>
 <ul>

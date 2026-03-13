@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1731,71 +1775,35 @@ until we find $j$ under the strategy $\boldsymbol{q}$ is</p>
 <p>$$
 \sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j} = 1/q_{j}.
 $$</p>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
-
-<script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p><button onclick="toggle('#derivation-series')" class="toggle-button">Derivation</button></p>
-<div id="derivation-series" style="display:none;" class="derivation">
-**Derivation**:
-
-We start with
+<details class="derivation">
+<summary>Derivation</summary>
+<p>We start with
 $$
 \sum_{t=1}^\infty t \cdot (1 - q_j)^{t-1} q_{j},
-$$
-
-Let $a = (1-q_j)$, to clean up notation.
+$$</p>
+<p>Let $a = (1-q_j)$, to clean up notation.
 $$
 = q_{j} \sum_{t=1}^\infty t \cdot a^{t-1}
-$$
-
-Use the identity $\nabla_a [ a^t ] = t \cdot a^{t-1}$,
+$$</p>
+<p>Use the identity $\nabla_a [ a^t ] = t \cdot a^{t-1}$,
 $$
 = q_{j} \sum_{t=1}^\infty \nabla_a[ a^{t} ].
-$$
-
-Fish the gradient out of the sum and tweak summation index,
+$$</p>
+<p>Fish the gradient out of the sum and tweak summation index,
 $$
 = q_{j} \nabla_a\left[ \sum_{t=1}^\infty a^{t} \right]
 = q_{j} \nabla_a\left[ -1 + \sum_{t=0}^\infty a^{t}\right]
-$$
-
-Plugin in the solution to the geometric series,
+$$</p>
+<p>Plugin in the solution to the geometric series,
 $$
 = q_{j} \nabla_a\left[ -1 + \frac{1}{1-a} \right].
-$$
-
-Take derivative, expand $a$ and simplify,
+$$</p>
+<p>Take derivative, expand $a$ and simplify,
 $$
 = q_{j} \frac{1}{(1-a)^2}
 = \frac{1}{q_j}
-$$
-
-</div>
-
+$$</p>
+</details>
 <p>The equation says that expected time it takes to sample $j$ for <em>the first time</em>
 is the probability we didn't sample $j$ for $(t-1)$ steps times the probability we
 sample $j$ at time $t.$  We multiply this probability by the time $t$ to get the
@@ -1811,16 +1819,16 @@ $$</p>
 <p><strong>The first surprising thing</strong>: Uniform is just as good as $\boldsymbol{p}$,
   yikes! $f(\boldsymbol{p}) = \sum_{i=1}^n \frac{p_i}{p_i} = n$ and
   $f(\text{uniform}(n)) = \sum_{i=1}^n \frac{p_i }{ 1/n } = n.$ (Assume, without
-  loss of generality, that $p_i &gt; 0$ since we can just drop these elements from
+  loss of generality, that $p_i > 0$ since we can just drop these elements from
   $\boldsymbol{p}.$)</p>
 <p><strong>What's the <em>optimal</em> $\boldsymbol{q}$?</strong> We can address this question by
 solving the following optimization (which will have a nice closed form
 solution),</p>
 <p>$$
-\begin{eqnarray<em>}
-&amp;&amp; \boldsymbol{q}^</em> = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \
-&amp;&amp; \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \
-&amp;&amp; \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
+\begin{eqnarray*}
+&& \boldsymbol{q}^* = \underset{\boldsymbol{q}}{\operatorname{argmin}} \sum_{i=1}^n \frac{p_i}{q_i} \\
+&& \ \ \ \ \ \ \ \ \text{ s.t. } \sum_{i=1}^n q_i = 1 \\
+&& \ \ \ \ \ \ \ \ \ \ \ \ \, q_1 \ldots q_n \ge 0.
 \end{eqnarray*}
 $$</p>
 <p>The optimization problem says minimize the expected time to find the special
@@ -1828,39 +1836,32 @@ recipe. The constraints enforce that $\boldsymbol{q}$ is a valid probability
 distribution.</p>
 <p>The optimal strategy, which we get via Lagrange multipliers, turns out to be,
 $$
-q^*<em j="1">i = \frac{ \sqrt{p_i} }{ \sum</em>.
-$$}^n \sqrt{p_j} </p>
-<p><button onclick="toggle('#Lagrange')" class="toggle-button">Derivation</button></p>
-<div id="Lagrange" style="display:none;" class="derivation">
-To solve this constrained optimization problem, we form the
-Lagrangian,
-
-$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$
-
-and solve for $\boldsymbol{q}$ and multiplier $\lambda$ such that partial
+q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
+$$</p>
+<details class="derivation">
+<summary>Derivation</summary>
+<p>To solve this constrained optimization problem, we form the
+Lagrangian,</p>
+<p>$$\mathcal{L}(\boldsymbol{q}, \lambda) = \sum_{i=1}^n \frac{p_i}{q_i} - \lambda\cdot \left(1 - \sum_{i=1}^n q_i\right),$$</p>
+<p>and solve for $\boldsymbol{q}$ and multiplier $\lambda$ such that partial
 derivatives are all equal to zero. This gives us the following system of
-nonlinear equations,
-
-$$
+nonlinear equations,</p>
+<p>$$
 \begin{eqnarray*}
 && \lambda - \frac{p_i}{q_i^2} = 0 \ \ \ \text{for } 1 \le i \le n \\
 && \lambda \cdot \left(1 - \sum_{i=1}^n q_i \right) = 0.
 \end{eqnarray*}
-$$
-
-We see that $q_i = \pm \sqrt{\frac{p_i}{\lambda}}$ works for the first set of
+$$</p>
+<p>We see that $q_i = \pm \sqrt{\frac{p_i}{\lambda}}$ works for the first set of
 equations, but since we need $q_i \ge 0$, we take the positive one. Solving for
-$\lambda$ and plugging it in, we get a normalized distribution,
-
-$$
+$\lambda$ and plugging it in, we get a normalized distribution,</p>
+<p>$$
 q^*_i = \frac{ \sqrt{p_i} }{ \sum_{j=1}^n \sqrt{p_j} }.
-$$
-
-</div>
-
+$$</p>
+</details>
 <p><strong>How much better is $q^*$?</strong>
 $$
-f(q^<em>) = \sum_i \frac{p_i}{q^</em>_i}
+f(q^*) = \sum_i \frac{p_i}{q^*_i}
 = \sum_i \frac{p_i}{ \frac{\sqrt{p_i} }{ \sum_j \sqrt{p_j}} }
 = \left( \sum_i \frac{p_i}{ \sqrt{p_i} } \right) \left( \sum_j \sqrt{p_j} \right)
 = \left( \sum_i \sqrt{p_i} \right)^2
@@ -1877,18 +1878,18 @@ $\boldsymbol{p}.$ Additional cooking experiments are not so advantageous.</p>
   belief $s_i$, these beliefs are between zero (never get it right) and one
   (perfect every time) and do not necessarily sum to one over the cookbook.</p>
 <p>Following a similar derivation to before, the time to cook the special recipe
-$j$ and cook it correctly is,
+$j$ and cook it correctly is
 $$
-\sum_{t=1}^\infty t \cdot (1 - \color{red}{s_j} q_j)^{t-1} q_{j} \color{red}{s_j} = \frac{1}{s_j \cdot q_j}
+\sum_{t=1}^\infty t \cdot (1 - {\color{red} s_j} \cdot q_j)^{t-1} {\color{red} s_j} \cdot q_{j} = \frac{1}{{\color{red} s_j} \cdot q_j}
 $$
 That gives rise to a modified objective,
 $$
-f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{\color{red}{s_i} \cdot q_i}
+f'(\boldsymbol{q}) = \sum_{i=1}^n \frac{p_i}{{\color{red} s_i} \cdot q_i}
 $$</p>
 <p>This is exactly the same as the previous objective, except we've replaced $p_i$
 with $p_i/s_i.$ Thus, we can reuse our previous derivation to get the optimal
-strategy, $q^<em>_i \propto \sqrt{p_i / s_i}.$ If noise is constant, then we
-recover the original solution, $q^</em>_i \propto \sqrt{p_i}.$</p>
+strategy, $q^*_i \propto \sqrt{p_i / s_i}.$ If noise is constant, then we
+recover the original solution, $q^*_i \propto \sqrt{p_i}.$</p>
 <p><strong>Extension to finding multiple tasty recipes</strong>: Suppose we're trying to find
   several tasty recipes, not just a single special one. Now, $p_i$ is our prior
   belief that we'll like the recipe at all. How do we minimize the time until we

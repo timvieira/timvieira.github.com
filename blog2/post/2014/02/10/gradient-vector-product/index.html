@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1712,7 +1756,7 @@ finite-difference approximation).</p>
  - f(\boldsymbol{x} - \varepsilon \cdot \boldsymbol{e_i})
  \Big)
 $$</p>
-<p>where $\varepsilon &gt; 0$ and $\boldsymbol{e_i}$ is a vector of zeros except at
+<p>where $\varepsilon > 0$ and $\boldsymbol{e_i}$ is a vector of zeros except at
 $i$ where it is $1$. This approximation is exact in the limit, and accurate to
 $o(\varepsilon)$ additive error.</p>
 <p>This is a specific instance of a more general approximation! The dot product of
@@ -1738,7 +1782,7 @@ exact in the limit and just as accurate.</p>
   $\boldsymbol{e_i}$, which is a simple unit-norm vector. Luckily some guidance
   is available. Andrei (2009) reccommends</p>
 <p>$$
-\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + |\boldsymbol{x} |<em _infty="\infty">{\infty}) / | \boldsymbol{d} |</em>
+\varepsilon = \sqrt{\epsilon_{\text{mach}}} (1 + \|\boldsymbol{x} \|_{\infty}) / \| \boldsymbol{d} \|_{\infty}
 $$</p>
 <p>where $\epsilon_{\text{mach}}$ is
 <a href="http://en.wikipedia.org/wiki/Machine_epsilon">machine epsilon</a>. (Numpy users:

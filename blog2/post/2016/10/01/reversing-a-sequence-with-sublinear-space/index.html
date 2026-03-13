@@ -231,7 +231,7 @@ ul ol,
 ol,
 ol ul,
 ol ol {
-    margin-left: 1.3em
+    margin-left: 0.5em
 }
 
 strong {
@@ -1366,7 +1366,7 @@ article ul {
 
 article li {
     padding: 0;
-    margin: .5em 3em 0em 3em;
+    margin: .5em 0 0em 1.5em;
 }
 
 
@@ -1629,6 +1629,50 @@ body > header nav a:hover {
     color: #333;
 }
 
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
 /* Page transition */
 @view-transition { navigation: auto; }
 ::view-transition-old(main-content) {
@@ -1712,7 +1756,7 @@ sequence efficiently as we traverse it backwards. You can think of this as
 the size of each state is large, this will be infeasible.</p>
 <p><strong>Idea 0</strong>: Rerun the forward pass $n$ times. Runtime $\mathcal{O}(n^2)$, space
   $\mathcal{O}(1)$.</p>
-<p><strong>Idea 1</strong>: Suppose we save $0 &lt; k \le n$ evenly spaced "checkpoint" states.
+<p><strong>Idea 1</strong>: Suppose we save $0 < k \le n$ evenly spaced "checkpoint" states.
 Clearly, this gives us $\mathcal{O}(k)$ space, but what does it do to the
 runtime?  Well, if we are at time $t$ the we have to "replay" computation from
 the last recorded checkpoint to get $s_t$, which takes $O(n/k)$ time. Thus, the
@@ -1727,36 +1771,9 @@ extra space? Easy! Solve the following little optimization problem:</p>
 <p>$$
 \underset{k}{\textrm{argmin}}\ k+n/k = \sqrt{n}
 $$</p>
-<style>
-.toggle-button {
-    background-color: #555555;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-}
-.derivation {
-  background-color: #f2f2f2;
-  border: thin solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-</style>
-
-<script>
-// workaround for when markdown/mathjax gets confused by the
-// javascript dollar function.
-function toggle(x) { $(x).toggle(); }
-</script>
-
-<p><button onclick="toggle('#derivation-optimal-space')" class="toggle-button">Derivation</button></p>
-<div id="derivation-optimal-space" style="display:none;" class="derivation">
-To get the minimum, we solve for $k$ that sets the derivative to zero.
+<details class="derivation">
+<summary>Derivation</summary>
+<p>To get the minimum, we solve for $k$ that sets the derivative to zero.
 $$
 \begin{eqnarray}
     0 &=& \frac{\partial}{\partial k} \left[ k+n/k \right] \\
@@ -1766,20 +1783,16 @@ n/k^2 &=& 1 \\
     k &=& \sqrt{n}
 \end{eqnarray}
 $$
-<br/>
-
-Since it's safe to assume that $n,k \ge 1$ and $\frac{\partial^2}{\partial k\,
-\partial k} = 2 n / k^3 > 0$ this is indeed a minimum. It's also global minimum
-because $k+n/k$ is convex in $k$ when $n,k > 0$.
-
-</div>
-
+<br/></p>
+<p>Since it's safe to assume that $n,k \ge 1$ and $\frac{\partial^2}{\partial k\,
+\partial k} = 2 n / k^3 &gt; 0$ this is indeed a minimum. It's also global minimum
+because $k+n/k$ is convex in $k$ when $n,k > 0$.</p>
+</details>
 <p>That's nuts! We get away with <em>sublinear</em> space $\mathcal{O}(\sqrt{n})$ and we
 only blow up our runtime by a factor of 2. Also, I really love the "introduce a
 parameter then optimize it out" trick.</p>
-<p><button onclick="toggle('#code-sqrt-space')">Code</button></p>
-<div id="code-sqrt-space" style="display:none;">
-
+<details>
+<summary>Code</summary>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sqrt_space</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
     <span class="n">memory</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1809,9 +1822,7 @@ parameter then optimize it out" trick.</p>
     <span class="k">return</span> <span class="n">B</span>
 </code></pre></div>
 
-
-</div>
-
+</details>
 <p><strong>Idea 3</strong>: What if we apply "the remember $k$ states" trick <em>recursively</em>? I'm
 going to work this out for $k=2$ (and then claim that the value of $k$ doesn't
 matter).</p>
@@ -1827,9 +1838,8 @@ a $\mathcal{O}(\log n)$ space bound.</p>
 mergesort, we know that it flattens to $\mathcal{O}(n \log n)$ time. Also, just
 like in the case of sorting, the branching factor doesn't matter so we're happy
 with or initial assumption that $k=2$.</p>
-<p><button onclick="toggle('#code-recursive')">Code</button></p>
-<div id="code-recursive" style="display:none;">
-
+<details>
+<summary>Code</summary>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">recursive</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">s0</span>
@@ -1845,9 +1855,7 @@ with or initial assumption that $k=2$.</p>
             <span class="k">yield</span> <span class="n">s</span>
 </code></pre></div>
 
-
-</div>
-
+</details>
 <h2 id="remarks">Remarks</h2>
 <p>The algorithms describe in this post are generic algorithmic tricks, which has
 been used in a number of place, including</p>
