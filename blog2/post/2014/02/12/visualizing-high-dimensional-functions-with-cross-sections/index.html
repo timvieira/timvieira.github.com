@@ -644,7 +644,7 @@ body.sidebar-footer .toggle-sidebar {
         border-right: 0
     }
     .collapse-sidebar #content {
-        margin-right: 20px
+        margin-right: 240px
     }
     #content>div,
     #content>article {
@@ -1536,9 +1536,7 @@ a.tag:hover {
 }
 
 .tag:before {
-    content: "#";
-    color: #acacac;
-    text-decoration: none;
+    content: none;
 }
 
 /* ===== END OLD THEME main.css ===== */
@@ -1560,6 +1558,102 @@ a.tag:hover {
 .jp-RenderedHTMLCommon h3 { margin-top: 1em; }
 .jp-MarkdownCell .jp-InputArea { padding: 0; }
 .cm-editor { margin: 0; }
+
+html { overflow-y: scroll; }
+
+/* Tag filtering — fade then collapse */
+#blog-archives article {
+    transition: opacity 0.25s ease;
+}
+#blog-archives article.fading {
+    opacity: 0;
+}
+#blog-archives article.hidden {
+    display: none;
+}
+#blog-archives h2.hidden {
+    display: none;
+}
+aside.sidebar .tag,
+#blog-archives .tag {
+    display: inline-block;
+    line-height: 1.1em;
+    padding: 0 0.15em;
+    margin: 0.2em 0.1em;
+    border-radius: 0.2em;
+    background-color: #f3f3ed;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+#blog-archives .tag {
+    font-size: 0.75em;
+}
+aside.sidebar .tag.active,
+#blog-archives .tag.active,
+.tag.active {
+    background-color: #d0d0c4;
+}
+.tag.disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Inline nav next to site title */
+body > header hgroup {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+body > header nav {
+    font-size: 0.65em;
+    margin-right: 240px;
+}
+@media only screen and (min-width: 992px) {
+    body > header nav {
+        margin-right: 300px;
+    }
+}
+@media only screen and (max-width: 767px) {
+    body > header nav {
+        margin-right: 0;
+    }
+}
+body > header nav a {
+    text-decoration: none;
+    color: #888;
+    margin-left: 0.6em;
+}
+body > header nav a:hover {
+    text-decoration: underline;
+    color: #333;
+}
+
+/* Page transition */
+@view-transition { navigation: auto; }
+::view-transition-old(main-content) {
+    animation: fadeOut 0.25s ease forwards;
+}
+::view-transition-new(main-content) {
+    animation: fadeIn 0.3s ease;
+}
+::view-transition-old(article-body) {
+    animation: fadeOut 0.2s ease forwards;
+}
+::view-transition-new(article-body) {
+    animation: fadeIn 0.5s ease 0.6s both;
+}
+#main {
+    view-transition-name: main-content;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
   </style>
 
   <!-- MathJax 3 -->
@@ -1581,14 +1675,11 @@ a.tag:hover {
 <body>
   <header role="banner"><hgroup>
     <h1><a href="../../../../../index.html">Graduate Descent</a></h1>
+    <nav role="navigation">
+      <a href="https://timvieira.github.io/">About</a>
+      <a href="../../../../../index.html">Archive</a>
+    </nav>
   </hgroup></header>
-  <nav role="navigation">
-    <ul class="main-navigation">
-      <li><a href="https://timvieira.github.io/">About</a></li>
-      <li><a href="../../../../../index.html">Archive</a></li>
-      <li><a href="../../../../../atom.xml">RSS</a></li>
-    </ul>
-  </nav>
   <div id="main">
     <div id="content">
 
@@ -1597,18 +1688,21 @@ a.tag:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title">Visualizing high-dimensional functions with cross-sections</h1>
+      <h1 class="entry-title" style="view-transition-name: title-visualizing-high-dimensional-functions-with-cross-sections">Visualizing high-dimensional functions with cross-sections</h1>
       <p class="meta">
         <time datetime="2014-02-12T00:00:00" pubdate>Feb 12, 2014</time>
         <span class="byline author vcard">
           by <span class="fn">Tim Vieira</span>
         </span>
+        
+        <br>
         <span class="tags">
-          <a class="tag" href="../../../../../index.html">visualization</a> 
+          <a class="tag" href="../../../../../index.html#tag=visualization">visualization</a>
         </span>
+        
       </p>
     </header>
-    <div class="entry-content">
+    <div class="entry-content" style="view-transition-name: article-body">
       <p>Last September, I gave a talk which included a bunch of two-dimensional plots of
 a high-dimensional objective I was developing specialized algorithms for
 optimizing. A month later, at least three of my colleagues told me that my plots
@@ -1715,31 +1809,8 @@ algorithms.</p>
 
 
 
-      <aside class="sidebar">
-        <section>
-          <h1>Recent Posts</h1>
-          <ul id="recent_posts">
-            
-            <li class="post"><a href="../../../../../post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a></li>
-            
-            <li class="post"><a href="../../../../../post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a></li>
-            
-            <li class="post"><a href="../../../../../post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a></li>
-            
-            <li class="post"><a href="../../../../../post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a></li>
-            
-            <li class="post"><a href="../../../../../post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a></li>
-            
-          </ul>
-        </section>
-
-        <section>
-          <h1>Tags</h1>
-          <a href="../../../../../index.html">numerical</a>,<a href="../../../../../index.html">efficiency</a>,<a href="../../../../../index.html">sampling-without-replacement</a>,<a href="../../../../../index.html">statistics</a>,<a href="../../../../../index.html">notebook</a>,<a href="../../../../../index.html">ordered-sampling</a>,<a href="../../../../../index.html">sampling</a>,<a href="../../../../../index.html">algorithms</a>,<a href="../../../../../index.html">Gumbel</a>,<a href="../../../../../index.html">decision-making</a>,<a href="../../../../../index.html">reservoir-sampling</a>,<a href="../../../../../index.html">optimization</a>,<a href="../../../../../index.html">rl</a>,<a href="../../../../../index.html">machine-learning</a>,<a href="../../../../../index.html">calculus</a>,<a href="../../../../../index.html">automatic-differentiation</a>,<a href="../../../../../index.html">implicit-function-theorem</a>,<a href="../../../../../index.html">Lagrange-multipliers</a>,<a href="../../../../../index.html">testing</a>,<a href="../../../../../index.html">counterfactual-reasoning</a>,<a href="../../../../../index.html">importance-sampling</a>,<a href="../../../../../index.html">datastructures</a>,<a href="../../../../../index.html">incremental-computation</a>,<a href="../../../../../index.html">data-structures</a>,<a href="../../../../../index.html">rant</a>,<a href="../../../../../index.html">hyperparameter-optimization</a>,<a href="../../../../../index.html">crf</a>,<a href="../../../../../index.html">deep-learning</a>,<a href="../../../../../index.html">structured-prediction</a>,<a href="../../../../../index.html">visualization</a>
-        </section>
-      </aside>
+      
     </div>
-    <a href="#" class="toggle-sidebar" onclick="document.getElementById('main').classList.toggle('collapse-sidebar'); return false;">&nbsp;</a>
   </div>
   <footer role="contentinfo"></footer>
   
@@ -1754,6 +1825,7 @@ algorithms.</p>
       (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
     })();
   </script>
+  
   
 </body>
 </html>

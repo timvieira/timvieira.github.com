@@ -644,7 +644,7 @@ body.sidebar-footer .toggle-sidebar {
         border-right: 0
     }
     .collapse-sidebar #content {
-        margin-right: 20px
+        margin-right: 240px
     }
     #content>div,
     #content>article {
@@ -1536,9 +1536,7 @@ a.tag:hover {
 }
 
 .tag:before {
-    content: "#";
-    color: #acacac;
-    text-decoration: none;
+    content: none;
 }
 
 /* ===== END OLD THEME main.css ===== */
@@ -1560,6 +1558,102 @@ a.tag:hover {
 .jp-RenderedHTMLCommon h3 { margin-top: 1em; }
 .jp-MarkdownCell .jp-InputArea { padding: 0; }
 .cm-editor { margin: 0; }
+
+html { overflow-y: scroll; }
+
+/* Tag filtering — fade then collapse */
+#blog-archives article {
+    transition: opacity 0.25s ease;
+}
+#blog-archives article.fading {
+    opacity: 0;
+}
+#blog-archives article.hidden {
+    display: none;
+}
+#blog-archives h2.hidden {
+    display: none;
+}
+aside.sidebar .tag,
+#blog-archives .tag {
+    display: inline-block;
+    line-height: 1.1em;
+    padding: 0 0.15em;
+    margin: 0.2em 0.1em;
+    border-radius: 0.2em;
+    background-color: #f3f3ed;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+#blog-archives .tag {
+    font-size: 0.75em;
+}
+aside.sidebar .tag.active,
+#blog-archives .tag.active,
+.tag.active {
+    background-color: #d0d0c4;
+}
+.tag.disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Inline nav next to site title */
+body > header hgroup {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+body > header nav {
+    font-size: 0.65em;
+    margin-right: 240px;
+}
+@media only screen and (min-width: 992px) {
+    body > header nav {
+        margin-right: 300px;
+    }
+}
+@media only screen and (max-width: 767px) {
+    body > header nav {
+        margin-right: 0;
+    }
+}
+body > header nav a {
+    text-decoration: none;
+    color: #888;
+    margin-left: 0.6em;
+}
+body > header nav a:hover {
+    text-decoration: underline;
+    color: #333;
+}
+
+/* Page transition */
+@view-transition { navigation: auto; }
+::view-transition-old(main-content) {
+    animation: fadeOut 0.25s ease forwards;
+}
+::view-transition-new(main-content) {
+    animation: fadeIn 0.3s ease;
+}
+::view-transition-old(article-body) {
+    animation: fadeOut 0.2s ease forwards;
+}
+::view-transition-new(article-body) {
+    animation: fadeIn 0.5s ease 0.6s both;
+}
+#main {
+    view-transition-name: main-content;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
   </style>
 
   <!-- MathJax 3 -->
@@ -1581,14 +1675,11 @@ a.tag:hover {
 <body>
   <header role="banner"><hgroup>
     <h1><a href="./index.html">Graduate Descent</a></h1>
+    <nav role="navigation">
+      <a href="https://timvieira.github.io/">About</a>
+      <a href="./index.html">Archive</a>
+    </nav>
   </hgroup></header>
-  <nav role="navigation">
-    <ul class="main-navigation">
-      <li><a href="https://timvieira.github.io/">About</a></li>
-      <li><a href="./index.html">Archive</a></li>
-      <li><a href="./atom.xml">RSS</a></li>
-    </ul>
-  </nav>
   <div id="main">
     <div id="content">
 
@@ -1606,8 +1697,8 @@ a.tag:hover {
         
           <h2>2021</h2>
         
-        <article>
-          <h1><a href="./post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a></h1>
+        <article data-tags="numerical,efficiency">
+          <h1 style="view-transition-name: title-fast-rank-one-updates-to-matrix-inverse"><a href="./post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a></h1>
           <time datetime="2021-03-25T00:00:00" pubdate>
             <span class="month">Mar</span>
             <span class="day">25</span>
@@ -1615,8 +1706,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">numerical</a>
-              <a class="tag" href="./index.html">efficiency</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('efficiency'); return false;">efficiency</a>
               
             </span>
           </footer>
@@ -1624,8 +1715,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a></h1>
+        <article data-tags="sampling-without-replacement,statistics,notebook,ordered-sampling">
+          <h1 style="view-transition-name: title-on-the-distribution-of-the-smallest-indices"><a href="./post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a></h1>
           <time datetime="2021-03-20T00:00:00" pubdate>
             <span class="month">Mar</span>
             <span class="day">20</span>
@@ -1633,10 +1724,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">ordered-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('ordered-sampling'); return false;">ordered-sampling</a>
               
             </span>
           </footer>
@@ -1644,8 +1735,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a></h1>
+        <article data-tags="sampling-without-replacement,statistics,notebook,ordered-sampling">
+          <h1 style="view-transition-name: title-on-the-distribution-functions-of-order-statistics"><a href="./post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a></h1>
           <time datetime="2021-03-18T00:00:00" pubdate>
             <span class="month">Mar</span>
             <span class="day">18</span>
@@ -1653,10 +1744,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">ordered-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('ordered-sampling'); return false;">ordered-sampling</a>
               
             </span>
           </footer>
@@ -1666,8 +1757,8 @@ a.tag:hover {
         
           <h2>2020</h2>
         
-        <article>
-          <h1><a href="./post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a></h1>
+        <article data-tags="notebook,sampling,statistics">
+          <h1 style="view-transition-name: title-animation-of-the-inverse-transform-method"><a href="./post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a></h1>
           <time datetime="2020-06-30T00:00:00" pubdate>
             <span class="month">Jun</span>
             <span class="day">30</span>
@@ -1675,9 +1766,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
               
             </span>
           </footer>
@@ -1685,8 +1776,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a></h1>
+        <article data-tags="notebook,sampling,statistics">
+          <h1 style="view-transition-name: title-generating-truncated-random-variates"><a href="./post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a></h1>
           <time datetime="2020-06-30T00:00:00" pubdate>
             <span class="month">Jun</span>
             <span class="day">30</span>
@@ -1694,9 +1785,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
               
             </span>
           </footer>
@@ -1706,8 +1797,8 @@ a.tag:hover {
         
           <h2>2019</h2>
         
-        <article>
-          <h1><a href="./post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a></h1>
+        <article data-tags="notebook,sampling,algorithms,sampling-without-replacement,Gumbel">
+          <h1 style="view-transition-name: title-algorithms-for-sampling-without-replacement"><a href="./post/2019/09/16/algorithms-for-sampling-without-replacement/">Algorithms for sampling without replacement</a></h1>
           <time datetime="2019-09-16T00:00:00" pubdate>
             <span class="month">Sep</span>
             <span class="day">16</span>
@@ -1715,11 +1806,11 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">algorithms</a>
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
-              <a class="tag" href="./index.html">Gumbel</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('algorithms'); return false;">algorithms</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a>
               
             </span>
           </footer>
@@ -1727,8 +1818,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a></h1>
+        <article data-tags="notebook,statistics,algorithms,decision-making">
+          <h1 style="view-transition-name: title-the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time"><a href="./post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">The restart acceleration trick: A cure for the heavy tail of wasted time</a></h1>
           <time datetime="2019-09-06T00:00:00" pubdate>
             <span class="month">Sep</span>
             <span class="day">06</span>
@@ -1736,10 +1827,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">notebook</a>
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">algorithms</a>
-              <a class="tag" href="./index.html">decision-making</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('algorithms'); return false;">algorithms</a>
+              <a class="tag" href="#" onclick="filterByTag('decision-making'); return false;">decision-making</a>
               
             </span>
           </footer>
@@ -1747,8 +1838,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a></h1>
+        <article data-tags="sampling,reservoir-sampling,Gumbel,sampling-without-replacement">
+          <h1 style="view-transition-name: title-faster-reservoir-sampling-by-waiting"><a href="./post/2019/06/11/faster-reservoir-sampling-by-waiting/">Faster reservoir sampling by waiting</a></h1>
           <time datetime="2019-06-11T00:00:00" pubdate>
             <span class="month">Jun</span>
             <span class="day">11</span>
@@ -1756,10 +1847,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">reservoir-sampling</a>
-              <a class="tag" href="./index.html">Gumbel</a>
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('reservoir-sampling'); return false;">reservoir-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
               
             </span>
           </footer>
@@ -1767,8 +1858,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a></h1>
+        <article data-tags="optimization,rl,machine-learning">
+          <h1 style="view-transition-name: title-the-likelihood-ratio-gradient"><a href="./post/2019/04/20/the-likelihood-ratio-gradient/">The likelihood-ratio gradient</a></h1>
           <time datetime="2019-04-20T00:00:00" pubdate>
             <span class="month">Apr</span>
             <span class="day">20</span>
@@ -1776,9 +1867,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">optimization</a>
-              <a class="tag" href="./index.html">rl</a>
-              <a class="tag" href="./index.html">machine-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('optimization'); return false;">optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('rl'); return false;">rl</a>
+              <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a>
               
             </span>
           </footer>
@@ -1786,8 +1877,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a></h1>
+        <article data-tags="optimization,notebook">
+          <h1 style="view-transition-name: title-steepest-ascent"><a href="./post/2019/04/19/steepest-ascent/">Steepest ascent</a></h1>
           <time datetime="2019-04-19T00:00:00" pubdate>
             <span class="month">Apr</span>
             <span class="day">19</span>
@@ -1795,8 +1886,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">optimization</a>
-              <a class="tag" href="./index.html">notebook</a>
+              <a class="tag" href="#" onclick="filterByTag('optimization'); return false;">optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a>
               
             </span>
           </footer>
@@ -1806,8 +1897,8 @@ a.tag:hover {
         
           <h2>2018</h2>
         
-        <article>
-          <h1><a href="./post/2018/03/16/black-box-optimization/">Black-box optimization</a></h1>
+        <article data-tags="optimization,calculus">
+          <h1 style="view-transition-name: title-black-box-optimization"><a href="./post/2018/03/16/black-box-optimization/">Black-box optimization</a></h1>
           <time datetime="2018-03-16T00:00:00" pubdate>
             <span class="month">Mar</span>
             <span class="day">16</span>
@@ -1815,8 +1906,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">optimization</a>
-              <a class="tag" href="./index.html">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('optimization'); return false;">optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
               
             </span>
           </footer>
@@ -1826,8 +1917,8 @@ a.tag:hover {
         
           <h2>2017</h2>
         
-        <article>
-          <h1><a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a></h1>
+        <article data-tags="calculus,automatic-differentiation,implicit-function-theorem,Lagrange-multipliers">
+          <h1 style="view-transition-name: title-backprop-is-not-just-the-chain-rule"><a href="./post/2017/08/18/backprop-is-not-just-the-chain-rule/">Backprop is not just the chain rule</a></h1>
           <time datetime="2017-08-18T00:00:00" pubdate>
             <span class="month">Aug</span>
             <span class="day">18</span>
@@ -1835,10 +1926,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
-              <a class="tag" href="./index.html">automatic-differentiation</a>
-              <a class="tag" href="./index.html">implicit-function-theorem</a>
-              <a class="tag" href="./index.html">Lagrange-multipliers</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('automatic-differentiation'); return false;">automatic-differentiation</a>
+              <a class="tag" href="#" onclick="filterByTag('implicit-function-theorem'); return false;">implicit-function-theorem</a>
+              <a class="tag" href="#" onclick="filterByTag('Lagrange-multipliers'); return false;">Lagrange-multipliers</a>
               
             </span>
           </footer>
@@ -1846,8 +1937,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a></h1>
+        <article data-tags="sampling,statistics,reservoir-sampling,sampling-without-replacement">
+          <h1 style="view-transition-name: title-estimating-means-in-a-finite-universe"><a href="./post/2017/07/03/estimating-means-in-a-finite-universe/">Estimating means in a finite universe</a></h1>
           <time datetime="2017-07-03T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">03</span>
@@ -1855,10 +1946,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">reservoir-sampling</a>
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('reservoir-sampling'); return false;">reservoir-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
               
             </span>
           </footer>
@@ -1866,8 +1957,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a></h1>
+        <article data-tags="testing,calculus">
+          <h1 style="view-transition-name: title-how-to-test-gradient-implementations"><a href="./post/2017/04/21/how-to-test-gradient-implementations/">How to test gradient implementations</a></h1>
           <time datetime="2017-04-21T00:00:00" pubdate>
             <span class="month">Apr</span>
             <span class="day">21</span>
@@ -1875,8 +1966,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">testing</a>
-              <a class="tag" href="./index.html">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('testing'); return false;">testing</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
               
             </span>
           </footer>
@@ -1886,8 +1977,8 @@ a.tag:hover {
         
           <h2>2016</h2>
         
-        <article>
-          <h1><a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a></h1>
+        <article data-tags="counterfactual-reasoning,importance-sampling,machine-learning">
+          <h1 style="view-transition-name: title-counterfactual-reasoning-and-learning-from-logged-data"><a href="./post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/">Counterfactual reasoning and learning from logged data</a></h1>
           <time datetime="2016-12-19T00:00:00" pubdate>
             <span class="month">Dec</span>
             <span class="day">19</span>
@@ -1895,9 +1986,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">counterfactual-reasoning</a>
-              <a class="tag" href="./index.html">importance-sampling</a>
-              <a class="tag" href="./index.html">machine-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('counterfactual-reasoning'); return false;">counterfactual-reasoning</a>
+              <a class="tag" href="#" onclick="filterByTag('importance-sampling'); return false;">importance-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a>
               
             </span>
           </footer>
@@ -1905,8 +1996,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a></h1>
+        <article data-tags="sampling,datastructures,incremental-computation">
+          <h1 style="view-transition-name: title-heaps-for-incremental-computation"><a href="./post/2016/11/21/heaps-for-incremental-computation/">Heaps for incremental computation</a></h1>
           <time datetime="2016-11-21T00:00:00" pubdate>
             <span class="month">Nov</span>
             <span class="day">21</span>
@@ -1914,9 +2005,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">datastructures</a>
-              <a class="tag" href="./index.html">incremental-computation</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('datastructures'); return false;">datastructures</a>
+              <a class="tag" href="#" onclick="filterByTag('incremental-computation'); return false;">incremental-computation</a>
               
             </span>
           </footer>
@@ -1924,8 +2015,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a></h1>
+        <article data-tags="algorithms,automatic-differentiation,data-structures">
+          <h1 style="view-transition-name: title-reversing-a-sequence-with-sublinear-space"><a href="./post/2016/10/01/reversing-a-sequence-with-sublinear-space/">Reversing a sequence with sublinear space</a></h1>
           <time datetime="2016-10-01T00:00:00" pubdate>
             <span class="month">Oct</span>
             <span class="day">01</span>
@@ -1933,9 +2024,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">algorithms</a>
-              <a class="tag" href="./index.html">automatic-differentiation</a>
-              <a class="tag" href="./index.html">data-structures</a>
+              <a class="tag" href="#" onclick="filterByTag('algorithms'); return false;">algorithms</a>
+              <a class="tag" href="#" onclick="filterByTag('automatic-differentiation'); return false;">automatic-differentiation</a>
+              <a class="tag" href="#" onclick="filterByTag('data-structures'); return false;">data-structures</a>
               
             </span>
           </footer>
@@ -1943,8 +2034,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a></h1>
+        <article data-tags="calculus,automatic-differentiation,rant,efficiency">
+          <h1 style="view-transition-name: title-evaluating-fx-is-as-fast-as-fx"><a href="./post/2016/09/25/evaluating-fx-is-as-fast-as-fx/">Evaluating ∇f(x) is as fast as f(x)</a></h1>
           <time datetime="2016-09-25T00:00:00" pubdate>
             <span class="month">Sep</span>
             <span class="day">25</span>
@@ -1952,10 +2043,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
-              <a class="tag" href="./index.html">automatic-differentiation</a>
-              <a class="tag" href="./index.html">rant</a>
-              <a class="tag" href="./index.html">efficiency</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('automatic-differentiation'); return false;">automatic-differentiation</a>
+              <a class="tag" href="#" onclick="filterByTag('rant'); return false;">rant</a>
+              <a class="tag" href="#" onclick="filterByTag('efficiency'); return false;">efficiency</a>
               
             </span>
           </footer>
@@ -1963,8 +2054,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a></h1>
+        <article data-tags="sampling,Gumbel">
+          <h1 style="view-transition-name: title-fast-sigmoid-sampling"><a href="./post/2016/07/04/fast-sigmoid-sampling/">Fast sigmoid sampling</a></h1>
           <time datetime="2016-07-04T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">04</span>
@@ -1972,8 +2063,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">Gumbel</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a>
               
             </span>
           </footer>
@@ -1981,8 +2072,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a></h1>
+        <article data-tags="sampling,decision-making">
+          <h1 style="view-transition-name: title-sqrt-biased-sampling"><a href="./post/2016/06/28/sqrt-biased-sampling/">Sqrt-biased sampling</a></h1>
           <time datetime="2016-06-28T00:00:00" pubdate>
             <span class="month">Jun</span>
             <span class="day">28</span>
@@ -1990,8 +2081,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">decision-making</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('decision-making'); return false;">decision-making</a>
               
             </span>
           </footer>
@@ -1999,8 +2090,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a></h1>
+        <article data-tags="statistics,sampling,importance-sampling">
+          <h1 style="view-transition-name: title-the-optimal-proposal-distribution-is-not-p"><a href="./post/2016/05/28/the-optimal-proposal-distribution-is-not-p/">The optimal proposal distribution is not p</a></h1>
           <time datetime="2016-05-28T00:00:00" pubdate>
             <span class="month">May</span>
             <span class="day">28</span>
@@ -2008,9 +2099,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">importance-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('importance-sampling'); return false;">importance-sampling</a>
               
             </span>
           </footer>
@@ -2018,8 +2109,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a></h1>
+        <article data-tags="optimization,calculus">
+          <h1 style="view-transition-name: title-dimensional-analysis-of-gradient-ascent"><a href="./post/2016/05/27/dimensional-analysis-of-gradient-ascent/">Dimensional analysis of gradient ascent</a></h1>
           <time datetime="2016-05-27T00:00:00" pubdate>
             <span class="month">May</span>
             <span class="day">27</span>
@@ -2027,8 +2118,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">optimization</a>
-              <a class="tag" href="./index.html">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('optimization'); return false;">optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
               
             </span>
           </footer>
@@ -2036,8 +2127,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based hyperparameter optimization and the implicit function theorem</a></h1>
+        <article data-tags="calculus,hyperparameter-optimization,implicit-function-theorem">
+          <h1 style="view-transition-name: title-gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem"><a href="./post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/">Gradient-based hyperparameter optimization and the implicit function theorem</a></h1>
           <time datetime="2016-03-05T00:00:00" pubdate>
             <span class="month">Mar</span>
             <span class="day">05</span>
@@ -2045,9 +2136,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
-              <a class="tag" href="./index.html">hyperparameter-optimization</a>
-              <a class="tag" href="./index.html">implicit-function-theorem</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('hyperparameter-optimization'); return false;">hyperparameter-optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('implicit-function-theorem'); return false;">implicit-function-theorem</a>
               
             </span>
           </footer>
@@ -2055,8 +2146,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a></h1>
+        <article data-tags="datastructures">
+          <h1 style="view-transition-name: title-multidimensional-array-index"><a href="./post/2016/01/17/multidimensional-array-index/">Multidimensional array index</a></h1>
           <time datetime="2016-01-17T00:00:00" pubdate>
             <span class="month">Jan</span>
             <span class="day">17</span>
@@ -2064,7 +2155,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">datastructures</a>
+              <a class="tag" href="#" onclick="filterByTag('datastructures'); return false;">datastructures</a>
               
             </span>
           </footer>
@@ -2074,8 +2165,8 @@ a.tag:hover {
         
           <h2>2015</h2>
         
-        <article>
-          <h1><a href="./post/2015/07/29/gradient-of-a-product/">Gradient of a product</a></h1>
+        <article data-tags="calculus,numerical,automatic-differentiation,datastructures">
+          <h1 style="view-transition-name: title-gradient-of-a-product"><a href="./post/2015/07/29/gradient-of-a-product/">Gradient of a product</a></h1>
           <time datetime="2015-07-29T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">29</span>
@@ -2083,10 +2174,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
-              <a class="tag" href="./index.html">numerical</a>
-              <a class="tag" href="./index.html">automatic-differentiation</a>
-              <a class="tag" href="./index.html">datastructures</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('automatic-differentiation'); return false;">automatic-differentiation</a>
+              <a class="tag" href="#" onclick="filterByTag('datastructures'); return false;">datastructures</a>
               
             </span>
           </footer>
@@ -2094,8 +2185,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a></h1>
+        <article data-tags="machine-learning,rant,crf">
+          <h1 style="view-transition-name: title-multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing"><a href="./post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/">Multiclass logistic regression and conditional random fields are the same thing</a></h1>
           <time datetime="2015-04-29T00:00:00" pubdate>
             <span class="month">Apr</span>
             <span class="day">29</span>
@@ -2103,9 +2194,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">machine-learning</a>
-              <a class="tag" href="./index.html">rant</a>
-              <a class="tag" href="./index.html">crf</a>
+              <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('rant'); return false;">rant</a>
+              <a class="tag" href="#" onclick="filterByTag('crf'); return false;">crf</a>
               
             </span>
           </footer>
@@ -2113,8 +2204,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a></h1>
+        <article data-tags="machine-learning,deep-learning,structured-prediction">
+          <h1 style="view-transition-name: title-conditional-random-fields-as-deep-learning-models"><a href="./post/2015/02/05/conditional-random-fields-as-deep-learning-models/">Conditional random fields as deep learning models?</a></h1>
           <time datetime="2015-02-05T00:00:00" pubdate>
             <span class="month">Feb</span>
             <span class="day">05</span>
@@ -2122,9 +2213,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">machine-learning</a>
-              <a class="tag" href="./index.html">deep-learning</a>
-              <a class="tag" href="./index.html">structured-prediction</a>
+              <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('deep-learning'); return false;">deep-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('structured-prediction'); return false;">structured-prediction</a>
               
             </span>
           </footer>
@@ -2132,8 +2223,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2015/02/01/log-real-number-class/">Log-Real number class</a></h1>
+        <article data-tags="numerical,datastructures">
+          <h1 style="view-transition-name: title-log-real-number-class"><a href="./post/2015/02/01/log-real-number-class/">Log-Real number class</a></h1>
           <time datetime="2015-02-01T00:00:00" pubdate>
             <span class="month">Feb</span>
             <span class="day">01</span>
@@ -2141,8 +2232,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">numerical</a>
-              <a class="tag" href="./index.html">datastructures</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('datastructures'); return false;">datastructures</a>
               
             </span>
           </footer>
@@ -2152,8 +2243,8 @@ a.tag:hover {
         
           <h2>2014</h2>
         
-        <article>
-          <h1><a href="./post/2014/12/21/importance-sampling/">Importance sampling</a></h1>
+        <article data-tags="statistics,importance-sampling,sampling">
+          <h1 style="view-transition-name: title-importance-sampling"><a href="./post/2014/12/21/importance-sampling/">Importance sampling</a></h1>
           <time datetime="2014-12-21T00:00:00" pubdate>
             <span class="month">Dec</span>
             <span class="day">21</span>
@@ -2161,9 +2252,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">importance-sampling</a>
-              <a class="tag" href="./index.html">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('importance-sampling'); return false;">importance-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
               
             </span>
           </footer>
@@ -2171,8 +2262,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a></h1>
+        <article data-tags="numerical">
+          <h1 style="view-transition-name: title-numerically-stable-p-norms"><a href="./post/2014/11/10/numerically-stable-p-norms/">Numerically stable p-norms</a></h1>
           <time datetime="2014-11-10T00:00:00" pubdate>
             <span class="month">Nov</span>
             <span class="day">10</span>
@@ -2180,7 +2271,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
               
             </span>
           </footer>
@@ -2188,8 +2279,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a></h1>
+        <article data-tags="statistics,machine-learning,structured-prediction">
+          <h1 style="view-transition-name: title-kl-divergence-as-an-objective-function"><a href="./post/2014/10/06/kl-divergence-as-an-objective-function/">KL-divergence as an objective function</a></h1>
           <time datetime="2014-10-06T00:00:00" pubdate>
             <span class="month">Oct</span>
             <span class="day">06</span>
@@ -2197,9 +2288,9 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">statistics</a>
-              <a class="tag" href="./index.html">machine-learning</a>
-              <a class="tag" href="./index.html">structured-prediction</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a>
+              <a class="tag" href="#" onclick="filterByTag('structured-prediction'); return false;">structured-prediction</a>
               
             </span>
           </footer>
@@ -2207,8 +2298,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/08/07/complex-step-derivative/">Complex-step derivative</a></h1>
+        <article data-tags="calculus,numerical">
+          <h1 style="view-transition-name: title-complex-step-derivative"><a href="./post/2014/08/07/complex-step-derivative/">Complex-step derivative</a></h1>
           <time datetime="2014-08-07T00:00:00" pubdate>
             <span class="month">Aug</span>
             <span class="day">07</span>
@@ -2216,8 +2307,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
-              <a class="tag" href="./index.html">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
               
             </span>
           </footer>
@@ -2225,8 +2316,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel-max trick and weighted reservoir sampling</a></h1>
+        <article data-tags="sampling,Gumbel,reservoir-sampling,sampling-without-replacement">
+          <h1 style="view-transition-name: title-gumbel-max-trick-and-weighted-reservoir-sampling"><a href="./post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/">Gumbel-max trick and weighted reservoir sampling</a></h1>
           <time datetime="2014-08-01T00:00:00" pubdate>
             <span class="month">Aug</span>
             <span class="day">01</span>
@@ -2234,10 +2325,10 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">Gumbel</a>
-              <a class="tag" href="./index.html">reservoir-sampling</a>
-              <a class="tag" href="./index.html">sampling-without-replacement</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a>
+              <a class="tag" href="#" onclick="filterByTag('reservoir-sampling'); return false;">reservoir-sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a>
               
             </span>
           </footer>
@@ -2245,8 +2336,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a></h1>
+        <article data-tags="sampling,Gumbel">
+          <h1 style="view-transition-name: title-gumbel-max-trick"><a href="./post/2014/07/31/gumbel-max-trick/">Gumbel-max trick</a></h1>
           <time datetime="2014-07-31T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">31</span>
@@ -2254,8 +2345,8 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">sampling</a>
-              <a class="tag" href="./index.html">Gumbel</a>
+              <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a>
+              <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a>
               
             </span>
           </footer>
@@ -2263,8 +2354,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/07/22/rant-against-grid-search/">Rant against grid search</a></h1>
+        <article data-tags="hyperparameter-optimization">
+          <h1 style="view-transition-name: title-rant-against-grid-search"><a href="./post/2014/07/22/rant-against-grid-search/">Rant against grid search</a></h1>
           <time datetime="2014-07-22T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">22</span>
@@ -2272,7 +2363,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">hyperparameter-optimization</a>
+              <a class="tag" href="#" onclick="filterByTag('hyperparameter-optimization'); return false;">hyperparameter-optimization</a>
               
             </span>
           </footer>
@@ -2280,8 +2371,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a></h1>
+        <article data-tags="statistics">
+          <h1 style="view-transition-name: title-expected-value-of-a-quadratic-and-the-delta-method"><a href="./post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/">Expected value of a quadratic and the Delta method</a></h1>
           <time datetime="2014-07-21T00:00:00" pubdate>
             <span class="month">Jul</span>
             <span class="day">21</span>
@@ -2289,7 +2380,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">statistics</a>
+              <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a>
               
             </span>
           </footer>
@@ -2297,8 +2388,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a></h1>
+        <article data-tags="visualization">
+          <h1 style="view-transition-name: title-visualizing-high-dimensional-functions-with-cross-sections"><a href="./post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/">Visualizing high-dimensional functions with cross-sections</a></h1>
           <time datetime="2014-02-12T00:00:00" pubdate>
             <span class="month">Feb</span>
             <span class="day">12</span>
@@ -2306,7 +2397,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">visualization</a>
+              <a class="tag" href="#" onclick="filterByTag('visualization'); return false;">visualization</a>
               
             </span>
           </footer>
@@ -2314,8 +2405,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a></h1>
+        <article data-tags="numerical">
+          <h1 style="view-transition-name: title-exp-normalize-trick"><a href="./post/2014/02/11/exp-normalize-trick/">Exp-normalize trick</a></h1>
           <time datetime="2014-02-11T00:00:00" pubdate>
             <span class="month">Feb</span>
             <span class="day">11</span>
@@ -2323,7 +2414,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">numerical</a>
+              <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a>
               
             </span>
           </footer>
@@ -2331,8 +2422,8 @@ a.tag:hover {
       
         
         
-        <article>
-          <h1><a href="./post/2014/02/10/gradient-vector-product/">Gradient-vector product</a></h1>
+        <article data-tags="calculus">
+          <h1 style="view-transition-name: title-gradient-vector-product"><a href="./post/2014/02/10/gradient-vector-product/">Gradient-vector product</a></h1>
           <time datetime="2014-02-10T00:00:00" pubdate>
             <span class="month">Feb</span>
             <span class="day">10</span>
@@ -2340,7 +2431,7 @@ a.tag:hover {
           </time>
           <footer>
             <span class="tags">
-              <a class="tag" href="./index.html">calculus</a>
+              <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a>
               
             </span>
           </footer>
@@ -2352,33 +2443,152 @@ a.tag:hover {
 
 
 
+      
       <aside class="sidebar">
         <section>
-          <h1>Recent Posts</h1>
-          <ul id="recent_posts">
-            
-            <li class="post"><a href="./post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/">Fast rank-one updates to matrix inverse?</a></li>
-            
-            <li class="post"><a href="./post/2021/03/20/on-the-distribution-of-the-smallest-indices/">On the Distribution of the Smallest Indices</a></li>
-            
-            <li class="post"><a href="./post/2021/03/18/on-the-distribution-functions-of-order-statistics/">On the Distribution Functions of Order Statistics</a></li>
-            
-            <li class="post"><a href="./post/2020/06/30/animation-of-the-inverse-transform-method/">Animation of the inverse transform method</a></li>
-            
-            <li class="post"><a href="./post/2020/06/30/generating-truncated-random-variates/">Generating truncated random variates</a></li>
-            
-          </ul>
-        </section>
-
-        <section>
           <h1>Tags</h1>
-          <a href="./index.html">numerical</a>,<a href="./index.html">efficiency</a>,<a href="./index.html">sampling-without-replacement</a>,<a href="./index.html">statistics</a>,<a href="./index.html">notebook</a>,<a href="./index.html">ordered-sampling</a>,<a href="./index.html">sampling</a>,<a href="./index.html">algorithms</a>,<a href="./index.html">Gumbel</a>,<a href="./index.html">decision-making</a>,<a href="./index.html">reservoir-sampling</a>,<a href="./index.html">optimization</a>,<a href="./index.html">rl</a>,<a href="./index.html">machine-learning</a>,<a href="./index.html">calculus</a>,<a href="./index.html">automatic-differentiation</a>,<a href="./index.html">implicit-function-theorem</a>,<a href="./index.html">Lagrange-multipliers</a>,<a href="./index.html">testing</a>,<a href="./index.html">counterfactual-reasoning</a>,<a href="./index.html">importance-sampling</a>,<a href="./index.html">datastructures</a>,<a href="./index.html">incremental-computation</a>,<a href="./index.html">data-structures</a>,<a href="./index.html">rant</a>,<a href="./index.html">hyperparameter-optimization</a>,<a href="./index.html">crf</a>,<a href="./index.html">deep-learning</a>,<a href="./index.html">structured-prediction</a>,<a href="./index.html">visualization</a>
+          <a class="tag" href="#" onclick="filterByTag('numerical'); return false;">numerical</a> <a class="tag" href="#" onclick="filterByTag('efficiency'); return false;">efficiency</a> <a class="tag" href="#" onclick="filterByTag('sampling-without-replacement'); return false;">sampling-without-replacement</a> <a class="tag" href="#" onclick="filterByTag('statistics'); return false;">statistics</a> <a class="tag" href="#" onclick="filterByTag('notebook'); return false;">notebook</a> <a class="tag" href="#" onclick="filterByTag('ordered-sampling'); return false;">ordered-sampling</a> <a class="tag" href="#" onclick="filterByTag('sampling'); return false;">sampling</a> <a class="tag" href="#" onclick="filterByTag('algorithms'); return false;">algorithms</a> <a class="tag" href="#" onclick="filterByTag('Gumbel'); return false;">Gumbel</a> <a class="tag" href="#" onclick="filterByTag('decision-making'); return false;">decision-making</a> <a class="tag" href="#" onclick="filterByTag('reservoir-sampling'); return false;">reservoir-sampling</a> <a class="tag" href="#" onclick="filterByTag('optimization'); return false;">optimization</a> <a class="tag" href="#" onclick="filterByTag('rl'); return false;">rl</a> <a class="tag" href="#" onclick="filterByTag('machine-learning'); return false;">machine-learning</a> <a class="tag" href="#" onclick="filterByTag('calculus'); return false;">calculus</a> <a class="tag" href="#" onclick="filterByTag('automatic-differentiation'); return false;">automatic-differentiation</a> <a class="tag" href="#" onclick="filterByTag('implicit-function-theorem'); return false;">implicit-function-theorem</a> <a class="tag" href="#" onclick="filterByTag('Lagrange-multipliers'); return false;">Lagrange-multipliers</a> <a class="tag" href="#" onclick="filterByTag('testing'); return false;">testing</a> <a class="tag" href="#" onclick="filterByTag('counterfactual-reasoning'); return false;">counterfactual-reasoning</a> <a class="tag" href="#" onclick="filterByTag('importance-sampling'); return false;">importance-sampling</a> <a class="tag" href="#" onclick="filterByTag('datastructures'); return false;">datastructures</a> <a class="tag" href="#" onclick="filterByTag('incremental-computation'); return false;">incremental-computation</a> <a class="tag" href="#" onclick="filterByTag('data-structures'); return false;">data-structures</a> <a class="tag" href="#" onclick="filterByTag('rant'); return false;">rant</a> <a class="tag" href="#" onclick="filterByTag('hyperparameter-optimization'); return false;">hyperparameter-optimization</a> <a class="tag" href="#" onclick="filterByTag('crf'); return false;">crf</a> <a class="tag" href="#" onclick="filterByTag('deep-learning'); return false;">deep-learning</a> <a class="tag" href="#" onclick="filterByTag('structured-prediction'); return false;">structured-prediction</a> <a class="tag" href="#" onclick="filterByTag('visualization'); return false;">visualization</a>
         </section>
       </aside>
+      
     </div>
-    <a href="#" class="toggle-sidebar" onclick="document.getElementById('main').classList.toggle('collapse-sidebar'); return false;">&nbsp;</a>
   </div>
   <footer role="contentinfo"></footer>
+  
+  
+  <script>
+    window._activeTags = new Set();
+
+    function filterByTag(tag) {
+      var tags = window._activeTags;
+      if (tags.has(tag)) {
+        tags.delete(tag);
+      } else {
+        tags.add(tag);
+      }
+
+      // Step 1: Update tag highlights immediately
+      var noFilter = tags.size === 0;
+      document.querySelectorAll('.tag').forEach(function(el) {
+        el.classList.toggle('active', tags.has(el.textContent.trim()));
+      });
+
+      // Step 2: After tags visually update, start fading articles
+      setTimeout(function() {
+        var archives = document.getElementById('blog-archives');
+        var articles = archives.querySelectorAll('article');
+        var headers = archives.querySelectorAll('h2');
+
+        // Determine which articles match
+        var toHide = [];
+        var toShow = [];
+        articles.forEach(function(a) {
+          var aTags = a.getAttribute('data-tags').split(',');
+          var match = noFilter || Array.from(tags).every(function(t) { return aTags.indexOf(t) >= 0; });
+          if (!match && !a.classList.contains('hidden')) {
+            toHide.push(a);
+          } else if (match && a.classList.contains('hidden')) {
+            toShow.push(a);
+          }
+        });
+
+        // Fade out items that should hide
+        toHide.forEach(function(a) { a.classList.add('fading'); });
+
+        // After fade completes, collapse hidden and reveal new ones
+        setTimeout(function() {
+          toHide.forEach(function(a) {
+            a.classList.add('hidden');
+            a.classList.remove('fading');
+          });
+
+          // Show items that should appear (start faded, then fade in)
+          toShow.forEach(function(a) {
+            a.classList.add('fading');
+            a.classList.remove('hidden');
+          });
+          // Force reflow before removing fading class
+          if (toShow.length) archives.offsetHeight;
+          requestAnimationFrame(function() {
+            toShow.forEach(function(a) { a.classList.remove('fading'); });
+          });
+
+          // Update year headers
+          headers.forEach(function(h) {
+            var next = h.nextElementSibling;
+            var hasVisible = false;
+            while (next && next.tagName !== 'H2') {
+              if (next.tagName === 'ARTICLE' && !next.classList.contains('hidden')) hasVisible = true;
+              next = next.nextElementSibling;
+            }
+            h.classList.toggle('hidden', !hasVisible);
+          });
+
+          // Disable tags that would yield no results if added
+          var availableTags = new Set();
+          articles.forEach(function(a) {
+            if (!a.classList.contains('hidden')) {
+              a.getAttribute('data-tags').split(',').forEach(function(t) { availableTags.add(t); });
+            }
+          });
+          if (noFilter) {
+            document.querySelectorAll('.tag').forEach(function(el) { el.classList.remove('disabled'); });
+          } else {
+            tags.forEach(function(t) { availableTags.add(t); });
+            document.querySelectorAll('.tag').forEach(function(el) {
+              el.classList.toggle('disabled', !availableTags.has(el.textContent.trim()));
+            });
+          }
+        }, 250);
+
+        // Update URL hash
+        if (tags.size > 0) {
+          history.replaceState(null, '', '#tags=' + Array.from(tags).map(encodeURIComponent).join(','));
+        } else {
+          history.replaceState(null, '', location.pathname);
+        }
+      }, 150);
+    }
+
+    // Apply filter from URL hash on load (no animation)
+    (function() {
+      var m = location.hash.match(/tags?=([^&]+)/);
+      if (m) {
+        m[1].split(',').forEach(function(t) { window._activeTags.add(decodeURIComponent(t)); });
+        var tags = window._activeTags;
+        var archives = document.getElementById('blog-archives');
+        var articles = archives.querySelectorAll('article');
+        var headers = archives.querySelectorAll('h2');
+        document.querySelectorAll('.tag').forEach(function(el) {
+          el.classList.toggle('active', tags.has(el.textContent.trim()));
+        });
+        articles.forEach(function(a) {
+          var aTags = a.getAttribute('data-tags').split(',');
+          var match = Array.from(tags).every(function(t) { return aTags.indexOf(t) >= 0; });
+          if (!match) a.classList.add('hidden');
+        });
+        headers.forEach(function(h) {
+          var next = h.nextElementSibling;
+          var hasVisible = false;
+          while (next && next.tagName !== 'H2') {
+            if (next.tagName === 'ARTICLE' && !next.classList.contains('hidden')) hasVisible = true;
+            next = next.nextElementSibling;
+          }
+          if (!hasVisible) h.classList.add('hidden');
+        });
+        var availableTags = new Set();
+        articles.forEach(function(a) {
+          if (!a.classList.contains('hidden')) {
+            a.getAttribute('data-tags').split(',').forEach(function(t) { availableTags.add(t); });
+          }
+        });
+        tags.forEach(function(t) { availableTags.add(t); });
+        document.querySelectorAll('.tag').forEach(function(el) {
+          el.classList.toggle('disabled', !availableTags.has(el.textContent.trim()));
+        });
+      }
+    })();
+  </script>
   
 </body>
 </html>
