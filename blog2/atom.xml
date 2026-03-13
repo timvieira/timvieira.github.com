@@ -7,141 +7,141 @@
   <updated>2026-03-13T00:00:00Z</updated>
   <entry>
     <title>Interactive KL Divergence Fitting</title>
-    <link href="https://timvieira.github.io/blog/post/2026/03/13/interactive-kl-divergence-fitting/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2026/03/13/interactive-kl-divergence-fitting/</id>
+    <link href="https://timvieira.github.io/blog/interactive-kl-divergence-fitting/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/interactive-kl-divergence-fitting/</id>
     <updated>2026-03-13T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Fast Rank-One Updates to Matrix Inverse?</title>
-    <link href="https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/</id>
+    <link href="https://timvieira.github.io/blog/fast-rank-one-updates-to-matrix-inverse/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/fast-rank-one-updates-to-matrix-inverse/</id>
     <updated>2021-03-25T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>On the Distribution of the Smallest Indices</title>
-    <link href="https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/</id>
+    <link href="https://timvieira.github.io/blog/on-the-distribution-of-the-smallest-indices/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/on-the-distribution-of-the-smallest-indices/</id>
     <updated>2021-03-20T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>On the Distribution Functions of Order Statistics</title>
-    <link href="https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/</id>
+    <link href="https://timvieira.github.io/blog/on-the-distribution-functions-of-order-statistics/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/on-the-distribution-functions-of-order-statistics/</id>
     <updated>2021-03-18T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Animation of the Inverse Transform Method</title>
-    <link href="https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/</id>
+    <link href="https://timvieira.github.io/blog/animation-of-the-inverse-transform-method/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/animation-of-the-inverse-transform-method/</id>
     <updated>2020-06-30T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Generating Truncated Random Variates</title>
-    <link href="https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/</id>
+    <link href="https://timvieira.github.io/blog/generating-truncated-random-variates/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/generating-truncated-random-variates/</id>
     <updated>2020-06-30T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Algorithms for Sampling Without Replacement</title>
-    <link href="https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/</id>
+    <link href="https://timvieira.github.io/blog/algorithms-for-sampling-without-replacement/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/algorithms-for-sampling-without-replacement/</id>
     <updated>2019-09-16T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>The Restart Acceleration Trick: A Cure for the Heavy Tail of Wasted Time</title>
-    <link href="https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/</id>
+    <link href="https://timvieira.github.io/blog/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/</id>
     <updated>2019-09-06T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Faster Reservoir Sampling by Waiting</title>
-    <link href="https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/</id>
+    <link href="https://timvieira.github.io/blog/faster-reservoir-sampling-by-waiting/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/faster-reservoir-sampling-by-waiting/</id>
     <updated>2019-06-11T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>The Likelihood-Ratio Gradient</title>
-    <link href="https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/</id>
+    <link href="https://timvieira.github.io/blog/the-likelihood-ratio-gradient/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/the-likelihood-ratio-gradient/</id>
     <updated>2019-04-20T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Steepest Ascent</title>
-    <link href="https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/</id>
+    <link href="https://timvieira.github.io/blog/steepest-ascent/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/steepest-ascent/</id>
     <updated>2019-04-19T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Black-Box Optimization</title>
-    <link href="https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/</id>
+    <link href="https://timvieira.github.io/blog/black-box-optimization/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/black-box-optimization/</id>
     <updated>2018-03-16T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Backprop Is Not Just the Chain Rule</title>
-    <link href="https://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/</id>
+    <link href="https://timvieira.github.io/blog/backprop-is-not-just-the-chain-rule/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/backprop-is-not-just-the-chain-rule/</id>
     <updated>2017-08-18T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Estimating Means in a Finite Universe</title>
-    <link href="https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/</id>
+    <link href="https://timvieira.github.io/blog/estimating-means-in-a-finite-universe/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/estimating-means-in-a-finite-universe/</id>
     <updated>2017-07-03T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>How to Test Gradient Implementations</title>
-    <link href="https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/</id>
+    <link href="https://timvieira.github.io/blog/how-to-test-gradient-implementations/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/how-to-test-gradient-implementations/</id>
     <updated>2017-04-21T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Counterfactual Reasoning and Learning from Logged Data</title>
-    <link href="https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/</id>
+    <link href="https://timvieira.github.io/blog/counterfactual-reasoning-and-learning-from-logged-data/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/counterfactual-reasoning-and-learning-from-logged-data/</id>
     <updated>2016-12-19T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Heaps for Incremental Computation</title>
-    <link href="https://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/</id>
+    <link href="https://timvieira.github.io/blog/heaps-for-incremental-computation/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/heaps-for-incremental-computation/</id>
     <updated>2016-11-21T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Reversing a Sequence with Sublinear Space</title>
-    <link href="https://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/</id>
+    <link href="https://timvieira.github.io/blog/reversing-a-sequence-with-sublinear-space/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/reversing-a-sequence-with-sublinear-space/</id>
     <updated>2016-10-01T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Evaluating ∇f(x) Is as Fast as f(x)</title>
-    <link href="https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/</id>
+    <link href="https://timvieira.github.io/blog/evaluating-fx-is-as-fast-as-fx/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/evaluating-fx-is-as-fast-as-fx/</id>
     <updated>2016-09-25T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
   <entry>
     <title>Fast Sigmoid Sampling</title>
-    <link href="https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</id>
+    <link href="https://timvieira.github.io/blog/fast-sigmoid-sampling/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/fast-sigmoid-sampling/</id>
     <updated>2016-07-04T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
