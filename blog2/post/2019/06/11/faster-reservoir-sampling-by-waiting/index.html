@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Faster reservoir sampling by waiting &mdash; Graduate Descent</title>
+  <title>Faster Reservoir Sampling by Waiting &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-faster-reservoir-sampling-by-waiting">Faster reservoir sampling by waiting</h1>
+      <h1 class="entry-title" style="view-transition-name: title-faster-reservoir-sampling-by-waiting">Faster Reservoir Sampling by Waiting</h1>
       <p class="meta">
         <time datetime="2019-06-11T00:00:00" pubdate>Jun 11, 2019</time>
         <span class="byline author vcard">
@@ -1717,7 +1717,7 @@ $$</p>
 <p><strong>Why does it work?</strong> The weighted-reservoir sampling algorithm exploits the following well-known properties of exponential random variates:
 When $X_i \sim \mathrm{Exponential}(w_i)$, $R = {\mathrm{argmin}}_i X_i$, and $T = \min_i X_i$ then
 $R \sim p$ and $T \sim \mathrm{Exponential}\left( \sum_i w_i \right)$.</p>
-<h2 id="fewer-random-variates-by-waiting">Fewer random variates by waiting</h2>
+<h2 id="fewer-random-variates-by-waiting">Fewer Random Variates by Waiting</h2>
 <p>One down-side of this one-pass algorithm is that it requires $\mathcal{O}(n)$ uniform random variates.  Contrast that with the usual, two-pass methods for sampling from a categorical distribution, which only need $\mathcal{O}(1)$ samples.  E&amp;S'06 also present a much less well-known algorithm, called the "Exponential jumps" algorithm, which is a one-pass algorithm that only requires $\mathcal{O}(\log(n))$ random variates (in expectation).  That's <em>way</em> fewer random variates and a small price to pay if you are trying to avoid paging-in data from disk a second time.</p>
 <p>Here is my take on their algorithm.  There is no substantive difference, but I believe my version is more instructive since it makes the connection to exponential variates and truncated generation explicit (i.e., no mysterious random keys).</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">jump</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
@@ -1773,7 +1773,7 @@ $R \sim p$ and $T \sim \mathrm{Exponential}\left( \sum_i w_i \right)$.</p>
 \end{eqnarray}
 $$</p>
 <p>Given that the waiting time correctly matches the walking algorithm, the remaining detail is to check that $X_k$ is equivalent under the condition that it goes into the reservoir.  This conditioning is why the jumping algorithm must generate a <em>truncated</em> random variate: a random variate that is guaranteed to less than the previous minimum.  In the <a href="https://cmaddis.github.io/gumbel-machinery">Gumbel-max world</a>, this is used in the top-down generative story.</p>
-<h2 id="closing-thoughts">Closing thoughts</h2>
+<h2 id="closing-thoughts">Closing Thoughts</h2>
 <p>Pros:</p>
 <ul>
 <li>The jump algorithm saves a ton of random variates and gives practical savings
@@ -1827,7 +1827,7 @@ $$</p>
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/';
-    var disqus_title = 'Faster reservoir sampling by waiting';
+    var disqus_title = 'Faster Reservoir Sampling by Waiting';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

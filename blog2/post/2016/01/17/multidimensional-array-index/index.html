@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Multidimensional array index &mdash; Graduate Descent</title>
+  <title>Multidimensional Array Index &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-multidimensional-array-index">Multidimensional array index</h1>
+      <h1 class="entry-title" style="view-transition-name: title-multidimensional-array-index">Multidimensional Array Index</h1>
       <p class="meta">
         <time datetime="2016-01-17T00:00:00" pubdate>Jan 17, 2016</time>
         <span class="byline author vcard">
@@ -1708,7 +1708,7 @@ of an $n$-dimensional array and a flat, one-dimensional array. We'll look at
 both directions of the mapping: <code>(tuple-&gt;int)</code> and <code>(int -&gt; tuple)</code>.</p>
 <p>We'll assume each dimension $a, b, c, \ldots$ is a positive integer and bounded
 $a \le A, b \le B, c \le C, \ldots$</p>
-<h3 id="start-small">Start small</h3>
+<h3 id="start-small">Start Small</h3>
 <p>Let's start by looking at $n = 3$ and generalize from there.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">index_3</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
     <span class="n">_</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">K</span> <span class="o">=</span> <span class="n">A</span>
@@ -1745,7 +1745,7 @@ which is apparent in the test case.</p>
 <p>Sidenote: We don't actually need the bound $a \le A$ in either <code>index</code> or
 <code>inverse</code>. This gives us a little extra flexibility because our first
 dimension can be infinite/unknown.</p>
-<h3 id="general-case">General case</h3>
+<h3 id="general-case">General Case</h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
     <span class="s2">&quot;Map tuple ``a`` to index with known bounds ``A``.&quot;</span>
     <span class="c1"># the pattern:</span>
@@ -1771,7 +1771,7 @@ dimension can be infinite/unknown.</p>
 </code></pre></div>
 
 <h2 id="appendix">Appendix</h2>
-<h3 id="testing-the-general-case">Testing the general case</h3>
+<h3 id="testing-the-general-case">Testing the General Case</h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">itertools</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_layout</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
@@ -1817,7 +1817,7 @@ dimension can be infinite/unknown.</p>
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/';
-    var disqus_title = 'Multidimensional array index';
+    var disqus_title = 'Multidimensional Array Index';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

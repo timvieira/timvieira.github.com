@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>KL-divergence as an objective function &mdash; Graduate Descent</title>
+  <title>KL-Divergence as an Objective Function &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-kl-divergence-as-an-objective-function">KL-divergence as an objective function</h1>
+      <h1 class="entry-title" style="view-transition-name: title-kl-divergence-as-an-objective-function">KL-Divergence as an Objective Function</h1>
       <p class="meta">
         <time datetime="2014-10-06T00:00:00" pubdate>Oct 06, 2014</time>
         <span class="byline author vcard">
@@ -1706,7 +1706,7 @@ body > header nav a:hover {
       <p>It's well-known that
 <a href="http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">KL-divergence</a>
 is not symmetric, but which direction is right for fitting your model?</p>
-<h4 id="which-kl-is-which-a-cheat-sheet">Which KL is which? A cheat sheet</h4>
+<h4 id="which-kl-is-which-a-cheat-sheet">Which KL Is Which? A Cheat Sheet</h4>
 <p>If we're fitting $q_\theta$ to $p$ using</p>
 <p>$\textbf{KL}(p || q_\theta)$</p>
 <ul>
@@ -1732,20 +1732,20 @@ corresponds to the <em>inclusiveness</em> of $\textbf{KL}(p || q)$.</p>
 <p>As far as remembering the equation, I pretend that "$||$" is a division symbol,
 which happens to correspond nicely to a division symbol in the equation (I'm not
 sure it's intentional).</p>
-<h2 id="inclusive-vs-exclusive-divergence">Inclusive vs. exclusive divergence</h2>
+<h2 id="inclusive-vs-exclusive-divergence">Inclusive vs. Exclusive Divergence</h2>
 <div style="background-color: #f2f2f2; border: 2px solid #ggg; padding: 10px;">
 
 <img src="../../../../../images/KL-inclusive-exclusive.png" />
 Figure by <a href="http://www.johnwinn.org/">John Winn</a>.
 </div>
 <p><br/></p>
-<h2 id="computational-perspecive">Computational perspecive</h2>
+<h2 id="computational-perspecive">Computational Perspecive</h2>
 <p>Let's look at what's involved in fitting a model $q_\theta$ in each
 direction. In this section, I'll describe the gradient and pay special attention
 to the issue of normalization.</p>
 <p><strong>Notation</strong>: $p,q_\theta$ are probabilty distributions. $p = \bar{p} / Z_p$,
 where $Z_p$ is the normalization constant. Similarly for $q$.</p>
-<h3 id="the-easy-direction-textbfklq_theta-p">The easy direction $\textbf{KL}(q_\theta || p)$</h3>
+<h3 id="the-easy-direction-textbfklq_theta-p">The Easy Direction $\textbf{KL}(q_\theta || p)$</h3>
 <p>\begin{align<em>}
 \textbf{KL}(q_\theta || p)
 &amp;= \sum_d q(d) \log \left( \frac{q(d)}{p(d)} \right) \
@@ -1781,7 +1781,7 @@ we're optimizing.</p>
 <p>This direction is convenient because we don't need to normalize
 $p$. Unfortunately, the "easy" direction is nonconvex in general&mdash;unlike
 the "hard" direction, which (as we'll see shortly) is convex.</p>
-<h3 id="harder-direction-textbfklp-q_theta">Harder direction $\textbf{KL}(p || q_\theta)$</h3>
+<h3 id="harder-direction-textbfklp-q_theta">Harder Direction $\textbf{KL}(p || q_\theta)$</h3>
 <p>\begin{align<em>}
 \textbf{KL}(p || q_\theta)
 &amp;= \sum_d p(d) \log \left( \frac{p(d)}{q(d)} \right) \
@@ -1897,7 +1897,7 @@ tractable or, for MLE, require tons of samples.</p>
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/';
-    var disqus_title = 'KL-divergence as an objective function';
+    var disqus_title = 'KL-Divergence as an Objective Function';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

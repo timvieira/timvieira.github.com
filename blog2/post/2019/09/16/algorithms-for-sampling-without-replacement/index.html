@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Algorithms for sampling without replacement &mdash; Graduate Descent</title>
+  <title>Algorithms for Sampling Without Replacement &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-algorithms-for-sampling-without-replacement">Algorithms for sampling without replacement</h1>
+      <h1 class="entry-title" style="view-transition-name: title-algorithms-for-sampling-without-replacement">Algorithms for Sampling Without Replacement</h1>
       <p class="meta">
         <time datetime="2019-09-16T00:00:00" pubdate>Sep 16, 2019</time>
         <span class="byline author vcard">
@@ -1771,7 +1771,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Baseline:-The-numpy-implementation">Baseline: The numpy implementation<a class="anchor-link" href="#Baseline:-The-numpy-implementation">¶</a></h3>
+<h3 id="Baseline:-The-Numpy-Implementation">Baseline: The Numpy Implementation<a class="anchor-link" href="#Baseline:-The-Numpy-Implementation">¶</a></h3>
 </div>
 </div>
 </div>
@@ -1799,7 +1799,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Heap-based-sampling">Heap-based sampling<a class="anchor-link" href="#Heap-based-sampling">¶</a></h3><p>Using <a href="../../../../../post/2016/11/21/heaps-for-incremental-computation/">heap sampling</a>, we can do the computation in $\mathcal{O}(N + K \log N)$.  It's possible that shrinking the heap rather than leaving it size $n$ could yield an improvement.  The <a href="https://github.com/timvieira/arsenal/blob/master/arsenal/datastructures/heap/sumheap.pyx">implementation</a> that I am using is from my Python <a href="https://github.com/timvieira/arsenal/">arsenal</a>.</p>
+<h3 id="Heap-Based-Sampling">Heap-Based Sampling<a class="anchor-link" href="#Heap-Based-Sampling">¶</a></h3><p>Using <a href="../../../../../post/2016/11/21/heaps-for-incremental-computation/">heap sampling</a>, we can do the computation in $\mathcal{O}(N + K \log N)$.  It's possible that shrinking the heap rather than leaving it size $n$ could yield an improvement.  The <a href="https://github.com/timvieira/arsenal/blob/master/arsenal/datastructures/heap/sumheap.pyx">implementation</a> that I am using is from my Python <a href="https://github.com/timvieira/arsenal/">arsenal</a>.</p>
 </div>
 </div>
 </div>
@@ -1828,7 +1828,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="The-Gumbel-sort-trick">The Gumbel-sort trick<a class="anchor-link" href="#The-Gumbel-sort-trick">¶</a></h3><p>The running time for the Gumbel version is $\mathcal{O}(N + N \log K)$ assuming that we use a bounded heap of size $K$.  The implementation does not include the bounded heap optimization.  My experiments will use $k=n$.</p>
+<h3 id="The-Gumbel-Sort-Trick">The Gumbel-Sort Trick<a class="anchor-link" href="#The-Gumbel-Sort-Trick">¶</a></h3><p>The running time for the Gumbel version is $\mathcal{O}(N + N \log K)$ assuming that we use a bounded heap of size $K$.  The implementation does not include the bounded heap optimization.  My experiments will use $k=n$.</p>
 </div>
 </div>
 </div>
@@ -1856,7 +1856,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exponential-sort-trick">Exponential-sort trick<a class="anchor-link" href="#Exponential-sort-trick">¶</a></h3>
+<h3 id="Exponential-Sort-Trick">Exponential-Sort Trick<a class="anchor-link" href="#Exponential-Sort-Trick">¶</a></h3>
 </div>
 </div>
 </div>
@@ -1893,7 +1893,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Test-cases">Test cases<a class="anchor-link" href="#Test-cases">¶</a></h2>
+<h2 id="Test-Cases">Test Cases<a class="anchor-link" href="#Test-Cases">¶</a></h2>
 </div>
 </div>
 </div>
@@ -2240,7 +2240,7 @@ swor_exp is 8.2761x faster than swor_numpy (<span class="ansi-green-fg">p=0.0000
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/';
-    var disqus_title = 'Algorithms for sampling without replacement';
+    var disqus_title = 'Algorithms for Sampling Without Replacement';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

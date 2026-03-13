@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Steepest ascent &mdash; Graduate Descent</title>
+  <title>Steepest Ascent &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-steepest-ascent">Steepest ascent</h1>
+      <h1 class="entry-title" style="view-transition-name: title-steepest-ascent">Steepest Ascent</h1>
       <p class="meta">
         <time datetime="2019-04-19T00:00:00" pubdate>Apr 19, 2019</time>
         <span class="byline author vcard">
@@ -1740,7 +1740,7 @@ body > header nav a:hover {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="What-is-steepest-ascent?">What is steepest ascent?<a class="anchor-link" href="#What-is-steepest-ascent?">¶</a></h2>
+<h2 id="What-Is-Steepest-Ascent?">What Is Steepest Ascent?<a class="anchor-link" href="#What-Is-Steepest-Ascent?">¶</a></h2>
 </div>
 </div>
 </div>
@@ -1867,7 +1867,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Steepest-ascent-with-additive-changes">Steepest ascent with additive changes<a class="anchor-link" href="#Steepest-ascent-with-additive-changes">¶</a></h2>
+<h2 id="Steepest-Ascent-with-Additive-Changes">Steepest Ascent with Additive Changes<a class="anchor-link" href="#Steepest-Ascent-with-Additive-Changes">¶</a></h2>
 </div>
 </div>
 </div>
@@ -1893,7 +1893,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Numerical-experiments">Numerical experiments<a class="anchor-link" href="#Numerical-experiments">¶</a></h3>
+<h3 id="Numerical-Experiments">Numerical Experiments<a class="anchor-link" href="#Numerical-Experiments">¶</a></h3>
 </div>
 </div>
 </div>
@@ -2070,7 +2070,7 @@ Comparison: n=2
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h5 id="TL;DR-notes-on-the-code">TL;DR notes on the code<a class="anchor-link" href="#TL;DR-notes-on-the-code">¶</a></h5>
+<h5 id="TL;DR-Notes-on-the-Code">TL;DR Notes on the Code<a class="anchor-link" href="#TL;DR-Notes-on-the-Code">¶</a></h5>
 </div>
 </div>
 </div>
@@ -2095,7 +2095,7 @@ Comparison: n=2
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Let's-look-at-a-slightly-more-interesting-example.">Let's look at a slightly more interesting example.<a class="anchor-link" href="#Let's-look-at-a-slightly-more-interesting-example.">¶</a></h3><p>I've written before about the <a href="../../../../../post/2016/05/27/dimensional-analysis-of-gradient-ascent/">dimensional analysis of gradient descent</a>. In this post, I explain why the step-size parameter in gradient descent is hard to determine a priori because it is not unit free—in fact, its units are pretty complicated. One explanation for why this is the case is that we are using a silly metric on $x$ because the dimensions of $x$ are generally not in the same units, and this should not be compared without some type of common unit conversion!</p>
+<h3 id="Let's-Look-at-a-Slightly-More-Interesting-Example.">Let's Look at a Slightly More Interesting Example.<a class="anchor-link" href="#Let's-Look-at-a-Slightly-More-Interesting-Example.">¶</a></h3><p>I've written before about the <a href="../../../../../post/2016/05/27/dimensional-analysis-of-gradient-ascent/">dimensional analysis of gradient descent</a>. In this post, I explain why the step-size parameter in gradient descent is hard to determine a priori because it is not unit free—in fact, its units are pretty complicated. One explanation for why this is the case is that we are using a silly metric on $x$ because the dimensions of $x$ are generally not in the same units, and this should not be compared without some type of common unit conversion!</p>
 <p>Ok, let's do that. Suppose that we have a simple rule to map each dimension $x_i$ into a common currency, let's suppose the conversion is $\alpha_i x_i$ with $(\textbf{units } \alpha_i) = \frac{(\textbf{common-unit})}{ (\textbf{units } x_i)}$. Now it makes sense to compare $x, y \in \mathcal{X}$ with a rescaled Euclidean distance, $\| \alpha \odot (x - y) \|_2$ or for, our purposes, $\rho(x) = \| \alpha \odot x \|^2_2$. For numerical-stability reasons, it's better to use the squared two-norm and pass in $\varepsilon^2$ which is, of course, mathematically equivalent.</p>
 <p>The most notable thing about this example is that it demonstrates that the gradient is <em>covariant</em>: the conversion factor is <em>inverted</em> in the steepest-ascent direction.</p>
 </div>
@@ -2189,7 +2189,7 @@ Comparison: n=2
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Cheaper,-analytical-answers-with-Taylor-series-approximations">Cheaper, analytical answers with Taylor-series approximations<a class="anchor-link" href="#Cheaper,-analytical-answers-with-Taylor-series-approximations">¶</a></h2>
+<h2 id="Cheaper,-Analytical-Answers-with-Taylor-Series-Approximations">Cheaper, Analytical Answers with Taylor-Series Approximations<a class="anchor-link" href="#Cheaper,-Analytical-Answers-with-Taylor-Series-Approximations">¶</a></h2>
 </div>
 </div>
 </div>
@@ -2363,7 +2363,7 @@ Comparison: n=2
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Application:-Steepest-ascent-under-different-p-norms">Application: Steepest ascent under different p-norms<a class="anchor-link" href="#Application:-Steepest-ascent-under-different-p-norms">¶</a></h3><p>We saw $L_2$ norms and weighted $L_2$ norms above. Here will see that $L_1$ and $L_\infty$ have pretty neat interpretations.
+<h3 id="Application:-Steepest-Ascent-Under-Different-P-Norms">Application: Steepest Ascent Under Different P-Norms<a class="anchor-link" href="#Application:-Steepest-Ascent-Under-Different-P-Norms">¶</a></h3><p>We saw $L_2$ norms and weighted $L_2$ norms above. Here will see that $L_1$ and $L_\infty$ have pretty neat interpretations.
 We have an optimization problem of the following form each $p$
 $$
 d^* = \underset{\|d\|_p = \varepsilon}{\textrm{argmax }} \nabla f(x)^\top d
@@ -2378,7 +2378,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h5 id="Drawing-constraint-boundaries">Drawing constraint boundaries<a class="anchor-link" href="#Drawing-constraint-boundaries">¶</a></h5>
+<h5 id="Drawing-Constraint-Boundaries">Drawing Constraint Boundaries<a class="anchor-link" href="#Drawing-Constraint-Boundaries">¶</a></h5>
 </div>
 </div>
 </div>
@@ -2596,7 +2596,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Multiplicative-updates">Multiplicative updates<a class="anchor-link" href="#Multiplicative-updates">¶</a></h2>
+<h2 id="Multiplicative-Updates">Multiplicative Updates<a class="anchor-link" href="#Multiplicative-Updates">¶</a></h2>
 </div>
 </div>
 </div>
@@ -2782,7 +2782,7 @@ $$</p>
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/';
-    var disqus_title = 'Steepest ascent';
+    var disqus_title = 'Steepest Ascent';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

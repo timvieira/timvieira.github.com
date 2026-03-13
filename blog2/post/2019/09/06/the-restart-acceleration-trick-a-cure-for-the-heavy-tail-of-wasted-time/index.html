@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>The restart acceleration trick: A cure for the heavy tail of wasted time &mdash; Graduate Descent</title>
+  <title>The Restart Acceleration Trick: A Cure for the Heavy Tail of Wasted Time &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time">The restart acceleration trick: A cure for the heavy tail of wasted time</h1>
+      <h1 class="entry-title" style="view-transition-name: title-the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time">The Restart Acceleration Trick: A Cure for the Heavy Tail of Wasted Time</h1>
       <p class="meta">
         <time datetime="2019-09-06T00:00:00" pubdate>Sep 06, 2019</time>
         <span class="byline author vcard">
@@ -1846,7 +1846,7 @@ body > header nav a:hover {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Expected-capped-running-time">Expected capped running time<a class="anchor-link" href="#Expected-capped-running-time">¶</a></h3><p>The following is recursive definition of the expected cost of a policy $\tau$ with a fixed restart-overhead penalty $\omega \ge 0$.  We require $\tau \ge \min\{ t \mid p(t) &gt; 0 \}$ to avoid dividing by zero.</p>
+<h3 id="Expected-Capped-Running-Time">Expected Capped Running Time<a class="anchor-link" href="#Expected-Capped-Running-Time">¶</a></h3><p>The following is recursive definition of the expected cost of a policy $\tau$ with a fixed restart-overhead penalty $\omega \ge 0$.  We require $\tau \ge \min\{ t \mid p(t) &gt; 0 \}$ to avoid dividing by zero.</p>
 <p>$$
 T = 
 \underbrace{p(t \le \tau)}_{\text{prob of done}}
@@ -1878,7 +1878,7 @@ T &amp;=
 +
 \underbrace{\frac{1-p(t \le \tau)}{p(t \le \tau)}}_{\text{restart rate}}
 \cdot 
-\underbrace{(\omega + \tau)}_{\text{cost of each restart}}.
+\underbrace{(\omega + \tau)}_{\text{cost of each restart}}
 \end{align}
 $$</p>
 <p>Remarks:</p>
@@ -1968,7 +1968,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Unknown-runtime-distribution">Unknown runtime distribution<a class="anchor-link" href="#Unknown-runtime-distribution">¶</a></h3><p>When the runtime distribution is not known, there are still strategies which can provide acceleration.  Although, now there is an important constant factor, which might result in slower performance.</p>
+<h3 id="Unknown-Runtime-Distribution">Unknown Runtime Distribution<a class="anchor-link" href="#Unknown-Runtime-Distribution">¶</a></h3><p>When the runtime distribution is not known, there are still strategies which can provide acceleration.  Although, now there is an important constant factor, which might result in slower performance.</p>
 </div>
 </div>
 </div>
@@ -2121,15 +2121,15 @@ optimized: 1.42 4.43
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Closing-remarks">Closing remarks<a class="anchor-link" href="#Closing-remarks">¶</a></h2><p>We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article, there is a lot more discussion of interesting properties and details.</p>
-<p>This notebook is available for download <a href="https://github.com/timvieira/blog/blob/master/content/Restart-acceleration.ipynb">here</a>.</p>
+<h2 id="Closing-Remarks">Closing Remarks<a class="anchor-link" href="#Closing-Remarks">¶</a></h2><p>We now see why restarts can provide useful acceleration for Las Vegas algorithms.  Hopefully, the generalization to other restartable processes is reasonably clear.  In the appendix of this article, there is a lot more discussion of interesting properties and details.</p>
+<p>This notebook is available for download <a href="../../../../../post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/">here</a>.</p>
 <p>I am very happy to answer questions! There are many ways to do that: comment at the end of this document, Tweet at <code>@xtimv</code>, or email <code>tim.f.vieira@gmail.com</code>.</p>
 <p>If you found this article interesting please consider sharing it on social media.  If you found this article useful please cite it</p>
 <div class="highlight"><pre><span></span><span class="nc">@software</span><span class="p">{</span><span class="nl">vieira-restart-acceleration</span><span class="p">,</span>
 <span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Tim Vieira}</span><span class="p">,</span>
 <span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{The restart acceleration trick: A cure for the heavy tail of wasted time}</span><span class="p">,</span>
 <span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2019}</span><span class="p">,</span>
-<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/timvieira/blog/blob/master/content/Restart-acceleration.ipynb}</span>
+<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -2235,7 +2235,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Runtime-distribution-conditioned-on-capping">Runtime distribution conditioned on capping<a class="anchor-link" href="#Runtime-distribution-conditioned-on-capping">¶</a></h3><p>To study our restarting trick, it will be useful to have the CDF of the $(\tau, \omega)$-restarted distribution.  Later in this document, I work out the generalization of this distribution functions for non-stationary restart policies such as the universal sequence.</p>
+<h3 id="Runtime-Distribution-Conditioned-on-Capping">Runtime Distribution Conditioned on Capping<a class="anchor-link" href="#Runtime-Distribution-Conditioned-on-Capping">¶</a></h3><p>To study our restarting trick, it will be useful to have the CDF of the $(\tau, \omega)$-restarted distribution.  Later in this document, I work out the generalization of this distribution functions for non-stationary restart policies such as the universal sequence.</p>
 <p>The restarted distribution has some interesting periodic structure, which we'll discuss below.</p>
 </div>
 </div>
@@ -2347,7 +2347,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Periodicity-in-the-capped-PDF">Periodicity in the capped PDF<a class="anchor-link" href="#Periodicity-in-the-capped-PDF">¶</a></h3><p>The truncated PDF has an interesting repeating structure.  The original distribution's $\tau$-truncated PDF repeats itself every $\tau+\omega$ units of time.  However, when it does repeat itself, shrinks by a factor of $F(\tau)$ each time.</p>
+<h3 id="Periodicity-in-the-Capped-PDF">Periodicity in the Capped PDF<a class="anchor-link" href="#Periodicity-in-the-Capped-PDF">¶</a></h3><p>The truncated PDF has an interesting repeating structure.  The original distribution's $\tau$-truncated PDF repeats itself every $\tau+\omega$ units of time.  However, when it does repeat itself, shrinks by a factor of $F(\tau)$ each time.</p>
 </div>
 </div>
 </div>
@@ -2415,7 +2415,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Capping-eliminates-heavy-tails">Capping eliminates heavy tails<a class="anchor-link" href="#Capping-eliminates-heavy-tails">¶</a></h3>
+<h3 id="Capping-Eliminates-Heavy-Tails">Capping Eliminates Heavy Tails<a class="anchor-link" href="#Capping-Eliminates-Heavy-Tails">¶</a></h3>
 </div>
 </div>
 </div>
@@ -2464,7 +2464,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Tests-for-capped-CDF-and-PDF">Tests for capped CDF and PDF<a class="anchor-link" href="#Tests-for-capped-CDF-and-PDF">¶</a></h2><p>Get a large sample from the restart distribution.</p>
+<h2 id="Tests-for-Capped-CDF-and-PDF">Tests for Capped CDF and PDF<a class="anchor-link" href="#Tests-for-Capped-CDF-and-PDF">¶</a></h2><p>Get a large sample from the restart distribution.</p>
 </div>
 </div>
 </div>
@@ -2612,7 +2612,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Tests-for-truncated-mean">Tests for truncated mean<a class="anchor-link" href="#Tests-for-truncated-mean">¶</a></h3>
+<h3 id="Tests-for-Truncated-Mean">Tests for Truncated Mean<a class="anchor-link" href="#Tests-for-Truncated-Mean">¶</a></h3>
 </div>
 </div>
 </div>
@@ -2658,7 +2658,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Alternative-expressions-for-expected-capped-runtime-$T$">Alternative expressions for expected capped runtime $T$<a class="anchor-link" href="#Alternative-expressions-for-expected-capped-runtime-$T$">¶</a></h3><p>I have used the expression below for expected capped runtime.</p>
+<h3 id="Alternative-Expressions-for-Expected-Capped-Runtime-$T$">Alternative Expressions for Expected Capped Runtime $T$<a class="anchor-link" href="#Alternative-Expressions-for-Expected-Capped-Runtime-$T$">¶</a></h3><p>I have used the expression below for expected capped runtime.</p>
 <p>$$
 T(\tau,\omega) = \mathbb{E}_p[t |t \le \tau] + \frac{1-p(t \le \tau)}{p(t \le \tau)} \cdot (\omega + \tau).
 $$</p>
@@ -2709,7 +2709,7 @@ $$</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="PDF-and-CDF-of-non-uniform-policies">PDF and CDF of non-uniform policies<a class="anchor-link" href="#PDF-and-CDF-of-non-uniform-policies">¶</a></h2>
+<h2 id="PDF-and-CDF-of-Non-Uniform-Policies">PDF and CDF of Non-Uniform Policies<a class="anchor-link" href="#PDF-and-CDF-of-Non-Uniform-Policies">¶</a></h2>
 </div>
 </div>
 </div>
@@ -2899,7 +2899,7 @@ $$</p>
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/';
-    var disqus_title = 'The restart acceleration trick: A cure for the heavy tail of wasted time';
+    var disqus_title = 'The Restart Acceleration Trick: A Cure for the Heavy Tail of Wasted Time';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

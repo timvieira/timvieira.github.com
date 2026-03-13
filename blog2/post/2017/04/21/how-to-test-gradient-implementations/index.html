@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>How to test gradient implementations &mdash; Graduate Descent</title>
+  <title>How to Test Gradient Implementations &mdash; Graduate Descent</title>
   
 
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
@@ -1688,7 +1688,7 @@ body > header nav a:hover {
 <div>
   <article class="hentry" role="article">
     <header>
-      <h1 class="entry-title" style="view-transition-name: title-how-to-test-gradient-implementations">How to test gradient implementations</h1>
+      <h1 class="entry-title" style="view-transition-name: title-how-to-test-gradient-implementations">How to Test Gradient Implementations</h1>
       <p class="meta">
         <time datetime="2017-04-21T00:00:00" pubdate>Apr 21, 2017</time>
         <span class="byline author vcard">
@@ -1718,7 +1718,7 @@ you. To answer the question, everyone.
 <p><strong>Setup</strong>: Suppose we have a function, $f: \mathbb{R}^n \rightarrow \mathbb{R}$,
 and we want to test code that computes $\nabla f$. (Note that these techniques
 also apply when $f$ has multivariate output.)</p>
-<h2 id="finite-difference-approximation">Finite-difference approximation</h2>
+<h2 id="finite-difference-approximation">Finite-Difference Approximation</h2>
 <p>The main way that people test gradient computation is by comparing it against a
 finite-difference (FD) approximation to the gradient:</p>
 <p>$$
@@ -1758,7 +1758,7 @@ to compute it.</p>
    expectation, which you can also test against a brute-force enumeration on
    small examples.</li>
 </ul>
-<h3 id="why-not-just-use-the-fd-approximation-as-your-gradient">Why not just use the FD approximation as your gradient?</h3>
+<h3 id="why-not-just-use-the-fd-approximation-as-your-gradient">Why Not Just Use the FD Approximation as Your Gradient?</h3>
 <p>For low-dimensional functions, you can straight-up use the finite-difference
 approximation instead of rolling code to compute the gradient. (Take $n$
 axis-aligned unit vectors for $\boldsymbol{d}$.) The FD approximation is very
@@ -1815,7 +1815,7 @@ github
 <p>All these measurements (and the scatter plot) can be computed with
 <a href="https://github.com/timvieira/arsenal/blob/master/arsenal/math/compare.py">arsenal.math.compare.{compare}</a>,
 which I find super useful when debugging absolutely anything numerical.</p>
-<h2 id="bonus-tests">Bonus tests</h2>
+<h2 id="bonus-tests">Bonus Tests</h2>
 <p><strong>Testing modules</strong>: You can test the different modules of your code as well
 (assuming you have a composable module-based setup). E.g., I test my DP
 algorithm independent of how the features and downstream loss are computed. You
@@ -1904,7 +1904,7 @@ Other common sources of bugs
     var disqus_shortname = 'graduatedescent';
     var disqus_identifier = 'https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/';
     var disqus_url = 'https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/';
-    var disqus_title = 'How to test gradient implementations';
+    var disqus_title = 'How to Test Gradient Implementations';
     (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
