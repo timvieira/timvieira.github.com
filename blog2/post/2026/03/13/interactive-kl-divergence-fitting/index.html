@@ -2337,7 +2337,6 @@ function handleDragMove(pos) {
     if (dragState.handle.target === 'p') {
         dragState.handle.comp.mu = newMu;
         dragState.handle.comp.sigma = newSigma;
-        computeOptimal();
     } else {
         dragState.handle.q.mu = newMu;
         if (family === 'gaussian') {
@@ -2351,6 +2350,7 @@ function handleDragEnd() {
         dragState.canvas.style.cursor = 'default';
         dragState = null;
         resetAdam();
+        computeOptimal();
     }
 }
 
@@ -2382,6 +2382,7 @@ function setupInteraction(canvas, q, getQBrute) {
         if (startDrag(getPointerPos(canvas, e))) e.preventDefault();
     });
 
+    let wheelTimer = null;
     canvas.addEventListener('wheel', e => {
         const pos = getPointerPos(canvas, e);
         const hit = hitTest(canvas, q, getQBrute(), pos.x, pos.y);
@@ -2390,7 +2391,8 @@ function setupInteraction(canvas, q, getQBrute) {
             const delta = e.deltaY > 0 ? 0.05 : -0.05;
             if (hit.target === 'p') {
                 hit.comp.sigma = Math.max(0.2, hit.comp.sigma + delta);
-                computeOptimal();
+                clearTimeout(wheelTimer);
+                wheelTimer = setTimeout(computeOptimal, 200);
             } else if (family === 'gaussian') {
                 hit.q.sigma = Math.max(0.1, hit.q.sigma + delta);
             }
