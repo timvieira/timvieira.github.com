@@ -1,0 +1,2968 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>Discrete KL Divergence: N-gram Distillation &mdash; Graduate Descent</title>
+  
+
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
+        rel="stylesheet">
+
+  <meta name="author" content="Tim Vieira">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="../favicon.png" rel="icon">
+  <link rel="alternate" type="application/atom+xml" title="Graduate Descent Atom Feed" href="../atom.xml">
+  <link rel="stylesheet" href="../pygments.css">
+
+  <style>
+/* ===== OLD THEME main.css (verbatim) ===== */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
+blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center,
+dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure,
+figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0; padding: 0; border: 0; font: inherit;
+    font-size: 100%; vertical-align: baseline
+}
+
+.mono,
+pre,
+code,
+tt,
+p code,
+p tt,
+li code,
+li tt {
+    font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace;
+}
+
+code {
+    font-size: .85em;
+}
+
+a {
+    color: inherit;
+    decoration: underline;
+}
+
+
+ol,
+ul {
+    list-style: none
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0
+}
+
+caption,
+th,
+td {
+    text-align: left;
+    font-weight: normal;
+    vertical-align: middle
+}
+
+q,
+blockquote {
+    quotes: none
+}
+
+q:before,
+q:after,
+blockquote:before,
+blockquote:after {
+    content: "";
+    content: none
+}
+
+a img {
+    border: none
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+summary {
+    display: block
+}
+
+a:active {
+    color: inherit;
+}
+
+a {
+    -webkit-transition: color 0.3s;
+    -moz-transition: color 0.3s;
+    -o-transition: color 0.3s;
+    transition: color 0.3s
+}
+
+
+body>div {
+    border-bottom: 1px solid #bfbfbf
+}
+
+body>div>div {
+    border-right: 1px solid #e0e0e0
+}
+
+body>header h1 {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.2em;
+    margin-bottom: 0.6667em
+}
+
+body {
+    line-height: 1.5em;
+}
+
+h1 {
+    font-size: 2.2em;
+    line-height: 1.2em;
+}
+
+@media only screen and (min-width: 992px) {
+    body {
+        font-size: 1.15em
+    }
+    h1 {
+        font-size: 2.6em;
+        line-height: 1.2em
+    }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-rendering: optimizelegibility;
+    margin-bottom: 1em;
+    font-weight: 575;
+}
+
+h2,
+section h1 {
+    font-size: 1.5em
+}
+
+h3,
+section h2,
+section section h1 {
+    font-size: 1.3em
+}
+
+h4,
+section h3,
+section section h2,
+section section section h1 {
+    font-size: 1em
+}
+
+h5,
+section h4,
+section section h3 {
+    font-size: .9em
+}
+
+h6,
+section h5,
+section section h4,
+section section section h3 {
+    font-size: .8em
+}
+
+p,
+blockquote,
+ul,
+ol {
+    margin-bottom: 1.5em;
+}
+
+ul {
+    list-style-type: disc;
+}
+
+ul ul {
+    list-style-type: circle;
+    margin-bottom: 0px;
+}
+
+ul ul ul {
+    list-style-type: square;
+    margin-bottom: 0px
+}
+
+ol {
+    list-style-type: decimal
+}
+
+ol ol {
+    list-style-type: lower-alpha;
+    margin-bottom: 0px
+}
+
+ol ol ol {
+    list-style-type: lower-roman;
+    margin-bottom: 0px
+}
+
+ul,
+ul ul,
+ul ol,
+ol,
+ol ul,
+ol ol {
+    margin-left: 0.5em
+}
+
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+sup,
+sub {
+    font-size: 0.8em;
+    position: relative;
+    display: inline-block
+}
+
+sup {
+    top: -.5em
+}
+
+sub {
+    bottom: -.5em
+}
+
+q {
+    font-style: italic
+}
+
+q:before {
+    content: "\201C"
+}
+
+q:after {
+    content: "\201D"
+}
+
+em,
+dfn {
+    font-style: italic
+}
+
+strong,
+dfn {
+    font-weight: bold
+}
+
+del,
+s {
+    text-decoration: line-through
+}
+
+abbr,
+acronym {
+    border-bottom: 1px dotted;
+    cursor: help
+}
+
+sub,
+sup {
+    line-height: 0
+}
+
+hr {
+    margin-bottom: 0.2em
+}
+
+small {
+    font-size: .8em
+}
+
+big {
+    font-size: 1.2em
+}
+
+blockquote {
+    font-style: italic;
+    position: relative;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    padding-left: 1em;
+    border-left: 4px solid rgba(170, 170, 170, 0.5)
+}
+
+blockquote cite {
+    font-style: italic
+}
+
+blockquote cite a {
+    color: #aaa !important;
+    word-wrap: break-word
+}
+
+blockquote cite:before {
+    content: '\2014';
+    padding-right: .3em;
+    padding-left: .3em;
+    color: #aaa
+}
+
+@media only screen and (min-width: 992px) {
+    blockquote {
+        padding-left: 1.5em;
+        border-left-width: 4px
+    }
+}
+
+.pullquote-right:before,
+.pullquote-left:before {
+    padding: 0;
+    border: none;
+    content: attr(data-pullquote);
+    float: right;
+    width: 45%;
+    margin: .5em 0 1em 1.5em;
+    position: relative;
+    top: 7px;
+    font-size: 1.4em;
+    line-height: 1.45em
+}
+
+.pullquote-left:before {
+    float: left;
+    margin: .5em 1.5em 1em 0
+}
+
+.force-wrap,
+article a,
+aside.sidebar a {
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word
+}
+
+.group,
+body>header,
+body>nav,
+body>footer,
+body #content>article,
+body #content>div>article,
+body #content>div>section,
+body div.pagination,
+aside.sidebar,
+#main,
+#content,
+.sidebar {
+    *zoom: 1
+}
+
+.group:after,
+body>header:after,
+body>nav:after,
+body>footer:after,
+body #content>article:after,
+body #content>div>section:after,
+body div.pagination:after,
+#main:after,
+#content:after,
+.sidebar:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+body {
+    -webkit-text-size-adjust: none;
+    max-width: 1200px;
+    position: relative;
+    margin: 0 auto
+}
+
+body>header,
+body>nav,
+body>footer,
+body #content>article,
+body #content>div>article,
+body #content>div>section {
+    padding-left: 18px;
+    padding-right: 18px
+}
+
+@media only screen and (min-width: 480px) {
+    body>header,
+    body>nav,
+    body>footer,
+    body #content>article,
+    body #content>div>article,
+    body #content>div>section {
+        padding-left: 25px;
+        padding-right: 25px
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    body>header,
+    body>nav,
+    body>footer,
+    body #content>article,
+    body #content>div>article,
+    body #content>div>section {
+        padding-left: 35px;
+        padding-right: 35px
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    body>header,
+    body>nav,
+    body>footer,
+    body #content>article,
+    body #content>div>article,
+    body #content>div>section {
+        padding-left: 55px;
+        padding-right: 55px
+    }
+}
+
+body div.pagination {
+    margin-left: 18px;
+    margin-right: 18px
+}
+
+@media only screen and (min-width: 480px) {
+    body div.pagination {
+        margin-left: 25px;
+        margin-right: 25px
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    body div.pagination {
+        margin-left: 35px;
+        margin-right: 35px
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    body div.pagination {
+        margin-left: 55px;
+        margin-right: 55px
+    }
+}
+
+body>header {
+    font-size: 1em;
+    padding-top: 1.5em;
+    padding-bottom: 1.5em
+}
+
+#content {
+    overflow: hidden
+}
+
+#content>div,
+#content>article {
+    width: 100%
+}
+
+aside.sidebar {
+    float: none;
+    padding: 0 18px 1px;
+}
+
+.flex-content,
+article img,
+article video,
+article .flash-video,
+aside.sidebar img {
+    max-width: 100%;
+    height: auto
+}
+
+.basic-alignment.left,
+article img.left,
+article video.left,
+article .left.flash-video,
+aside.sidebar img.left {
+    float: left;
+    margin-right: 1.5em
+}
+
+.basic-alignment.right,
+article img.right,
+article video.right,
+article .right.flash-video,
+aside.sidebar img.right {
+    float: right;
+    margin-left: 1.5em
+}
+
+.basic-alignment.center,
+article img.center,
+article video.center,
+article .center.flash-video,
+aside.sidebar img.center {
+    display: block;
+    margin: 0 auto 1.5em
+}
+
+.basic-alignment.left,
+article img.left,
+article video.left,
+article .left.flash-video,
+aside.sidebar img.left,
+.basic-alignment.right,
+article img.right,
+article video.right,
+article .right.flash-video,
+aside.sidebar img.right {
+    margin-bottom: .8em
+}
+
+.toggle-sidebar,
+.no-sidebar .toggle-sidebar {
+    display: none
+}
+
+@media only screen and (min-width: 750px) {
+    body.sidebar-footer aside.sidebar {
+        float: none;
+        width: auto;
+        clear: left;
+        margin: 0;
+        padding: 0 35px 1px;
+    }
+    body.sidebar-footer aside.sidebar section.odd,
+    body.sidebar-footer aside.sidebar section.even {
+        float: left;
+        width: 48%
+    }
+    body.sidebar-footer aside.sidebar section.odd {
+        margin-left: 0
+    }
+    body.sidebar-footer aside.sidebar section.even {
+        margin-left: 4%
+    }
+    body.sidebar-footer aside.sidebar.thirds section {
+        width: 30%;
+        margin-left: 5%
+    }
+    body.sidebar-footer aside.sidebar.thirds section.first {
+        margin-left: 0;
+        clear: both
+    }
+}
+
+body.sidebar-footer #content {
+    margin-right: 0px
+}
+
+body.sidebar-footer .toggle-sidebar {
+    display: none
+}
+
+@media only screen and (min-width: 550px) {
+    body>header {
+        font-size: 1em
+    }
+}
+
+@media only screen and (min-width: 750px) {
+    aside.sidebar {
+        float: none;
+        width: auto;
+        clear: left;
+        margin: 0;
+        padding: 0 35px 1px;
+    }
+    aside.sidebar section.odd,
+    aside.sidebar section.even {
+        float: left;
+        width: 48%
+    }
+    aside.sidebar section.odd {
+        margin-left: 0
+    }
+    aside.sidebar section.even {
+        margin-left: 4%
+    }
+    aside.sidebar.thirds section {
+        width: 30%;
+        margin-left: 5%
+    }
+    aside.sidebar.thirds section.first {
+        margin-left: 0;
+        clear: both
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    body {
+        -webkit-text-size-adjust: auto
+    }
+    body>header {
+        font-size: 1.2em
+    }
+    #main {
+        padding: 0;
+        margin: 0 auto
+    }
+    #content {
+        overflow: visible;
+        margin-right: 240px;
+        position: relative
+    }
+    .no-sidebar #content {
+        margin-right: 0;
+        border-right: 0
+    }
+    .collapse-sidebar #content {
+        margin-right: 240px
+    }
+    #content>div,
+    #content>article {
+        padding-top: 17.5px;
+        padding-bottom: 17.5px;
+        float: left
+    }
+    aside.sidebar {
+        width: 210px;
+        padding: 0 15px 15px;
+        background: none;
+        clear: none;
+        float: left;
+        margin: 0 -100% 0 0
+    }
+    aside.sidebar section {
+        width: auto;
+        margin-left: 0
+    }
+    aside.sidebar section.odd,
+    aside.sidebar section.even {
+        float: none;
+        width: auto;
+        margin-left: 0
+    }
+    .collapse-sidebar aside.sidebar {
+        float: none;
+        width: auto;
+        clear: left;
+        margin: 0;
+        padding: 0 35px 1px;
+    }
+    .collapse-sidebar aside.sidebar section.odd,
+    .collapse-sidebar aside.sidebar section.even {
+        float: left;
+        width: 48%
+    }
+    .collapse-sidebar aside.sidebar section.odd {
+        margin-left: 0
+    }
+    .collapse-sidebar aside.sidebar section.even {
+        margin-left: 4%
+    }
+    .collapse-sidebar aside.sidebar.thirds section {
+        width: 30%;
+        margin-left: 5%
+    }
+    .collapse-sidebar aside.sidebar.thirds section.first {
+        margin-left: 0;
+        clear: both
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    body>header {
+        font-size: 1.3em
+    }
+    #content {
+        margin-right: 300px
+    }
+    #content>div,
+    #content>article {
+        padding-top: 27.5px;
+        padding-bottom: 27.5px
+    }
+    aside.sidebar {
+        width: 260px;
+        padding: 1.2em 20px 20px
+    }
+    .collapse-sidebar aside.sidebar {
+        padding-left: 55px;
+        padding-right: 55px
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    ul,
+    ol {
+        margin-left: 0
+    }
+}
+
+body>header h1 {
+    display: inline-block;
+    margin: 0;
+}
+
+body>header h1 a,
+body>header h1 a:visited,
+body>header h1 a:hover {
+    text-decoration: none
+}
+
+body>header h2 {
+    margin: .2em 0 0;
+    font-size: 1em;
+    font-weight: normal
+}
+
+body>nav {
+    position: relative;
+    padding-top: .35em;
+    padding-bottom: .35em
+}
+
+body>nav form {
+    -webkit-background-clip: padding;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+    margin: 0;
+    padding: 0
+}
+
+body>nav ul {
+    display: none
+}
+
+@media only screen and (min-width: 550px) {
+    body>nav {
+        font-size: .9em
+    }
+    body>nav ul {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        *zoom: 1;
+        float: left;
+        display: block;
+        padding-top: .15em
+    }
+    body>nav ul li {
+        list-style-image: none;
+        list-style-type: none;
+        margin-left: 0;
+        white-space: nowrap;
+        display: inline;
+        float: left;
+        padding-left: 0;
+        padding-right: 0
+    }
+    body>nav ul li:first-child,
+    body>nav ul li.first {
+        padding-left: 0
+    }
+    body>nav ul li:last-child {
+        padding-right: 0
+    }
+    body>nav ul li.last {
+        padding-right: 0
+    }
+    body>nav ul.subscription {
+        margin-left: .8em;
+        float: right
+    }
+    body>nav ul.subscription li:last-child a {
+        padding-right: 0
+    }
+    body>nav ul li {
+        margin: 0
+    }
+    body>nav a {
+        text-shadow: #ebebeb 0 1px;
+        float: left;
+        text-decoration: none;
+        font-size: 1.1em;
+        padding: .1em 0;
+        line-height: 1.5em
+    }
+    body>nav a:visited {
+
+    }
+    body>nav a:hover {
+        text-decoration: underline;
+    }
+    body>nav li+li {
+        margin-left: .8em
+    }
+    body>nav li+li a {
+        padding-left: .8em;
+        border-left: 1px solid #dedede
+    }
+    body>nav form {
+        float: right;
+        text-align: left;
+        padding-left: .8em;
+        width: 175px
+    }
+    body>nav form .search {
+        width: 93%;
+        font-size: .95em;
+        line-height: 1.2em
+    }
+    body>nav fieldset.mobile-nav {
+        display: none
+    }
+    body>nav fieldset[role=search] {
+        width: 99%
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    body>nav form {
+        width: 215px
+    }
+}
+
+article {
+    margin: 0;
+    padding-top: 0em
+}
+
+article header {
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+    margin-bottom: 0em;
+}
+
+article header h1 {
+    margin: 0
+}
+
+article header h1 a {
+    text-decoration: none
+}
+
+article header h1 a:hover {
+    text-decoration: underline
+}
+
+article header p {
+    font-size: .9em;
+    color: #aaa;
+    margin: 0;
+}
+
+article header p.meta {
+    margin-top: 1em;
+}
+
+article header p.meta time {
+    text-transform: uppercase;
+    size: 1.5em;
+    display: block;
+}
+
+@media only screen and (min-width: 768px) {
+    article header {
+        margin-bottom: 1.5em;
+    }
+}
+
+article h2 {
+    padding-top: 0.8em;
+}
+
+.comments {
+    margin-top: 0.8em;
+    padding-top: 0.8em;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
+}
+
+.entry-content article h2:first-child,
+article header+h2 {
+    padding-top: 0
+}
+
+article h2:first-child,
+article header+h2 {
+    background: none
+}
+
+article .feature {
+    padding-top: .5em;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') bottom left repeat-x;
+    font-size: 2.0em;
+    font-style: italic;
+    line-height: 1.3em
+}
+
+article img,
+article video,
+article .flash-video {
+    -webkit-border-radius: 0.3em;
+    -moz-border-radius: 0.3em;
+    -ms-border-radius: 0.3em;
+    -o-border-radius: 0.3em;
+    border-radius: 0.3em;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border: #fff 0.5em solid
+}
+
+article video,
+article .flash-video {
+    margin: 0 auto 1.5em
+}
+
+article video {
+    display: block;
+    width: 100%
+}
+
+article>footer {
+    padding-bottom: 2.5em;
+    margin-top: 2em
+}
+
+article>footer p.meta {
+    margin-bottom: .8em;
+    font-size: .85em;
+    clear: both;
+    overflow: hidden
+}
+
+.blog-index article+article {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x
+}
+
+#content .blog-index {
+    padding-top: 0;
+    padding-bottom: 0
+}
+
+#content .blog-index article {
+    padding-top: 2em
+}
+
+#content .blog-index article header {
+    background: none;
+    padding-bottom: 0
+}
+
+#content .blog-index article h1 {
+    font-size: 2.2em
+}
+
+#content .blog-index article h1 a {
+    color: inherit
+}
+
+#content .blog-index a[rel=full-article] {
+    background: #ebebeb;
+    display: inline-block;
+    padding: .4em .8em;
+    margin-right: .5em;
+    text-decoration: none;
+    color: #666;
+    -webkit-transition: background-color 0.5s;
+    -moz-transition: background-color 0.5s;
+    -o-transition: background-color 0.5s;
+    transition: background-color 0.5s
+}
+
+#content .blog-index a[rel=full-article]:hover {
+    background: #0181eb;
+    text-shadow: none;
+    color: #f8f8f8
+}
+
+#content .blog-index footer {
+    margin-top: 1em
+}
+
+.separator,
+article>footer .byline+time:before,
+article>footer time+time:before,
+article>footer .comments:before,
+article>footer .byline ~ .categories:before {
+    content: "\2022 ";
+    padding: 0 .4em 0 .2em;
+    display: inline-block
+}
+
+article>header a {
+    text-decoration: none;
+}
+article>header a:hover {
+    text-decoration: underline;
+}
+
+#content div.pagination {
+    text-align: center;
+    font-size: .95em;
+    position: relative;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') top left repeat-x;
+    padding-top: 1.5em;
+    padding-bottom: 1.5em
+}
+
+#content div.pagination a {
+    text-decoration: none;
+    color: #aaa
+}
+
+#content div.pagination a.prev {
+    position: absolute;
+    left: 0
+}
+
+#content div.pagination a.next {
+    position: absolute;
+    right: 0
+}
+
+#archive #content>div,
+#archive #content>div>article {
+    padding-top: 0
+}
+
+#blog-archives {
+    color: #aaa
+}
+
+#blog-archives article {
+    padding: 1em 0 1em;
+    position: relative;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC') bottom left repeat-x
+}
+
+#blog-archives article:last-child {
+    background: none
+}
+
+#blog-archives article footer {
+    padding: 0;
+    margin: 0
+}
+
+#blog-archives h1 {
+    color: #222;
+    margin-bottom: .3em
+}
+
+#blog-archives h2 {
+    display: none
+}
+
+#blog-archives h1 {
+    font-size: 1.5em
+}
+
+#blog-archives h1 a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: normal;
+    display: inline-block
+}
+
+#blog-archives h1 a:hover {
+    text-decoration: underline
+}
+
+#blog-archives a.category,
+#blog-archives time {
+    color: #aaa
+}
+
+#blog-archives .entry-content {
+    display: none
+}
+
+#blog-archives time {
+    font-size: .9em;
+    line-height: 1.2em
+}
+
+#blog-archives time .month,
+#blog-archives time .day {
+    display: inline-block
+}
+
+#blog-archives time .month {
+    text-transform: uppercase
+}
+
+#blog-archives p {
+    margin-bottom: 1em
+}
+
+#blog-archives a,
+#blog-archives .entry-content a {
+    color: inherit
+}
+
+@media only screen and (min-width: 550px) {
+    #blog-archives article {
+        margin-left: 5em
+    }
+    #blog-archives h2 {
+        margin-bottom: .3em;
+        font-weight: normal;
+        display: inline-block;
+        position: relative;
+        top: -1px;
+        float: left
+    }
+    #blog-archives h2:first-child {
+        padding-top: .75em
+    }
+    #blog-archives time {
+        position: absolute;
+        text-align: right;
+        left: 0em;
+        top: 1.8em
+    }
+    #blog-archives .year {
+        display: none
+    }
+    #blog-archives article {
+        padding-left: 4.5em;
+        padding-bottom: .7em
+    }
+    #blog-archives a.category {
+        line-height: 1.1em
+    }
+}
+
+#content>.category article {
+    margin-left: 0;
+    padding-left: 6.8em
+}
+
+#content>.category .year {
+    display: inline
+}
+
+
+.side-shadow-border,
+aside.sidebar section h1,
+aside.sidebar li {
+    -webkit-box-shadow: #fff 0 1px;
+    -moz-box-shadow: #fff 0 1px;
+    box-shadow: #fff 0 1px
+}
+
+aside.sidebar {
+    overflow: hidden;
+    color: #4b4b4b;
+    text-shadow: #fff 0 1px
+}
+
+aside.sidebar section {
+    font-size: .8em;
+    line-height: 1.4em;
+    margin-bottom: 1.5em
+}
+
+aside.sidebar section h1 {
+    margin: 1.5em 0 0;
+    padding-bottom: .2em;
+    border-bottom: 1px solid #e0e0e0
+}
+
+aside.sidebar section h1+p {
+    padding-top: .4em
+}
+
+aside.sidebar img {
+    -webkit-border-radius: 0.3em;
+    -moz-border-radius: 0.3em;
+    -ms-border-radius: 0.3em;
+    -o-border-radius: 0.3em;
+    border-radius: 0.3em;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border: #fff 0.3em solid
+}
+
+aside.sidebar ul {
+    margin-bottom: 0.5em;
+    margin-left: 0
+}
+
+aside.sidebar li {
+    list-style: none;
+    padding: .5em 0;
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0
+}
+
+aside.sidebar li p:last-child {
+    margin-bottom: 0
+}
+
+aside.sidebar a {
+    color: inherit;
+    -webkit-transition: color 0.5s;
+    -moz-transition: color 0.5s;
+    -o-transition: color 0.5s;
+    transition: color 0.5s
+}
+
+@media only screen and (min-width: 768px) {
+    .toggle-sidebar {
+        outline: none;
+        position: absolute;
+        right: -10px;
+        top: 0;
+        bottom: 0;
+        display: inline-block;
+        text-decoration: none;
+        color: #cecece;
+        width: 9px;
+        cursor: pointer
+    }
+    .toggle-sidebar:hover {
+        background: #e9e9e9;
+        background: linear-gradient(left, rgba(224, 224, 224, 0.5), rgba(224, 224, 224, 0))
+    }
+    .toggle-sidebar:after {
+        position: absolute;
+        right: -11px;
+        top: 0;
+        width: 20px;
+        font-size: 1.2em;
+        line-height: 1.1em;
+        padding-bottom: .15em;
+        border-bottom-right-radius: 0.3em;
+        text-align: center;
+        background: #f8f8f8;
+        border-bottom: 1px solid #e0e0e0;
+        border-right: 1px solid #e0e0e0;
+        content: "\00BB";
+        text-indent: -1px
+    }
+    .collapse-sidebar .toggle-sidebar {
+        text-indent: 0px;
+        right: -20px;
+        width: 19px
+    }
+    .collapse-sidebar .toggle-sidebar:hover {
+        background: #e9e9e9
+    }
+    .collapse-sidebar .toggle-sidebar:after {
+        border-left: 1px solid #e0e0e0;
+        text-shadow: #fff 0 1px;
+        content: "\00AB";
+        left: 0px;
+        right: 0;
+        text-align: center;
+        text-indent: 0;
+        border: 0;
+        border-right-width: 0;
+        background: none
+    }
+}
+
+body>footer {
+    font-size: .8em;
+    color: #888;
+    text-shadow: #d9d9d9 0 1px;
+    position: relative;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    margin-bottom: 3em;
+    border-bottom-left-radius: 0.4em;
+    border-bottom-right-radius: 0.4em;
+    z-index: 1
+}
+
+body>footer a {
+    color: #6b6b6b
+}
+
+body>footer p:last-child {
+    margin-bottom: 0
+}
+
+.entry-content table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 1.5em
+}
+
+.entry-content table th {
+    font-weight: bold
+}
+
+.entry-content table td,
+.entry-content table th {
+    border: solid #e0e0e0 1px;
+    padding: 2px
+}
+
+dl {
+    margin: 0 0 1.5em 0
+}
+
+dt {
+    font-weight: bold
+}
+
+dd {
+    margin-left: 1.5em
+}
+
+article li p {
+    padding: 0; margin: 0;
+}
+
+article ul {
+    margin: 0;
+    margin-top: -1.25em;
+    padding: 0;
+    padding-bottom: 1em;
+}
+
+article li {
+    padding: 0;
+    margin: .5em 0 0em 1.5em;
+}
+
+
+/*******************************************************************************************/
+
+.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #f8f8f8; }
+.highlight .c { color: #408080; font-style: italic }
+.highlight .err { border: 1px solid #FF0000 }
+.highlight .k { color: #008000; font-weight: bold }
+.highlight .o { color: #666666 }
+.highlight .ch { color: #408080; font-style: italic }
+.highlight .cm { color: #408080; font-style: italic }
+.highlight .cp { color: #BC7A00 }
+.highlight .cpf { color: #408080; font-style: italic }
+.highlight .c1 { color: #408080; font-style: italic }
+.highlight .cs { color: #408080; font-style: italic }
+.highlight .gd { color: #A00000 }
+.highlight .ge { font-style: italic }
+.highlight .gr { color: #FF0000 }
+.highlight .gh { color: #000080; font-weight: bold }
+.highlight .gi { color: #00A000 }
+.highlight .go { color: #888888 }
+.highlight .gp { color: #000080; font-weight: bold }
+.highlight .gs { font-weight: bold }
+.highlight .gu { color: #800080; font-weight: bold }
+.highlight .gt { color: #0044DD }
+.highlight .kc { color: #008000; font-weight: bold }
+.highlight .kd { color: #008000; font-weight: bold }
+.highlight .kn { color: #008000; font-weight: bold }
+.highlight .kp { color: #008000 }
+.highlight .kr { color: #008000; font-weight: bold }
+.highlight .kt { color: #B00040 }
+.highlight .m { color: #666666 }
+.highlight .s { color: #BA2121 }
+.highlight .na { color: #7D9029 }
+.highlight .nb { color: #008000 }
+.highlight .nc { color: #0000FF; font-weight: bold }
+.highlight .no { color: #880000 }
+.highlight .nd { color: #AA22FF }
+.highlight .ni { color: #999999; font-weight: bold }
+.highlight .ne { color: #D2413A; font-weight: bold }
+.highlight .nf { color: #0000FF }
+.highlight .nl { color: #A0A000 }
+.highlight .nn { color: #0000FF; font-weight: bold }
+.highlight .nt { color: #008000; font-weight: bold }
+.highlight .nv { color: #19177C }
+.highlight .ow { color: #AA22FF; font-weight: bold }
+.highlight .w { color: #bbbbbb }
+.highlight .mb { color: #666666 }
+.highlight .mf { color: #666666 }
+.highlight .mh { color: #666666 }
+.highlight .mi { color: #666666 }
+.highlight .mo { color: #666666 }
+.highlight .sa { color: #BA2121 }
+.highlight .sb { color: #BA2121 }
+.highlight .sc { color: #BA2121 }
+.highlight .dl { color: #BA2121 }
+.highlight .sd { color: #BA2121; font-style: italic }
+.highlight .s2 { color: #BA2121 }
+.highlight .se { color: #BB6622; font-weight: bold }
+.highlight .sh { color: #BA2121 }
+.highlight .si { color: #BB6688; font-weight: bold }
+.highlight .sx { color: #008000 }
+.highlight .sr { color: #BB6688 }
+.highlight .s1 { color: #BA2121 }
+.highlight .ss { color: #19177C }
+.highlight .bp { color: #008000 }
+.highlight .fm { color: #0000FF }
+.highlight .vc { color: #19177C }
+.highlight .vg { color: #19177C }
+.highlight .vi { color: #19177C }
+.highlight .vm { color: #19177C }
+.highlight .il { color: #666666 }
+
+/**********************************************************************************/
+.prompt {
+    display: none !important;
+}
+
+.anchor-link {
+    display: none;
+}
+
+pre {
+    overflow-x: auto;
+    line-height: 1.45em;
+    font-size: 14px;
+    padding: 1em;
+    color: #666;
+    margin: 0;
+    margin-bottom: 2em;
+    border: 1px solid #ddd;
+}
+
+.inner_cell, .input_area{ margin: 0; padding: 0}
+.input {
+}
+
+body>footer {
+    display: none;
+}
+
+article>footer {
+}
+
+body>header,
+body>header h1 {
+    padding-bottom: 0;
+}
+
+
+article h1 {
+    font-size: 2em;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.sidebar a {
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    text-decoration: underline;
+}
+
+div.derivation {
+    background-color: #efefef;
+}
+
+.separator,
+article>header .byline+time:before,
+article>header time+time:before,
+article>header .comments:before,
+article>header .byline ~ .categories:before {
+    content: "";
+    padding: 0 .4em 0 .2em;
+    display: block;
+}
+
+body {
+    background-color: #fffff8;
+}
+
+
+#content {
+    border: none !important;
+}
+
+body {
+    font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+    font-size: 16pt;
+}
+
+.output_wrapper {
+    margin-bottom: 1.5em;
+}
+
+.tag {
+    text-decoration: none;
+}
+a.tag:hover {
+    text-decoration: underline;
+}
+
+.tag:before {
+    content: none;
+}
+
+/* ===== END OLD THEME main.css ===== */
+
+/* ===== Additions for modern nbconvert (jp-* classes) ===== */
+.jp-Collapser { display: none; }
+.jp-Cell { margin-bottom: 0; }
+.jp-Cell-inputWrapper,
+.jp-Cell-outputWrapper { margin: 0; padding: 0; }
+.jp-InputArea { margin: 0; padding: 0; }
+.jp-CodeMirrorEditor { margin: 0; padding: 0; }
+.jp-OutputArea { margin-bottom: 1em; }
+.jp-OutputArea-child { margin: 0; }
+.jp-RenderedText pre { border: none; padding: 0.5em 1em; margin-bottom: 0; color: #333; }
+.jp-RenderedImage img { max-width: 100%; height: auto; }
+.jp-RenderedHTMLCommon { font-family: inherit; font-size: inherit; line-height: inherit; }
+.jp-RenderedHTMLCommon p { margin-bottom: 1.5em; }
+.jp-RenderedHTMLCommon h2,
+.jp-RenderedHTMLCommon h3 { margin-top: 1em; }
+.jp-MarkdownCell .jp-InputArea { padding: 0; }
+.cm-editor { margin: 0; }
+
+html { overflow-y: scroll; }
+
+/* Tag filtering — fade then collapse */
+#blog-archives article {
+    transition: opacity 0.25s ease;
+}
+#blog-archives article.fading {
+    opacity: 0;
+}
+#blog-archives article.hidden {
+    display: none;
+}
+#blog-archives h2.hidden {
+    display: none;
+}
+aside.sidebar .tag,
+#blog-archives .tag {
+    display: inline-block;
+    line-height: 1.1em;
+    padding: 0 0.15em;
+    margin: 0.2em 0.1em;
+    border-radius: 0.2em;
+    background-color: #f3f3ed;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+#blog-archives .tag {
+    font-size: 0.75em;
+}
+aside.sidebar .tag.active,
+#blog-archives .tag.active,
+.tag.active {
+    background-color: #d0d0c4;
+}
+.tag.disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Inline nav next to site title */
+body > header hgroup {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+body > header nav {
+    font-size: 0.65em;
+    margin-right: 240px;
+}
+@media only screen and (min-width: 992px) {
+    body > header nav {
+        margin-right: 300px;
+    }
+}
+@media only screen and (max-width: 767px) {
+    body > header nav {
+        margin-right: 0;
+    }
+}
+body > header nav a {
+    text-decoration: none;
+    color: #888;
+    margin-left: 0.6em;
+}
+body > header nav a:hover {
+    text-decoration: underline;
+    color: #333;
+}
+
+/* Collapsible derivations */
+details.derivation {
+    background-color: #f2f2f2;
+    border: thin solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+details.derivation > summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+details.derivation > summary::-webkit-details-marker {
+    display: none;
+}
+details.derivation > summary::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #333;
+    margin-right: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+details.derivation[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.derivation[open] > summary {
+    padding-bottom: 0.75em;
+}
+details.derivation::details-content {
+    transition: content-visibility 0.3s allow-discrete, opacity 0.3s ease;
+    opacity: 0;
+}
+details.derivation[open]::details-content {
+    opacity: 1;
+}
+
+/* Page transition */
+@view-transition { navigation: auto; }
+::view-transition-old(main-content) {
+    animation: fadeOut 0.25s ease forwards;
+}
+::view-transition-new(main-content) {
+    animation: fadeIn 0.3s ease;
+}
+::view-transition-old(article-body) {
+    animation: fadeOut 0.2s ease forwards;
+}
+::view-transition-new(article-body) {
+    animation: fadeIn 0.5s ease 0.6s both;
+}
+#main {
+    view-transition-name: main-content;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+  </style>
+
+  <!-- MathJax 3 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true,
+      },
+      chtml: {
+        scale: 1,
+      },
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+    <h1><a href="../index.html">Graduate Descent</a></h1>
+    <nav role="navigation">
+      <a href="https://timvieira.github.io/">About</a>
+      <a href="../index.html">Archive</a>
+    </nav>
+  </hgroup></header>
+  <div id="main">
+    <div id="content">
+
+
+
+<div>
+  <article class="hentry" role="article">
+    <header>
+      <h1 class="entry-title" style="view-transition-name: title-discrete-kl-divergence-n-gram-distillation">Discrete KL Divergence: N-gram Distillation</h1>
+      <p class="meta">
+        <time datetime="2026-03-13T00:00:00" pubdate>Mar 13, 2026</time>
+        <span class="byline author vcard">
+          by <span class="fn">Tim Vieira</span>
+        </span>
+        
+        <br>
+        <span class="tags">
+          <a class="tag" href="../index.html#tag=statistics">statistics</a> <a class="tag" href="../index.html#tag=machine-learning">machine-learning</a> <a class="tag" href="../index.html#tag=probability">probability</a> <a class="tag" href="../index.html#tag=interactive">interactive</a>
+        </span>
+        
+      </p>
+    </header>
+    <div class="entry-content" style="view-transition-name: article-body">
+      <p>In the <a href="/blog/kl-fitting-interactive/">continuous KL demo</a>, we watched
+forward and reverse KL fit a Gaussian to a mixture (see also <a href="/blog/kl-variational/">KL-divergence as
+an objective function</a>). Now let's move to <strong>discrete
+distributions</strong>, framed as language model distillation.</p>
+<p>A <strong>teacher</strong> assigns probabilities to 3-word phrases from an 8-word vocabulary
+(512 total sequences, but only a handful have nonzero mass). A <strong>student</strong>
+n-gram model tries to match the teacher by minimizing KL divergence. The n-gram
+order controls expressiveness:</p>
+<ul>
+<li><strong>Unigram</strong> ($n{=}1$): each position independent&mdash;can't capture word correlations.</li>
+<li><strong>Bigram</strong> ($n{=}2$): each word depends on the previous&mdash;pairwise dependencies.</li>
+<li><strong>Trigram</strong> ($n{=}3$): full joint over all three positions&mdash;can represent anything.</li>
+</ul>
+<p>Watch how $\textbf{KL}(p \| q)$ (forward) and $\textbf{KL}(q \| p)$ (reverse)
+produce different students, especially when the model is too simple to match the
+teacher exactly.</p>
+<div id="dkl-container">
+<style>
+#dkl-container {
+    margin: 1.5em 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+#dkl-container * { box-sizing: border-box; }
+#dkl-container p { margin: 0; }
+.dkl-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    background: #f7f7f7;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+.dkl-controls label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+.dkl-controls select, .dkl-controls button {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
+.dkl-controls button { font-weight: 600; }
+.dkl-controls button:hover { background: #eee; }
+.dkl-ngram-btn.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+.dkl-ngram-btn.active:hover { background: #555; }
+.dkl-sliders {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+.dkl-sliders label { font-weight: 600; color: #555; }
+.dkl-sliders input[type=range] { flex: 1; min-width: 50px; }
+.dkl-editor {
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.dkl-editor-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+.dkl-editor-header .dkl-add-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+.dkl-editor-header select {
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+.dkl-editor-header button {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+.dkl-editor-header button:hover { background: #eee; }
+.dkl-support-list {
+    padding: 4px 8px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+.dkl-sup-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+}
+.dkl-sup-label {
+    width: 110px;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+    color: #444;
+}
+.dkl-sup-track {
+    flex: 1;
+    height: 14px;
+    background: #eee;
+    border-radius: 3px;
+    position: relative;
+    cursor: ew-resize;
+}
+.dkl-sup-bar {
+    height: 100%;
+    background: rgba(0,0,0,0.25);
+    border-radius: 3px;
+    min-width: 2px;
+}
+.dkl-sup-val {
+    font-size: 11px;
+    color: #888;
+    width: 38px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.dkl-sup-rm {
+    font-size: 14px;
+    color: #bbb;
+    cursor: pointer;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+    border: none;
+    background: none;
+    padding: 0;
+}
+.dkl-sup-rm:hover { color: #e44; }
+.dkl-panel-label {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 0 2px 4px;
+    color: #333;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.dkl-kl-val {
+    font-weight: 400;
+    font-size: 12px;
+    color: #888;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+}
+.dkl-panel {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    min-height: 40px;
+}
+.dkl-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+}
+.dkl-bar-label {
+    width: 110px;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+    color: #444;
+}
+.dkl-bar-track {
+    flex: 1;
+    height: 16px;
+    background: #f5f5f5;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+}
+.dkl-bar-p {
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    background: rgba(0,0,0,0.12);
+    border-radius: 3px;
+}
+.dkl-bar-q {
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    border-radius: 3px;
+}
+.dkl-bar-q-fwd { background: rgba(220, 50, 50, 0.5); }
+.dkl-bar-q-rev { background: rgba(50, 100, 220, 0.5); }
+.dkl-bar-vals {
+    font-size: 11px;
+    color: #888;
+    width: 38px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.dkl-wasted {
+    font-size: 12px;
+    color: #888;
+    padding: 3px 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.dkl-wasted-bar {
+    display: inline-block;
+    height: 8px;
+    border-radius: 2px;
+    min-width: 0;
+}
+.dkl-wasted-bar-fwd { background: rgba(220, 50, 50, 0.4); }
+.dkl-wasted-bar-rev { background: rgba(50, 100, 220, 0.4); }
+.dkl-legend {
+    font-size: 11px;
+    font-weight: 400;
+    color: #999;
+}
+.dkl-legend-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+.dkl-panel-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.dkl-panel-row .dkl-panel {
+    flex: 1;
+    min-width: 0;
+}
+canvas.dkl-stats-canvas {
+    display: block;
+    width: 220px;
+    min-height: 150px;
+    flex-shrink: 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+@media (max-width: 600px) {
+    .dkl-panel-row { flex-direction: column; }
+    canvas.dkl-stats-canvas { width: 100%; height: 160px; }
+    .dkl-sup-label, .dkl-bar-label { width: 80px; font-size: 10px; }
+    .dkl-sup-val, .dkl-bar-vals { width: 32px; font-size: 10px; }
+}
+</style>
+
+<div class="dkl-controls">
+    <label>N-gram:</label>
+    <button class="dkl-ngram-btn active" data-n="1">1</button>
+    <button class="dkl-ngram-btn" data-n="2">2</button>
+    <button class="dkl-ngram-btn" data-n="3">3</button>
+    <label style="margin-left:6px">Preset:</label>
+    <select id="dkl-preset">
+        <option value="simple">Simple</option>
+        <option value="correlated">Correlated</option>
+        <option value="zipf">Zipf-like</option>
+        <option value="ambiguous">Ambiguous</option>
+    </select>
+    <button id="dkl-reset">Reset</button>
+</div>
+<div class="dkl-sliders">
+<p><label>Speed:</label>
+    <input type="range" id="dkl-speed" min="1" max="50" value="2">
+    <label>LR:</label>
+    <input type="range" id="dkl-lr" min="0" max="100" value="50"></p>
+</div>
+
+<div class="dkl-editor">
+<div class="dkl-editor-header">
+        <span>Teacher distribution</span>
+        <div class="dkl-add-group">
+            <select id="dkl-add-w1"></select>
+            <select id="dkl-add-w2"></select>
+            <select id="dkl-add-w3"></select>
+            <button id="dkl-add-btn">+ Add</button>
+</div>
+    </div>
+    <div class="dkl-support-list" id="dkl-support-list">
+
+</div>
+</div>
+
+<div class="dkl-panel-label">
+<p>KL(p&thinsp;||&thinsp;q) &mdash; forward / inclusive
+    <span class="dkl-kl-val" id="dkl-kl-fwd"></span>
+    <span class="dkl-legend">
+        <span class="dkl-legend-swatch" style="background:rgba(0,0,0,0.12)"></span>p
+        <span class="dkl-legend-swatch" style="background:rgba(220,50,50,0.5);margin-left:4px"></span>q
+    </span></p>
+</div>
+<div class="dkl-panel-row">
+<div class="dkl-panel" id="dkl-panel-fwd">
+</div>
+<canvas class="dkl-stats-canvas" id="dkl-stats-fwd"></canvas>
+</div>
+<div class="dkl-wasted" id="dkl-wasted-fwd">
+<p>Outside support: <span></span>
+    <span class="dkl-wasted-bar dkl-wasted-bar-fwd"></span></p>
+</div>
+
+<div style="height: 8px;">
+
+</div>
+
+<div class="dkl-panel-label">
+<p>KL(q&thinsp;||&thinsp;p) &mdash; reverse / exclusive
+    <span class="dkl-kl-val" id="dkl-kl-rev"></span>
+    <span class="dkl-legend">
+        <span class="dkl-legend-swatch" style="background:rgba(0,0,0,0.12)"></span>p
+        <span class="dkl-legend-swatch" style="background:rgba(50,100,220,0.5);margin-left:4px"></span>q
+    </span></p>
+</div>
+<div class="dkl-panel-row">
+<div class="dkl-panel" id="dkl-panel-rev">
+</div>
+<canvas class="dkl-stats-canvas" id="dkl-stats-rev"></canvas>
+</div>
+<div class="dkl-wasted" id="dkl-wasted-rev">
+<p>Outside support: <span></span>
+    <span class="dkl-wasted-bar dkl-wasted-bar-rev"></span></p>
+</div>
+
+<script>
+(function() {
+"use strict";
+
+// ===== Constants =====
+var V = 8, T = 3, N_SEQ = V * V * V; // 512
+var VOCAB = ["the", "a", "big", "small", "cat", "dog", "sat", "ran"];
+var LOG_ZERO = -20; // penalty for log(0) in reverse KL
+
+function seqStr(s) { return VOCAB[s[0]] + " " + VOCAB[s[1]] + " " + VOCAB[s[2]]; }
+function seqIdx(s) { return s[0] * V * V + s[1] * V + s[2]; }
+function idxToSeq(i) { return [Math.floor(i / (V * V)), Math.floor(i / V) % V, i % V]; }
+
+// ===== Presets =====
+var PRESETS = {
+    simple: [
+        { seq: [0,4,6], p: 1/6 },
+        { seq: [0,5,7], p: 1/6 },
+        { seq: [1,4,7], p: 1/6 },
+        { seq: [1,5,6], p: 1/6 },
+        { seq: [2,4,6], p: 1/6 },
+        { seq: [3,5,7], p: 1/6 }
+    ],
+    correlated: [
+        { seq: [0,4,6], p: 0.20 },
+        { seq: [0,4,7], p: 0.05 },
+        { seq: [0,5,6], p: 0.05 },
+        { seq: [0,5,7], p: 0.20 },
+        { seq: [1,2,4], p: 0.125 },
+        { seq: [1,2,5], p: 0.125 },
+        { seq: [1,3,4], p: 0.125 },
+        { seq: [1,3,5], p: 0.125 }
+    ],
+    zipf: [
+        { seq: [0,4,6], p: 0.35 },
+        { seq: [0,5,7], p: 0.15 },
+        { seq: [1,4,7], p: 0.10 },
+        { seq: [2,5,6], p: 0.08 },
+        { seq: [3,4,7], p: 0.07 },
+        { seq: [0,2,4], p: 0.06 },
+        { seq: [1,5,6], p: 0.05 },
+        { seq: [0,3,5], p: 0.05 },
+        { seq: [2,4,7], p: 0.05 },
+        { seq: [1,2,5], p: 0.04 }
+    ],
+    ambiguous: [
+        { seq: [0,4,6], p: 0.125 },
+        { seq: [0,5,6], p: 0.125 },
+        { seq: [0,4,7], p: 0.125 },
+        { seq: [0,5,7], p: 0.125 },
+        { seq: [1,2,4], p: 0.125 },
+        { seq: [1,3,5], p: 0.125 },
+        { seq: [1,2,5], p: 0.125 },
+        { seq: [1,3,4], p: 0.125 }
+    ]
+};
+
+// ===== State =====
+var support = [];
+var teacher = new Float64Array(N_SEQ); // lookup: idx -> p
+var ngramOrder = 1;
+var stepsPerFrame = 2;
+var baseLR = 0.1;
+var dragging = null; // {idx, startX, startP}
+
+// Student logits and Adam states (forward and reverse)
+var logitsFwd, logitsRev;
+var adamFwd, adamRev;
+
+// ===== N-gram helpers =====
+function getLogitCount(n) {
+    // pos1: V logits (always), pos2: numCtx(1,n)*V, pos3: numCtx(2,n)*V
+    var nc1 = 1, nc2 = (n === 1) ? 1 : V, nc3 = (n === 1) ? 1 : (n === 2) ? V : V * V;
+    return V + nc2 * V + nc3 * V;
+}
+
+function getOffsets(n) {
+    var o1 = 0;
+    var nc2 = (n === 1) ? 1 : V;
+    var o2 = V;
+    var o3 = V + nc2 * V;
+    return [o1, o2, o3];
+}
+
+function numCtx(pos, n) {
+    if (pos === 0) return 1;
+    if (pos === 1) return (n === 1) ? 1 : V;
+    return (n === 1) ? 1 : (n === 2) ? V : V * V;
+}
+
+function getCtx(pos, n, x) {
+    if (pos === 0) return 0;
+    if (pos === 1) return (n === 1) ? 0 : x[0];
+    if (n === 1) return 0;
+    if (n === 2) return x[1];
+    return x[0] * V + x[1];
+}
+
+// Softmax a slice of a logit array, return Float64Array of probs
+function softmax(logits, off, sz) {
+    var mx = -Infinity;
+    for (var i = 0; i < sz; i++) { var v = logits[off + i]; if (v > mx) mx = v; }
+    var out = new Float64Array(sz);
+    var s = 0;
+    for (var i = 0; i < sz; i++) { out[i] = Math.exp(logits[off + i] - mx); s += out[i]; }
+    for (var i = 0; i < sz; i++) out[i] /= s;
+    return out;
+}
+
+// Precompute all conditional distributions: probs[pos][ctx] = Float64Array(V)
+function precomputeProbs(logits, n) {
+    var offsets = getOffsets(n);
+    var probs = [[], [], []];
+    for (var pos = 0; pos < 3; pos++) {
+        var nc = numCtx(pos, n);
+        for (var c = 0; c < nc; c++) {
+            probs[pos].push(softmax(logits, offsets[pos] + c * V, V));
+        }
+    }
+    return probs;
+}
+
+function seqProb(probs, n, x) {
+    return probs[0][0][x[0]]
+         * probs[1][getCtx(1, n, x)][x[1]]
+         * probs[2][getCtx(2, n, x)][x[2]];
+}
+
+function seqLogProb(probs, n, x) {
+    return Math.log(probs[0][0][x[0]] + 1e-30)
+         + Math.log(probs[1][getCtx(1, n, x)][x[1]] + 1e-30)
+         + Math.log(probs[2][getCtx(2, n, x)][x[2]] + 1e-30);
+}
+
+// ===== Teacher lookup =====
+function rebuildTeacher() {
+    teacher.fill(0);
+    for (var i = 0; i < support.length; i++) {
+        teacher[seqIdx(support[i].seq)] = support[i].p;
+    }
+}
+
+// ===== KL and gradients =====
+function computeForwardKL(logits, n) {
+    var probs = precomputeProbs(logits, n);
+    var offsets = getOffsets(n);
+    var count = getLogitCount(n);
+    var grad = new Float64Array(count);
+    var kl = 0;
+
+    // Accumulate marginals for gradient
+    // grad[off + c*V + v] = q(v|c) * margCtx(c) - margP(c, v)
+    // where margCtx(c) = Σ_{x in support, ctx_pos(x)=c} p(x)
+    //       margP(c,v) = Σ_{x in support, ctx_pos(x)=c, x_pos=v} p(x)
+    var margCtx = [[], [], []];
+    var margPcv = [[], [], []];
+    for (var pos = 0; pos < 3; pos++) {
+        var nc = numCtx(pos, n);
+        for (var c = 0; c < nc; c++) {
+            margCtx[pos].push(0);
+            margPcv[pos].push(new Float64Array(V));
+        }
+    }
+
+    for (var i = 0; i < support.length; i++) {
+        var x = support[i].seq;
+        var px = support[i].p;
+        if (px <= 0) continue;
+        kl += px * (Math.log(px) - seqLogProb(probs, n, x));
+        for (var pos = 0; pos < 3; pos++) {
+            var c = getCtx(pos, n, x);
+            margCtx[pos][c] += px;
+            margPcv[pos][c][x[pos]] += px;
+        }
+    }
+
+    for (var pos = 0; pos < 3; pos++) {
+        var nc = numCtx(pos, n);
+        var off = offsets[pos];
+        for (var c = 0; c < nc; c++) {
+            var qp = probs[pos][c];
+            var mc = margCtx[pos][c];
+            var mp = margPcv[pos][c];
+            for (var v = 0; v < V; v++) {
+                grad[off + c * V + v] = qp[v] * mc - mp[v];
+            }
+        }
+    }
+
+    // Wasted mass
+    var massInSupport = 0;
+    for (var i = 0; i < support.length; i++) {
+        massInSupport += seqProb(probs, n, support[i].seq);
+    }
+
+    return { kl: kl, grad: grad, wasted: 1 - massInSupport, probs: probs };
+}
+
+function computeReverseKL(logits, n) {
+    var probs = precomputeProbs(logits, n);
+    var offsets = getOffsets(n);
+    var count = getLogitCount(n);
+
+    // Accumulators for gradient: A[pos][c][v] and B[pos][c]
+    var A = [[], [], []], B = [[], [], []];
+    for (var pos = 0; pos < 3; pos++) {
+        var nc = numCtx(pos, n);
+        for (var c = 0; c < nc; c++) {
+            A[pos].push(new Float64Array(V));
+            B[pos].push(0);
+        }
+    }
+
+    var kl = 0;
+    for (var idx = 0; idx < N_SEQ; idx++) {
+        var x = idxToSeq(idx);
+        var qx = seqProb(probs, n, x);
+        if (qx < 1e-30) continue;
+        var logqx = Math.log(qx);
+        var px = teacher[idx];
+        var logpx = px > 0 ? Math.log(px) : LOG_ZERO;
+        var R = logqx - logpx;
+        kl += qx * R;
+        var qR = qx * R;
+        for (var pos = 0; pos < 3; pos++) {
+            var c = getCtx(pos, n, x);
+            A[pos][c][x[pos]] += qR;
+            B[pos][c] += qR;
+        }
+    }
+
+    // grad[c][v] = A[c][v] - q(v|c) * B[c]
+    var grad = new Float64Array(count);
+    for (var pos = 0; pos < 3; pos++) {
+        var nc = numCtx(pos, n);
+        var off = offsets[pos];
+        for (var c = 0; c < nc; c++) {
+            var qp = probs[pos][c];
+            var bc = B[pos][c];
+            for (var v = 0; v < V; v++) {
+                grad[off + c * V + v] = A[pos][c][v] - qp[v] * bc;
+            }
+        }
+    }
+
+    // Wasted mass
+    var massInSupport = 0;
+    for (var i = 0; i < support.length; i++) {
+        massInSupport += seqProb(probs, n, support[i].seq);
+    }
+
+    return { kl: kl, grad: grad, wasted: 1 - massInSupport, probs: probs };
+}
+
+// ===== Adam optimizer =====
+function makeAdam(count) {
+    return { m: new Float64Array(count), v: new Float64Array(count), t: 0 };
+}
+
+function adamStep(logits, grad, state, lr) {
+    var beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+    state.t++;
+    var lrD = lr / (1 + 0.0005 * state.t);
+    var bc1 = 1 - Math.pow(beta1, state.t);
+    var bc2 = 1 - Math.pow(beta2, state.t);
+    for (var i = 0; i < logits.length; i++) {
+        state.m[i] = beta1 * state.m[i] + (1 - beta1) * grad[i];
+        state.v[i] = beta2 * state.v[i] + (1 - beta2) * grad[i] * grad[i];
+        logits[i] -= lrD * (state.m[i] / bc1) / (Math.sqrt(state.v[i] / bc2) + eps);
+    }
+}
+
+// ===== Initialization =====
+function initStudent() {
+    var count = getLogitCount(ngramOrder);
+    logitsFwd = new Float64Array(count);
+    logitsRev = new Float64Array(count);
+    for (var i = 0; i < count; i++) {
+        logitsFwd[i] = (Math.random() - 0.5) * 0.2;
+        logitsRev[i] = (Math.random() - 0.5) * 0.2;
+    }
+    adamFwd = makeAdam(count);
+    adamRev = makeAdam(count);
+}
+
+function resetAdam() {
+    var count = getLogitCount(ngramOrder);
+    adamFwd = makeAdam(count);
+    adamRev = makeAdam(count);
+}
+
+function loadPreset(name) {
+    var p = PRESETS[name];
+    support = p.map(function(s) { return { seq: s.seq.slice(), p: s.p }; });
+    renormalize();
+    rebuildTeacher();
+    initStudent();
+    rebuildAllDOM();
+}
+
+function renormalize() {
+    var total = 0;
+    for (var i = 0; i < support.length; i++) total += support[i].p;
+    if (total > 0) for (var i = 0; i < support.length; i++) support[i].p /= total;
+}
+
+// ===== Sufficient statistics: n-gram counts =====
+var statsFwdCanvas = document.getElementById('dkl-stats-fwd');
+var statsRevCanvas = document.getElementById('dkl-stats-rev');
+
+// Compute pooled n-gram counts from a distribution over sequences.
+// For order k, extracts all k-grams from each 3-word sequence and sums.
+// Returns Float64Array of size V^k.
+function ngramCounts(probs, n, order) {
+    var size = Math.pow(V, order);
+    var counts = new Float64Array(size);
+    for (var idx = 0; idx < N_SEQ; idx++) {
+        var x = idxToSeq(idx);
+        var qx = seqProb(probs, n, x);
+        if (qx < 1e-20) continue;
+        for (var start = 0; start <= T - order; start++) {
+            var gi = 0;
+            for (var k = 0; k < order; k++) gi = gi * V + x[start + k];
+            counts[gi] += qx;
+        }
+    }
+    return counts;
+}
+
+function teacherNgramCounts(order) {
+    var size = Math.pow(V, order);
+    var counts = new Float64Array(size);
+    for (var i = 0; i < support.length; i++) {
+        var x = support[i].seq, px = support[i].p;
+        for (var start = 0; start <= T - order; start++) {
+            var gi = 0;
+            for (var k = 0; k < order; k++) gi = gi * V + x[start + k];
+            counts[gi] += px;
+        }
+    }
+    return counts;
+}
+
+// Decode an n-gram index back to a label string
+function ngramLabel(gi, order) {
+    var words = [];
+    for (var k = order - 1; k >= 0; k--) {
+        words[k] = VOCAB[gi % V];
+        gi = Math.floor(gi / V);
+    }
+    return words.join(' ');
+}
+
+// Cached display list — rebuilt only when teacher or n-gram order changes
+var cachedStatsItems = null;
+var cachedStatsOrder = -1;
+
+function rebuildStatsItems() {
+    var order = ngramOrder;
+    var pCounts = teacherNgramCounts(order);
+    var items = [];
+    var size = Math.pow(V, order);
+    for (var gi = 0; gi < size; gi++) {
+        if (pCounts[gi] > 0) {
+            items.push({ gi: gi, label: ngramLabel(gi, order), p: pCounts[gi], qFwd: 0, qRev: 0 });
+        }
+    }
+    items.sort(function(a, b) { return b.p - a.p; });
+    if (items.length > 24) items.length = 24;
+    cachedStatsItems = items;
+    cachedStatsOrder = order;
+}
+
+function resizeCanvas(canvas) {
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var w = Math.round(rect.width * dpr);
+    var h = Math.round(rect.height * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+    }
+}
+
+function drawStats(canvas, qCounts, colorRgba) {
+    resizeCanvas(canvas);
+    if (!cachedStatsItems || cachedStatsItems.length === 0) return;
+    var items = cachedStatsItems;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    var dpr = window.devicePixelRatio || 1;
+    var W = canvas.width, H = canvas.height;
+    var titleH = 14 * dpr;
+    var labelH = 50 * dpr; // space for rotated labels
+    var padL = 4 * dpr, padR = 4 * dpr;
+    var plotH = H - titleH - labelH;
+    var plotW = W - padL - padR;
+    var n = items.length;
+    var groupW = plotW / n;
+    var barW = Math.max(2, Math.min(groupW * 0.35, 8 * dpr));
+    var gapInner = Math.max(1, barW * 0.15);
+    var baseline = titleH + plotH;
+
+    // Find max for scaling
+    var maxVal = 0;
+    for (var i = 0; i < n; i++) {
+        var qv = qCounts[items[i].gi];
+        if (items[i].p > maxVal) maxVal = items[i].p;
+        if (qv > maxVal) maxVal = qv;
+    }
+    maxVal = Math.max(maxVal, 0.01) * 1.15;
+
+    // Title
+    ctx.fillStyle = '#888';
+    ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(ngramOrder + '-gram counts: p vs q', W / 2, 11 * dpr);
+
+    // Baseline
+    ctx.strokeStyle = '#e8e8e8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, baseline);
+    ctx.lineTo(W - padR, baseline);
+    ctx.stroke();
+
+    for (var i = 0; i < n; i++) {
+        var center = padL + (i + 0.5) * groupW;
+        var pH = (items[i].p / maxVal) * (plotH - 4 * dpr);
+        var qH = (qCounts[items[i].gi] / maxVal) * (plotH - 4 * dpr);
+
+        // Teacher bar (gray)
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(center - barW - gapInner / 2, baseline - pH, barW, Math.max(pH, 0.5));
+
+        // Student bar (colored)
+        ctx.fillStyle = colorRgba;
+        ctx.fillRect(center + gapInner / 2, baseline - qH, barW, Math.max(qH, 0.5));
+
+        // Rotated label
+        ctx.save();
+        ctx.translate(center, baseline + 4 * dpr);
+        ctx.rotate(-Math.PI / 3);
+        ctx.fillStyle = '#999';
+        ctx.font = (7.5 * dpr) + 'px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(items[i].label, 0, 0);
+        ctx.restore();
+    }
+}
+
+// ===== DOM references =====
+var supportListEl = document.getElementById('dkl-support-list');
+var panelFwdEl = document.getElementById('dkl-panel-fwd');
+var panelRevEl = document.getElementById('dkl-panel-rev');
+var klFwdEl = document.getElementById('dkl-kl-fwd');
+var klRevEl = document.getElementById('dkl-kl-rev');
+var wastedFwdEl = document.getElementById('dkl-wasted-fwd');
+var wastedRevEl = document.getElementById('dkl-wasted-rev');
+
+// Bar element references (rebuilt when support changes)
+var supBarEls = [];   // [{track, bar, val}]
+var fwdBarEls = [];   // [{pBar, qBar, valSpan}]
+var revBarEls = [];
+
+// Sort support by probability descending, rebuild all DOM
+function rebuildAllDOM() {
+    support.sort(function(a, b) { return b.p - a.p; });
+    rebuildTeacher();
+    rebuildStatsItems();
+    rebuildSupportDOM();
+    rebuildPanelDOM(panelFwdEl, 'fwd');
+    rebuildPanelDOM(panelRevEl, 'rev');
+}
+
+function rebuildSupportDOM() {
+    supportListEl.innerHTML = '';
+    supBarEls = [];
+    for (var i = 0; i < support.length; i++) {
+        var row = document.createElement('div');
+        row.className = 'dkl-sup-row';
+
+        var label = document.createElement('span');
+        label.className = 'dkl-sup-label';
+        label.textContent = seqStr(support[i].seq);
+
+        var track = document.createElement('div');
+        track.className = 'dkl-sup-track';
+        track.dataset.idx = i;
+
+        var bar = document.createElement('div');
+        bar.className = 'dkl-sup-bar';
+        track.appendChild(bar);
+
+        var val = document.createElement('span');
+        val.className = 'dkl-sup-val';
+
+        var rm = document.createElement('button');
+        rm.className = 'dkl-sup-rm';
+        rm.textContent = '\u00d7';
+        rm.dataset.idx = i;
+
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(val);
+        row.appendChild(rm);
+        supportListEl.appendChild(row);
+
+        supBarEls.push({ track: track, bar: bar, val: val });
+    }
+    updateSupportBars();
+}
+
+function updateSupportBars() {
+    var maxP = 0;
+    for (var i = 0; i < support.length; i++) if (support[i].p > maxP) maxP = support[i].p;
+    maxP = Math.max(maxP, 0.01);
+    for (var i = 0; i < support.length; i++) {
+        var pct = (support[i].p / maxP) * 100;
+        supBarEls[i].bar.style.width = pct + '%';
+        supBarEls[i].val.textContent = support[i].p.toFixed(3);
+    }
+}
+
+function rebuildPanelDOM(panelEl, direction) {
+    panelEl.innerHTML = '';
+    var barEls = [];
+    for (var i = 0; i < support.length; i++) {
+        var row = document.createElement('div');
+        row.className = 'dkl-bar-row';
+
+        var label = document.createElement('span');
+        label.className = 'dkl-bar-label';
+        label.textContent = seqStr(support[i].seq);
+
+        var track = document.createElement('div');
+        track.className = 'dkl-bar-track';
+
+        var pBar = document.createElement('div');
+        pBar.className = 'dkl-bar-p';
+
+        var qBar = document.createElement('div');
+        qBar.className = 'dkl-bar-q dkl-bar-q-' + direction;
+
+        track.appendChild(pBar);
+        track.appendChild(qBar);
+
+        var vals = document.createElement('span');
+        vals.className = 'dkl-bar-vals';
+
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(vals);
+        panelEl.appendChild(row);
+
+        barEls.push({ pBar: pBar, qBar: qBar, valSpan: vals });
+    }
+    if (direction === 'fwd') fwdBarEls = barEls;
+    else revBarEls = barEls;
+}
+
+function updatePanelBars(barEls, probs, n, klVal, wastedMass, direction) {
+    // Compute q for each support sequence
+    var qVals = [];
+    var maxV = 0;
+    for (var i = 0; i < support.length; i++) {
+        var q = seqProb(probs, n, support[i].seq);
+        qVals.push(q);
+        if (support[i].p > maxV) maxV = support[i].p;
+        if (q > maxV) maxV = q;
+    }
+    maxV = Math.max(maxV, 0.001) * 1.05;
+
+    for (var i = 0; i < support.length; i++) {
+        barEls[i].pBar.style.width = (support[i].p / maxV * 100) + '%';
+        barEls[i].qBar.style.width = (qVals[i] / maxV * 100) + '%';
+        barEls[i].valSpan.textContent = qVals[i].toFixed(3);
+    }
+
+    // KL value
+    var klEl = (direction === 'fwd') ? klFwdEl : klRevEl;
+    klEl.textContent = 'KL = ' + klVal.toFixed(4);
+
+    // Wasted mass
+    var wEl = (direction === 'fwd') ? wastedFwdEl : wastedRevEl;
+    var pct = Math.max(0, wastedMass * 100);
+    wEl.querySelector('span').textContent = pct.toFixed(1) + '%';
+    wEl.querySelector('.dkl-wasted-bar').style.width = Math.min(pct, 100) + 'px';
+}
+
+// ===== Interaction: support editor drag =====
+supportListEl.addEventListener('mousedown', function(e) {
+    var track = e.target.closest('.dkl-sup-track');
+    if (track) {
+        var idx = parseInt(track.dataset.idx);
+        startDrag(idx, e.clientX, track);
+        e.preventDefault();
+    }
+});
+supportListEl.addEventListener('touchstart', function(e) {
+    var track = e.target.closest('.dkl-sup-track');
+    if (track && e.touches.length === 1) {
+        var idx = parseInt(track.dataset.idx);
+        startDrag(idx, e.touches[0].clientX, track);
+        e.preventDefault();
+    }
+}, { passive: false });
+
+function startDrag(idx, clientX, track) {
+    dragging = { idx: idx, track: track };
+    handleDragMove(clientX);
+}
+
+function handleDragMove(clientX) {
+    if (!dragging) return;
+    var rect = dragging.track.getBoundingClientRect();
+    var frac = (clientX - rect.left) / rect.width;
+    frac = Math.max(0.01, Math.min(0.98, frac));
+
+    // Set this sequence's share, scale others proportionally
+    var idx = dragging.idx;
+    var oldP = support[idx].p;
+    var otherTotal = 1 - oldP;
+    var newP = frac; // approximate: probability proportional to bar fill
+    // Scale: the bar is displayed as p / maxP, but for dragging we want to
+    // set the absolute probability. Find current maxP:
+    var maxP = 0;
+    for (var i = 0; i < support.length; i++) if (support[i].p > maxP) maxP = support[i].p;
+    newP = frac * Math.max(maxP, 0.01);
+    newP = Math.max(0.005, Math.min(0.99, newP));
+
+    support[idx].p = newP;
+    renormalize();
+    rebuildTeacher();
+    updateSupportBars();
+}
+
+document.addEventListener('mousemove', function(e) {
+    if (dragging) handleDragMove(e.clientX);
+});
+document.addEventListener('touchmove', function(e) {
+    if (dragging && e.touches.length === 1) {
+        handleDragMove(e.touches[0].clientX);
+        e.preventDefault();
+    }
+}, { passive: false });
+document.addEventListener('mouseup', function() {
+    if (dragging) { dragging = null; resetAdam(); rebuildStatsItems(); }
+});
+document.addEventListener('touchend', function() {
+    if (dragging) { dragging = null; resetAdam(); rebuildStatsItems(); }
+});
+
+// ===== Interaction: remove sequence =====
+supportListEl.addEventListener('click', function(e) {
+    var rm = e.target.closest('.dkl-sup-rm');
+    if (rm && support.length > 1) {
+        var idx = parseInt(rm.dataset.idx);
+        support.splice(idx, 1);
+        renormalize();
+        rebuildTeacher();
+        resetAdam();
+        rebuildAllDOM();
+    }
+});
+
+// ===== Interaction: add sequence =====
+var addW1 = document.getElementById('dkl-add-w1');
+var addW2 = document.getElementById('dkl-add-w2');
+var addW3 = document.getElementById('dkl-add-w3');
+[addW1, addW2, addW3].forEach(function(sel) {
+    for (var i = 0; i < V; i++) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = VOCAB[i];
+        sel.appendChild(opt);
+    }
+});
+
+document.getElementById('dkl-add-btn').addEventListener('click', function() {
+    var s = [parseInt(addW1.value), parseInt(addW2.value), parseInt(addW3.value)];
+    // Check if already in support
+    for (var i = 0; i < support.length; i++) {
+        if (support[i].seq[0] === s[0] && support[i].seq[1] === s[1] && support[i].seq[2] === s[2]) {
+            return; // already present
+        }
+    }
+    support.push({ seq: s, p: 1 / (support.length + 1) });
+    renormalize();
+    rebuildTeacher();
+    resetAdam();
+    rebuildAllDOM();
+});
+
+// ===== Interaction: n-gram order =====
+var ngramBtns = document.querySelectorAll('.dkl-ngram-btn');
+ngramBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        ngramOrder = parseInt(this.dataset.n);
+        ngramBtns.forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        initStudent();
+        rebuildStatsItems();
+    });
+});
+
+// ===== Interaction: preset =====
+document.getElementById('dkl-preset').addEventListener('change', function() {
+    loadPreset(this.value);
+});
+
+// ===== Interaction: reset =====
+document.getElementById('dkl-reset').addEventListener('click', function() {
+    initStudent();
+});
+
+// ===== Interaction: speed / LR =====
+document.getElementById('dkl-speed').addEventListener('input', function() {
+    stepsPerFrame = parseInt(this.value);
+});
+document.getElementById('dkl-lr').addEventListener('input', function() {
+    baseLR = 0.01 * Math.pow(100, this.value / 100);
+});
+
+// ===== Animation loop =====
+var lastFwdResult = null, lastRevResult = null;
+
+function frame() {
+    if (!dragging) {
+        for (var i = 0; i < stepsPerFrame; i++) {
+            var fwd = computeForwardKL(logitsFwd, ngramOrder);
+            adamStep(logitsFwd, fwd.grad, adamFwd, baseLR);
+
+            var rev = computeReverseKL(logitsRev, ngramOrder);
+            adamStep(logitsRev, rev.grad, adamRev, baseLR);
+
+            lastFwdResult = fwd;
+            lastRevResult = rev;
+        }
+    } else {
+        // Recompute display values even during drag
+        lastFwdResult = computeForwardKL(logitsFwd, ngramOrder);
+        lastRevResult = computeReverseKL(logitsRev, ngramOrder);
+    }
+
+    if (cachedStatsOrder !== ngramOrder) rebuildStatsItems();
+
+    if (lastFwdResult && fwdBarEls.length === support.length) {
+        updatePanelBars(fwdBarEls, lastFwdResult.probs, ngramOrder,
+                        lastFwdResult.kl, lastFwdResult.wasted, 'fwd');
+        var qFwdCounts = ngramCounts(lastFwdResult.probs, ngramOrder, ngramOrder);
+        drawStats(statsFwdCanvas, qFwdCounts, 'rgba(220, 50, 50, 0.55)');
+    }
+    if (lastRevResult && revBarEls.length === support.length) {
+        updatePanelBars(revBarEls, lastRevResult.probs, ngramOrder,
+                        lastRevResult.kl, lastRevResult.wasted, 'rev');
+        var qRevCounts = ngramCounts(lastRevResult.probs, ngramOrder, ngramOrder);
+        drawStats(statsRevCanvas, qRevCounts, 'rgba(50, 100, 220, 0.55)');
+    }
+
+    requestAnimationFrame(frame);
+}
+
+// ===== Init =====
+loadPreset('simple');
+frame();
+
+})();
+</script>
+</div>
+
+<p><strong>What to look for:</strong></p>
+<ul>
+<li>
+<p><strong>n=1 (unigram):</strong> The student can't capture word correlations. Forward KL
+  (red, top) spreads mass across all supported sequences&mdash;it covers the
+  teacher's support, but wastes mass elsewhere. Reverse KL (blue, bottom)
+  concentrates on a few favorites and keeps wasted mass low. Try the
+  "Correlated" preset to see this clearly.</p>
+</li>
+<li>
+<p><strong>n=2 (bigram):</strong> Pairwise dependencies are captured, and the gap narrows.
+  With "Correlated," bigrams model patterns like "cat&rarr;sat" and
+  "dog&rarr;ran" that unigrams miss entirely.</p>
+</li>
+<li>
+<p><strong>n=3 (trigram):</strong> Full expressiveness&mdash;both KL directions converge to
+  $\approx 0$, perfectly matching the teacher.</p>
+</li>
+<li>
+<p><strong>Wasted mass:</strong> Forward KL ignores mass outside the teacher's
+  support&mdash;the student can freely assign probability to nonsense sequences
+  like "small the big." Reverse KL penalizes this heavily, driving wasted mass
+  to near zero.</p>
+</li>
+<li>
+<p><strong>Ambiguous preset:</strong> Two equally-weighted clusters of phrases. Reverse KL may
+  pick one cluster and abandon the other; forward KL tries to cover both.</p>
+</li>
+<li>
+<p><strong>N-gram counts</strong> (right): Shows the sufficient statistics of the
+  model&mdash;pooled n-gram frequencies under teacher (gray) and student
+  (colored). Forward KL (MLE) is moment-matching: these bars converge exactly.
+  Reverse KL has no such guarantee, so the counts may diverge even at
+  convergence. Switch n-gram order to see unigram, bigram, or trigram counts.</p>
+</li>
+</ul>
+<h4 id="connection-to-real-language-models">Connection to real language models</h4>
+<p>Real language models use the same autoregressive factorization: $p(x_1, \ldots, x_T) = p(\text{eos} \mid x_{\le T}) \prod_{t=1}^{T} p(x_t \mid x_{\lt t})$. A full-context model ($n = T$) is a trigram here. (Our demo fixes sequence length at $T{=}3$, so there is no stopping probability to learn.)</p>
+<p>Knowledge distillation trains a smaller student to match a teacher's output
+distribution. The choice of KL direction matters: forward KL (standard maximum
+likelihood) produces broad, covering students, while reverse KL (used in some
+RLHF variants) produces sharper, more focused ones. The n-gram order is a
+stand-in for model capacity&mdash;a smaller model simply can't represent all the
+teacher's correlations, and <em>how</em> it fails depends on the objective.</p>
+<p>The n-gram model is an exponential family: each conditional $q(x_t \mid
+\text{ctx})$ is a categorical with natural parameters (the logits) and
+sufficient statistics (token indicators). At the MLE solution (forward KL), the
+expected sufficient statistics under $q$ match the observed statistics under
+$p$&mdash;this is the moment-matching property. Reverse KL has no such
+guarantee, so the marginals panel on the right shows how the two directions
+differ in what statistics they preserve.</p>
+    </div>
+  </article>
+
+  <!--
+  <section>
+    <h1 class="comments">Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+      <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+  -->
+</div>
+
+
+
+      
+    </div>
+  </div>
+  <footer role="contentinfo"></footer>
+  <!--
+  
+  <script type="text/javascript">
+    var disqus_shortname = 'graduatedescent';
+    var disqus_identifier = 'https://timvieira.github.io/blog/discrete-kl-divergence-n-gram-distillation/';
+    var disqus_url = 'https://timvieira.github.io/blog/discrete-kl-divergence-n-gram-distillation/';
+    var disqus_title = 'Discrete KL Divergence: N-gram Distillation';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  
+  -->
+  
+</body>
+</html>
