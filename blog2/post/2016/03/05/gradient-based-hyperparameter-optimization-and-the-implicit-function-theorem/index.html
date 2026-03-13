@@ -1820,15 +1820,15 @@ optimization problem wrt $\lambda$,</p>
 = \frac{\partial \mathcal{L}_{\text{dev}}}{\partial \theta} \left( - \left( \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \lambda^\top} \right)
 $$</p>
 <p>Since we don't like (explicit) matrix inverses, we compute $- \left( \frac{
-\partial^2 \mathcal{L}<em _text_train="\text{train">{\text{train}} }{ \partial \theta\, \partial \theta^\top
-} \right)^{-1} \frac{ \partial^2 \mathcal{L}</em>{ \partial \theta\,
+\partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top
+} \right)^{-1} \frac{ \partial^2 \mathcal{L}_{\text{train}} }{ \partial \theta\,
 \partial \lambda^\top}$ as the solution to $\left( \frac{ \partial^2
-\mathcal{L}}} <em _text_train="\text{train">{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right) x
-= -\frac{ \partial^2 \mathcal{L}</em>{ \partial \theta\, \partial
+\mathcal{L}_{\text{train}} }{ \partial \theta\, \partial \theta^\top } \right) x
+= -\frac{ \partial^2 \mathcal{L}_{\text{train}}}{ \partial \theta\, \partial
 \lambda^\top}$. When the Hessian is positive definite, the linear system can be
 solved with conjugate gradient, which conveniently only requires matrix-vector
 products&mdash;i.e., you never have to materialize the Hessian. (Apparently,
-}}<a href="https://en.wikipedia.org/wiki/Matrix-free_methods">matrix-free linear algebra</a>
+<a href="https://en.wikipedia.org/wiki/Matrix-free_methods">matrix-free linear algebra</a>
 is a thing.) In fact, you don't even have to implement the Hessian-vector and
 Jacobian-vector products because they are accurately and efficiently
 approximated with centered differences (see

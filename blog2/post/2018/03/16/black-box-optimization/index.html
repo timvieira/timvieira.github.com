@@ -1773,18 +1773,11 @@ Taylor approximation to $f$ at $x$. (For an in-depth discussion on notions of
 <a href="../../../../../post/2019/04/19/steepest-ascent/">this post</a>.)</p>
 <p><strong>The baseline:</strong> Without access to gradient code, <em>approximating</em> the gradient
 takes $d+1$ function evaluations via the finite-difference approximation to the
-gradient,[ref]Of course, it's better to use the two-sided difference
-approximation to the gradient in practice, which requires $2 \cdot d$ function
-evaluations, not $d+1$.
-[/ref] which I've discussed a
+gradient,<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> which I've discussed a
 <a href="../../../../../post/2014/02/10/gradient-vector-product/">few</a>
 <a href="../../../../../post/2017/04/21/how-to-test-gradient-implementations/">times</a>. This
 shouldn't be surprising since that's the size of the object we're looking for
-anyways![ref]Note that we can get noisy, approximations with much fewer
-than $\mathcal{O}(d)$ evaluations, e.g.,
-<a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation">SPSA</a>
-or even REINFORCE obtain gradients approximations with just $\mathcal{O}(1)$
-evaluations per iteration.[/ref]</p>
+anyways!<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></p>
 <p><strong>Can we do better?</strong> Suppose we had $(d+1)$ arbitrary points
 $\boldsymbol{x}^{(1)}, \ldots, \boldsymbol{x}^{(d+1)}$ in $\mathbb{R}^n$ with
 values $f^{(i)} = f(\boldsymbol{x}^{(i)}).$ Can we find efficiently find a
@@ -1831,9 +1824,9 @@ process: pick the worst point, reflect it through the center of mass, etc.</p>
 </li>
 </ul>
 <center>
-   ![Nelder-Mead animation](https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nelder-Mead_Himmelblau.gif/320px-Nelder-Mead_Himmelblau.gif)
-   <br/>*(animation source: Wikipedia page for Nelder-Mead)*
-   </center>
+<p><img alt="Nelder-Mead animation" src="/blog/images/Nelder-Mead_Himmelblau.gif" />
+   <br/><em>(animation source: Wikipedia page for Nelder-Mead)</em></p>
+</center>
 
 <ul>
 <li>This is exactly the descent direction used in the
@@ -1862,6 +1855,23 @@ reasonable alternative to gradients when they are unavailable (or not useful).</
    is a good starting point for learning more.</li>
 </ul>
 <h3 id="footnotes">Footnotes</h3>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Of course, it's better to use the two-sided difference
+approximation to the gradient in practice, which requires $2 \cdot d$ function
+evaluations, not $d+1$.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Note that we can get noisy, approximations with much fewer
+than $\mathcal{O}(d)$ evaluations, e.g.,
+<a href="https://en.wikipedia.org/wiki/Simultaneous_perturbation_stochastic_approximation">SPSA</a>
+or even REINFORCE obtain gradients approximations with just $\mathcal{O}(1)$
+evaluations per iteration.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
     </div>
   </article>
 

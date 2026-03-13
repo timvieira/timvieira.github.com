@@ -1884,8 +1884,8 @@ categories:</p>
 </li>
 <li>
 <p><strong>intermediate variables</strong> ($\boldsymbol{z}$): $z_i = f_i(z_{\alpha(i)})$ for
-  $1 \le i \le n$, where $\alpha(i)$ is a list of indices from ${1, \ldots,
-  n-1}$ and $z_{\alpha(i)}$ is the subvector of variables needed to evaluate
+  $1 \le i \le n$, where $\alpha(i)$ is a list of indices from $\{1, \ldots,
+  n-1\}$ and $z_{\alpha(i)}$ is the subvector of variables needed to evaluate
   $f_i(\cdot)$. Minor detail: take $f_{1:d}$ to be the identity function.</p>
 </li>
 <li>
@@ -1989,10 +1989,12 @@ satisfied ($\boldsymbol{z}$ equations) and ② the linear system on multipliers 
 satisfied ($\boldsymbol{\lambda}$ equations).</p>
 <p><strong>Input variables</strong> ($\boldsymbol{x}$): Unfortunately, there is no
   closed-form solution to how to set $\boldsymbol{x}$. For this we resort to
-  something like gradient ascent. Conveniently, $\nabla_{!\boldsymbol{x}}
+  something like gradient ascent. Conveniently, $\nabla_{\!\boldsymbol{x}}
   f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}$, which we can use to optimize
   $\boldsymbol{x}$!</p>
-<div id="lagrange-backprop-generalization"></div>
+<div id="lagrange-backprop-generalization">
+
+</div>
 <h3 id="generalizations">Generalizations</h3>
 <p>We can think of these equations for $\boldsymbol{\lambda}$ as a simple <em>linear</em>
 system of equations, which we are solving by back-substitution when we use the
@@ -2072,7 +2074,7 @@ variables.</p>
 </ul>
 <!--
 <center>
-![Levels of enlightenment](/blog/images/backprop-brain-meme.png)
+<p><img alt="Levels of enlightenment" src="/blog/images/backprop-brain-meme.png" /></p>
 </center>
 -->
 

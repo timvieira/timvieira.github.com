@@ -4,7 +4,14 @@
   <link href="https://timvieira.github.io/blog/" rel="alternate"/>
   <link href="https://timvieira.github.io/blog/atom.xml" rel="self"/>
   <id>https://timvieira.github.io/blog/</id>
-  <updated>2021-03-25T00:00:00Z</updated>
+  <updated>2026-03-13T00:00:00Z</updated>
+  <entry>
+    <title>Interactive KL Divergence Fitting</title>
+    <link href="https://timvieira.github.io/blog/post/2026/03/13/interactive-kl-divergence-fitting/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/post/2026/03/13/interactive-kl-divergence-fitting/</id>
+    <updated>2026-03-13T00:00:00Z</updated>
+    <author><name>Tim Vieira</name></author>
+  </entry>
   <entry>
     <title>Fast Rank-One Updates to Matrix Inverse?</title>
     <link href="https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/" rel="alternate"/>
@@ -136,13 +143,6 @@
     <link href="https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/" rel="alternate"/>
     <id>https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/</id>
     <updated>2016-07-04T00:00:00Z</updated>
-    <author><name>Tim Vieira</name></author>
-  </entry>
-  <entry>
-    <title>Sqrt-Biased Sampling</title>
-    <link href="https://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/</id>
-    <updated>2016-06-28T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
 </feed>

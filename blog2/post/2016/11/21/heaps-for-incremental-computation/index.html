@@ -1758,7 +1758,8 @@ form of the quantity we're going to compute is $z = \bigoplus_{i=1}^n w_i$,
 where $\oplus$ is some associative binary operator with identity element
 $\boldsymbol{0}$.</p>
 <details class="derivation">
-<summary>Formal definition</summary>
+<summary>Formal definition
+</summary>
 <ul>
 <li>
 <p>$\boldsymbol{w} \in \boldsymbol{K}^n$</p>
@@ -1884,7 +1885,7 @@ which makes implementation simpler.)</p>
 <p>No zero? No problem. We don't <em>actually</em> require a zero element. So, it's
    fair to augment $\boldsymbol{K} \cup \{ \textsf{null} \}$ where
    $\textsf{null}$ is distinguished value (i.e., $\textsf{null} \notin
-   \boldsymbol{K}$) that *acts* just like a zero after we overload $\oplus$ to
+   \boldsymbol{K}$) that <em>acts</em> just like a zero after we overload $\oplus$ to
    satisfy the definition of a zero (e.g., by adding an if-statement).</p>
 </li>
 <li>
@@ -1916,13 +1917,36 @@ step. But! they are not as efficient as the heap sampler when the distribution
 is being updated. (I'm not sure about whether variants of alias that support
 updates exist.)</p>
 <center>
-
-  | Method |  Sample  |  Update  | Init |
-  | ------ | -------- | -------- | ---- |
-  |  alias |   O(1)   |  O(n)?   | O(n) |
-  |  i-CDF | O(log n) |  O(n)    | O(n) |
-  |  heap  | O(log n) | O(log n) | O(n) |
-
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Sample</th>
+<th>Update</th>
+<th>Init</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alias</td>
+<td>O(1)</td>
+<td>O(n)?</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>i-CDF</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>heap</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(n)</td>
+</tr>
+</tbody>
+</table>
 </center>
 
 <p>Use cases include</p>

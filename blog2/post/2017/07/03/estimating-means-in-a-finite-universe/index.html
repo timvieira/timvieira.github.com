@@ -1775,8 +1775,8 @@ focus on this specific type of estimation problem.
 
 <p><strong>Monte Carlo:</strong> The most well-known approach to this type of problem is Monte
 Carlo (MC) estimation: sample $x^{(1)}, \ldots, x^{(m)}
-\overset{\tiny\text{i.i.d.}}{\sim} p$, return $\widehat{\mu}<em i="i">{\text{MC}} =
-\frac{1}{m} \sum</em>)$. }^m f(x^{(i)<em>Remarks</em>: (1) Monte Carlo can be very
+\overset{\tiny\text{i.i.d.}}{\sim} p$, return $\widehat{\mu}_{\text{MC}} =
+\frac{1}{m} \sum_{i = 1}^m f(x^{(i)})$. <em>Remarks</em>: (1) Monte Carlo can be very
 inefficient because it resamples high-probability items over and over again. (2)
 We can improve efficiency&mdash;measured in $f$ evaluations&mdash;somewhat by
 caching past evaluations of $f$. However, this introduces a serious <em>runtime</em>
@@ -1803,8 +1803,8 @@ seeking a sparse, unbiased approximation to a vector $\boldsymbol{x} \in \mathbb
 our approximation, $\boldsymbol{s}$, to satisfy $\mathbb{E}[\boldsymbol{s}] =
 \boldsymbol{x}$ while $|| \boldsymbol{s} ||_0 \le m$. This will suffice for
 estimating $\mu$ (above) when $\boldsymbol{x}=\boldsymbol{p}$, the vector of
-probabilities, because $\mathbb{E}[\boldsymbol{s}^\top! \boldsymbol{f}] =
-\mathbb{E}[\boldsymbol{s}]^\top! \boldsymbol{f} = \boldsymbol{p}^\top!
+probabilities, because $\mathbb{E}[\boldsymbol{s}^\top\! \boldsymbol{f}] =
+\mathbb{E}[\boldsymbol{s}]^\top\! \boldsymbol{f} = \boldsymbol{p}^\top\!
 \boldsymbol{f} = \mu$ where $\boldsymbol{f}$ is a vector of all $n$ values of
 the function $f$. Obviously, we don't need to evaluate $f$ in places where
 $\boldsymbol{s}$ is zero so it works for our budgeted estimation task. Of
@@ -1858,7 +1858,8 @@ $\tau$ that makes computing $q_i$ easy. Thus, for priority sampling, we can use
 $q_i = p(i \in S | \tau)$. This auxiliary variable adds a tiny bit of extra noise
 to our estimator, which is tantamount to one extra sample (see Szegedy, 2005 below).</p>
 <details class="derivation">
-<summary>Proof of unbiasedness</summary>
+<summary>Proof of unbiasedness
+</summary>
 <p>The following proof is a
 little different from that in the priority sampling papers. I think it's more
 straightforward. More importantly, it shows how we can extend the method to
@@ -1933,7 +1934,7 @@ $$</p>
    $$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
    $$
-   where $q_i = p(i \in S|\tau) = p(k_i \le \tau) = 1-\exp(-x_i !\cdot!
+   where $q_i = p(i \in S|\tau) = p(k_i \le \tau) = 1-\exp(-x_i \!\cdot\!
    \tau)$. This estimator performs about as well as priority sampling and
    inherits the proof of unbiasedness above.</p>
 <ul>
@@ -1956,7 +1957,7 @@ So download the notebook and play with it!</p>
 nice. I've also included PPSWOR, which seems pretty indistinguishable from PS so
 I won't really bother to discuss it. Check out the results!</p>
 <center>
-![Priority sampling vs. Monte Carlo](http://timvieira.github.io/blog/images/ps-mc.png)
+<p><img alt="Priority sampling vs. Monte Carlo" src="../../../../../images/ps-mc.png" /></p>
 </center>
 
 <p>The shaded region indicates the 10th and 90th percentiles over 20,000
@@ -1966,8 +1967,8 @@ x-axis is the sampling budget, $m \le n$.</p>
 actually goes to zero, unlike Monte Carlo, which is still pretty inaccurate even
 at $m=n$. (Note that MC's x-axis measures raw evaluations, not distinct ones.)</p>
 <p><strong>Further reading:</strong> If you liked this post, you might like my other posts
-tagged with <a href="../../../../../tag/sampling.html">sampling</a> and
-<a href="../../../../../tag/reservoir-sampling.html">reservoir sampling</a>.</p>
+tagged with <a href="../../../../../index.html#tag=sampling">sampling</a> and
+<a href="../../../../../index.html#tag=reservoir-sampling">reservoir sampling</a>.</p>
 <ul>
 <li>
 <p>Edith Cohen, "The Magic of Random Sampling"
