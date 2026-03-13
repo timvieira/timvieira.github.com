@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tim Vieira — Research Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Source+Code+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f6f1ea;--ink:#2c2520;--ink-light:#5c534a;--ink-faint:#8a8078;
+    --link:#8b4a3a;--border:rgba(44,37,32,0.12);
+    --font-serif:'Crimson Pro','Georgia',serif;
+    --font-mono:'Source Code Pro','Menlo',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-serif);overflow:hidden;}
+  body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f6f1ea'/%3E%3Crect width='1' height='1' fill='%23ede7dc' opacity='0.3'/%3E%3C/svg%3E");
+    pointer-events:none;z-index:0;}
+  #graph-container{width:100vw;height:100vh;position:relative;cursor:grab;z-index:1;}
+  #graph-container:active{cursor:grabbing;}
+  svg{width:100%;height:100%;}
+  .header{position:fixed;top:0;left:0;right:0;padding:0.7rem 1.5rem;
+    display:flex;align-items:center;gap:1.5rem;z-index:10;
+    background:linear-gradient(to bottom,var(--bg) 70%,transparent);pointer-events:none;}
+  .header>*{pointer-events:auto;}
+  .header h1{font-family:var(--font-serif);font-size:1.3rem;font-weight:700;color:var(--ink);}
+  .header nav{display:flex;gap:1rem;}
+  .header nav a{font-family:var(--font-serif);font-size:0.82rem;font-weight:500;
+    color:var(--link);text-decoration:none;border-bottom:1px solid rgba(139,74,58,0.25);transition:all 0.2s;}
+  .header nav a:hover{border-bottom-color:var(--link);}
+  .modes{position:fixed;top:2.8rem;left:50%;transform:translateX(-50%);z-index:12;
+    display:flex;background:rgba(255,252,247,0.92);border:1px solid var(--border);
+    border-radius:4px;overflow:hidden;box-shadow:0 2px 12px rgba(44,37,32,0.06);}
+  .mode-btn{font-family:var(--font-serif);font-size:0.76rem;font-weight:500;
+    padding:0.35em 0.85em;border:none;background:transparent;color:var(--ink-faint);
+    cursor:pointer;transition:all 0.25s;border-right:1px solid var(--border);white-space:nowrap;}
+  .mode-btn:last-child{border-right:none;}
+  .mode-btn:hover{color:var(--ink-light);background:rgba(44,37,32,0.03);}
+  .mode-btn.active{color:var(--ink);background:rgba(44,37,32,0.06);font-weight:600;}
+  .mode-desc{position:fixed;top:5rem;left:50%;transform:translateX(-50%);z-index:11;
+    font-family:var(--font-serif);font-size:0.73rem;font-style:italic;
+    color:var(--ink-faint);pointer-events:none;text-align:center;
+    transition:opacity 0.4s;max-width:500px;}
+  .legend{position:fixed;bottom:0.5rem;left:0.5rem;right:0.5rem;
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:0.2rem 0.8rem;z-index:10;pointer-events:auto;
+    background:linear-gradient(to top,var(--bg) 60%,transparent);padding:0.5rem 0 0.1rem;}
+  .legend-item{display:flex;align-items:center;gap:0.25rem;font-family:var(--font-serif);
+    font-size:0.68rem;color:var(--ink-light);cursor:pointer;transition:opacity 0.3s;user-select:none;}
+  .legend-item.dimmed{opacity:0.15;}
+  .legend-dot{width:7px;height:7px;border-radius:50%;border:1px solid rgba(44,37,32,0.1);}
+  .card-wall{position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;
+    background:var(--bg);overflow-y:auto;display:none;flex-direction:column;}
+  .card-wall.visible{display:flex;}
+  .card-filters{position:sticky;top:0;z-index:2;padding:3.8rem 1.5rem 0.8rem;
+    background:linear-gradient(to bottom,var(--bg) 85%,transparent);
+    display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;}
+  .card-chip{font-family:var(--font-serif);font-size:0.76rem;font-weight:500;
+    padding:0.3em 0.7em;border:1px solid var(--border);border-radius:4px;
+    background:transparent;color:var(--ink-faint);cursor:pointer;transition:all 0.2s;}
+  .card-chip:hover{color:var(--ink-light);background:rgba(44,37,32,0.03);}
+  .card-chip.active{color:var(--ink);background:rgba(44,37,32,0.06);font-weight:600;
+    border-color:rgba(44,37,32,0.25);}
+  .card-chip-sep{width:1px;height:1.2em;background:var(--border);margin:0 0.15rem;}
+  .card-grid{padding:0.5rem 1.5rem 2rem;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.7rem;}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;
+    cursor:pointer;transition:all 0.2s;background:rgba(255,252,247,0.5);}
+  .card:hover{background:rgba(44,37,32,0.03);border-color:rgba(44,37,32,0.2);
+    transform:translateY(-1px);box-shadow:0 3px 12px rgba(44,37,32,0.06);}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3em;}
+  .card-theme{font-family:var(--font-mono);font-size:0.56rem;text-transform:uppercase;
+    letter-spacing:0.1em;font-weight:500;}
+  .card-kind{font-family:var(--font-mono);font-size:0.56rem;padding:0.15em 0.4em;
+    border-radius:3px;border:1px solid var(--border);}
+  .card-title{font-family:var(--font-serif);font-size:0.92rem;font-weight:600;
+    color:var(--ink);line-height:1.3;margin-bottom:0.25em;}
+  .card-meta{font-family:var(--font-mono);font-size:0.66rem;color:var(--ink-faint);
+    margin-bottom:0.4em;}
+  .card-themes{display:flex;gap:0.2rem;flex-wrap:wrap;}
+  .card-theme-tag{font-family:var(--font-mono);font-size:0.54rem;padding:0.1em 0.35em;
+    border-radius:2px;color:white;opacity:0.75;}
+  .card-award{font-size:0.64rem;color:#8b6914;background:rgba(139,105,20,0.08);
+    padding:0.1em 0.35em;border-radius:2px;margin-left:0.3em;}
+  .card-empty{grid-column:1/-1;text-align:center;padding:3rem;
+    font-family:var(--font-serif);font-size:0.9rem;color:var(--ink-faint);font-style:italic;}
+  .tooltip{position:fixed;pointer-events:none;z-index:20;
+    background:rgba(255,252,247,0.97);border:1px solid var(--border);
+    border-radius:4px;padding:0.6rem 0.8rem;max-width:380px;opacity:0;
+    transition:opacity 0.15s;box-shadow:0 4px 20px rgba(44,37,32,0.1);}
+  .tooltip.visible{opacity:1;}
+  .tooltip-kind{font-family:var(--font-mono);font-size:0.58rem;text-transform:uppercase;
+    letter-spacing:0.1em;margin-bottom:0.2em;opacity:0.5;}
+  .tooltip-title{font-family:var(--font-serif);font-size:0.88rem;font-weight:600;
+    color:var(--ink);margin-bottom:0.1em;line-height:1.25;}
+  .tooltip-meta{font-size:0.7rem;color:var(--ink-faint);margin-bottom:0.1em;line-height:1.3;}
+  .tooltip-venue{font-family:var(--font-mono);font-size:0.66rem;color:var(--ink-light);font-weight:500;}
+  .tooltip-award{display:inline-block;font-size:0.64rem;color:#8b6914;
+    background:rgba(139,105,20,0.08);padding:0.05em 0.3em;border-radius:2px;margin-left:0.3em;}
+  .tooltip-themes{margin-top:0.2em;display:flex;gap:0.2rem;flex-wrap:wrap;}
+  .tooltip-theme{font-family:var(--font-mono);font-size:0.56rem;padding:0.08em 0.28em;
+    border-radius:2px;color:white;opacity:0.8;}
+  .detail-panel{position:fixed;top:4.5rem;right:1.2rem;width:340px;max-height:calc(100vh - 6rem);
+    overflow-y:auto;z-index:25;background:rgba(255,252,247,0.98);border:1px solid var(--border);
+    border-radius:6px;padding:1.1rem 1.2rem;box-shadow:0 6px 30px rgba(44,37,32,0.12);
+    display:none;animation:panelIn 0.2s ease-out;}
+  .detail-panel.visible{display:block;}
+  @keyframes panelIn{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:none;}}
+  .detail-close{position:absolute;top:0.6rem;right:0.7rem;background:none;border:none;
+    font-size:1.1rem;color:var(--ink-faint);cursor:pointer;line-height:1;padding:0.2em;}
+  .detail-close:hover{color:var(--ink);}
+  .detail-kind{font-family:var(--font-mono);font-size:0.6rem;text-transform:uppercase;
+    letter-spacing:0.1em;color:var(--ink-faint);margin-bottom:0.3em;}
+  .detail-title{font-family:var(--font-serif);font-size:1.05rem;font-weight:600;
+    color:var(--ink);line-height:1.3;margin-bottom:0.3em;}
+  .detail-authors{font-family:var(--font-serif);font-size:0.78rem;color:var(--ink-light);
+    line-height:1.4;margin-bottom:0.3em;}
+  .detail-venue{font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-light);
+    font-weight:500;margin-bottom:0.15em;}
+  .detail-award{display:inline-block;font-size:0.68rem;color:#8b6914;
+    background:rgba(139,105,20,0.1);padding:0.1em 0.4em;border-radius:3px;margin-bottom:0.4em;}
+  .detail-themes{display:flex;gap:0.25rem;flex-wrap:wrap;margin-bottom:0.7em;}
+  .detail-theme{font-family:var(--font-mono);font-size:0.58rem;padding:0.12em 0.35em;
+    border-radius:3px;color:white;opacity:0.8;}
+  .detail-links{border-top:1px solid var(--border);padding-top:0.6em;
+    display:flex;gap:0.4rem;flex-wrap:wrap;}
+  .detail-link{font-family:var(--font-serif);font-size:0.78rem;font-weight:500;
+    color:var(--link);text-decoration:none;padding:0.25em 0.55em;
+    border:1px solid rgba(139,74,58,0.2);border-radius:4px;transition:all 0.15s;}
+  .detail-link:hover{background:rgba(139,74,58,0.06);border-color:rgba(139,74,58,0.4);}
+  .detail-neighbors{border-top:1px solid var(--border);margin-top:0.6em;padding-top:0.5em;}
+  .detail-neighbors-label{font-family:var(--font-mono);font-size:0.58rem;
+    text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-faint);margin-bottom:0.3em;}
+  .detail-neighbor{font-family:var(--font-serif);font-size:0.76rem;color:var(--link);
+    cursor:pointer;padding:0.15em 0;display:block;border:none;background:none;
+    text-align:left;width:100%;transition:color 0.15s;}
+  .detail-neighbor:hover{color:var(--ink);}
+  .detail-neighbor-kind{font-family:var(--font-mono);font-size:0.54rem;
+    color:var(--ink-faint);margin-left:0.3em;}
+  .zone-label{font-family:var(--font-serif);font-size:0.7rem;font-weight:600;
+    letter-spacing:0.12em;text-transform:uppercase;fill:var(--ink-faint);opacity:0;
+    pointer-events:none;transition:opacity 0.5s;}
+  .instructions{position:fixed;top:2.8rem;right:1.5rem;font-family:var(--font-serif);
+    font-size:0.7rem;color:var(--ink-faint);text-align:right;line-height:1.5;z-index:10;}
+  @media(max-width:700px){
+    .instructions{display:none;}
+    .modes{top:2.5rem;} .mode-btn{font-size:0.68rem;padding:0.3em 0.6em;}
+    .legend{gap:0.15rem 0.5rem;} .legend-item{font-size:0.6rem;}
+    .header{padding:0.5rem 0.8rem;gap:0.6rem;} .header h1{font-size:1rem;}
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Tim Vieira</h1>
+  <nav>
+    <a href="https://timvieira.github.io/">Home</a>
+    <a href="https://timvieira.github.io/blog/">Blog</a>
+    <a href="https://scholar.google.com/citations?user=Avtv7FkAAAAJ">Scholar</a>
+    <a href="http://github.com/timvieira">GitHub</a>
+  </nav>
+</div>
+<div class="modes">
+  <button class="mode-btn active" data-mode="force">Force</button>
+  <button class="mode-btn" data-mode="timeline">Timeline</button>
+  <button class="mode-btn" data-mode="theme">Theme</button>
+  <button class="mode-btn" data-mode="semantic">Semantic</button>
+  <button class="mode-btn" data-mode="cards">Cards</button>
+</div>
+<div class="card-wall" id="card-wall">
+  <div class="card-filters" id="card-filters"></div>
+  <div class="card-grid" id="card-grid"></div>
+</div>
+<div class="mode-desc" id="mode-desc">force-directed layout · shared themes attract</div>
+<div class="legend" id="legend"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-kind" id="tt-kind"></div>
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-meta" id="tt-meta"></div>
+  <div class="tooltip-venue" id="tt-venue"></div>
+  <div class="tooltip-themes" id="tt-themes"></div>
+</div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" id="detail-close">&#x2715;</button>
+  <div class="detail-kind" id="dp-kind"></div>
+  <div class="detail-title" id="dp-title"></div>
+  <div class="detail-authors" id="dp-authors"></div>
+  <div class="detail-venue" id="dp-venue"></div>
+  <div id="dp-award-wrap"></div>
+  <div class="detail-themes" id="dp-themes"></div>
+  <div class="detail-links" id="dp-links"></div>
+  <div class="detail-neighbors" id="dp-neighbors">
+    <div class="detail-neighbors-label">Connected</div>
+    <div id="dp-neighbor-list"></div>
+  </div>
+</div>
+<div class="instructions">drag · scroll · hover<br>click to pin</div>
+<div id="graph-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// Precomputed UMAP coordinates (35-dim semantic features, cosine distance, UMAP n_neighbors=10, min_dist=0.2)
+// ═══════════════════════════════════════════════
+var SEMANTIC_COORDS = [[0.3783,0.695],[0.2231,0.8317],[0.4639,0.6644],[0.4186,0.6852],[0.3954,0.9026],[0.218,0.7945],[0.3976,0.8943],[0.3939,0.8928],[0.3949,0.9001],[0.1812,0.7642],[0.8294,0.6925],[0.6061,0.6265],[0.6172,0.6144],[0.6162,0.6275],[0.4021,0.8967],[0.6105,0.6126],[0.6363,0.5263],[0.6307,0.5197],[0.281,1],[0.8272,0.6923],[0.8317,0.6937],[0,0.8506],[0.5622,0.87],[0.5602,0.8696],[0.5597,0.8682],[0.6685,0.3688],[0.0088,0.8302],[0.5594,0.8655],[0.0121,0.8424],[0.83,0.6941],[0.4532,0.7656],[0.6255,0.5312],[0.8286,0.693],[0.6065,0.6225],[0.623,0.538],[0.4632,0.7714],[0.6202,0.5396],[0.4592,0.7664],[0.609,0.6063],[0.4512,0.7657],[1,0],[0.2509,0.9974],[0.2481,0.9923],[0.1906,0.9663],[0.2039,0.9736],[0.004,0.9372],[0.096,0.7012],[0.0029,0.9337],[0.0934,0.6952],[0.0926,0.693],[0.0935,0.6924],[0.6739,0.3437],[0.2254,0.9799],[0.6749,0.3402],[0.1698,0.9551],[0.0065,0.9331],[0.6733,0.3473],[0.6732,0.3462],[0.0051,0.9292],[0.1764,0.9562],[0.1787,0.9546],[0.0938,0.695],[0.096,0.6885],[0.9999,0.0001],[0.6748,0.3411],[0.6189,0.5471],[0.6201,0.5431],[0.9998,0.0002],[0.1811,0.9554],[0.9997,0.0003],[0.1995,0.7842],[0.6762,0.3399],[0.0051,0.9291],[0.0078,0.9246],[0.0948,0.6897],[0.2568,0.9906],[0.0954,0.6938],[0.9996,0.0005],[0.6738,0.3443]];
+
+var THEMES={
+  parsing:{label:'Parsing',color:'#3a5a8c'},
+  tokenization:{label:'Tokenization',color:'#6a8a52'},
+  generation:{label:'Controlled Generation',color:'#8c4a3a'},
+  trees:{label:'Trees & Combinatorics',color:'#9a7b3c'},
+  beam:{label:'Beam Search & Gumbel',color:'#3a7a7a'},
+  automata:{label:'Automata & WFSMs',color:'#7a5a8a'},
+  dp:{label:'Dynamic Programming',color:'#5a6a7a'},
+  alignment:{label:'Alignment',color:'#8a5a6a'},
+  semantics:{label:'Semantics & NLU',color:'#6a6a4a'},
+  sampling:{label:'Sampling & Randomness',color:'#b06030'},
+  optimization:{label:'Optimization',color:'#8a7a30'},
+  autodiff:{label:'Autodiff & Gradients',color:'#6a4a3a'},
+  numerical:{label:'Numerical Methods',color:'#5a7a8a'},
+  ml:{label:'ML & CRFs',color:'#5a8a6a'},
+};
+
+var papers=[
+  {id:'p-controlled-gen-25',title:'Fast Controlled Generation from Language Models with Adaptive Weighted Rejection Sampling',authors:'Lipkin, LeBrun, Vigly, Loula, MacIver, Du, Eisner, Cotterell, Mansinghka, O\'Donnell, Lew, Vieira',venue:'CoLM 2025',year:2025,award:'Outstanding Paper',url:'https://arxiv.org/abs/2504.05410',themes:['generation','sampling']},
+  {id:'p-kl-div-25',title:'Better Estimation of the KL Divergence Between Language Models',authors:'Amini, Vieira, Cotterell',venue:'NeurIPS 2025',year:2025,url:'https://arxiv.org/abs/2504.10637',themes:['generation']},
+  {id:'p-syntactic-posterior-25',title:'Syntactic Control of Language Models by Posterior Inference',authors:'Xefteri, Vieira, Cotterell, Amini',venue:'Findings of ACL 2025',year:2025,url:'https://arxiv.org/abs/2506.07154',themes:['generation','parsing']},
+  {id:'p-smc-control-25',title:'Syntactic and Semantic Control of LLMs via Sequential Monte Carlo',authors:'Loula, LeBrun, Du, Lipkin, Pasti, Grand, Liu, Emara, Freedman, Eisner, Cotterell, Mansinghka, Lew, Vieira, O\'Donnell',venue:'ICLR 2025 (oral)',year:2025,url:'https://arxiv.org/abs/2504.13139',themes:['generation','parsing','sampling']},
+  {id:'p-foundations-tok-25',title:'The Foundations of Tokenization: Statistical and Computational Concerns',authors:'Gastaldi, Terilla, Malagutti, DuSell, Vieira, Cotterell',venue:'ICLR 2025',year:2025,url:'https://arxiv.org/abs/2407.11606',themes:['tokenization']},
+  {id:'p-vbon-25',title:'Variational Best-of-N Alignment',authors:'Amini, Vieira, Ash, Cotterell',venue:'ICLR 2025',year:2025,url:'https://arxiv.org/abs/2407.06057',themes:['alignment']},
+  {id:'p-canonical-bpe-25',title:'Language Models over Canonical Byte-Pair Encodings',authors:'Vieira, Liu, Pasti, Emara, DuSell, LeBrun, Giulianelli, Gastaldi, O\'Donnell, Cotterell',venue:'ICML 2025',year:2025,url:'https://arxiv.org/abs/2506.07956',themes:['tokenization']},
+  {id:'p-tokens-chars-25',title:'From Language Models over Tokens to Language Models over Characters',authors:'Vieira, LeBrun, Giulianelli, Gastaldi, DuSell, Terilla, O\'Donnell, Cotterell',venue:'ICML 2025',year:2025,url:'https://arxiv.org/abs/2412.03719',themes:['tokenization']},
+  {id:'p-psycho-tok-24',title:'On the Proper Treatment of Tokenization in Psycholinguistics',authors:'Giulianelli, Malagutti, Gastaldi, DuSell, Vieira, Cotterell',venue:'EMNLP 2024',year:2024,url:'https://arxiv.org/abs/2410.02691',themes:['tokenization']},
+  {id:'p-odpo-24',title:'Direct Preference Optimization with an Offset',authors:'Amini, Vieira, Cotterell',venue:'Findings of ACL 2024',year:2024,url:'https://arxiv.org/abs/2402.10571',themes:['alignment']},
+  {id:'p-dissertation-23',title:'Automating the Analysis and Improvement of Dynamic Programming Algorithms',authors:'Tim Vieira (PhD Dissertation)',venue:'Johns Hopkins 2023',year:2023,url:'https://youtu.be/SUOvgaxFxP4',themes:['dp','parsing']},
+  {id:'p-left-corner-23',title:'An Exploration of Left-Corner Transformations',authors:'Opedal, Tsipidi, Pimentel, Cotterell, Vieira',venue:'EMNLP 2023',year:2023,url:'https://arxiv.org/abs/2311.16258',themes:['parsing']},
+  {id:'p-tag-23',title:'Efficient Algorithms for Recognizing Weighted Tree-Adjoining Languages',authors:'Butoi, Vieira, Cotterell, Chiang',venue:'EMNLP 2023',year:2023,url:'https://arxiv.org/abs/2310.15276',themes:['parsing','automata']},
+  {id:'p-earley-23',title:'Efficient Semiring-Weighted Earley Parsing',authors:'Opedal, Zmigrod, Vieira, Cotterell, Eisner',venue:'ACL 2023',year:2023,url:'https://arxiv.org/abs/2307.02982',themes:['parsing']},
+  {id:'p-formal-bpe-23',title:'A Formal Perspective on Byte-Pair Encoding',authors:'Zouhar, Meister, Gastaldi, Du, Vieira, Sachan, Cotterell',venue:'Findings of ACL 2023',year:2023,url:'https://arxiv.org/abs/2306.16837',themes:['tokenization']},
+  {id:'p-bar-hillel-23',title:'On the Intersection of Context-Free and Regular Languages',authors:'Pasti, Opedal, Pimentel, Vieira, Eisner, Cotterell',venue:'EACL 2023',year:2023,url:'https://arxiv.org/abs/2209.06809',themes:['parsing','automata']},
+  {id:'p-wpda-22',title:'Algorithms for Weighted Pushdown Automata',authors:'Butoi, DuSell, Vieira, Cotterell, Chiang',venue:'EMNLP 2022',year:2022,url:'https://arxiv.org/abs/2210.06884',themes:['automata']},
+  {id:'p-failure-arcs-22',title:'Algorithms for Weighted Finite-State Automata with Failure Arcs',authors:'Svete, Dayan, Cotterell, Vieira, Eisner',venue:'EMNLP 2022',year:2022,url:'https://arxiv.org/abs/2301.06862',themes:['automata']},
+  {id:'p-perm-test-22',title:'Exact Paired-Permutation Testing for Structured Test Statistics',authors:'Zmigrod, Vieira, Cotterell',venue:'NAACL 2022',year:2022,url:'https://arxiv.org/abs/2205.01416',themes:['trees']},
+  {id:'p-automate-dp-21',title:'Automating the Analysis of Parsing Algorithms',authors:'Vieira, Cotterell, Eisner',venue:'Manuscript 2021',year:2021,url:'https://arxiv.org/abs/2512.23665',themes:['dp','parsing']},
+  {id:'p-search-dp-21',title:'Searching for More Efficient Dynamic Programs',authors:'Vieira, Cotterell, Eisner',venue:'Findings of EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.06966',themes:['dp']},
+  {id:'p-cpsbs-21',title:'Conditional Poisson Stochastic Beam Search',authors:'Meister, Amini, Vieira, Cotterell',venue:'EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.11034',themes:['beam','sampling']},
+  {id:'p-dep-sampling-21',title:'Efficient Sampling of Dependency Structures',authors:'Zmigrod, Vieira, Cotterell',venue:'EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.06521',themes:['trees','sampling']},
+  {id:'p-tree-expect-21',title:'Efficient Computation of Expectations under Spanning Tree Distributions',authors:'Zmigrod, Vieira, Cotterell',venue:'TACL 2021',year:2021,url:'https://arxiv.org/abs/2008.12988',themes:['trees']},
+  {id:'p-kbest-trees-21',title:'On Finding the K-best Non-projective Dependency Trees',authors:'Zmigrod, Vieira, Cotterell',venue:'ACL 2021',year:2021,url:'https://arxiv.org/abs/2106.00780',themes:['trees']},
+  {id:'p-wfsm-deriv-21',title:'Higher-order Derivatives of Weighted Finite-state Machines',authors:'Zmigrod, Vieira, Cotterell',venue:'ACL 2021',year:2021,url:'https://arxiv.org/abs/2106.00749',themes:['automata','autodiff']},
+  {id:'p-beam-answer-20',title:'If Beam Search is the Answer, What was the Question?',authors:'Meister, Vieira, Cotterell',venue:'EMNLP 2020',year:2020,award:'Honorable Mention',url:'https://arxiv.org/abs/2010.02650',themes:['beam']},
+  {id:'p-mind-root-20',title:'Please Mind the Root: Decoding Arborescences for Dependency Parsing',authors:'Zmigrod, Vieira, Cotterell',venue:'EMNLP 2020',year:2020,url:'https://arxiv.org/abs/2010.02550',themes:['trees','parsing']},
+  {id:'p-bfbs-20',title:'Best-First Beam Search',authors:'Meister, Vieira, Cotterell',venue:'TACL 2020',year:2020,url:'https://arxiv.org/abs/2007.03909',themes:['beam']},
+  {id:'p-logic-programs-20',title:'Evaluation of Logic Programs with Built-Ins and Aggregation',authors:'Francis-Landau, Vieira, Eisner',venue:'WRLA 2020',year:2020,url:'https://arxiv.org/abs/2010.10503',themes:['dp']},
+  {id:'p-decomp-toolkit-20',title:'The Universal Decompositional Semantics Dataset and Decomp Toolkit',authors:'White, Stengel-Eskin, Vashishtha, Govindarajan, Reisinger, Vieira, et al.',venue:'LREC 2020',year:2020,url:'https://arxiv.org/abs/1909.13851',themes:['semantics']},
+  {id:'p-fb-failure-18',title:'Forward-Backward with Failure Arcs for Variable-Order CRFs',authors:'Vieira, Cotterell, Eisner',venue:'arXiv 2018',year:2018,url:'https://github.com/timvieira/vocrf',themes:['automata','parsing','ml']},
+  {id:'p-dyna-17',title:'Dyna: Toward a Self-Optimizing Declarative Language for ML',authors:'Vieira, Francis-Landau, Filardo, Khorasani, Eisner',venue:'MAPL 2017',year:2017,url:'https://www.youtube.com/watch?v=8ixPuuQVNh8',themes:['dp']},
+  {id:'p-prune-17',title:'Learning to Prune: Exploring the Frontier of Fast and Accurate Parsing',authors:'Vieira, Eisner',venue:'TACL 2017 (oral at ACL)',year:2017,url:'https://doi.org/10.1162/tacl_a_00060',themes:['parsing']},
+  {id:'p-vocrf-16',title:'Speed-Accuracy Tradeoffs in Tagging with Variable-Order CRFs',authors:'Vieira, Cotterell, Eisner',venue:'EMNLP 2016',year:2016,url:'https://aclanthology.org/D16-1206/',themes:['parsing','automata','ml']},
+  {id:'p-decomp-ud-16',title:'Universal Decompositional Semantics on Universal Dependencies',authors:'White, Reisinger, Sakaguchi, Vieira, Zhang, Rudinger, Rawlins, Van Durme',venue:'EMNLP 2016',year:2016,url:'https://aclanthology.org/D16-1177/',themes:['semantics']},
+  {id:'p-morphoseg-16',title:'A Joint Model of Orthography and Morphological Segmentation',authors:'Cotterell, Vieira, Schutze',venue:'NAACL 2016',year:2016,award:'Best Short Paper Runner-up',url:'https://aclanthology.org/N16-1080/',themes:['parsing','ml']},
+  {id:'p-quantities-15',title:'Reasoning about Quantities in Natural Language',authors:'Roy, Vieira, Roth',venue:'TACL 2015',year:2015,url:'http://dx.doi.org/10.1162/tacl_a_00118',themes:['semantics']},
+  {id:'p-grammarless-12',title:'Grammarless Parsing for Joint Inference',authors:'Naradowsky, Vieira, Smith',venue:'COLING 2012',year:2012,url:'https://aclanthology.org/C12-1122/',themes:['parsing']},
+  {id:'p-entailment-09',title:'Relation Alignment for Textual Entailment Recognition',authors:'Sammons, Vydiswaran, Vieira, et al.',venue:'TAC 2009',year:2009,url:'https://tac.nist.gov/2009/',themes:['semantics']},
+];
+var blogs=[
+  {id:'b-rank-one-21',title:'Fast rank-one updates to matrix inverse?',year:2021,tags:'numerical, efficiency',url:'https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/',themes:['numerical']},
+  {id:'b-smallest-indices-21',title:'On the Distribution of the Smallest Indices',year:2021,tags:'sampling-without-replacement, statistics',url:'https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/',themes:['sampling']},
+  {id:'b-order-stats-21',title:'On the Distribution Functions of Order Statistics',year:2021,tags:'sampling-without-replacement, statistics',url:'https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/',themes:['sampling']},
+  {id:'b-inverse-transform-20',title:'Animation of the inverse transform method',year:2020,tags:'sampling, statistics',url:'https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/',themes:['sampling']},
+  {id:'b-truncated-20',title:'Generating truncated random variates',year:2020,tags:'sampling, statistics',url:'https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/',themes:['sampling']},
+  {id:'b-swr-19',title:'Algorithms for sampling without replacement',year:2019,tags:'sampling, Gumbel',url:'https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/',themes:['sampling','beam']},
+  {id:'b-restart-19',title:'The restart acceleration trick',year:2019,tags:'statistics, algorithms',url:'https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/',themes:['optimization']},
+  {id:'b-reservoir-19',title:'Faster reservoir sampling by waiting',year:2019,tags:'sampling, Gumbel',url:'https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/',themes:['sampling','beam']},
+  {id:'b-lr-gradient-19',title:'The likelihood-ratio gradient',year:2019,tags:'optimization, rl',url:'https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/',themes:['optimization','ml']},
+  {id:'b-steepest-19',title:'Steepest ascent',year:2019,tags:'optimization',url:'https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/',themes:['optimization']},
+  {id:'b-blackbox-18',title:'Black-box optimization',year:2018,tags:'optimization, calculus',url:'https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/',themes:['optimization']},
+  {id:'b-backprop-17',title:'Backprop is not just the chain rule',year:2017,tags:'calculus, automatic-differentiation',url:'https://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/',themes:['autodiff']},
+  {id:'b-means-17',title:'Estimating means in a finite universe',year:2017,tags:'sampling, statistics',url:'https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/',themes:['sampling']},
+  {id:'b-test-grad-17',title:'How to test gradient implementations',year:2017,tags:'testing, calculus',url:'https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/',themes:['autodiff','numerical']},
+  {id:'b-counterfactual-16',title:'Counterfactual reasoning and learning from logged data',year:2016,tags:'counterfactual-reasoning, importance-sampling',url:'https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/',themes:['sampling','ml']},
+  {id:'b-heaps-16',title:'Heaps for incremental computation',year:2016,tags:'sampling, datastructures',url:'https://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/',themes:['sampling','dp']},
+  {id:'b-reverse-16',title:'Reversing a sequence with sublinear space',year:2016,tags:'algorithms, automatic-differentiation',url:'https://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/',themes:['autodiff']},
+  {id:'b-grad-fast-16',title:'Evaluating nabla f(x) is as fast as f(x)',year:2016,tags:'calculus, automatic-differentiation',url:'https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/',themes:['autodiff']},
+  {id:'b-sigmoid-16',title:'Fast sigmoid sampling',year:2016,tags:'sampling, Gumbel',url:'https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/',themes:['sampling','beam']},
+  {id:'b-sqrt-16',title:'Sqrt-biased sampling',year:2016,tags:'sampling',url:'https://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/',themes:['sampling']},
+  {id:'b-proposal-16',title:'The optimal proposal distribution is not p',year:2016,tags:'importance-sampling',url:'https://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/',themes:['sampling','generation']},
+  {id:'b-dim-analysis-16',title:'Dimensional analysis of gradient ascent',year:2016,tags:'optimization, calculus',url:'https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/',themes:['optimization']},
+  {id:'b-hyper-16',title:'Gradient-based hyperparameter optimization',year:2016,tags:'calculus, hyperparameter-optimization',url:'https://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/',themes:['optimization','autodiff']},
+  {id:'b-array-16',title:'Multidimensional array index',year:2016,tags:'datastructures',url:'https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/',themes:['numerical']},
+  {id:'b-grad-product-15',title:'Gradient of a product',year:2015,tags:'calculus, automatic-differentiation',url:'https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/',themes:['autodiff','numerical']},
+  {id:'b-crf-same-15',title:'Multiclass logistic regression and CRFs are the same thing',year:2015,tags:'machine-learning, crf',url:'https://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/',themes:['ml','parsing']},
+  {id:'b-crf-deep-15',title:'Conditional random fields as deep learning models?',year:2015,tags:'machine-learning, structured-prediction',url:'https://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/',themes:['ml','parsing']},
+  {id:'b-logreal-15',title:'Log-Real number class',year:2015,tags:'numerical',url:'https://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/',themes:['numerical']},
+  {id:'b-is-14',title:'Importance sampling',year:2014,tags:'importance-sampling',url:'https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/',themes:['sampling','generation']},
+  {id:'b-pnorms-14',title:'Numerically stable p-norms',year:2014,tags:'numerical',url:'https://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/',themes:['numerical']},
+  {id:'b-kl-14',title:'KL-divergence as an objective function',year:2014,tags:'statistics, machine-learning',url:'https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/',themes:['ml','generation']},
+  {id:'b-complex-14',title:'Complex-step derivative',year:2014,tags:'calculus, numerical',url:'https://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/',themes:['autodiff','numerical']},
+  {id:'b-gumbel-reservoir-14',title:'Gumbel-max trick and weighted reservoir sampling',year:2014,tags:'sampling, Gumbel',url:'https://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/',themes:['sampling','beam']},
+  {id:'b-gumbel-14',title:'Gumbel-max trick',year:2014,tags:'sampling, Gumbel',url:'https://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/',themes:['sampling','beam']},
+  {id:'b-grid-14',title:'Rant against grid search',year:2014,tags:'hyperparameter-optimization',url:'https://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/',themes:['optimization']},
+  {id:'b-delta-14',title:'Expected value of a quadratic and the Delta method',year:2014,tags:'statistics',url:'https://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/',themes:['numerical']},
+  {id:'b-viz-14',title:'Visualizing high-dimensional functions with cross-sections',year:2014,tags:'visualization',url:'https://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/',themes:['optimization']},
+  {id:'b-expnorm-14',title:'Exp-normalize trick',year:2014,tags:'numerical',url:'https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/',themes:['numerical']},
+  {id:'b-gvp-14',title:'Gradient-vector product',year:2014,tags:'calculus',url:'https://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/',themes:['autodiff']},
+];
+
+papers.forEach(function(p){p.kind='paper';});
+blogs.forEach(function(b){b.kind='blog';b.authors='';b.venue=b.tags;});
+var allNodes=[].concat(papers,blogs);
+var N=allNodes.length;
+
+// Edges
+var edges=[];
+for(var i=0;i<N;i++)for(var j=i+1;j<N;j++){
+  var a=allNodes[i],b=allNodes[j];
+  var shared=a.themes.filter(function(t){return b.themes.indexOf(t)>=0;});
+  if(!shared.length)continue;
+  var sameKind=a.kind===b.kind,yd=Math.abs(a.year-b.year);
+  var yb=yd<=1?1.5:yd<=2?1.1:yd<=4?0.7:0.35;
+  var str=shared.length*yb*(sameKind?1.0:0.7);
+  if(str>=(sameKind?0.4:0.55))
+    edges.push({source:a.id,target:b.id,shared:shared,strength:str,crossType:!sameKind});
+}
+
+// D3
+var W=window.innerWidth,H=window.innerHeight,MID=W/2;
+var svg=d3.select('#graph-container').append('svg').attr('viewBox',[0,0,W,H]);
+var g=svg.append('g');
+var zoomBehavior=d3.zoom().scaleExtent([0.2,5]).on('zoom',function(e){g.attr('transform',e.transform);});
+svg.call(zoomBehavior);
+
+function nodeR(d){var r=(d.year-2009)/(2025-2009);return(d.kind==='paper'?4:3)+r*(d.kind==='paper'?8:6)+(d.award?3:0);}
+function nodeColor(d){return THEMES[d.themes[0]].color;}
+
+var zoneLeft=g.append('text').attr('class','zone-label').attr('x',W*0.22).attr('y',50).attr('text-anchor','middle').text('PUBLICATIONS');
+var zoneRight=g.append('text').attr('class','zone-label').attr('x',W*0.78).attr('y',50).attr('text-anchor','middle').text('BLOG · GRADUATE DESCENT');
+var barrierLine=g.append('line').attr('x1',MID).attr('y1',30).attr('x2',MID).attr('y2',H-30).attr('stroke','#2c2520').attr('stroke-opacity',0).attr('stroke-width',1).attr('stroke-dasharray','6,6');
+
+var link=g.append('g').selectAll('line').data(edges).join('line')
+  .attr('stroke',function(d){return THEMES[d.shared[0]].color;})
+  .attr('stroke-opacity',function(d){return d.crossType?0.07+d.strength*0.015:0.05+d.strength*0.025;})
+  .attr('stroke-width',function(d){return d.crossType?0.5+d.strength*0.25:0.35+d.strength*0.3;})
+  .attr('stroke-dasharray',function(d){return d.crossType?'3,3':null;});
+
+var node=g.append('g').selectAll('g').data(allNodes).join('g').attr('cursor','pointer')
+  .call(d3.drag().on('start',function(e,d){if(!e.active)simulation.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}).on('drag',function(e,d){d.fx=e.x;d.fy=e.y;}).on('end',function(e,d){if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null;}));
+
+node.each(function(d){var el=d3.select(this);if(d.kind==='paper'){el.append('circle').attr('r',nodeR(d)).attr('fill',nodeColor(d)).attr('fill-opacity',0.75).attr('stroke',nodeColor(d)).attr('stroke-opacity',0.3).attr('stroke-width',1.5);}else{var r=nodeR(d);el.append('rect').attr('x',-r).attr('y',-r).attr('width',r*2).attr('height',r*2).attr('rx',3).attr('ry',3).attr('fill',nodeColor(d)).attr('fill-opacity',0.65).attr('stroke',nodeColor(d)).attr('stroke-opacity',0.25).attr('stroke-width',1.2);}});
+node.filter(function(d){return d.award;}).append('circle').attr('r',function(d){return nodeR(d)+3;}).attr('fill','none').attr('stroke','#9a7b3c').attr('stroke-width',1.5).attr('stroke-dasharray','3,2').attr('stroke-opacity',0.6);
+node.append('text').text(function(d){return "'"+String(d.year).slice(2);}).attr('font-family',"'Source Code Pro',monospace").attr('font-size',function(d){return Math.max(6,nodeR(d)*0.6)+'px';}).attr('fill','white').attr('fill-opacity',0.9).attr('text-anchor','middle').attr('dy','0.35em').attr('pointer-events','none');
+// Store truncated title on each node
+allNodes.forEach(function(d){var t=d.title;if(t.length<=24){d._trunc=t;}else{var w=t.split(/\s+/),l='';for(var k=0;k<w.length;k++){if(l.length>22)break;l+=(l?' ':'')+w[k];}d._trunc=l+'…';}d._scale=1;});
+node.append('text').attr('class','title-label').text(function(d){return d._trunc;}).attr('font-family',"'Crimson Pro',serif").attr('font-size',function(d){return d.kind==='paper'?'8px':'7.5px';}).attr('font-style',function(d){return d.kind==='blog'?'italic':'normal';}).attr('fill',function(d){return nodeColor(d);}).attr('fill-opacity',0.55).attr('text-anchor','middle').attr('dy',function(d){return nodeR(d)+11;}).attr('pointer-events','none');
+
+// Tooltip + Detail Panel + Pinning
+var tooltip=document.getElementById('tooltip'),activeFilter=null;
+var pinnedNode=null;
+var detailPanel=document.getElementById('detail-panel');
+var nodeById={}; allNodes.forEach(function(n){nodeById[n.id]=n;});
+
+function getConnected(d){
+  var conn=new Set([d.id]);
+  edges.forEach(function(l){
+    var s=typeof l.source==='object'?l.source.id:l.source;
+    var t=typeof l.target==='object'?l.target.id:l.target;
+    if(s===d.id)conn.add(t);
+    if(t===d.id)conn.add(s);
+  });
+  return conn;
+}
+
+function highlightNode(d){
+  var conn=getConnected(d);
+  node.selectAll('circle,rect').transition().duration(200)
+    .attr('fill-opacity',function(n){return conn.has(n.id)?0.9:0.08;})
+    .attr('stroke-opacity',function(n){return conn.has(n.id)?0.5:0.02;});
+  node.selectAll('text').transition().duration(200)
+    .attr('fill-opacity',function(n){return conn.has(n.id)?0.9:0.06;});
+  link.transition().duration(200)
+    .attr('stroke-opacity',function(l){var s=typeof l.source==='object'?l.source.id:l.source;var t=typeof l.target==='object'?l.target.id:l.target;return(s===d.id||t===d.id)?0.4+l.strength*0.1:0.01;})
+    .attr('stroke-width',function(l){var s=typeof l.source==='object'?l.source.id:l.source;var t=typeof l.target==='object'?l.target.id:l.target;return(s===d.id||t===d.id)?1.2+l.strength*0.6:0.15;});
+}
+
+function showDetailPanel(d){
+  document.getElementById('dp-kind').textContent=d.kind==='paper'?'Publication':'Blog Post';
+  document.getElementById('dp-title').textContent=d.title;
+  document.getElementById('dp-authors').textContent=d.authors||'';
+  document.getElementById('dp-authors').style.display=d.authors?'':'none';
+  var venueText=d.kind==='paper'?(d.venue||''):(d.year+(d.tags?' · '+d.tags:''));
+  document.getElementById('dp-venue').textContent=venueText;
+  var awardWrap=document.getElementById('dp-award-wrap');
+  if(d.award){awardWrap.innerHTML='<span class="detail-award">'+d.award+'</span>';awardWrap.style.display='';}
+  else{awardWrap.style.display='none';}
+  document.getElementById('dp-themes').innerHTML=d.themes.map(function(t){
+    return'<span class="detail-theme" style="background:'+THEMES[t].color+'">'+THEMES[t].label+'</span>';
+  }).join('');
+
+  // Links
+  var linksEl=document.getElementById('dp-links');
+  var linksHtml='';
+  if(d.url){
+    if(d.url.indexOf('arxiv.org')>=0){
+      linksHtml+='<a class="detail-link" href="'+d.url+'" target="_blank" rel="noreferrer">arXiv</a>';
+      var arxivId=d.url.match(/abs\/(.+)/);
+      if(arxivId)linksHtml+='<a class="detail-link" href="https://arxiv.org/pdf/'+arxivId[1]+'" target="_blank" rel="noreferrer">PDF</a>';
+    }else if(d.url.indexOf('aclanthology.org')>=0){
+      linksHtml+='<a class="detail-link" href="'+d.url+'" target="_blank" rel="noreferrer">ACL Anthology</a>';
+      linksHtml+='<a class="detail-link" href="'+d.url.replace(/\/?$/,'')+'.pdf" target="_blank" rel="noreferrer">PDF</a>';
+    }else if(d.kind==='blog'){
+      linksHtml+='<a class="detail-link" href="'+d.url+'" target="_blank" rel="noreferrer">Read post</a>';
+    }else{
+      linksHtml+='<a class="detail-link" href="'+d.url+'" target="_blank" rel="noreferrer">Open</a>';
+    }
+  }
+  if(d.kind==='paper'&&d.title){
+    linksHtml+='<a class="detail-link" href="https://scholar.google.com/scholar?q='+encodeURIComponent(d.title)+'" target="_blank" rel="noreferrer">Scholar</a>';
+    linksHtml+='<a class="detail-link" href="https://www.semanticscholar.org/search?q='+encodeURIComponent(d.title)+'" target="_blank" rel="noreferrer">Semantic Scholar</a>';
+  }
+  linksEl.innerHTML=linksHtml;
+
+  // Connected neighbors
+  var conn=getConnected(d);
+  conn.delete(d.id);
+  var neighbors=allNodes.filter(function(n){return conn.has(n.id);})
+    .sort(function(a,b){return b.year-a.year||a.title.localeCompare(b.title);});
+  var nbList=document.getElementById('dp-neighbor-list');
+  var nbWrap=document.getElementById('dp-neighbors');
+  if(neighbors.length){
+    nbWrap.style.display='';
+    nbList.innerHTML='';
+    neighbors.forEach(function(nb){
+      var btn=document.createElement('button');
+      btn.className='detail-neighbor';
+      btn.innerHTML=nb.title+'<span class="detail-neighbor-kind">'+nb.kind+'</span>';
+      btn.addEventListener('click',function(e){e.stopPropagation();pinNode(nb);});
+      nbList.appendChild(btn);
+    });
+  }else{nbWrap.style.display='none';}
+
+  detailPanel.classList.add('visible');
+}
+
+function pinNode(d){
+  pinnedNode=d;
+  tooltip.classList.remove('visible');
+  highlightNode(d);
+  showDetailPanel(d);
+}
+
+function unpinNode(){
+  pinnedNode=null;
+  detailPanel.classList.remove('visible');
+  resetHL();
+}
+
+node.on('mouseenter',function(e,d){
+  if(pinnedNode)return;
+  document.getElementById('tt-kind').textContent=d.kind==='paper'?'📄 Publication':'✏️ Blog Post';
+  document.getElementById('tt-title').textContent=d.title;
+  document.getElementById('tt-meta').textContent=d.authors||'';
+  var vh=d.venue||'';if(d.award)vh+=' <span class="tooltip-award">🏆 '+d.award+'</span>';
+  document.getElementById('tt-venue').innerHTML=vh;
+  document.getElementById('tt-themes').innerHTML=d.themes.map(function(t){
+    return'<span class="tooltip-theme" style="background:'+THEMES[t].color+'">'+THEMES[t].label+'</span>';
+  }).join('');
+  tooltip.classList.add('visible');
+  highlightNode(d);
+}).on('mousemove',function(e){
+  if(pinnedNode)return;
+  tooltip.style.left=Math.min(e.clientX+15,innerWidth-400)+'px';
+  tooltip.style.top=Math.min(e.clientY-10,innerHeight-200)+'px';
+}).on('mouseleave',function(){
+  if(pinnedNode)return;
+  tooltip.classList.remove('visible');
+  resetHL();
+}).on('click',function(e,d){
+  e.stopPropagation();
+  if(pinnedNode&&pinnedNode.id===d.id){unpinNode();return;}
+  pinNode(d);
+});
+
+// Click on empty SVG area to unpin
+svg.on('click',function(e){
+  if(e.target.tagName==='svg'||e.target===svg.node()){unpinNode();}
+});
+// Also unpin when clicking the background g area
+g.insert('rect','*').attr('width',W*3).attr('height',H*3).attr('x',-W).attr('y',-H)
+  .attr('fill','transparent').attr('pointer-events','all')
+  .on('click',function(){unpinNode();});
+
+document.getElementById('detail-close').addEventListener('click',function(){unpinNode();});
+
+function resetHL(){if(activeFilter)return;node.selectAll('circle,rect').transition().duration(300).attr('fill-opacity',function(d){return d.kind==='paper'?0.75:0.65;}).attr('stroke-opacity',function(d){return d.kind==='paper'?0.3:0.25;});node.selectAll('text').transition().duration(300).attr('fill-opacity',function(d,i,nodes){var fs=d3.select(nodes[i]).attr('font-size');return(fs==='8px'||fs==='7.5px')?0.55:0.9;});link.transition().duration(300).attr('stroke-opacity',function(d){return d.crossType?0.07+d.strength*0.015:0.05+d.strength*0.025;}).attr('stroke-width',function(d){return d.crossType?0.5+d.strength*0.25:0.35+d.strength*0.3;});}
+
+// Legend
+var legendEl=document.getElementById('legend');
+var shapeLeg=document.createElement('div');shapeLeg.style.cssText='display:flex;gap:0.6rem;margin-right:0.4rem;padding-right:0.6rem;border-right:1px solid rgba(44,37,32,0.12);';shapeLeg.innerHTML='<span style="font-family:var(--font-serif);font-size:0.68rem;color:var(--ink-faint);display:flex;align-items:center;gap:0.2rem;"><svg width="9" height="9"><circle cx="4.5" cy="4.5" r="3.5" fill="var(--ink-faint)" opacity="0.4"/></svg>paper</span><span style="font-family:var(--font-serif);font-size:0.68rem;color:var(--ink-faint);display:flex;align-items:center;gap:0.2rem;"><svg width="9" height="9"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="var(--ink-faint)" opacity="0.4"/></svg>blog</span>';legendEl.appendChild(shapeLeg);
+Object.keys(THEMES).forEach(function(key){var theme=THEMES[key];if(!allNodes.some(function(n){return n.themes.indexOf(key)>=0;}))return;var item=document.createElement('div');item.className='legend-item';item.dataset.theme=key;item.innerHTML='<div class="legend-dot" style="background:'+theme.color+'"></div>'+theme.label;item.addEventListener('click',function(){if(activeFilter===key){activeFilter=null;document.querySelectorAll('.legend-item').forEach(function(el){el.classList.remove('dimmed');});resetHL();}else{activeFilter=key;document.querySelectorAll('.legend-item').forEach(function(el){el.classList.toggle('dimmed',el.dataset.theme!==key);});var m=new Set(allNodes.filter(function(n){return n.themes.indexOf(key)>=0;}).map(function(n){return n.id;}));node.selectAll('circle,rect').transition().duration(300).attr('fill-opacity',function(n){return m.has(n.id)?0.9:0.06;}).attr('stroke-opacity',function(n){return m.has(n.id)?0.5:0.015;});node.selectAll('text').transition().duration(300).attr('fill-opacity',function(n){return m.has(n.id)?0.9:0.04;});link.transition().duration(300).attr('stroke-opacity',function(l){var s=typeof l.source==='object'?l.source.id:l.source;var t=typeof l.target==='object'?l.target.id:l.target;return(m.has(s)&&m.has(t))?0.3:0.005;});}});legendEl.appendChild(item);});
+
+// ═══════════════════════════════════════════════
+// Simulation + layout modes
+// ═══════════════════════════════════════════════
+var simulation=d3.forceSimulation(allNodes).velocityDecay(0.35);
+var currentMode='force';
+
+function showZones(on){zoneLeft.transition().duration(500).style('opacity',on?0.25:0);zoneRight.transition().duration(500).style('opacity',on?0.25:0);barrierLine.transition().duration(500).attr('stroke-opacity',on?0.06:0);}
+
+function applyForceMode(){
+  simulation.force('link',d3.forceLink(edges).id(function(d){return d.id;}).distance(function(d){return(d.crossType?120:65)/Math.sqrt(d.strength);}).strength(function(d){return Math.min(0.4,d.strength*(d.crossType?0.025:0.05));})).force('charge',d3.forceManyBody().strength(-110)).force('center',d3.forceCenter(W/2,H/2).strength(0.01)).force('collision',d3.forceCollide().radius(function(d){return nodeR(d)+5;})).force('x',d3.forceX(function(d){return d.kind==='paper'?MID*0.55:MID*1.45;}).strength(0.055)).force('y',d3.forceY(H/2).strength(0.025));
+  showZones(true);
+}
+function applyTimelineMode(){
+  var pad=100,xScale=d3.scaleLinear().domain([2009,2025]).range([pad,W-pad]);
+  simulation.force('link',null).force('charge',d3.forceManyBody().strength(-50)).force('center',null).force('collision',d3.forceCollide().radius(function(d){return nodeR(d)+4;})).force('x',d3.forceX(function(d){return xScale(d.year);}).strength(0.9)).force('y',d3.forceY(function(d){return(d.kind==='paper'?H*0.38:H*0.62)+(allNodes.indexOf(d)%7-3)*15;}).strength(0.25));
+  showZones(false);
+}
+function applyThemeMode(){
+  var tk=Object.keys(THEMES).filter(function(k){return allNodes.some(function(n){return n.themes.indexOf(k)>=0;});}),cols=4,rows=Math.ceil(tk.length/cols),cw=W/(cols+1),ch=H/(rows+1),tp={};tk.forEach(function(k,i){tp[k]={x:cw*(i%cols+1),y:ch*(Math.floor(i/cols)+1)+20};});
+  simulation.force('link',null).force('charge',d3.forceManyBody().strength(-40)).force('center',null).force('collision',d3.forceCollide().radius(function(d){return nodeR(d)+4;})).force('x',d3.forceX(function(d){var p=tp[d.themes[0]];return p?p.x:W/2;}).strength(0.7)).force('y',d3.forceY(function(d){var p=tp[d.themes[0]];return p?p.y:H/2;}).strength(0.7));
+  showZones(false);
+}
+function applySemanticMode(){
+  var coords=SEMANTIC_COORDS;
+  var xs=coords.map(function(c){return c[0];}),ys=coords.map(function(c){return c[1];});
+  var pad=80,xS=d3.scaleLinear().domain([Math.min.apply(null,xs),Math.max.apply(null,xs)]).range([pad,W-pad]),yS=d3.scaleLinear().domain([Math.min.apply(null,ys),Math.max.apply(null,ys)]).range([pad+40,H-pad]);
+  simulation.force('link',null).force('charge',d3.forceManyBody().strength(-30)).force('center',null).force('collision',d3.forceCollide().radius(function(d){return nodeR(d)+4;})).force('x',d3.forceX(function(d,i){return xS(coords[i][0]);}).strength(0.85)).force('y',d3.forceY(function(d,i){return yS(coords[i][1]);}).strength(0.85));
+  showZones(false);
+}
+
+applyForceMode();
+simulation.on('tick',function(){link.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;}).attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});node.attr('transform',function(d){var s=d._scale||1;return'translate('+d.x+','+d.y+')'+(s!==1?' scale('+s+')':'');});});
+
+var MODE_DESCS={force:'force-directed · shared themes attract · papers left, blog right',timeline:'positioned by year · papers above, blog below',theme:'clustered by primary research theme',semantic:'semantic feature embeddings · UMAP projection',cards:'filterable card grid · click to open'};
+
+document.querySelectorAll('.mode-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var mode=btn.dataset.mode;if(mode===currentMode)return;
+    currentMode=mode;
+    document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById('mode-desc').textContent=MODE_DESCS[mode];
+    document.getElementById('card-wall').classList.toggle('visible',mode==='cards');
+    document.getElementById('graph-container').style.display=mode==='cards'?'none':'';
+    document.getElementById('legend').style.display=mode==='cards'?'none':'';
+    if(mode==='cards'){renderCards();simulation.stop();return;}
+    allNodes.forEach(function(d){d.fx=null;d.fy=null;});
+    switch(mode){case'force':applyForceMode();break;case'timeline':applyTimelineMode();break;case'theme':applyThemeMode();break;case'semantic':applySemanticMode();break;}
+    simulation.alpha(1).restart();
+  });
+});
+window.addEventListener('resize',function(){simulation.alpha(0.3).restart();});
+
+// ═══════════════════════════════════════════════
+// Fisheye lens — magnifies nearby nodes on hover/touch
+// ═══════════════════════════════════════════════
+var FISHEYE_R = 140;     // radius of influence in graph-space pixels
+var FISHEYE_MAX = 2.6;   // max scale at center
+var fisheyeActive = false;
+
+function applyFisheye(gx, gy) {
+  fisheyeActive = true;
+  node.each(function(d) {
+    var dx = d.x - gx, dy = d.y - gy;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < FISHEYE_R) {
+      var t = 1 - dist / FISHEYE_R;  // 1 at center, 0 at edge
+      d._scale = 1 + (FISHEYE_MAX - 1) * t * t;  // quadratic falloff
+    } else {
+      d._scale = 1;
+    }
+    var s = d._scale;
+    d3.select(this).attr('transform', 'translate('+d.x+','+d.y+')'+(s!==1?' scale('+s+')':''));
+  });
+  // Swap labels: show full title when magnified enough
+  node.select('.title-label')
+    .text(function(d) {
+      if (d._scale > 1.5) return d.title;
+      if (d._scale > 1.2) {
+        // Medium zoom: show more of the title
+        var w = d.title.split(/\s+/), l = '';
+        for (var k = 0; k < w.length; k++) { if (l.length > 40) break; l += (l ? ' ' : '') + w[k]; }
+        return l + (l.length < d.title.length ? '…' : '');
+      }
+      return d._trunc;
+    })
+    .attr('fill-opacity', function(d) { return d._scale > 1.15 ? 0.8 : 0.55; });
+}
+
+function resetFisheye() {
+  if (!fisheyeActive) return;
+  fisheyeActive = false;
+  allNodes.forEach(function(d) { d._scale = 1; });
+  node.attr('transform', function(d) { return 'translate('+d.x+','+d.y+')'; });
+  node.select('.title-label')
+    .text(function(d) { return d._trunc; })
+    .attr('fill-opacity', 0.55);
+}
+
+// Get mouse/touch position in graph-space (accounting for zoom)
+function toGraphCoords(clientX, clientY) {
+  var svgEl = svg.node();
+  var pt = svgEl.createSVGPoint();
+  pt.x = clientX; pt.y = clientY;
+  // Account for viewBox scaling
+  var ctm = svgEl.getScreenCTM();
+  if (ctm) pt = pt.matrixTransform(ctm.inverse());
+  // Account for zoom/pan transform on g
+  var t = d3.zoomTransform(svgEl);
+  return [(pt.x - t.x) / t.k, (pt.y - t.y) / t.k];
+}
+
+// Desktop: mousemove on SVG
+var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (!isMobile) {
+  svg.on('mousemove.fisheye', function(e) {
+    var gp = toGraphCoords(e.clientX, e.clientY);
+    applyFisheye(gp[0], gp[1]);
+  }).on('mouseleave.fisheye', function() {
+    resetFisheye();
+  });
+}
+
+// ═══════════════════════════════════════════════
+// Mobile: explore mode with tap-to-place lens
+// ═══════════════════════════════════════════════
+var exploreMode = false;
+var lensCircle = null;
+var lensPos = null; // graph coords of placed lens
+
+if (isMobile) {
+  // Add explore toggle button
+  var exploreBtn = document.createElement('button');
+  exploreBtn.textContent = '🔍 Explore';
+  exploreBtn.style.cssText = 'position:fixed;bottom:3.5rem;right:0.8rem;z-index:15;font-family:var(--font-serif);font-size:0.82rem;font-weight:500;padding:0.45em 0.75em;border:1px solid var(--border);border-radius:4px;background:rgba(255,252,247,0.95);color:var(--ink-faint);cursor:pointer;box-shadow:0 2px 8px rgba(44,37,32,0.08);transition:all 0.2s;';
+  document.body.appendChild(exploreBtn);
+
+  // Lens circle indicator
+  lensCircle = g.append('circle')
+    .attr('r', FISHEYE_R)
+    .attr('fill', 'none')
+    .attr('stroke', '#8b4a3a')
+    .attr('stroke-width', 1)
+    .attr('stroke-dasharray', '4,4')
+    .attr('stroke-opacity', 0)
+    .attr('pointer-events', 'none');
+
+  exploreBtn.addEventListener('click', function() {
+    exploreMode = !exploreMode;
+    if (exploreMode) {
+      exploreBtn.textContent = '✕ Exit explore';
+      exploreBtn.style.color = 'var(--ink)';
+      exploreBtn.style.background = 'rgba(255,252,247,1)';
+      exploreBtn.style.borderColor = 'var(--link)';
+      // Disable zoom panning (keep pinch zoom)
+      svg.on('.zoom', null);
+      svg.call(zoomBehavior.filter(function(e) {
+        return e.type === 'wheel' || (e.touches && e.touches.length >= 2);
+      }));
+    } else {
+      exploreBtn.textContent = '🔍 Explore';
+      exploreBtn.style.color = 'var(--ink-faint)';
+      exploreBtn.style.background = 'rgba(255,252,247,0.95)';
+      exploreBtn.style.borderColor = 'var(--border)';
+      // Re-enable full zoom
+      svg.call(zoomBehavior.filter(function() { return true; }));
+      resetFisheye();
+      lensCircle.attr('stroke-opacity', 0);
+      lensPos = null;
+      tooltip.classList.remove('visible');
+    }
+  });
+
+  // In explore mode: tap to place lens, drag to move it
+  svg.on('touchstart.explore', function(e) {
+    if (!exploreMode) return;
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    var touch = e.touches[0];
+    var gp = toGraphCoords(touch.clientX, touch.clientY);
+    lensPos = gp;
+    applyFisheye(gp[0], gp[1]);
+    lensCircle.attr('cx', gp[0]).attr('cy', gp[1]).attr('stroke-opacity', 0.2);
+    // Show tooltip for nearest node
+    var best = null, bestDist = Infinity;
+    allNodes.forEach(function(d) {
+      var dx = d.x - gp[0], dy = d.y - gp[1];
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < bestDist) { bestDist = dist; best = d; }
+    });
+    if (best && bestDist < 50) {
+      document.getElementById('tt-kind').textContent = best.kind === 'paper' ? '📄 Publication' : '✏️ Blog Post';
+      document.getElementById('tt-title').textContent = best.title;
+      document.getElementById('tt-meta').textContent = best.authors || '';
+      var vh = best.venue || '';
+      if (best.award) vh += ' <span class="tooltip-award">🏆 ' + best.award + '</span>';
+      document.getElementById('tt-venue').innerHTML = vh;
+      document.getElementById('tt-themes').innerHTML = best.themes.map(function(t) {
+        return '<span class="tooltip-theme" style="background:' + THEMES[t].color + '">' + THEMES[t].label + '</span>';
+      }).join('');
+      tooltip.classList.add('visible');
+      tooltip.style.left = Math.min(Math.max(10, touch.clientX - 140), innerWidth - 390) + 'px';
+      tooltip.style.top = Math.max(10, touch.clientY - 170) + 'px';
+    } else {
+      tooltip.classList.remove('visible');
+    }
+  }).on('touchmove.explore', function(e) {
+    if (!exploreMode) return;
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    var touch = e.touches[0];
+    var gp = toGraphCoords(touch.clientX, touch.clientY);
+    lensPos = gp;
+    applyFisheye(gp[0], gp[1]);
+    lensCircle.attr('cx', gp[0]).attr('cy', gp[1]);
+    // Update tooltip for nearest node
+    var best = null, bestDist = Infinity;
+    allNodes.forEach(function(d) {
+      var dx = d.x - gp[0], dy = d.y - gp[1];
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < bestDist) { bestDist = dist; best = d; }
+    });
+    if (best && bestDist < 50) {
+      document.getElementById('tt-kind').textContent = best.kind === 'paper' ? '📄 Publication' : '✏️ Blog Post';
+      document.getElementById('tt-title').textContent = best.title;
+      document.getElementById('tt-meta').textContent = best.authors || '';
+      var vh = best.venue || '';
+      if (best.award) vh += ' <span class="tooltip-award">🏆 ' + best.award + '</span>';
+      document.getElementById('tt-venue').innerHTML = vh;
+      tooltip.classList.add('visible');
+      tooltip.style.left = Math.min(Math.max(10, touch.clientX - 140), innerWidth - 390) + 'px';
+      tooltip.style.top = Math.max(10, touch.clientY - 170) + 'px';
+    }
+  }).on('touchend.explore', function() {
+    if (!exploreMode || !lensPos) return;
+    // Keep the lens placed — don't reset. User taps elsewhere or exits explore mode.
+  });
+}
+
+// ═══════════════════════════════════════════════
+// Card Wall view
+// ═══════════════════════════════════════════════
+var cardKindFilter=null, cardThemeFilter=null;
+
+function renderCards(){
+  var filtersEl=document.getElementById('card-filters');
+  var gridEl=document.getElementById('card-grid');
+
+  // Build filters
+  filtersEl.innerHTML='';
+  function mkChip(label,active,onclick,color){
+    var btn=document.createElement('button');
+    btn.className='card-chip'+(active?' active':'');
+    btn.textContent=label;
+    if(color&&active){btn.style.borderColor=color;btn.style.color=color;}
+    btn.addEventListener('click',onclick);
+    filtersEl.appendChild(btn);
+    return btn;
+  }
+  mkChip('All ('+allNodes.length+')',!cardKindFilter&&!cardThemeFilter,function(){cardKindFilter=null;cardThemeFilter=null;renderCards();});
+  mkChip('Papers ('+papers.length+')',cardKindFilter==='paper',function(){cardKindFilter=cardKindFilter==='paper'?null:'paper';renderCards();});
+  mkChip('Blog ('+blogs.length+')',cardKindFilter==='blog',function(){cardKindFilter=cardKindFilter==='blog'?null:'blog';renderCards();});
+
+  var sep=document.createElement('span');sep.className='card-chip-sep';filtersEl.appendChild(sep);
+
+  var usedThemes=Object.keys(THEMES).filter(function(k){return allNodes.some(function(n){return n.themes.indexOf(k)>=0;});});
+  usedThemes.forEach(function(key){
+    var th=THEMES[key];
+    mkChip(th.label,cardThemeFilter===key,function(){cardThemeFilter=cardThemeFilter===key?null:key;renderCards();},th.color);
+  });
+
+  // Filter nodes
+  var filtered=allNodes.filter(function(n){
+    if(cardKindFilter&&n.kind!==cardKindFilter)return false;
+    if(cardThemeFilter&&n.themes.indexOf(cardThemeFilter)<0)return false;
+    return true;
+  }).sort(function(a,b){return b.year-a.year||a.title.localeCompare(b.title);});
+
+  // Render cards
+  gridEl.innerHTML='';
+  if(!filtered.length){
+    var empty=document.createElement('div');empty.className='card-empty';
+    empty.textContent='No items match.';gridEl.appendChild(empty);return;
+  }
+  filtered.forEach(function(n){
+    var card=document.createElement('div');card.className='card';
+    var primaryColor=THEMES[n.themes[0]].color;
+
+    var head='<div class="card-head">';
+    head+='<span class="card-theme" style="color:'+primaryColor+'">'+THEMES[n.themes[0]].label+'</span>';
+    head+='<span class="card-kind" style="'+(n.kind==='paper'?'background:rgba(58,90,140,0.06);color:#3a5a8c':'color:var(--ink-faint)')+'">'+
+      (n.kind==='paper'?'paper':'blog')+'</span>';
+    head+='</div>';
+
+    var title='<div class="card-title">'+n.title+'</div>';
+
+    var meta='<div class="card-meta">';
+    if(n.kind==='paper'){
+      meta+=n.venue;
+      if(n.award)meta+='<span class="card-award">'+n.award+'</span>';
+    }else{
+      meta+=n.year+(n.tags?' · '+n.tags:'');
+    }
+    meta+='</div>';
+
+    var themes='<div class="card-themes">';
+    n.themes.forEach(function(t){
+      themes+='<span class="card-theme-tag" style="background:'+THEMES[t].color+'">'+THEMES[t].label+'</span>';
+    });
+    themes+='</div>';
+
+    card.innerHTML=head+title+meta+themes;
+    card.addEventListener('click',function(){if(n.url)window.open(n.url,'_blank');});
+    gridEl.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
