@@ -1795,7 +1795,7 @@ turn it into source code.
 -->
 
 <p>If we were writing <em>a program</em> (e.g., in Python) to compute $f$, we'd take
-advantage of the fact that it has a lot of repeated evaluations for efficiency.</p>
+advantage of repeated subexpressions for efficiency.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span>
@@ -1813,28 +1813,28 @@ variables.</p>
 <li>
 <p>The rules for transforming the code for a function into code for the gradient
   are really minimal (fewer things to memorize!). Additionally, the rules are
-  more general than in symbolic case because they handle as a superset of
+  more general than in the symbolic case because they handle a superset of
   programs.</p>
 </li>
 <li>
 <p>Quite <a href="http://conal.net/papers/beautiful-differentiation/">beautifully</a>, the
   program for the gradient <em>has exactly the same structure</em> as the function,
-  which implies that we get the same runtime (up to some constants factors).</p>
+  which implies that we get the same runtime (up to some constant factors).</p>
 </li>
 </ul>
-<p>I won't give the details of how to execute the backpropagation transform to the
+<p>I won't give the details of how to apply the backpropagation transform to the
 program. You can get that from
 <a href="https://people.cs.umass.edu/~domke/courses/sml2011/08autodiff_nnets.pdf">Justin Domke's notes</a>
 and many other good
 resources. <a href="https://gist.github.com/timvieira/39e27756e1226c2dbd6c36e83b648ec2">Here's some code</a>
-that I wrote that accompanies to the <code>f(x)</code> example, which has a bunch of
+that I wrote that accompanies the <code>f(x)</code> example, which has a bunch of
 comments describing the manual "automatic" differentiation process on <code>f(x)</code>.</p>
 <!--
 Caveat: You might have seen some *limited* cases where an input variable was
 reused, but chances are that it was something really simple like multiplication
 or division, e.g., $\nabla\! \left[ f(x) \cdot g(x) \right] = f(x) \cdot g'(x)
 + f'(x) \cdot g(x)$, and you just memorized a rule. The rules of autodiff are
-simpler and actually explains why there is a sum in the product rule. You can
+simpler and actually explain why there is a sum in the product rule. You can
 also rederive the quotient rule without a hitch. I'm all about having fewer
 things to memorize!
 -->
@@ -1853,7 +1853,7 @@ Boolean expression from conjunctive normal form to and disjunction normal.  -->
 <h2 id="autodiff-by-the-method-of-lagrange-multipliers">Autodiff by the Method of Lagrange Multipliers</h2>
 <p>Let's view the intermediate variables in our optimization problem as simple
 equality constraints in an equivalent <em>constrained</em> optimization problem. It
-turns out that the de facto method for handling constraints, the method Lagrange
+turns out that the de facto method for handling constraints, the method of Lagrange
 multipliers, recovers <em>exactly</em> the adjoints (intermediate derivatives) in the
 backprop algorithm!</p>
 <p>Here's our example from earlier written in this constraint form:</p>
@@ -1875,7 +1875,7 @@ $$</p>
   & \text{s.t.}\quad z_i = x_i                          &\text{ for $1 \le i \le d$} \\
   & \phantom{\text{s.t.}}\quad z_i = f_i(z_{\alpha(i)}) &\text{ for $d < i \le n$} \\
   \end{align*}</p>
-<p>The first set of constraint ($1, \ldots, d$) are a little silly. They are only
+<p>The first set of constraints ($1, \ldots, d$) are a little silly. They are only
 there to keep our formulation tidy. The variables in the program fall into three
 categories:</p>
 <ul>
@@ -1883,13 +1883,13 @@ categories:</p>
 <p><strong>input variables</strong> ($\boldsymbol{x}$): $x_1, \ldots, x_d$</p>
 </li>
 <li>
-<p><strong>intermediate variables</strong>: ($\boldsymbol{z}$): $z_i = f_i(z_{\alpha(i)})$ for
+<p><strong>intermediate variables</strong> ($\boldsymbol{z}$): $z_i = f_i(z_{\alpha(i)})$ for
   $1 \le i \le n$, where $\alpha(i)$ is a list of indices from ${1, \ldots,
   n-1}$ and $z_{\alpha(i)}$ is the subvector of variables needed to evaluate
   $f_i(\cdot)$. Minor detail: take $f_{1:d}$ to be the identity function.</p>
 </li>
 <li>
-<p><strong>output variable</strong> ($z_n$): We assume that our programs has a singled scalar
+<p><strong>output variable</strong> ($z_n$): We assume that our program has a single scalar
   output variable, $z_n$, which represents the quantity we'd like to maximize.</p>
 </li>
 </ul>
@@ -1906,10 +1906,6 @@ we'll assume that the dependency graph given by $\alpha$ is ① acyclic: no $z_i
 can transitively depend on itself.  ② single-assignment: each $z_i$ appears on
 the left-hand side of <em>exactly one</em> equation.  We'll discuss relaxing these
 assumptions in <a href="#lagrange-backprop-generalization">§ Generalizations</a>.</p>
-<p>The standard way to solve a constrained optimization is to use the method
-Lagrange multipliers, which converts a <em>constrained</em> optimization problem into
-an <em>unconstrained</em> problem with a few more variables $\boldsymbol{\lambda}$ (one
-per $x_i$ constraint), called Lagrange multipliers.</p>
 <h4 id="the-lagrangian">The Lagrangian</h4>
 <p>To handle constraints, let's dig up a tool from our calculus class,
 <a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">the method of Lagrange multipliers</a>,
@@ -1929,7 +1925,7 @@ $$</p>
 system of equations into salient parts, corresponding to which variable types
 are affected.</p>
 <p><strong>Intermediate variables</strong> ($\boldsymbol{z}$): Optimizing the
-multipliers&mdash;i.e., setting the gradient of Lagrangian
+multipliers&mdash;i.e., setting the gradient of the Lagrangian
 w.r.t. $\boldsymbol{\lambda}$ to zero&mdash;ensures that the constraints on
 intermediate variables are satisfied.</p>
 <p>$$
@@ -1950,7 +1946,7 @@ and an acyclic program.)
 
 <p><strong>Lagrange multipliers</strong> ($\boldsymbol{\lambda}$, excluding $\lambda_n$):
   Setting the gradient of the $\mathcal{L}$ w.r.t. the intermediate variables
-  equal to zeros tells us what to do with the intermediate multipliers.</p>
+  equal to zero tells us what to do with the intermediate multipliers.</p>
 <p>\begin{eqnarray*}
 0 &=& \nabla_{\! z_j} \mathcal{L} \\
 &=& \nabla_{\! z_j}\! \left[ z_n - \sum_{i=1}^n \lambda_i \cdot \left( z_i - f_i(z_{\alpha(i)}) \right) \right] \\
@@ -1969,7 +1965,7 @@ composition. Similar to the equations for $\boldsymbol{z}$, solving this linear
 system is another block-coordinate step.</p>
 <p><em>Key observation</em>: The last equation for $\lambda_j$ should look very familiar:
 It is exactly the equation used in backpropagation! It says that we sum
-$\lambda_i$ of nodes that immediately depend on $j$ where we scaled each
+$\lambda_i$ of nodes that immediately depend on $j$ where we scale each
 $\lambda_i$ by the derivative of the function that directly relates $i$ and
 $j$. You should think of the scaling as a "unit conversion" from derivatives of
 type $i$ to derivatives of type $j$.</p>
@@ -1983,7 +1979,7 @@ type $i$ to derivatives of type $j$.</p>
 \end{eqnarray*}
 $$</p>
 <p><strong>Input multipliers</strong> $(\boldsymbol{\lambda}_{1:d})$: Our dummy constraints
-  gives us $\boldsymbol{\lambda}_{1:d}$, which are conveniently equal to the
+  give us $\boldsymbol{\lambda}_{1:d}$, which are conveniently equal to the
   gradient of the function we're optimizing:</p>
 <p>$$
 \nabla_{\!\boldsymbol{x}} f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}.
@@ -1991,7 +1987,7 @@ $$</p>
 <p>Of course, this interpretation is only precise when ① the constraints are
 satisfied ($\boldsymbol{z}$ equations) and ② the linear system on multipliers is
 satisfied ($\boldsymbol{\lambda}$ equations).</p>
-<p><strong>Input variables</strong> ($\boldsymbol{x}$): Unfortunately, the there is no
+<p><strong>Input variables</strong> ($\boldsymbol{x}$): Unfortunately, there is no
   closed-form solution to how to set $\boldsymbol{x}$. For this we resort to
   something like gradient ascent. Conveniently, $\nabla_{!\boldsymbol{x}}
   f(\boldsymbol{x}) = \boldsymbol{\lambda}_{1:d}$, which we can use to optimize
@@ -2010,7 +2006,7 @@ compute <em>global</em> gradients in cyclic graphs. All we'd need is to run a li
 system solver to stitch together <em>local</em> gradients! That is exactly what the
 <a href="https://en.wikipedia.org/wiki/Implicit_function_theorem">implicit function theorem</a>
 says!</p>
-<p>Cyclic constraints add some expressive powerful to our "constraint language," and
+<p>Cyclic constraints add some expressive power to our "constraint language," and
 it's interesting that we can still efficiently compute gradients in this
 setting. An example of what a general type of cyclic constraint looks like is</p>
 <p>$$
@@ -2046,8 +2042,8 @@ elimination).</p>
 </ul>
 <h3 id="other-methods-for-optimization">Other Methods for Optimization?</h3>
 <p>The connection to Lagrangians brings tons of algorithms for constrained
-optimization into the mix! We can imagine using more general algorithms for
-optimizing our function and other ways of enforcing the constraints. We see
+optimization into the mix! We can imagine more general optimization algorithms and
+alternative ways of enforcing the constraints. We see
 immediately that we could run optimization with adjoints set to values other
 than those that backprop would set them to (i.e., we can optimize them like we'd
 do in other algorithms for optimizing general Lagrangians).</p>
@@ -2082,11 +2078,11 @@ variables.</p>
 
 <h2 id="further-reading">Further Reading</h2>
 <p>After working out the connection between backprop and the method of Lagrange
-multipliers, I discovered following paper, which beat me to it. I don't think my
+multipliers, I discovered the following paper, which beat me to it. I don't think my
 version is too redundant.</p>
 <blockquote>
 <p>Yann LeCun. (1988)
-<a href="http://yann.lecun.com/exdb/publis/pdf/lecun-88.pdf">A Theoretical Framework from Back-Propagation</a>.</p>
+<a href="http://yann.lecun.com/exdb/publis/pdf/lecun-88.pdf">A Theoretical Framework for Back-Propagation</a>.</p>
 </blockquote>
 <p>Ben Recht has a great blog post that uses the implicit function theorem to
 <em>derive</em> the method of Lagrange multipliers. He also touches on the connection

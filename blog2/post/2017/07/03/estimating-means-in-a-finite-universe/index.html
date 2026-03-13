@@ -1748,11 +1748,10 @@ details.derivation[open]::details-content {
     </header>
     <div class="entry-content" style="view-transition-name: article-body">
       <p><strong>Introduction</strong>: In this post, I'm going to describe some efficient approaches
-to estimating the mean of a random variable that takes on only finitely many
-values. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
-for finite domains. I'll describe some lesser-known algorithms based on sampling
-without replacement that can be adapted to estimating means.</p>
-<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a derministic function
+to estimating the mean of a function over a finite domain. Despite the ubiquity of Monte Carlo estimation, it is really inefficient
+for finite domains. In particular, I'll focus on lesser-known algorithms based on sampling
+without replacement.</p>
+<p><strong>Setup</strong>: Suppose we want to estimate an expectation of a deterministic function
 $f$ over a (large) finite universe of $n$ elements where each element $i$ has
 probability $p_i$:</p>
 <p>$$
@@ -1801,15 +1800,15 @@ without replacement, e.g., any point process over the universe will do as long
 as we can control the size.</p>
 <p><strong>An alternative formulation:</strong> We can also formulate our estimation problem as
 seeking a sparse, unbiased approximation to a vector $\boldsymbol{x} \in \mathbb{R}_{>0}^n$. We want
-our approximation, $\boldsymbol{s}$ to satisfy $\mathbb{E}[\boldsymbol{s}] =
-\boldsymbol{x}$ and while $|| \boldsymbol{s} ||_0 \le m$. This will suffice for
+our approximation, $\boldsymbol{s}$, to satisfy $\mathbb{E}[\boldsymbol{s}] =
+\boldsymbol{x}$ while $|| \boldsymbol{s} ||_0 \le m$. This will suffice for
 estimating $\mu$ (above) when $\boldsymbol{x}=\boldsymbol{p}$, the vector of
-probabillties, because $\mathbb{E}[\boldsymbol{s}^\top! \boldsymbol{f}] =
+probabilities, because $\mathbb{E}[\boldsymbol{s}^\top! \boldsymbol{f}] =
 \mathbb{E}[\boldsymbol{s}]^\top! \boldsymbol{f} = \boldsymbol{p}^\top!
 \boldsymbol{f} = \mu$ where $\boldsymbol{f}$ is a vector of all $n$ values of
 the function $f$. Obviously, we don't need to evaluate $f$ in places where
 $\boldsymbol{s}$ is zero so it works for our budgeted estimation task. Of
-course, unbiased estimation of all probabillties is not <em>necessary</em> for unbiased
+course, unbiased estimation of all probabilities is not <em>necessary</em> for unbiased
 estimation of $\mu$ alone. However, this characterization is a good model for
 when we have zero knowledge of $f$. Additionally, this formulation might be of
 independent interest, since a sparse, unbiased representation of a vector might
@@ -1825,7 +1824,7 @@ we assume no prior knowledge about $f$. Here is pseudocode for priority sampling
 &\textbf{procedure } \textrm{PrioritySample} \\
 &\textbf{inputs: } \text{vector } \boldsymbol{x} \in \mathbb{R}_{>0}^n, \text{budget } m \in \{1, \ldots, n\}\\
 &\textbf{output: } \text{sparse and unbiased representation of $\boldsymbol{x}$} \\
-&\quad u_i, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
+&\quad u_1, \ldots, u_n \overset{\tiny\text{i.i.d.}} \sim \textrm{Uniform}(0,1] \\
 &\quad  k_i \leftarrow u_i/x_i \text{ for each $i$} \quad\color{grey}{\text{# random sort key }} \\
 &\quad S \leftarrow \{ \text{$m$-smallest elements according to $k_i$} \} \\
 &\quad \tau \leftarrow (m+1)^{\text{th}}\text{ smallest }k_i \\
@@ -1837,7 +1836,7 @@ we assume no prior knowledge about $f$. Here is pseudocode for priority sampling
 \end{align*}
 $$</p>
 <p>$\textrm{PrioritySample}$ can be applied to obtain a sparse and unbiased
-representation of any vector in $\mathbb{R}^n$. We make use of such a
+representation of any vector in $\mathbb{R}_{>0}^n$. We make use of such a
 representation for our original problem of budgeted mean estimation ($\mu$) as
 follows:</p>
 <p>$$
@@ -1848,7 +1847,7 @@ follows:</p>
 $$</p>
 <p>Explanation: The definition of $s_i$ might look a little mysterious. In the $(i
 \in S)$ case, it comes from $s_i = \frac{p_i}{p(i \in S | \tau)} =
-\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)$. The factor $p(i \in S
+\frac{p_i}{\min(1, x_i \cdot \tau)} = \max(x_i,\ 1/\tau)$ (recall $x_i = p_i$). The factor $p(i \in S
 | \tau)$ is an importance-weighting correction that comes from the
 <a href="https://en.wikipedia.org/wiki/Horvitz%E2%80%93Thompson_estimator">Horvitz-Thompson estimator</a>
 (modified slightly from its usual presentation to estimate means),
@@ -1856,8 +1855,8 @@ $\sum_{i=1}^n \frac{p_i}{q_i} \cdot f(i) \cdot \boldsymbol{1}[ i \in S]$, where
 $S$ is sampled according to some process with inclusion probabilities $q_i = p(i
 \in S)$. In the case of priority sampling, we have an auxiliary variable for
 $\tau$ that makes computing $q_i$ easy. Thus, for priority sampling, we can use
-$q_i = p(i \in S | \tau)$. This auxillary variable adds a tiny bit extra noise
-in our estimator, which is tantamount to one extra sample.</p>
+$q_i = p(i \in S | \tau)$. This auxiliary variable adds a tiny bit of extra noise
+to our estimator, which is tantamount to one extra sample (see Szegedy, 2005 below).</p>
 <details class="derivation">
 <summary>Proof of unbiasedness</summary>
 <p>The following proof is a
@@ -1868,7 +1867,7 @@ can compute $q_i(\tau) = \mathrm{Pr}(i \in S \mid \tau) = \mathrm{Pr}(k_i \le \t
 <p>$$
 \begin{eqnarray}
 \mathbb{E}\left[ \widehat{\mu}_{\text{PS}} \right]
-&=& \mathbb{E}_{\tau, k_1, \ldots k_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \boldsymbol{1}[ k_i \le \tau] \right] \\
+&=& \mathbb{E}_{\tau, k_1, \ldots, k_n}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \boldsymbol{1}[ k_i \le \tau] \right] \\
 &=& \mathbb{E}_{\tau}\! \left[ \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot \mathbb{E}_{k_i | \tau}\!\Big[ \boldsymbol{1}[ k_i \le \tau  ] \Big] \right] \\
 &=& \mathbb{E}_{\tau}\! \left[
    \sum_{i=1}^n \frac{p_i}{q_i(\tau)} \cdot f(i) \cdot
@@ -1893,9 +1892,9 @@ $$</p>
    (i.e., under the evaluation budget).</p>
 </li>
 <li>
-<p>Priority sampling can be straighforwardly generalized to support streaming
-   $x_i$, since the keys and threshold can be computed as we run, which means it
-   can be stopped at any time, in principle.</p>
+<p>Priority sampling can be straightforwardly generalized to support streaming
+   $x_i$, since the keys and threshold can be computed incrementally. Furthermore,
+   it can be stopped at any time without fixing $m$ in advance.</p>
 </li>
 <li>
 <p>Priority sampling was designed for estimating subset sums, i.e., estimating
@@ -1925,24 +1924,24 @@ $$</p>
 </li>
 <li>
 <p>If we instead sample $u_1, \ldots, u_n \overset{\text{i.i.d.}}{\sim}
-   -\textrm{Exponential}(1)$, then $S$ will be sampled according to the <em>de facto</em>
-   sampling without replacement scheme (e.g., <code>numpy.random.sample(..., replace=False)</code>),
-   known as probability proportional to size without replacement (PPSWOR).
-   To we can then adjust our estimator
+   \textrm{Exponential}(1)$, then $S$ will be sampled according to the <em>de facto</em>
+   sampling without replacement scheme (e.g., <code>numpy.random.choice(..., replace=False)</code>),
+   known as probability proportional to size without replacement (PPSWOR).</p>
+</li>
+</ul>
+<p>We can then adjust our estimator
    $$
    \widehat{\mu}_{\text{PPSWOR}} = \sum_{i \in S} \frac{p_i}{q_i} f(i)
    $$
-   where $q_i = p(i \in S|\tau) = p(k_i &gt; \tau) = 1-\exp(-x_i !\cdot!
-   \tau)$. This estimator performs about as well as priority sampling. It
-   inherits my proof of unbiasedness (above).</p>
-</li>
-<li>
-<p>$\tau$ is an auxiliary variable that is introduced to break complex
+   where $q_i = p(i \in S|\tau) = p(k_i \le \tau) = 1-\exp(-x_i !\cdot!
+   \tau)$. This estimator performs about as well as priority sampling and
+   inherits the proof of unbiasedness above.</p>
+<ul>
+<li>$\tau$ is an auxiliary variable that is introduced to break complex
    dependencies between keys. Computing $\tau$'s distribution is complicated
    because it is an order statistic of non-identically distributed random
    variates; this means we can't rely on symmetry to make summing over
-   permutations efficient.</p>
-</li>
+   permutations efficient.</li>
 </ul>
 <!--
  - The one downside of this method is that sampling seems to require looking at
@@ -1960,7 +1959,7 @@ I won't really bother to discuss it. Check out the results!</p>
 ![Priority sampling vs. Monte Carlo](http://timvieira.github.io/blog/images/ps-mc.png)
 </center>
 
-<p>The shaded region indicates the 10% and 90% percentiles over 20,000
+<p>The shaded region indicates the 10th and 90th percentiles over 20,000
 replications, which gives a sense of the variability of each estimator. The
 x-axis is the sampling budget, $m \le n$.</p>
 <p>The plot shows a small example with $n=50$. We see that PS's variability
@@ -1977,7 +1976,7 @@ tagged with <a href="../../../../../tag/sampling.html">sampling</a> and
 </li>
 <li>
 <p><a href="http://nickduffield.net/download/papers/priority.pdf">Duffield et al., (2007)</a>
-   has plenty good stuff that I didn't cover.</p>
+   has plenty of good stuff that I didn't cover.</p>
 </li>
 <li>
 <p>Alex Smola's <a href="http://blog.smola.org/post/1078486350/priority-sampling">post</a></p>
