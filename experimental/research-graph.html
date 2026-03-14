@@ -21,7 +21,7 @@
   #graph-container:active{cursor:grabbing;}
   svg{width:100%;height:100%;}
   .header{position:fixed;top:0;left:0;right:0;padding:0.7rem 1.5rem;
-    display:flex;align-items:center;gap:1.5rem;z-index:10;
+    display:flex;align-items:center;gap:1.5rem;z-index:55;
     background:linear-gradient(to bottom,var(--bg) 70%,transparent);pointer-events:none;}
   .header>*{pointer-events:auto;}
   .header h1{font-family:var(--font-serif);font-size:1.3rem;font-weight:700;color:var(--ink);}
@@ -29,7 +29,7 @@
   .header nav a{font-family:var(--font-serif);font-size:0.82rem;font-weight:500;
     color:var(--link);text-decoration:none;border-bottom:1px solid rgba(139,74,58,0.25);transition:all 0.2s;}
   .header nav a:hover{border-bottom-color:var(--link);}
-  .modes{position:fixed;top:2.8rem;left:50%;transform:translateX(-50%);z-index:12;
+  .modes{position:fixed;top:2.8rem;left:50%;transform:translateX(-50%);z-index:55;
     display:flex;background:rgba(255,252,247,0.92);border:1px solid var(--border);
     border-radius:4px;overflow:hidden;box-shadow:0 2px 12px rgba(44,37,32,0.06);}
   .mode-btn{font-family:var(--font-serif);font-size:0.76rem;font-weight:500;
@@ -38,7 +38,7 @@
   .mode-btn:last-child{border-right:none;}
   .mode-btn:hover{color:var(--ink-light);background:rgba(44,37,32,0.03);}
   .mode-btn.active{color:var(--ink);background:rgba(44,37,32,0.06);font-weight:600;}
-  .mode-desc{position:fixed;top:5rem;left:50%;transform:translateX(-50%);z-index:11;
+  .mode-desc{position:fixed;top:5rem;left:50%;transform:translateX(-50%);z-index:55;
     font-family:var(--font-serif);font-size:0.73rem;font-style:italic;
     color:var(--ink-faint);pointer-events:none;text-align:center;
     transition:opacity 0.4s;max-width:500px;}
@@ -53,7 +53,7 @@
   .card-wall{position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;
     background:var(--bg);overflow-y:auto;display:none;flex-direction:column;}
   .card-wall.visible{display:flex;}
-  .card-filters{position:sticky;top:0;z-index:2;padding:3.8rem 1.5rem 0.8rem;
+  .card-filters{position:sticky;top:0;z-index:2;padding:6rem 1.5rem 0.8rem;
     background:linear-gradient(to bottom,var(--bg) 85%,transparent);
     display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;}
   .card-chip{font-family:var(--font-serif);font-size:0.76rem;font-weight:500;
