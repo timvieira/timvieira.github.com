@@ -167,7 +167,7 @@
     arXiv: https://arxiv.org/abs/2504.13139
     code: https://github.com/genlm/genlm-control
     openreview: https://openreview.net/forum?id=xoXn62FzD0
-    slides: doc/2025-iclr-control-slides.pdf
+    slides: https://timvieira.github.io/doc/2025-iclr-control-slides.pdf
 
 - id: gastaldi-etal-2025-foundations-tokenization
   title: "The Foundations of Tokenization: Statistical and Computational Concerns"
@@ -315,7 +315,7 @@
   type: phdthesis
   themes: [dp, parsing]
   links:
-    url: doc/2023-timv-dissertation.pdf
+    url: https://timvieira.github.io/doc/2023-timv-dissertation.pdf
     video: https://youtu.be/SUOvgaxFxP4
     slides: https://docs.google.com/presentation/d/10LTArMtqI3nc0xnBkq_m7b7Qk312PL4Vb_26q6fA6QU/edit?usp=sharing
     code: https://github.com/timvieira/dyna-pi
@@ -743,7 +743,7 @@
   equal_contribution: [0, 1]
   themes: [automata, parsing, ml]
   links:
-    url: doc/2018-draft-vocrf2.pdf
+    url: https://timvieira.github.io/doc/2018-draft-vocrf2.pdf
     code: https://github.com/timvieira/vocrf
 
 - id: vieira-etal-2017-dyna
@@ -761,8 +761,8 @@
   type: inproceedings
   themes: [dp]
   links:
-    url: doc/2017-mapl-dyna.pdf
-    slides: doc/2017-mapl-dyna-slides.pptx
+    url: https://timvieira.github.io/doc/2017-mapl-dyna.pdf
+    slides: https://timvieira.github.io/doc/2017-mapl-dyna-slides.pptx
     video: https://www.youtube.com/watch?v=8ixPuuQVNh8
   bibtex:
     pages: "8--17"
@@ -783,7 +783,7 @@
   links:
     url: https://doi.org/10.1162/tacl_a_00060
     code: http://github.com/timvieira/learning-to-prune
-    slides: doc/2017-tacl-pruning-slides.pptx
+    slides: https://timvieira.github.io/doc/2017-tacl-pruning-slides.pptx
     video: https://vimeo.com/234953773
   bibtex:
     volume: "5"
@@ -807,13 +807,13 @@
   links:
     url: https://aclanthology.org/D16-1206/
     code: http://github.com/timvieira/vocrf
-    poster: doc/2016-emnlp-vocrf-poster.pdf
+    poster: https://timvieira.github.io/doc/2016-emnlp-vocrf-poster.pdf
   bibtex:
     doi: "10.18653/v1/D16-1206"
     pages: "1973--1978"
 
 - id: white-etal-2016-universal
-  title: "Universal Decompositional Semantics on Universal Dependencies"
+  title: "Universal Decompositional Semantics on {Universal Dependencies}"
   authors:
     - Aaron Steven White
     - Drew Reisinger
@@ -856,7 +856,7 @@
     url: https://aclanthology.org/N16-1080/
     code: https://github.com/ryancotterell/treeseg
     data: http://ryancotterell.github.io/canonical-segmentation/
-    slides: doc/2016-naacl-orthomorphoseg-slides.pptx
+    slides: https://timvieira.github.io/doc/2016-naacl-orthomorphoseg-slides.pptx
   bibtex:
     doi: "10.18653/v1/N16-1080"
     pages: "664--669"
@@ -923,4 +923,4 @@
   type: inproceedings
   themes: [semantics]
   links:
-    url: doc/2009-tac-entailment.pdf
+    url: https://timvieira.github.io/doc/2009-tac-entailment.pdf

@@ -17,6 +17,9 @@ def strip_braces(title):
     return title.replace("{", "").replace("}", "")
 
 
+SURNAME_PREFIXES = {"Van", "De", "Von", "Di", "Le", "La", "El", "Al", "Mc", "O'"}
+
+
 def bibtex_author_format(authors):
     """Convert ['First Last', ...] to BibTeX 'Last, First and Last, First'."""
     parts = []
@@ -25,8 +28,13 @@ def bibtex_author_format(authors):
         if len(tokens) == 1:
             parts.append(tokens[0])
         else:
-            last = tokens[-1]
-            first = " ".join(tokens[:-1])
+            # Find where the surname starts by checking for surname prefixes
+            # e.g. "Benjamin Van Durme" -> last="Van Durme", first="Benjamin"
+            split = len(tokens) - 1
+            while split > 1 and tokens[split - 1] in SURNAME_PREFIXES:
+                split -= 1
+            last = " ".join(tokens[split:])
+            first = " ".join(tokens[:split])
             parts.append(f"{last}, {first}")
     return " and ".join(parts)
 
@@ -84,7 +92,11 @@ def generate_bibtex_entry(paper):
             lines.append(f"  {key} = {{{extra[key]}}},")
 
     if "note" in paper:
-        lines.append(f'  note = "{paper["note"]}",')
+        # Strip emojis for BibTeX (they break pdflatex)
+        import re
+        note_clean = re.sub(r'[\U0001F300-\U0001FFFF]', '', paper["note"]).strip()
+        if note_clean:
+            lines.append(f'  note = "{note_clean}",')
 
     lines.append("}")
     return "\n".join(lines)
@@ -200,7 +212,7 @@ if __name__ == "__main__":
     papers = load_papers()
     out_dir = Path(__file__).parent
 
-    bib_path = out_dir / "generated.bib"
+    bib_path = out_dir / "cv" / "cv.bib"
     bib_content = generate_bibtex(papers)
     bib_path.write_text(bib_content)
     print(f"Wrote {len(papers)} entries to {bib_path}")
