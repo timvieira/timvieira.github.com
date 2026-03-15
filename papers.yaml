@@ -1,0 +1,926 @@
+# Canonical publication data for Tim Vieira
+# -------------------------------------------------
+# Title escaping convention (for BibTeX):
+#   {Braces} around words that must preserve capitalization.
+#   The build script strips braces for HTML/plaintext output and
+#   passes them through verbatim for BibTeX \title{} fields.
+#
+# Fields:
+#   id          - stable key, used as BibTeX cite key
+#   title       - with {braces} for BibTeX capitalization protection
+#   authors     - list of "First Last" names (natural order)
+#   year        - publication year (integer)
+#   venue       - short display name (e.g. "ACL 2023")
+#   venue_full  - full proceedings name for BibTeX booktitle/journal
+#   type        - bibtex entry type: inproceedings | article | misc | phdthesis
+#   note        - optional note displayed after venue (awards, oral, spotlight, etc.)
+#   themes      - list of topic tags (for research graph)
+#   featured    - show on homepage (default: true for all)
+#   equal_contribution - "*" authors marker (list of author indices, 0-based)
+#   links:
+#     url       - primary link (required)
+#     arXiv     - arXiv URL
+#     code      - code repository
+#     slides    - slides link
+#     video     - video link
+#     poster    - poster link
+#     openreview - OpenReview link
+#     data      - dataset link
+#     other     - list of {label, url} for miscellaneous links
+#   bibtex:     - extra BibTeX-only fields (doi, pages, volume, isbn, etc.)
+# -------------------------------------------------
+
+- id: chan-etal-2025-smc-ensembling
+  title: "Ensembling Language Models with Sequential {Monte} {Carlo}"
+  authors:
+    - Robin Shing Moon Chan
+    - Tianyu Liu
+    - Samuel Kiegeland
+    - Clemente Pasti
+    - Jacob Hoover Vigly
+    - Timothy J. O'Donnell
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2025
+  venue: Preprint
+  venue_full: Preprint
+  type: misc
+  themes: [generation, sampling]
+  links:
+    url: https://arxiv.org/abs/2603.05432
+    arXiv: https://arxiv.org/abs/2603.05432
+    code: https://github.com/chanr0/smc_ensembling
+
+- id: snaebjarnarson-etal-2026-transducing
+  title: "Transducing Language Models"
+  authors:
+    - Vésteinn Snæbjarnarson
+    - Samuel Kiegeland
+    - Tianyu Liu
+    - Reda Boumasmoud
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2026
+  venue: ICLR 2026
+  venue_url: https://iclr.cc/
+  venue_full: International Conference on Learning Representations
+  type: inproceedings
+  themes: [generation, automata]
+  links:
+    url: https://arxiv.org/abs/2603.05193
+    arXiv: https://arxiv.org/abs/2603.05193
+    code: https://github.com/rycolab/transducing-language-models
+    openreview: https://openreview.net/forum?id=qOyF214xmg
+
+- id: lipkin-etal-2025-controlled-gen
+  title: "Fast Controlled Generation from Language Models with Adaptive Weighted Rejection Sampling"
+  authors:
+    - Benjamin Lipkin
+    - Benjamin LeBrun
+    - Jacob Hoover Vigly
+    - João Loula
+    - David R. MacIver
+    - Li Du
+    - Jason Eisner
+    - Ryan Cotterell
+    - Vikash Mansinghka
+    - Timothy J. O'Donnell
+    - Alexander K. Lew
+    - Tim Vieira
+  year: 2025
+  venue: CoLM 2025
+  venue_url: https://colmweb.org/
+  venue_full: Conference on Language Modeling
+  type: inproceedings
+  note: "Outstanding paper award 🏆"
+  themes: [generation, sampling]
+  links:
+    url: https://arxiv.org/abs/2504.05410
+    arXiv: https://arxiv.org/abs/2504.05410
+
+- id: amini-etal-2025-kl-divergence
+  title: "Better Estimation of the {KL} Divergence Between Language Models"
+  authors:
+    - Afra Amini
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2025
+  venue: NeurIPS 2025
+  venue_url: https://neurips.cc/virtual/2025/loc/san-diego/poster/115467
+  venue_full: Advances in Neural Information Processing Systems
+  type: inproceedings
+  themes: [generation]
+  links:
+    url: https://arxiv.org/abs/2504.10637
+    arXiv: https://arxiv.org/abs/2504.10637
+    code: https://github.com/rycolab/kl-rb
+    openreview: https://openreview.net/forum?id=um9kHMof0c
+
+- id: xefteri-etal-2025-syntactic-posterior
+  title: "Syntactic Control of Language Models by Posterior Inference"
+  authors:
+    - Vicky Xefteri
+    - Tim Vieira
+    - Ryan Cotterell
+    - Afra Amini
+  year: 2025
+  venue: Findings of ACL 2025
+  venue_url: https://2025.aclweb.org/
+  venue_full: Findings of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [generation, parsing]
+  links:
+    url: https://aclanthology.org/2025.findings-acl.1300/
+    arXiv: https://arxiv.org/abs/2506.07154
+    code: https://github.com/rycolab/syntactic-control
+    other:
+      - label: ACL Anthology
+        url: https://aclanthology.org/2025.findings-acl.1300/
+
+- id: loula-etal-2025-smc-control
+  title: "Syntactic and Semantic Control of Large Language Models via Sequential {Monte} {Carlo}"
+  authors:
+    - João Loula
+    - Benjamin LeBrun
+    - Li Du
+    - Ben Lipkin
+    - Clemente Pasti
+    - Gabriel Grand
+    - Tianyu Liu
+    - Yahya Emara
+    - Marjorie Freedman
+    - Jason Eisner
+    - Ryan Cotterell
+    - Vikash Mansinghka
+    - Alexander K. Lew
+    - Tim Vieira
+    - Timothy J. O'Donnell
+  year: 2025
+  venue: ICLR 2025
+  venue_url: https://iclr.cc/
+  venue_full: International Conference on Learning Representations
+  type: inproceedings
+  note: "selected for oral presentation 🎤"
+  themes: [generation, parsing, sampling]
+  links:
+    url: https://openreview.net/forum?id=xoXn62FzD0
+    arXiv: https://arxiv.org/abs/2504.13139
+    code: https://github.com/genlm/genlm-control
+    openreview: https://openreview.net/forum?id=xoXn62FzD0
+    slides: doc/2025-iclr-control-slides.pdf
+
+- id: gastaldi-etal-2025-foundations-tokenization
+  title: "The Foundations of Tokenization: Statistical and Computational Concerns"
+  authors:
+    - Juan Luis Gastaldi
+    - John Terilla
+    - Luca Malagutti
+    - Brian DuSell
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2025
+  venue: ICLR 2025
+  venue_url: https://iclr.cc/
+  venue_full: International Conference on Learning Representations
+  type: inproceedings
+  themes: [tokenization]
+  links:
+    url: https://arxiv.org/abs/2407.11606
+    arXiv: https://arxiv.org/abs/2407.11606
+    openreview: https://openreview.net/forum?id=B5iOSxM2I0
+
+- id: amini-etal-2025-vbon
+  title: "Variational Best-of-{N} Alignment"
+  authors:
+    - Afra Amini
+    - Tim Vieira
+    - Elliott Ash
+    - Ryan Cotterell
+  year: 2025
+  venue: ICLR 2025
+  venue_url: https://iclr.cc/
+  venue_full: International Conference on Learning Representations
+  type: inproceedings
+  themes: [alignment]
+  links:
+    url: https://arxiv.org/abs/2407.06057
+    arXiv: https://arxiv.org/abs/2407.06057
+    openreview: https://openreview.net/forum?id=W9FZEQj3vv
+    code: https://github.com/rycolab/vbon
+
+- id: vieira-etal-2025-canonical-bpe
+  title: "Language Models over Canonical Byte-Pair Encodings"
+  authors:
+    - Tim Vieira
+    - Tianyu Liu
+    - Clemente Pasti
+    - Yahya Emara
+    - Brian DuSell
+    - Benjamin LeBrun
+    - Mario Giulianelli
+    - Juan Luis Gastaldi
+    - Timothy J. O'Donnell
+    - Ryan Cotterell
+  year: 2025
+  venue: ICML 2025
+  venue_url: https://icml.cc/virtual/2025/papers.html
+  venue_full: International Conference on Machine Learning
+  type: inproceedings
+  themes: [tokenization]
+  links:
+    url: https://arxiv.org/abs/2506.07956
+    arXiv: https://arxiv.org/abs/2506.07956
+    openreview: https://openreview.net/forum?id=eCVrfVDNSY
+    code: https://github.com/genlm/canonical-icml-2025
+    other:
+      - label: PMLR
+        url: https://proceedings.mlr.press/v267/vieira25b
+
+- id: vieira-etal-2025-tokens-chars
+  title: "From Language Models over Tokens to Language Models over Characters"
+  authors:
+    - Tim Vieira
+    - Ben LeBrun
+    - Mario Giulianelli
+    - Juan Luis Gastaldi
+    - Brian DuSell
+    - John Terilla
+    - Timothy J. O'Donnell
+    - Ryan Cotterell
+  year: 2025
+  venue: ICML 2025
+  venue_url: https://icml.cc/virtual/2025/papers.html
+  venue_full: International Conference on Machine Learning
+  type: inproceedings
+  note: "spotlight 🌟; arXiv version 2024"
+  themes: [tokenization]
+  links:
+    url: https://arxiv.org/abs/2412.03719
+    arXiv: https://arxiv.org/abs/2412.03719
+    openreview: https://openreview.net/forum?id=sQS0roNQZR
+    code: https://github.com/genlm/genlm-bytes
+    other:
+      - label: PMLR
+        url: https://proceedings.mlr.press/v267/vieira25a.html
+
+- id: giulianelli-etal-2024-psycho-tokenization
+  title: "On the Proper Treatment of Tokenization in Psycholinguistics"
+  authors:
+    - Mario Giulianelli
+    - Luca Malagutti
+    - Juan Luis Gastaldi
+    - Brian DuSell
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2024
+  venue: EMNLP 2024
+  venue_url: https://2024.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [tokenization]
+  links:
+    url: https://arxiv.org/abs/2410.02691
+    arXiv: https://arxiv.org/abs/2410.02691
+    code: https://github.com/rycolab/psycho-toke
+    other:
+      - label: ACL Anthology
+        url: https://aclanthology.org/2024.emnlp-main.1032/
+
+- id: amini-etal-2024-odpo
+  title: "Direct Preference Optimization with an Offset"
+  authors:
+    - Afra Amini
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2024
+  venue: Findings of ACL 2024
+  venue_url: https://2024.aclweb.org/
+  venue_full: Findings of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [alignment]
+  links:
+    url: https://aclanthology.org/2024.findings-acl.592
+    arXiv: https://arxiv.org/abs/2402.10571
+    openreview: https://openreview.net/forum?id=GSiTfZFWBs
+    code: https://github.com/rycolab/odpo
+
+- id: vieira-2023-dissertation
+  title: "Automating the Analysis and Improvement of Dynamic Programming Algorithms with Applications to Natural Language Processing"
+  authors:
+    - Tim Vieira
+  year: 2023
+  venue: PhD Dissertation 2023
+  venue_url: "#"
+  venue_full: Johns Hopkins University
+  type: phdthesis
+  themes: [dp, parsing]
+  links:
+    url: doc/2023-timv-dissertation.pdf
+    video: https://youtu.be/SUOvgaxFxP4
+    slides: https://docs.google.com/presentation/d/10LTArMtqI3nc0xnBkq_m7b7Qk312PL4Vb_26q6fA6QU/edit?usp=sharing
+    code: https://github.com/timvieira/dyna-pi
+    other:
+      - label: library
+        url: https://jscholarship.library.jhu.edu/items/f78cc5e6-9dba-451f-b45c-6a390a255355
+
+- id: opedal-etal-2023-left-corner
+  title: "An Exploration of Left-Corner Transformations"
+  authors:
+    - Andreas Opedal
+    - Eleftheria Tsipidi
+    - Tiago Pimentel
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2023
+  venue: EMNLP 2023
+  venue_url: https://2023.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [parsing]
+  links:
+    url: https://aclanthology.org/2023.emnlp-main.827
+    arXiv: https://arxiv.org/abs/2311.16258
+    code: https://github.com/rycolab/left-corner
+
+- id: butoi-etal-2023-tag
+  title: "Efficient Algorithms for Recognizing Weighted Tree-Adjoining Languages"
+  authors:
+    - Alexandra Butoi
+    - Tim Vieira
+    - Ryan Cotterell
+    - David Chiang
+  year: 2023
+  venue: EMNLP 2023
+  venue_url: https://2023.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [parsing, automata]
+  links:
+    url: https://aclanthology.org/2023.emnlp-main.328/
+    arXiv: http://arxiv.org/abs/2310.15276
+
+- id: opedal-etal-2023-earley
+  title: "Efficient Semiring-Weighted {Earley} Parsing"
+  authors:
+    - Andreas Opedal
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+    - Jason Eisner
+  year: 2023
+  venue: ACL 2023
+  venue_url: https://2023.aclweb.org/
+  venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [parsing]
+  links:
+    url: https://aclanthology.org/2023.acl-long.204/
+    arXiv: https://arxiv.org/abs/2307.02982
+    code: https://github.com/rycolab/earleys-algo
+    video: https://www.cs.jhu.edu/~jason/papers/opedal+al.acl23.mp4
+    poster: https://www.cs.jhu.edu/~jason/papers/opedal+al.acl23.poster.pdf
+
+- id: zouhar-etal-2023-formal-bpe
+  title: "A Formal Perspective on Byte-Pair Encoding"
+  authors:
+    - Vilém Zouhar
+    - Clara Meister
+    - Juan Gastaldi
+    - Li Du
+    - Tim Vieira
+    - Mrinmaya Sachan
+    - Ryan Cotterell
+  year: 2023
+  venue: Findings of ACL 2023
+  venue_url: https://2023.aclweb.org/
+  venue_full: Findings of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [tokenization]
+  links:
+    url: https://aclanthology.org/2023.findings-acl.38/
+    arXiv: https://arxiv.org/abs/2306.16837
+    code: https://github.com/zouharvi/formal-bpe
+    video: https://youtu.be/aB7oaS0rlvI
+    poster: https://github.com/zouharvi/formal-bpe/blob/master/meta/poster.pdf
+
+- id: pasti-etal-2023-bar-hillel
+  title: "On the Intersection of Context-Free and Regular Languages"
+  authors:
+    - Clemente Pasti
+    - Andreas Opedal
+    - Tiago Pimentel
+    - Tim Vieira
+    - Jason Eisner
+    - Ryan Cotterell
+  year: 2023
+  venue: EACL 2023
+  venue_url: https://2023.eacl.org/
+  venue_full: Proceedings of the European Chapter of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [parsing, automata]
+  links:
+    url: https://arxiv.org/abs/2209.06809
+    arXiv: https://arxiv.org/abs/2209.06809
+    code: https://github.com/rycolab/bar-hillel
+    video: https://aclanthology.org/2023.eacl-main.52.mp4
+
+- id: butoi-etal-2022-wpda
+  title: "Algorithms for Weighted Pushdown Automata"
+  authors:
+    - Alexandra Butoi
+    - Brian DuSell
+    - Tim Vieira
+    - Ryan Cotterell
+    - David Chiang
+  year: 2022
+  venue: EMNLP 2022
+  venue_url: https://2022.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [automata]
+  links:
+    url: https://aclanthology.org/2022.emnlp-main.656
+    arXiv: https://arxiv.org/abs/2210.06884
+    code: https://github.com/rycolab/wpda
+
+- id: svete-etal-2022-failure-arcs
+  title: "Algorithms for Weighted Finite-State Automata with Failure Arcs"
+  authors:
+    - Anej Svete
+    - Benjamin Dayan
+    - Ryan Cotterell
+    - Tim Vieira
+    - Jason Eisner
+  year: 2022
+  venue: EMNLP 2022
+  venue_url: https://2022.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [automata]
+  links:
+    url: https://aclanthology.org/2022.emnlp-main.567/
+    arXiv: https://arxiv.org/abs/2301.06862
+    code: https://github.com/rycolab/failure-backward
+
+- id: zmigrod-etal-2022-exact
+  title: "Exact Paired-Permutation Testing for Structured Test Statistics"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2022
+  venue: NAACL 2022
+  venue_url: https://2022.naacl.org/
+  venue_full: "Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies"
+  type: inproceedings
+  themes: [trees]
+  links:
+    url: https://aclanthology.org/2022.naacl-main.360/
+    arXiv: https://arxiv.org/abs/2205.01416
+    code: https://github.com/rycolab/paired-perm-test
+    video: https://youtu.be/kRyKkAdonmY
+
+- id: vieira-etal-2021-automate-dp
+  title: "Automating the Analysis of Parsing Algorithms (and other Dynamic Programs)"
+  authors:
+    - Tim Vieira
+    - Ryan Cotterell
+    - Jason Eisner
+  year: 2021
+  venue: Manuscript 2021
+  venue_full: Manuscript
+  type: misc
+  themes: [dp, parsing]
+  links:
+    url: https://arxiv.org/abs/2512.23665
+    arXiv: https://arxiv.org/abs/2512.23665
+
+- id: vieira-etal-2021-searching
+  title: "Searching for More Efficient Dynamic Programs"
+  authors:
+    - Tim Vieira
+    - Ryan Cotterell
+    - Jason Eisner
+  year: 2021
+  venue: Findings of EMNLP 2021
+  venue_url: https://2021.emnlp.org/
+  venue_full: Findings of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [dp]
+  links:
+    url: https://aclanthology.org/2021.findings-emnlp.322/
+    arXiv: https://arxiv.org/abs/2109.06966
+    slides: https://docs.google.com/presentation/d/1K3qWo0eC8xwOpugxG8ZWfLyLHXg1ch-Q-6b32-Z2Gpc/edit?usp=sharing
+    video: https://underline.io/lecture/38281-searching-for-more-efficient-dynamic-programs
+
+- id: meister-etal-2021-conditional
+  title: "Conditional {Poisson} Stochastic Beam Search"
+  authors:
+    - Clara Meister
+    - Afra Amini
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2021
+  venue: EMNLP 2021
+  venue_url: https://2021.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [beam, sampling]
+  links:
+    url: https://aclanthology.org/2021.emnlp-main.52/
+    arXiv: https://arxiv.org/abs/2109.11034
+    code: https://github.com/rycolab/cpsbs
+    video: https://aclanthology.org/2021.emnlp-main.52.mp4
+
+- id: zmigrod-etal-2021-sampling
+  title: "Efficient Sampling of Dependency Structures"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2021
+  venue: EMNLP 2021
+  venue_url: https://2021.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [trees, sampling]
+  links:
+    url: https://aclanthology.org/2021.emnlp-main.824/
+    arXiv: https://arxiv.org/abs/2109.06521
+    code: https://github.com/rycolab/treesample
+    video: https://aclanthology.org/2021.emnlp-main.824.mp4
+
+- id: zmigrod-etal-2021-efficient
+  title: "Efficient Computation of Expectations under Spanning Tree Distributions"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2021
+  venue: TACL 2021
+  venue_url: http://transacl.org
+  venue_full: Transactions of the Association for Computational Linguistics
+  type: article
+  equal_contribution: [0, 1]
+  themes: [trees]
+  links:
+    url: https://doi.org/10.1162/tacl_a_00391
+    arXiv: https://arxiv.org/abs/2008.12988
+    code: https://github.com/rycolab/tree_expectations
+    video: https://aclanthology.org/2021.tacl-1.41.mp4
+  bibtex:
+    volume: "9"
+    pages: "675--690"
+    doi: "10.1162/tacl_a_00391"
+    issn: "2307-387X"
+
+- id: zmigrod-etal-2021-finding
+  title: "On Finding the {K}-best Non-projective Dependency Trees"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2021
+  venue: ACL 2021
+  venue_url: https://2021.aclweb.org/
+  venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics and the International Joint Conference on Natural Language Processing
+  type: inproceedings
+  themes: [trees]
+  links:
+    url: https://aclanthology.org/2021.acl-long.106/
+    arXiv: https://arxiv.org/abs/2106.00780
+    code: https://github.com/rycolab/spanningtrees
+    video: https://aclanthology.org/2021.acl-long.106.mp4
+  bibtex:
+    doi: "10.18653/v1/2021.acl-long.106"
+    pages: "1324--1337"
+
+- id: zmigrod-etal-2021-higher
+  title: "Higher-order Derivatives of Weighted Finite-state Machines"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2021
+  venue: ACL 2021
+  venue_url: https://2021.aclweb.org/
+  venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics and the International Joint Conference on Natural Language Processing
+  type: inproceedings
+  themes: [automata, autodiff]
+  links:
+    url: https://aclanthology.org/2021.acl-short.32/
+    arXiv: https://arxiv.org/abs/2106.00749
+    code: https://github.com/rycolab/wfsm
+    video: https://aclanthology.org/2021.acl-short.32.mp4
+  bibtex:
+    doi: "10.18653/v1/2021.acl-short.32"
+    pages: "240--248"
+
+- id: meister-etal-2020-beam-answer
+  title: "If Beam Search is the Answer, What was the Question?"
+  authors:
+    - Clara Meister
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2020
+  venue: EMNLP 2020
+  venue_url: https://2020.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  note: "Honorable mention paper 🏆"
+  themes: [beam]
+  links:
+    url: https://aclanthology.org/2020.emnlp-main.170/
+    arXiv: https://arxiv.org/abs/2010.02650
+    code: https://github.com/rycolab/uid-decoding
+    video: https://slideslive.com/38938891/if-beam-search-is-the-answer-what-was-the-question
+  bibtex:
+    doi: "10.18653/v1/2020.emnlp-main.170"
+    pages: "2173--2185"
+
+- id: zmigrod-etal-2020-please
+  title: "Please Mind the Root: Decoding Arborescences for Dependency Parsing"
+  authors:
+    - Ran Zmigrod
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2020
+  venue: EMNLP 2020
+  venue_url: https://2020.emnlp.org/
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [trees, parsing]
+  links:
+    url: https://aclanthology.org/2020.emnlp-main.390/
+    arXiv: https://arxiv.org/abs/2010.02550
+    code: https://github.com/rycolab/spanningtrees
+    video: https://slideslive.com/38939014/please-mind-the-root-decoding-arborescences-for-dependency-parsing
+  bibtex:
+    doi: "10.18653/v1/2020.emnlp-main.390"
+    pages: "4809--4819"
+
+- id: meister-etal-2020-best-first
+  title: "Best-First Beam Search"
+  authors:
+    - Clara Meister
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2020
+  venue: TACL 2020
+  venue_url: http://transacl.org
+  venue_full: Transactions of the Association for Computational Linguistics
+  type: article
+  themes: [beam]
+  links:
+    url: http://dx.doi.org/10.1162/tacl_a_00346
+    arXiv: https://arxiv.org/abs/2007.03909
+    code: https://github.com/rycolab/bfbs
+    slides: https://drive.google.com/file/d/1RJoeh4vpAkGyGqUZtqTHfwJys-wxl8z_/view?usp=sharing
+  bibtex:
+    volume: "8"
+    pages: "795--809"
+    doi: "10.1162/tacl_a_00346"
+    issn: "2307-387X"
+
+- id: francislandau-etal-2020-wrla
+  title: "Evaluation of Logic Programs with Built-Ins and Aggregation: {A} Calculus for Bag Relations"
+  authors:
+    - Matthew Francis-Landau
+    - Tim Vieira
+    - Jason Eisner
+  year: 2020
+  venue: WRLA 2020
+  venue_url: https://wrla2020.webs.upv.es/
+  venue_full: International Workshop on Rewriting Logic and its Applications
+  type: inproceedings
+  themes: [dp]
+  links:
+    url: https://arxiv.org/abs/2010.10503
+    code: https://github.com/matthewfl/dyna-R
+  bibtex:
+    pages: "49--63"
+
+- id: white-etal-2020-universal
+  title: "The Universal Decompositional Semantics Dataset and Decomp Toolkit"
+  authors:
+    - Aaron Steven White
+    - Elias Stengel-Eskin
+    - Siddharth Vashishtha
+    - Venkata Subrahmanyan Govindarajan
+    - Dee Ann Reisinger
+    - Tim Vieira
+    - Keisuke Sakaguchi
+    - Sheng Zhang
+    - Francis Ferraro
+    - Rachel Rudinger
+    - Kyle Rawlins
+    - Benjamin Van Durme
+  year: 2020
+  venue: LREC 2020
+  venue_url: https://lrec2020.lrec-conf.org/en/
+  venue_full: Proceedings of the Language Resources and Evaluation Conference
+  type: inproceedings
+  themes: [semantics]
+  links:
+    url: https://aclanthology.org/2020.lrec-1.699/
+    arXiv: https://arxiv.org/abs/1909.13851
+    code: http://decomp.io/
+  bibtex:
+    pages: "5698--5707"
+    isbn: "979-10-95546-34-4"
+
+- id: vieira-etal-2018-failure
+  title: "Forward-Backward with Failure Arcs: Faster Inference for Variable-Order Conditional Random Fields"
+  authors:
+    - Tim Vieira
+    - Ryan Cotterell
+    - Jason Eisner
+  year: 2018
+  venue: "arXiv 2018"
+  venue_url: https://arxiv.org
+  venue_full: Preprint
+  type: misc
+  equal_contribution: [0, 1]
+  themes: [automata, parsing, ml]
+  links:
+    url: doc/2018-draft-vocrf2.pdf
+    code: https://github.com/timvieira/vocrf
+
+- id: vieira-etal-2017-dyna
+  title: "{Dyna}: Toward a Self-Optimizing Declarative Language for Machine Learning Applications"
+  authors:
+    - Tim Vieira
+    - Matthew Francis-Landau
+    - Nathaniel Wesley Filardo
+    - Farzad Khorasani
+    - Jason Eisner
+  year: 2017
+  venue: MAPL 2017
+  venue_url: https://sites.google.com/view/mapl2017/home
+  venue_full: Proceedings of the ACM SIGPLAN Workshop on Machine Learning and Programming Languages
+  type: inproceedings
+  themes: [dp]
+  links:
+    url: doc/2017-mapl-dyna.pdf
+    slides: doc/2017-mapl-dyna-slides.pptx
+    video: https://www.youtube.com/watch?v=8ixPuuQVNh8
+  bibtex:
+    pages: "8--17"
+    isbn: "978-1-4503-5071-6"
+
+- id: vieira-etal-2017-learning-to-prune
+  title: "Learning to Prune: Exploring the Frontier of Fast and Accurate Parsing"
+  authors:
+    - Tim Vieira
+    - Jason Eisner
+  year: 2017
+  venue: TACL 2017
+  venue_url: http://transacl.org
+  venue_full: Transactions of the Association for Computational Linguistics
+  type: article
+  note: "oral presentation at ACL 2017 🎤"
+  themes: [parsing]
+  links:
+    url: https://doi.org/10.1162/tacl_a_00060
+    code: http://github.com/timvieira/learning-to-prune
+    slides: doc/2017-tacl-pruning-slides.pptx
+    video: https://vimeo.com/234953773
+  bibtex:
+    volume: "5"
+    pages: "263--278"
+    doi: "10.1162/tacl_a_00060"
+    issn: "2307-387X"
+
+- id: vieira-etal-2016-speed
+  title: "Speed-Accuracy Tradeoffs in Tagging with Variable-Order {CRFs} and Structured Sparsity"
+  authors:
+    - Tim Vieira
+    - Ryan Cotterell
+    - Jason Eisner
+  year: 2016
+  venue: EMNLP 2016
+  venue_url: http://emnlp2016.net
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  equal_contribution: [0, 1]
+  themes: [parsing, automata, ml]
+  links:
+    url: https://aclanthology.org/D16-1206/
+    code: http://github.com/timvieira/vocrf
+    poster: doc/2016-emnlp-vocrf-poster.pdf
+  bibtex:
+    doi: "10.18653/v1/D16-1206"
+    pages: "1973--1978"
+
+- id: white-etal-2016-universal
+  title: "Universal Decompositional Semantics on Universal Dependencies"
+  authors:
+    - Aaron Steven White
+    - Drew Reisinger
+    - Keisuke Sakaguchi
+    - Tim Vieira
+    - Sheng Zhang
+    - Rachel Rudinger
+    - Kyle Rawlins
+    - Benjamin Van Durme
+  year: 2016
+  venue: EMNLP 2016
+  venue_url: http://emnlp2016.net
+  venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
+  type: inproceedings
+  themes: [semantics]
+  links:
+    url: https://aclanthology.org/D16-1177/
+    code: http://github.com/hltcoe/PredPatt
+    other:
+      - label: website
+        url: http://decomp.net/
+  bibtex:
+    doi: "10.18653/v1/D16-1177"
+    pages: "1713--1723"
+
+- id: cotterell-etal-2016-joint
+  title: "A Joint Model of Orthography and Morphological Segmentation"
+  authors:
+    - Ryan Cotterell
+    - Tim Vieira
+    - Hinrich Schütze
+  year: 2016
+  venue: NAACL 2016
+  venue_url: http://naacl.org/naacl-hlt-2016/
+  venue_full: "Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies"
+  type: inproceedings
+  note: "Best short paper runner up! 🏆"
+  themes: [parsing, ml]
+  links:
+    url: https://aclanthology.org/N16-1080/
+    code: https://github.com/ryancotterell/treeseg
+    data: http://ryancotterell.github.io/canonical-segmentation/
+    slides: doc/2016-naacl-orthomorphoseg-slides.pptx
+  bibtex:
+    doi: "10.18653/v1/N16-1080"
+    pages: "664--669"
+
+- id: roy-etal-2015-reasoning
+  title: "Reasoning about Quantities in Natural Language"
+  authors:
+    - Subhro Roy
+    - Tim Vieira
+    - Dan Roth
+  year: 2015
+  venue: TACL 2015
+  venue_url: http://transacl.org
+  venue_full: Transactions of the Association for Computational Linguistics
+  type: article
+  themes: [semantics]
+  links:
+    url: http://dx.doi.org/10.1162/tacl_a_00118
+    code: https://github.com/CogComp/cogcomp-nlp/tree/master/quantifier
+  bibtex:
+    volume: "3"
+    pages: "1--13"
+    doi: "10.1162/tacl_a_00118"
+    issn: "2307-387X"
+
+- id: naradowsky-etal-2012-grammarless
+  title: "Grammarless Parsing for Joint Inference"
+  authors:
+    - Jason Naradowsky
+    - Tim Vieira
+    - David A. Smith
+  year: 2012
+  venue: COLING 2012
+  venue_url: http://aclweb.org/anthology/C/C12/
+  venue_full: Proceedings of International Conference on Computational Linguistics
+  type: inproceedings
+  themes: [parsing]
+  links:
+    url: https://aclanthology.org/C12-1122/
+    code: http://github.com/narad/narad-bp
+  bibtex:
+    pages: "1995--2010"
+
+- id: sammons-etal-2009-relational
+  title: "Relation Alignment for Textual Entailment Recognition"
+  authors:
+    - Mark Sammons
+    - V. G. Vinod Vydiswaran
+    - Tim Vieira
+    - Nikhil Johri
+    - Ming-Wei Chang
+    - Dan Goldwasser
+    - Vivek Srikumar
+    - Gourab Kundu
+    - Yuancheng Tu
+    - Kevin Small
+    - Josh Rule
+    - Quang Do
+    - Dan Roth
+  year: 2009
+  venue: TAC 2009
+  venue_url: https://tac.nist.gov/2009/
+  venue_full: Proceedings of the Text Analysis Conference
+  type: inproceedings
+  themes: [semantics]
+  links:
+    url: doc/2009-tac-entailment.pdf
