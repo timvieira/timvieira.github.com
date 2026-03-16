@@ -97,6 +97,11 @@
   links:
     url: https://arxiv.org/abs/2504.05410
     arXiv: https://arxiv.org/abs/2504.05410
+    other:
+      - label: JHU news
+        url: https://www.cs.jhu.edu/news/hopkins-computer-scientists-win-colm-outstanding-paper-award/
+      - label: TechXplore
+        url: https://techxplore.com/news/2025-12-algorithm-faster-reliable-language-outputs.html
 
 - id: amini-etal-2025-kl-divergence
   title: "Better Estimation of the {KL} Divergence Between Language Models"
@@ -168,6 +173,10 @@
     code: https://github.com/genlm/genlm-control
     openreview: https://openreview.net/forum?id=xoXn62FzD0
     slides: https://timvieira.github.io/doc/2025-iclr-control-slides.pdf
+    video: https://slideslive.com/39036841/syntactic-and-semantic-control-of-large-language-models-via-sequential-monte-carlo
+    other:
+      - label: MIT News
+        url: https://news.mit.edu/2025/making-ai-generated-code-more-accurate-0418
 
 - id: gastaldi-etal-2025-foundations-tokenization
   title: "The Foundations of Tokenization: Statistical and Computational Concerns"
@@ -232,9 +241,12 @@
     arXiv: https://arxiv.org/abs/2506.07956
     openreview: https://openreview.net/forum?id=eCVrfVDNSY
     code: https://github.com/genlm/canonical-icml-2025
+    poster: https://icml.cc/media/icml-2025/Slides/44596.pdf
     other:
       - label: PMLR
         url: https://proceedings.mlr.press/v267/vieira25b
+      - label: ICML page
+        url: https://icml.cc/virtual/2025/poster/44596
 
 - id: vieira-etal-2025-tokens-chars
   title: "From Language Models over Tokens to Language Models over Characters"
@@ -262,6 +274,8 @@
     other:
       - label: PMLR
         url: https://proceedings.mlr.press/v267/vieira25a.html
+      - label: ICML page
+        url: https://icml.cc/virtual/2025/poster/43839
 
 - id: giulianelli-etal-2024-psycho-tokenization
   title: "On the Proper Treatment of Tokenization in Psycholinguistics"
