@@ -1,0 +1,275 @@
+# Blog posts for research graph visualization
+# Fields: id, title, year, tags, url, themes
+
+- id: b-rank-one-21
+  title: "Fast rank-one updates to matrix inverse?"
+  year: 2021
+  tags: [numerical, efficiency]
+  url: https://timvieira.github.io/blog/post/2021/03/25/fast-rank-one-updates-to-matrix-inverse/
+  themes: [numerical]
+
+- id: b-smallest-indices-21
+  title: "On the Distribution of the Smallest Indices"
+  year: 2021
+  tags: [sampling-without-replacement, statistics]
+  url: https://timvieira.github.io/blog/post/2021/03/20/on-the-distribution-of-the-smallest-indices/
+  themes: [swor]
+
+- id: b-order-stats-21
+  title: "On the Distribution Functions of Order Statistics"
+  year: 2021
+  tags: [sampling-without-replacement, statistics]
+  url: https://timvieira.github.io/blog/post/2021/03/18/on-the-distribution-functions-of-order-statistics/
+  themes: [swor]
+
+- id: b-inverse-transform-20
+  title: "Animation of the inverse transform method"
+  year: 2020
+  tags: [sampling, statistics]
+  url: https://timvieira.github.io/blog/post/2020/06/30/animation-of-the-inverse-transform-method/
+  themes: [sampling]
+
+- id: b-truncated-20
+  title: "Generating truncated random variates"
+  year: 2020
+  tags: [sampling, statistics]
+  url: https://timvieira.github.io/blog/post/2020/06/30/generating-truncated-random-variates/
+  themes: [sampling]
+
+- id: b-swr-19
+  title: "Algorithms for sampling without replacement"
+  year: 2019
+  tags: [sampling, Gumbel]
+  url: https://timvieira.github.io/blog/post/2019/09/16/algorithms-for-sampling-without-replacement/
+  themes: [swor, gumbel]
+
+- id: b-restart-19
+  title: "The restart acceleration trick"
+  year: 2019
+  tags: [statistics, algorithms]
+  url: https://timvieira.github.io/blog/post/2019/09/06/the-restart-acceleration-trick-a-cure-for-the-heavy-tail-of-wasted-time/
+  themes: [optimization]
+
+- id: b-reservoir-19
+  title: "Faster reservoir sampling by waiting"
+  year: 2019
+  tags: [sampling, Gumbel]
+  url: https://timvieira.github.io/blog/post/2019/06/11/faster-reservoir-sampling-by-waiting/
+  themes: [gumbel]
+
+- id: b-lr-gradient-19
+  title: "The likelihood-ratio gradient"
+  year: 2019
+  tags: [optimization, rl]
+  url: https://timvieira.github.io/blog/post/2019/04/20/the-likelihood-ratio-gradient/
+  themes: [optimization, ml]
+
+- id: b-steepest-19
+  title: "Steepest ascent"
+  year: 2019
+  tags: [optimization]
+  url: https://timvieira.github.io/blog/post/2019/04/19/steepest-ascent/
+  themes: [optimization]
+
+- id: b-blackbox-18
+  title: "Black-box optimization"
+  year: 2018
+  tags: [optimization, calculus]
+  url: https://timvieira.github.io/blog/post/2018/03/16/black-box-optimization/
+  themes: [optimization]
+
+- id: b-backprop-17
+  title: "Backprop is not just the chain rule"
+  year: 2017
+  tags: [calculus, automatic-differentiation]
+  url: https://timvieira.github.io/blog/post/2017/08/18/backprop-is-not-just-the-chain-rule/
+  themes: [autodiff]
+
+- id: b-means-17
+  title: "Estimating means in a finite universe"
+  year: 2017
+  tags: [sampling, statistics]
+  url: https://timvieira.github.io/blog/post/2017/07/03/estimating-means-in-a-finite-universe/
+  themes: [sampling]
+
+- id: b-test-grad-17
+  title: "How to test gradient implementations"
+  year: 2017
+  tags: [testing, calculus]
+  url: https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/
+  themes: [autodiff, numerical]
+
+- id: b-counterfactual-16
+  title: "Counterfactual reasoning and learning from logged data"
+  year: 2016
+  tags: [counterfactual-reasoning, importance-sampling]
+  url: https://timvieira.github.io/blog/post/2016/12/19/counterfactual-reasoning-and-learning-from-logged-data/
+  themes: [sampling, ml]
+
+- id: b-heaps-16
+  title: "Heaps for incremental computation"
+  year: 2016
+  tags: [sampling, datastructures]
+  url: https://timvieira.github.io/blog/post/2016/11/21/heaps-for-incremental-computation/
+  themes: [sampling, dp]
+
+- id: b-reverse-16
+  title: "Reversing a sequence with sublinear space"
+  year: 2016
+  tags: [algorithms, automatic-differentiation]
+  url: https://timvieira.github.io/blog/post/2016/10/01/reversing-a-sequence-with-sublinear-space/
+  themes: [autodiff]
+
+- id: b-grad-fast-16
+  title: "Evaluating nabla f(x) is as fast as f(x)"
+  year: 2016
+  tags: [calculus, automatic-differentiation]
+  url: https://timvieira.github.io/blog/post/2016/09/25/evaluating-fx-is-as-fast-as-fx/
+  themes: [autodiff]
+
+- id: b-sigmoid-16
+  title: "Fast sigmoid sampling"
+  year: 2016
+  tags: [sampling, Gumbel]
+  url: https://timvieira.github.io/blog/post/2016/07/04/fast-sigmoid-sampling/
+  themes: [gumbel]
+
+- id: b-sqrt-16
+  title: "Sqrt-biased sampling"
+  year: 2016
+  tags: [sampling]
+  url: https://timvieira.github.io/blog/post/2016/06/28/sqrt-biased-sampling/
+  themes: [sampling]
+
+- id: b-proposal-16
+  title: "The optimal proposal distribution is not p"
+  year: 2016
+  tags: [importance-sampling]
+  url: https://timvieira.github.io/blog/post/2016/05/28/the-optimal-proposal-distribution-is-not-p/
+  themes: [sampling, generation]
+
+- id: b-dim-analysis-16
+  title: "Dimensional analysis of gradient ascent"
+  year: 2016
+  tags: [optimization, calculus]
+  url: https://timvieira.github.io/blog/post/2016/05/27/dimensional-analysis-of-gradient-ascent/
+  themes: [optimization]
+
+- id: b-hyper-16
+  title: "Gradient-based hyperparameter optimization"
+  year: 2016
+  tags: [calculus, hyperparameter-optimization]
+  url: https://timvieira.github.io/blog/post/2016/03/05/gradient-based-hyperparameter-optimization-and-the-implicit-function-theorem/
+  themes: [optimization, autodiff]
+
+- id: b-array-16
+  title: "Multidimensional array index"
+  year: 2016
+  tags: [datastructures]
+  url: https://timvieira.github.io/blog/post/2016/01/17/multidimensional-array-index/
+  themes: [numerical]
+
+- id: b-grad-product-15
+  title: "Gradient of a product"
+  year: 2015
+  tags: [calculus, automatic-differentiation]
+  url: https://timvieira.github.io/blog/post/2015/07/29/gradient-of-a-product/
+  themes: [autodiff, numerical]
+
+- id: b-crf-same-15
+  title: "Multiclass logistic regression and CRFs are the same thing"
+  year: 2015
+  tags: [machine-learning, crf]
+  url: https://timvieira.github.io/blog/post/2015/04/29/multiclass-logistic-regression-and-conditional-random-fields-are-the-same-thing/
+  themes: [ml, parsing]
+
+- id: b-crf-deep-15
+  title: "Conditional random fields as deep learning models?"
+  year: 2015
+  tags: [machine-learning, structured-prediction]
+  url: https://timvieira.github.io/blog/post/2015/02/05/conditional-random-fields-as-deep-learning-models/
+  themes: [ml, parsing]
+
+- id: b-logreal-15
+  title: "Log-Real number class"
+  year: 2015
+  tags: [numerical]
+  url: https://timvieira.github.io/blog/post/2015/02/01/log-real-number-class/
+  themes: [numerical]
+
+- id: b-is-14
+  title: "Importance sampling"
+  year: 2014
+  tags: [importance-sampling]
+  url: https://timvieira.github.io/blog/post/2014/12/21/importance-sampling/
+  themes: [sampling, generation]
+
+- id: b-pnorms-14
+  title: "Numerically stable p-norms"
+  year: 2014
+  tags: [numerical]
+  url: https://timvieira.github.io/blog/post/2014/11/10/numerically-stable-p-norms/
+  themes: [numerical]
+
+- id: b-kl-14
+  title: "KL-divergence as an objective function"
+  year: 2014
+  tags: [statistics, machine-learning]
+  url: https://timvieira.github.io/blog/post/2014/10/06/kl-divergence-as-an-objective-function/
+  themes: [ml, generation]
+
+- id: b-complex-14
+  title: "Complex-step derivative"
+  year: 2014
+  tags: [calculus, numerical]
+  url: https://timvieira.github.io/blog/post/2014/08/07/complex-step-derivative/
+  themes: [autodiff, numerical]
+
+- id: b-gumbel-reservoir-14
+  title: "Gumbel-max trick and weighted reservoir sampling"
+  year: 2014
+  tags: [sampling, Gumbel]
+  url: https://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/
+  themes: [gumbel]
+
+- id: b-gumbel-14
+  title: "Gumbel-max trick"
+  year: 2014
+  tags: [sampling, Gumbel]
+  url: https://timvieira.github.io/blog/post/2014/07/31/gumbel-max-trick/
+  themes: [gumbel]
+
+- id: b-grid-14
+  title: "Rant against grid search"
+  year: 2014
+  tags: [hyperparameter-optimization]
+  url: https://timvieira.github.io/blog/post/2014/07/22/rant-against-grid-search/
+  themes: [optimization]
+
+- id: b-delta-14
+  title: "Expected value of a quadratic and the Delta method"
+  year: 2014
+  tags: [statistics]
+  url: https://timvieira.github.io/blog/post/2014/07/21/expected-value-of-a-quadratic-and-the-delta-method/
+  themes: [numerical]
+
+- id: b-viz-14
+  title: "Visualizing high-dimensional functions with cross-sections"
+  year: 2014
+  tags: [visualization]
+  url: https://timvieira.github.io/blog/post/2014/02/12/visualizing-high-dimensional-functions-with-cross-sections/
+  themes: [optimization]
+
+- id: b-expnorm-14
+  title: "Exp-normalize trick"
+  year: 2014
+  tags: [numerical]
+  url: https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
+  themes: [numerical]
+
+- id: b-gvp-14
+  title: "Gradient-vector product"
+  year: 2014
+  tags: [calculus]
+  url: https://timvieira.github.io/blog/post/2014/02/10/gradient-vector-product/
+  themes: [autodiff]
