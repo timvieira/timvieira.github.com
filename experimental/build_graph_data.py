@@ -8,7 +8,7 @@ Reads:  ../papers.yaml, ../blog_posts.yaml
 Writes: updates research-graph.html in-place (replaces the papers/blogs arrays)
 """
 
-import json, re
+import json, re, sys
 from pathlib import Path
 
 import yaml
@@ -124,10 +124,37 @@ var N=allNodes.length;""".strip()
     return True
 
 
+def validate_themes(papers, blogs):
+    """Check that all themes used in data are defined in the THEMES dict in the HTML."""
+    html = HTML_PATH.read_text()
+    m = re.search(r"var THEMES\s*=\s*\{(.*?)\};", html, re.DOTALL)
+    if not m:
+        print("WARNING: Could not find THEMES definition in HTML, skipping validation")
+        return True
+    defined = set(re.findall(r"(\w+)\s*:\s*\{", m.group(1)))
+
+    used = set()
+    for item in papers + blogs:
+        used.update(item.get("themes", []))
+
+    undefined = used - defined
+    unused = defined - used
+    if undefined:
+        print(f"ERROR: themes used in data but not defined in THEMES: {sorted(undefined)}")
+        print("  Add them to the THEMES dict in research-graph.html or fix the data.")
+        return False
+    if unused:
+        print(f"NOTE: themes defined in THEMES but not used by any item: {sorted(unused)}")
+    return True
+
+
 def main():
     papers = load_papers()
     blogs = load_blogs()
     print(f"Loaded {len(papers)} papers, {len(blogs)} blog posts")
+
+    if not validate_themes(papers, blogs):
+        sys.exit(1)
 
     js_data = generate_js(papers, blogs)
     if inject_into_html(js_data):

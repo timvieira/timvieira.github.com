@@ -65,7 +65,7 @@
   venue_url: https://iclr.cc/
   venue_full: International Conference on Learning Representations
   type: inproceedings
-  themes: [tokenization, generation, automata]
+  themes: [tokenization, generation, automata, algorithms]
   links:
     url: https://arxiv.org/abs/2603.05193
     arXiv: https://arxiv.org/abs/2603.05193
@@ -235,7 +235,7 @@
   venue_url: https://icml.cc/virtual/2025/papers.html
   venue_full: International Conference on Machine Learning
   type: inproceedings
-  themes: [tokenization]
+  themes: [tokenization, algorithms]
   links:
     url: https://arxiv.org/abs/2506.07956
     arXiv: https://arxiv.org/abs/2506.07956
@@ -265,7 +265,7 @@
   venue_full: International Conference on Machine Learning
   type: inproceedings
   note: "spotlight 🌟; arXiv version 2024"
-  themes: [tokenization]
+  themes: [tokenization, algorithms, dp]
   links:
     url: https://arxiv.org/abs/2412.03719
     arXiv: https://arxiv.org/abs/2412.03719
@@ -327,7 +327,7 @@
   venue_url: "#"
   venue_full: Johns Hopkins University
   type: phdthesis
-  themes: [dp, parsing]
+  themes: [dp, parsing, algorithms]
   links:
     url: https://arxiv.org/abs/2603.13242
     video: https://youtu.be/SUOvgaxFxP4
@@ -350,7 +350,7 @@
   venue_url: https://2023.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [parsing]
+  themes: [parsing, algorithms]
   links:
     url: https://aclanthology.org/2023.emnlp-main.827
     arXiv: https://arxiv.org/abs/2311.16258
@@ -368,7 +368,7 @@
   venue_url: https://2023.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [parsing, automata]
+  themes: [parsing, automata, algorithms, dp]
   links:
     url: https://aclanthology.org/2023.emnlp-main.328/
     arXiv: http://arxiv.org/abs/2310.15276
@@ -386,7 +386,7 @@
   venue_url: https://2023.aclweb.org/
   venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics
   type: inproceedings
-  themes: [parsing]
+  themes: [parsing, algorithms, dp]
   links:
     url: https://aclanthology.org/2023.acl-long.204/
     arXiv: https://arxiv.org/abs/2307.02982
@@ -431,7 +431,7 @@
   venue_url: https://2023.eacl.org/
   venue_full: Proceedings of the European Chapter of the Association for Computational Linguistics
   type: inproceedings
-  themes: [parsing, automata]
+  themes: [parsing, automata, algorithms, dp]
   links:
     url: https://arxiv.org/abs/2209.06809
     arXiv: https://arxiv.org/abs/2209.06809
@@ -451,7 +451,7 @@
   venue_url: https://2022.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [automata]
+  themes: [automata, algorithms, dp]
   links:
     url: https://aclanthology.org/2022.emnlp-main.656
     arXiv: https://arxiv.org/abs/2210.06884
@@ -470,7 +470,7 @@
   venue_url: https://2022.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [automata]
+  themes: [automata, algorithms]
   links:
     url: https://aclanthology.org/2022.emnlp-main.567/
     arXiv: https://arxiv.org/abs/2301.06862
@@ -487,7 +487,7 @@
   venue_url: https://2022.naacl.org/
   venue_full: "Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies"
   type: inproceedings
-  themes: [trees]
+  themes: [algorithms, dp]
   links:
     url: https://aclanthology.org/2022.naacl-main.360/
     arXiv: https://arxiv.org/abs/2205.01416
@@ -504,7 +504,7 @@
   venue: Manuscript 2021
   venue_full: Manuscript
   type: misc
-  themes: [dp, parsing]
+  themes: [dp, parsing, algorithms]
   links:
     url: https://arxiv.org/abs/2512.23665
     arXiv: https://arxiv.org/abs/2512.23665
@@ -520,7 +520,7 @@
   venue_url: https://2021.emnlp.org/
   venue_full: Findings of the Association for Computational Linguistics
   type: inproceedings
-  themes: [dp]
+  themes: [dp, algorithms]
   links:
     url: https://aclanthology.org/2021.findings-emnlp.322/
     arXiv: https://arxiv.org/abs/2109.06966
@@ -539,7 +539,7 @@
   venue_url: https://2021.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [beam, sampling]
+  themes: [beam, sampling, algorithms]
   links:
     url: https://aclanthology.org/2021.emnlp-main.52/
     arXiv: https://arxiv.org/abs/2109.11034
@@ -557,7 +557,7 @@
   venue_url: https://2021.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [trees, sampling]
+  themes: [sampling, algorithms]
   links:
     url: https://aclanthology.org/2021.emnlp-main.824/
     arXiv: https://arxiv.org/abs/2109.06521
@@ -576,7 +576,7 @@
   venue_full: Transactions of the Association for Computational Linguistics
   type: article
   equal_contribution: [0, 1]
-  themes: [trees]
+  themes: [algorithms, parsing, dp]
   links:
     url: https://doi.org/10.1162/tacl_a_00391
     arXiv: https://arxiv.org/abs/2008.12988
@@ -599,7 +599,7 @@
   venue_url: https://2021.aclweb.org/
   venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics and the International Joint Conference on Natural Language Processing
   type: inproceedings
-  themes: [trees]
+  themes: [algorithms, parsing, dp]
   links:
     url: https://aclanthology.org/2021.acl-long.106/
     arXiv: https://arxiv.org/abs/2106.00780
@@ -620,7 +620,7 @@
   venue_url: https://2021.aclweb.org/
   venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics and the International Joint Conference on Natural Language Processing
   type: inproceedings
-  themes: [automata, autodiff]
+  themes: [automata, autodiff, algorithms]
   links:
     url: https://aclanthology.org/2021.acl-short.32/
     arXiv: https://arxiv.org/abs/2106.00749
@@ -663,7 +663,7 @@
   venue_url: https://2020.emnlp.org/
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
-  themes: [trees, parsing]
+  themes: [parsing, algorithms, dp]
   links:
     url: https://aclanthology.org/2020.emnlp-main.390/
     arXiv: https://arxiv.org/abs/2010.02550
@@ -684,7 +684,7 @@
   venue_url: http://transacl.org
   venue_full: Transactions of the Association for Computational Linguistics
   type: article
-  themes: [beam]
+  themes: [beam, algorithms]
   links:
     url: http://dx.doi.org/10.1162/tacl_a_00346
     arXiv: https://arxiv.org/abs/2007.03909
@@ -707,7 +707,7 @@
   venue_url: https://wrla2020.webs.upv.es/
   venue_full: International Workshop on Rewriting Logic and its Applications
   type: inproceedings
-  themes: [dp]
+  themes: [dp, algorithms]
   links:
     url: https://arxiv.org/abs/2010.10503
     code: https://github.com/matthewfl/dyna-R
@@ -755,7 +755,7 @@
   venue_full: Preprint
   type: misc
   equal_contribution: [0, 1]
-  themes: [automata, parsing, ml]
+  themes: [automata, parsing, ml, algorithms, dp]
   links:
     url: https://timvieira.github.io/doc/2018-draft-vocrf2.pdf
     code: https://github.com/timvieira/vocrf
@@ -773,7 +773,7 @@
   venue_url: https://sites.google.com/view/mapl2017/home
   venue_full: Proceedings of the ACM SIGPLAN Workshop on Machine Learning and Programming Languages
   type: inproceedings
-  themes: [dp]
+  themes: [dp, algorithms]
   links:
     url: https://timvieira.github.io/doc/2017-mapl-dyna.pdf
     slides: https://timvieira.github.io/doc/2017-mapl-dyna-slides.pptx
@@ -793,7 +793,7 @@
   venue_full: Transactions of the Association for Computational Linguistics
   type: article
   note: "oral presentation at ACL 2017 🎤"
-  themes: [parsing]
+  themes: [parsing, algorithms, dp]
   links:
     url: https://doi.org/10.1162/tacl_a_00060
     code: http://github.com/timvieira/learning-to-prune
@@ -817,7 +817,7 @@
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
   equal_contribution: [0, 1]
-  themes: [parsing, automata, ml]
+  themes: [parsing, automata, ml, algorithms, dp]
   links:
     url: https://aclanthology.org/D16-1206/
     code: http://github.com/timvieira/vocrf
@@ -865,7 +865,7 @@
   venue_full: "Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies"
   type: inproceedings
   note: "Best short paper runner up! 🏆"
-  themes: [parsing, ml]
+  themes: [parsing, ml, dp]
   links:
     url: https://aclanthology.org/N16-1080/
     code: https://github.com/ryancotterell/treeseg

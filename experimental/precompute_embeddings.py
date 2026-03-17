@@ -355,11 +355,14 @@ def get_embeddings(model_key, texts):
 # ---------------------------------------------------------------------------
 # Theme projections
 # ---------------------------------------------------------------------------
-THEME_ORDER = [
-    "parsing", "tokenization", "generation", "trees", "beam",
-    "automata", "dp", "alignment", "semantics", "sampling",
-    "optimization", "autodiff", "numerical", "ml",
-]
+def get_theme_order():
+    """Derive theme order from the THEMES dict in research-graph.html."""
+    html = HTML_PATH.read_text()
+    m = re.search(r"var THEMES\s*=\s*\{(.*?)\};", html, re.DOTALL)
+    if not m:
+        raise RuntimeError("Could not find THEMES definition in research-graph.html")
+    # 'algorithms' is too generic to be a useful semantic axis — exclude it
+    return [t for t in re.findall(r"(\w+)\s*:\s*\{", m.group(1)) if t != "algorithms"]
 
 
 def parse_node_themes():
@@ -397,7 +400,7 @@ def compute_theme_projections(raw_embeddings):
 
     theme_names = []
     theme_dirs = []
-    for theme in THEME_ORDER:
+    for theme in get_theme_order():
         mask = np.array([theme in nt for nt in node_themes])
         if mask.sum() < 2:
             continue
