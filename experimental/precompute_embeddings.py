@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Compute semantic embeddings from full document content (paper PDFs + blog text),
-then project to 2D with UMAP for the research-graph visualization.
+then compute theme projections for the research-graph visualization.
 
-    pip install sentence-transformers umap-learn pymupdf requests einops
+    pip install sentence-transformers pymupdf requests einops
     python precompute_embeddings.py [--model MODEL_KEY]
 
 Supported models:
@@ -26,6 +26,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SITE_ROOT = SCRIPT_DIR.parent                         # timvieira.github.com/
 PAPERS_YAML = SITE_ROOT / "papers.yaml"
 DOC_DIR = SITE_ROOT / "doc"
+HTML_PATH = SCRIPT_DIR / "research-graph.html"
 BLOG_CONTENT = Path("/home/timv/projects/blog/main/content")
 CACHE_DIR = SCRIPT_DIR / ".content_cache"
 CACHE_DIR.mkdir(exist_ok=True)
@@ -52,95 +53,25 @@ MODELS = {
 }
 
 # ---------------------------------------------------------------------------
-# Item list — same 79 entries, same order as research-graph.html
+# Item list — derived from papers.yaml and blog_posts.yaml
+# Same filtering/ordering as build_graph_data.py so indices match the HTML.
 # ---------------------------------------------------------------------------
-# fmt: off
-ITEMS = [
-    # ---- Papers (40) ----
-    {"kind": "paper", "yaml_id": "lipkin-etal-2025-controlled-gen",     "title": "Fast Controlled Generation from Language Models with Adaptive Weighted Rejection Sampling"},
-    {"kind": "paper", "yaml_id": "amini-etal-2025-kl-divergence",      "title": "Better Estimation of the KL Divergence Between Language Models"},
-    {"kind": "paper", "yaml_id": "xefteri-etal-2025-syntactic-posterior","title": "Syntactic Control of Language Models by Posterior Inference"},
-    {"kind": "paper", "yaml_id": "loula-etal-2025-smc-control",        "title": "Syntactic and Semantic Control of LLMs via Sequential Monte Carlo"},
-    {"kind": "paper", "yaml_id": "gastaldi-etal-2025-foundations-tokenization", "title": "The Foundations of Tokenization: Statistical and Computational Concerns"},
-    {"kind": "paper", "yaml_id": "amini-etal-2025-vbon",               "title": "Variational Best-of-N Alignment"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2025-canonical-bpe",     "title": "Language Models over Canonical Byte-Pair Encodings"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2025-tokens-chars",      "title": "From Language Models over Tokens to Language Models over Characters"},
-    {"kind": "paper", "yaml_id": "giulianelli-etal-2024-psycho-tokenization", "title": "On the Proper Treatment of Tokenization in Psycholinguistics"},
-    {"kind": "paper", "yaml_id": "amini-etal-2024-odpo",               "title": "Direct Preference Optimization with an Offset"},
-    {"kind": "paper", "yaml_id": "vieira-2023-dissertation",           "title": "Automating the Analysis and Improvement of Dynamic Programming Algorithms"},
-    {"kind": "paper", "yaml_id": "opedal-etal-2023-left-corner",       "title": "An Exploration of Left-Corner Transformations"},
-    {"kind": "paper", "yaml_id": "butoi-etal-2023-tag",                "title": "Efficient Algorithms for Recognizing Weighted Tree-Adjoining Languages"},
-    {"kind": "paper", "yaml_id": "opedal-etal-2023-earley",            "title": "Efficient Semiring-Weighted Earley Parsing"},
-    {"kind": "paper", "yaml_id": "zouhar-etal-2023-formal-bpe",        "title": "A Formal Perspective on Byte-Pair Encoding"},
-    {"kind": "paper", "yaml_id": "pasti-etal-2023-bar-hillel",         "title": "On the Intersection of Context-Free and Regular Languages"},
-    {"kind": "paper", "yaml_id": "butoi-etal-2022-wpda",               "title": "Algorithms for Weighted Pushdown Automata"},
-    {"kind": "paper", "yaml_id": "svete-etal-2022-failure-arcs",       "title": "Algorithms for Weighted Finite-State Automata with Failure Arcs"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2022-exact",            "title": "Exact Paired-Permutation Testing for Structured Test Statistics"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2021-automate-dp",       "title": "Automating the Analysis of Parsing Algorithms"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2021-searching",         "title": "Searching for More Efficient Dynamic Programs"},
-    {"kind": "paper", "yaml_id": "meister-etal-2021-conditional",      "title": "Conditional Poisson Stochastic Beam Search"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2021-sampling",         "title": "Efficient Sampling of Dependency Structures"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2021-efficient",        "title": "Efficient Computation of Expectations under Spanning Tree Distributions"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2021-finding",          "title": "On Finding the K-best Non-projective Dependency Trees"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2021-higher",           "title": "Higher-order Derivatives of Weighted Finite-state Machines"},
-    {"kind": "paper", "yaml_id": "meister-etal-2020-beam-answer",      "title": "If Beam Search is the Answer, What was the Question?"},
-    {"kind": "paper", "yaml_id": "zmigrod-etal-2020-please",           "title": "Please Mind the Root: Decoding Arborescences for Dependency Parsing"},
-    {"kind": "paper", "yaml_id": "meister-etal-2020-best-first",       "title": "Best-First Beam Search"},
-    {"kind": "paper", "yaml_id": "francislandau-etal-2020-wrla",       "title": "Evaluation of Logic Programs with Built-Ins and Aggregation"},
-    {"kind": "paper", "yaml_id": "white-etal-2020-universal",          "title": "The Universal Decompositional Semantics Dataset and Decomp Toolkit"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2018-failure",           "title": "Forward-Backward with Failure Arcs for Variable-Order CRFs"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2017-dyna",              "title": "Dyna: Toward a Self-Optimizing Declarative Language for ML"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2017-learning-to-prune", "title": "Learning to Prune: Exploring the Frontier of Fast and Accurate Parsing"},
-    {"kind": "paper", "yaml_id": "vieira-etal-2016-speed",             "title": "Speed-Accuracy Tradeoffs in Tagging with Variable-Order CRFs"},
-    {"kind": "paper", "yaml_id": "white-etal-2016-universal",          "title": "Universal Decompositional Semantics on Universal Dependencies"},
-    {"kind": "paper", "yaml_id": "cotterell-etal-2016-joint",          "title": "A Joint Model of Orthography and Morphological Segmentation"},
-    {"kind": "paper", "yaml_id": "roy-etal-2015-reasoning",            "title": "Reasoning about Quantities in Natural Language"},
-    {"kind": "paper", "yaml_id": "naradowsky-etal-2012-grammarless",   "title": "Grammarless Parsing for Joint Inference"},
-    {"kind": "paper", "yaml_id": "sammons-etal-2009-relational",       "title": "Relation Alignment for Textual Entailment Recognition"},
-    # ---- Blog posts (39) ----
-    {"kind": "blog", "title": "Fast rank-one updates to matrix inverse?"},
-    {"kind": "blog", "title": "On the Distribution of the Smallest Indices"},
-    {"kind": "blog", "title": "On the Distribution Functions of Order Statistics"},
-    {"kind": "blog", "title": "Animation of the inverse transform method"},
-    {"kind": "blog", "title": "Generating truncated random variates"},
-    {"kind": "blog", "title": "Algorithms for sampling without replacement"},
-    {"kind": "blog", "title": "The restart acceleration trick"},
-    {"kind": "blog", "title": "Faster reservoir sampling by waiting"},
-    {"kind": "blog", "title": "The likelihood-ratio gradient"},
-    {"kind": "blog", "title": "Steepest ascent"},
-    {"kind": "blog", "title": "Black-box optimization"},
-    {"kind": "blog", "title": "Backprop is not just the chain rule"},
-    {"kind": "blog", "title": "Estimating means in a finite universe"},
-    {"kind": "blog", "title": "How to test gradient implementations"},
-    {"kind": "blog", "title": "Counterfactual reasoning and learning from logged data"},
-    {"kind": "blog", "title": "Heaps for incremental computation"},
-    {"kind": "blog", "title": "Reversing a sequence with sublinear space"},
-    {"kind": "blog", "title": "Evaluating nabla f(x) is as fast as f(x)"},
-    {"kind": "blog", "title": "Fast sigmoid sampling"},
-    {"kind": "blog", "title": "Sqrt-biased sampling"},
-    {"kind": "blog", "title": "The optimal proposal distribution is not p"},
-    {"kind": "blog", "title": "Dimensional analysis of gradient ascent"},
-    {"kind": "blog", "title": "Gradient-based hyperparameter optimization"},
-    {"kind": "blog", "title": "Multidimensional array index"},
-    {"kind": "blog", "title": "Gradient of a product"},
-    {"kind": "blog", "title": "Multiclass logistic regression and CRFs are the same thing"},
-    {"kind": "blog", "title": "Conditional random fields as deep learning models?"},
-    {"kind": "blog", "title": "Log-Real number class"},
-    {"kind": "blog", "title": "Importance sampling"},
-    {"kind": "blog", "title": "Numerically stable p-norms"},
-    {"kind": "blog", "title": "KL-divergence as an objective function"},
-    {"kind": "blog", "title": "Complex-step derivative"},
-    {"kind": "blog", "title": "Gumbel-max trick and weighted reservoir sampling"},
-    {"kind": "blog", "title": "Gumbel-max trick"},
-    {"kind": "blog", "title": "Rant against grid search"},
-    {"kind": "blog", "title": "Expected value of a quadratic and the Delta method"},
-    {"kind": "blog", "title": "Visualizing high-dimensional functions with cross-sections"},
-    {"kind": "blog", "title": "Exp-normalize trick"},
-    {"kind": "blog", "title": "Gradient-vector product"},
-]
-# fmt: on
+BLOGS_YAML = SITE_ROOT / "blog_posts.yaml"
 
-assert len(ITEMS) == 79, f"Expected 79, got {len(ITEMS)}"
+ITEMS = []  # populated by load_items() at startup
+
+
+def load_items():
+    """Build ITEMS list from YAML files (same order as research-graph.html)."""
+    items = []
+    for p in yaml.safe_load(open(PAPERS_YAML)):
+        if not p.get("themes"):
+            continue
+        title = re.sub(r"[{}]", "", p.get("title", ""))
+        items.append({"kind": "paper", "yaml_id": p["id"], "title": title})
+    for b in yaml.safe_load(open(BLOGS_YAML)):
+        items.append({"kind": "blog", "title": b["title"]})
+    return items
 
 
 # ---------------------------------------------------------------------------
@@ -358,7 +289,7 @@ def clean_text(text):
 # Content extraction (shared across models, cached as .txt files)
 # ---------------------------------------------------------------------------
 def extract_all_content():
-    """Extract text content for all 79 items. Returns list of strings."""
+    """Extract text content for all items. Returns list of strings."""
     print("Loading papers.yaml...")
     papers_by_id = load_papers_yaml()
     print("Building blog title map...")
@@ -366,8 +297,9 @@ def extract_all_content():
 
     texts = []
     fallback_count = 0
+    n = len(ITEMS)
     for i, item in enumerate(ITEMS):
-        label = f"[{i+1:2d}/79]"
+        label = f"[{i+1:2d}/{n}]"
         if item["kind"] == "paper":
             print(f"{label} Paper: {item['title'][:60]}...")
             content = get_paper_content(item, papers_by_id)
@@ -437,8 +369,9 @@ def parse_node_themes():
     for m in re.finditer(r"themes:\[([^\]]*)\]", html_text):
         themes = [t.strip().strip("'\"") for t in m.group(1).split(",")]
         node_themes.append(themes)
-    assert len(node_themes) >= 79, f"Expected ≥79 theme lists, got {len(node_themes)}"
-    return node_themes[:79]
+    n = len(ITEMS)
+    assert len(node_themes) >= n, f"Expected ≥{n} theme lists, got {len(node_themes)}"
+    return node_themes[:n]
 
 
 def compute_theme_projections(raw_embeddings):
@@ -508,9 +441,57 @@ def compute_theme_projections(raw_embeddings):
 
 
 # ---------------------------------------------------------------------------
+# HTML injection
+# ---------------------------------------------------------------------------
+def inject_model_data(model_results):
+    """Replace the MODEL_DATA block in research-graph.html with new data."""
+    html = HTML_PATH.read_text()
+
+    # Find the MODEL_DATA block: from "var MODEL_DATA = {" to the closing "};"
+    start = re.search(r"var MODEL_DATA\s*=\s*\{", html)
+    # Find the matching close: "};" on its own line after MODEL_DATA
+    # We need to find the end of the object — scan for "};" after balanced braces
+    if not start:
+        raise RuntimeError("Could not find 'var MODEL_DATA = {' in HTML")
+
+    depth = 0
+    end_pos = None
+    for i in range(start.start(), len(html)):
+        if html[i] == '{':
+            depth += 1
+        elif html[i] == '}':
+            depth -= 1
+            if depth == 0:
+                # Expect ";" after
+                end_pos = i + 1
+                if end_pos < len(html) and html[end_pos] == ';':
+                    end_pos += 1
+                break
+    if end_pos is None:
+        raise RuntimeError("Could not find end of MODEL_DATA block")
+
+    # Build new MODEL_DATA block
+    lines = ["var MODEL_DATA = {"]
+    for mk, data in model_results.items():
+        lines.append(f"  '{mk}': {{")
+        lines.append(f"    THEME_PROJ_NAMES: {json.dumps(data['THEME_PROJ_NAMES'])},")
+        lines.append(f"    THEME_PROJECTIONS: {json.dumps(data['THEME_PROJECTIONS'])}")
+        lines.append("  },")
+    lines.append("};")
+
+    html = html[:start.start()] + "\n".join(lines) + html[end_pos:]
+    HTML_PATH.write_text(html)
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main():
+    global ITEMS
+    ITEMS = load_items()
+    print(f"Loaded {len(ITEMS)} items ({sum(1 for i in ITEMS if i['kind']=='paper')} papers, "
+          f"{sum(1 for i in ITEMS if i['kind']=='blog')} blogs)")
+
     parser = argparse.ArgumentParser(description="Compute embeddings for research graph")
     parser.add_argument("--model", choices=list(MODELS.keys()), default=None,
                         help="Model to use (default: all models)")
@@ -534,44 +515,23 @@ def main():
 
     texts = extract_all_content() if need_content else [it["title"] for it in ITEMS]
 
+    model_results = {}
     for mk in model_keys:
         embeddings = get_embeddings(mk, texts)
 
-        # Debias
-        paper_mask = np.array([it["kind"] == "paper" for it in ITEMS])
-        mean_paper = embeddings[paper_mask].mean(axis=0)
-        mean_blog = embeddings[~paper_mask].mean(axis=0)
-        style_dir = mean_paper - mean_blog
-        style_dir = style_dir / np.linalg.norm(style_dir)
-        proj = embeddings @ style_dir
-        debiased = embeddings - np.outer(proj, style_dir)
-
-        # UMAP
-        print(f"\n[{mk}] Running UMAP...")
-        from umap import UMAP
-        reducer = UMAP(n_components=2, n_neighbors=12, min_dist=0.15, metric="cosine", random_state=42)
-        coords = reducer.fit_transform(debiased)
-
-        for d in range(2):
-            mn, mx = coords[:, d].min(), coords[:, d].max()
-            coords[:, d] = (coords[:, d] - mn) / (mx - mn)
-
-        result = [[round(float(x), 4), round(float(y), 4)] for x, y in coords]
-
-        print(f"\n// [{mk}] Paste into research-graph.html:")
-        print(f"var SEMANTIC_COORDS = {json.dumps(result)};")
-
-        # Theme projections
+        # Theme projections (includes debiasing internally)
         theme_names, theme_proj = compute_theme_projections(embeddings)
         theme_proj_list = [[round(float(v), 4) for v in row] for row in theme_proj]
 
-        print(f"\n// [{mk}] Theme projection data ({len(theme_names)} concept axes):")
-        print(f"var THEME_PROJ_NAMES = {json.dumps(theme_names)};")
-        print(f"var THEME_PROJECTIONS = {json.dumps(theme_proj_list)};")
+        model_results[mk] = {
+            "THEME_PROJ_NAMES": theme_names,
+            "THEME_PROJECTIONS": theme_proj_list,
+        }
+        print(f"[{mk}] Done ({len(theme_names)} theme axes)")
 
-    if len(model_keys) > 1:
-        print("\n// Summary: embeddings cached for", ", ".join(model_keys))
-        print("// Re-run with --model KEY to output just one model's data")
+    # Inject into HTML
+    inject_model_data(model_results)
+    print(f"Updated {HTML_PATH}")
 
 
 if __name__ == "__main__":

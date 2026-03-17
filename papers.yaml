@@ -65,7 +65,7 @@
   venue_url: https://iclr.cc/
   venue_full: International Conference on Learning Representations
   type: inproceedings
-  themes: [generation, automata, tokenization]
+  themes: [tokenization, generation, automata]
   links:
     url: https://arxiv.org/abs/2603.05193
     arXiv: https://arxiv.org/abs/2603.05193
