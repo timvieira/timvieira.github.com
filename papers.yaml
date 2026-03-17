@@ -329,7 +329,7 @@
   type: phdthesis
   themes: [dp, parsing]
   links:
-    url: https://timvieira.github.io/doc/2023-timv-dissertation.pdf
+    url: https://arxiv.org/abs/2603.13242
     video: https://youtu.be/SUOvgaxFxP4
     slides: https://docs.google.com/presentation/d/10LTArMtqI3nc0xnBkq_m7b7Qk312PL4Vb_26q6fA6QU/edit?usp=sharing
     code: https://github.com/timvieira/dyna-pi
