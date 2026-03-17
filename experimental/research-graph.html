@@ -42,10 +42,11 @@
     font-family:var(--font-serif);font-size:0.73rem;font-style:italic;
     color:var(--ink-faint);pointer-events:none;text-align:center;
     transition:opacity 0.4s;max-width:500px;}
-  .slider-panel{position:fixed;top:6.2rem;left:0.5rem;z-index:55;
+  .slider-panel{position:fixed;bottom:3rem;right:0.5rem;left:auto;top:auto;z-index:55;
     background:rgba(255,252,247,0.95);border:1px solid var(--border);border-radius:6px;
     padding:0.3rem 0.7rem 0.5rem;box-shadow:0 2px 12px rgba(44,37,32,0.08);
-    display:none;width:240px;cursor:default;}
+    display:none;width:240px;cursor:default;
+    max-height:calc(100vh - 8rem);overflow-y:auto;}
   .slider-panel-drag{cursor:grab;padding:0.1rem 0 0.15rem;margin:-0.1rem -0.3rem 0.1rem;
     text-align:center;user-select:none;}
   .slider-panel-drag:active{cursor:grabbing;}
@@ -72,7 +73,7 @@
     height:10px;border-radius:50%;background:var(--link);cursor:pointer;}
   .legend{position:fixed;bottom:0.5rem;left:0.5rem;right:0.5rem;
     display:flex;flex-wrap:wrap;justify-content:center;
-    gap:0.2rem 0.8rem;z-index:10;pointer-events:auto;
+    gap:0.2rem 0.8rem;z-index:30;pointer-events:auto;
     background:linear-gradient(to top,var(--bg) 60%,transparent);padding:0.5rem 0 0.1rem;}
   .legend-item{display:flex;align-items:center;gap:0.25rem;font-family:var(--font-serif);
     font-size:0.68rem;color:var(--ink-light);cursor:pointer;transition:opacity 0.3s;user-select:none;}
@@ -139,22 +140,37 @@
   .tooltip-theme{font-family:var(--font-mono);font-size:0.56rem;padding:0.08em 0.28em;
     border-radius:2px;color:white;opacity:0.8;}
   .detail-panel{position:fixed;right:0;top:0;bottom:0;width:340px;
-    overflow-y:auto;z-index:25;background:rgba(255,252,247,0.98);
+    display:flex;flex-direction:column;
+    z-index:60;background:rgba(255,252,247,0.98);
     border-left:1px solid var(--border);
-    padding:1.1rem 1.2rem;box-shadow:-4px 0 30px rgba(44,37,32,0.1);
+    box-shadow:-4px 0 30px rgba(44,37,32,0.1);
     display:none;animation:panelSlideRight 0.25s ease-out;}
-  .detail-panel.visible{display:block;}
+  .detail-panel.visible{display:flex;}
+  .detail-scroll{overflow-y:auto;flex:1;padding:1.1rem 1.2rem;}
   @keyframes panelSlideRight{from{opacity:0;transform:translateX(100%);}to{opacity:1;transform:none;}}
+  .detail-drag{display:none;}
   @media(max-width:800px){
     .detail-panel{top:auto;bottom:0;left:0;right:0;width:100%;height:auto;
-      max-height:50vh;border-left:none;border-top:1px solid var(--border);
+      max-height:85vh;border-left:none;border-top:1px solid var(--border);
       border-radius:12px 12px 0 0;box-shadow:0 -4px 30px rgba(44,37,32,0.12);
-      animation:panelSlideUp 0.25s ease-out;}
-    @keyframes panelSlideUp{from{opacity:0;transform:translateY(100%);}to{opacity:1;transform:none;}}
+      animation:none;transition:transform 0.3s ease-out;}
+    .detail-drag{display:block;text-align:center;padding:0.4rem 0 0.15rem;cursor:grab;user-select:none;}
+    .detail-drag:active{cursor:grabbing;}
+    .detail-drag span{display:inline-block;width:40px;height:4px;background:var(--border);border-radius:2px;}
+    .slider-panel{top:auto !important;left:0 !important;right:0 !important;bottom:0 !important;
+      width:100% !important;max-height:70vh;border-radius:12px 12px 0 0;
+      border-left:none;border-right:none;
+      box-shadow:0 -4px 30px rgba(44,37,32,0.12);
+      z-index:60;transition:transform 0.3s ease-out;}
+    .slider-panel.visible{display:block;transform:translateY(calc(100% - 2.5rem));}
+    .slider-panel.drawer-open{transform:translateY(0) !important;}
+    .slider-panel-drag{padding:0.4rem 0 0.15rem;}
+    .slider-panel-drag span{width:40px;height:4px;}
   }
-  .detail-close{position:absolute;top:0.6rem;right:0.7rem;background:none;border:none;
-    font-size:1.1rem;color:var(--ink-faint);cursor:pointer;line-height:1;padding:0.2em;}
-  .detail-close:hover{color:var(--ink);}
+  .detail-close{align-self:flex-end;background:none;border:none;
+    font-size:1.1rem;color:rgba(44,37,32,0.25);cursor:pointer;line-height:1;
+    padding:0.6rem 0.7rem 0;flex-shrink:0;transition:color 0.15s;}
+  .detail-close:hover{color:var(--ink-faint);}
   .detail-kind{font-family:var(--font-mono);font-size:0.6rem;text-transform:uppercase;
     letter-spacing:0.1em;color:var(--ink-faint);margin-bottom:0.3em;}
   .detail-title{font-family:var(--font-serif);font-size:1.05rem;font-weight:600;
@@ -243,17 +259,20 @@
   <div class="tooltip-themes" id="tt-themes"></div>
 </div>
 <div class="detail-panel" id="detail-panel">
+  <div class="detail-drag" id="detail-drag"><span></span></div>
   <button class="detail-close" id="detail-close">&#x2715;</button>
-  <div class="detail-kind" id="dp-kind"></div>
-  <div class="detail-title" id="dp-title"></div>
-  <div class="detail-authors" id="dp-authors"></div>
-  <div class="detail-venue" id="dp-venue"></div>
-  <div id="dp-award-wrap"></div>
-  <div class="detail-themes" id="dp-themes"></div>
-  <div class="detail-links" id="dp-links"></div>
-  <div class="detail-neighbors" id="dp-neighbors">
-    <div class="detail-neighbors-label">Connected</div>
-    <div id="dp-neighbor-list"></div>
+  <div class="detail-scroll">
+    <div class="detail-kind" id="dp-kind"></div>
+    <div class="detail-title" id="dp-title"></div>
+    <div class="detail-authors" id="dp-authors"></div>
+    <div class="detail-venue" id="dp-venue"></div>
+    <div id="dp-award-wrap"></div>
+    <div class="detail-themes" id="dp-themes"></div>
+    <div class="detail-links" id="dp-links"></div>
+    <div class="detail-neighbors" id="dp-neighbors">
+      <div class="detail-neighbors-label">Connected</div>
+      <div id="dp-neighbor-list"></div>
+    </div>
   </div>
 </div>
 <div class="instructions">drag · scroll · hover<br>click to pin</div>
@@ -508,7 +527,6 @@ function showDetailPanel(d){
   }
   if(d.kind==='paper'&&d.title){
     addDLink('https://scholar.google.com/scholar?q='+encodeURIComponent(d.title),'Scholar');
-    addDLink('https://www.semanticscholar.org/search?q='+encodeURIComponent(d.title),'Semantic Scholar');
   }
   linksEl.innerHTML=linksHtml;
 
@@ -531,7 +549,14 @@ function showDetailPanel(d){
     });
   }else{nbWrap.style.display='none';}
 
+  detailPanel.style.transform = '';
   detailPanel.classList.add('visible');
+  // On mobile, collapse slider drawer when detail panel opens
+  if (window.matchMedia('(max-width:800px)').matches) {
+    var sp = document.getElementById('slider-panel');
+    sp.classList.remove('drawer-open');
+    sp.style.transform = '';
+  }
 }
 
 function pinNode(d){
@@ -748,37 +773,102 @@ document.getElementById('help-toggle').addEventListener('click', function() {
   this.textContent = show ? 'Hide help' : 'How do these work?';
 });
 
-// Draggable panel
+// Draggable panel (desktop) + drawer swipe (mobile)
+var isMobile = function() { return window.matchMedia('(max-width:800px)').matches; };
+
+function parseTranslateY(el) {
+  var st = getComputedStyle(el).transform;
+  if (!st || st === 'none') return 0;
+  var m = st.match(/matrix.*\((.+)\)/);
+  return m ? parseFloat(m[1].split(',').pop()) || 0 : 0;
+}
+
+function makeDrawer(handle, panel, opts) {
+  var startY, startTY, dragging = false;
+  handle.addEventListener('touchstart', function(e) {
+    if (!isMobile()) return;
+    dragging = true;
+    startY = e.touches[0].clientY;
+    startTY = parseTranslateY(panel);
+    panel.style.transition = 'none';
+    e.preventDefault();
+  }, {passive: false});
+  document.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    var dy = e.touches[0].clientY - startY;
+    var newY = Math.max(0, startTY + dy);
+    var maxY = panel.offsetHeight - 40;
+    panel.style.transform = 'translateY(' + Math.min(newY, maxY) + 'px)';
+  }, {passive: false});
+  document.addEventListener('touchend', function() {
+    if (!dragging) return;
+    dragging = false;
+    panel.style.transition = 'transform 0.3s ease-out';
+    var cur = parseTranslateY(panel);
+    var h = panel.offsetHeight;
+    if (cur < h * 0.3) {
+      panel.style.transform = 'translateY(0)';
+      if (opts.openClass) panel.classList.add(opts.openClass);
+    } else if (opts.onDismiss && cur > h * 0.65) {
+      panel.style.transform = '';
+      opts.onDismiss();
+    } else {
+      panel.style.transform = '';
+      if (opts.openClass) panel.classList.remove(opts.openClass);
+    }
+  });
+}
+
 (function() {
   var panel = document.getElementById('slider-panel');
   var handle = document.getElementById('panel-drag');
-  var ox, oy, sx, sy;
-  handle.addEventListener('mousedown', startDrag);
-  handle.addEventListener('touchstart', startDrag, {passive: false});
-  function startDrag(e) {
+
+  // Desktop drag
+  var ox, oy;
+  handle.addEventListener('mousedown', function(e) {
+    if (isMobile()) return;
     e.preventDefault();
-    var pt = e.touches ? e.touches[0] : e;
     var rect = panel.getBoundingClientRect();
-    ox = pt.clientX - rect.left; oy = pt.clientY - rect.top;
+    ox = e.clientX - rect.left; oy = e.clientY - rect.top;
     document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', stopDrag);
-    document.addEventListener('touchmove', drag, {passive: false});
-    document.addEventListener('touchend', stopDrag);
-  }
+    document.addEventListener('mouseup', stop);
+  });
   function drag(e) {
     e.preventDefault();
-    var pt = e.touches ? e.touches[0] : e;
-    panel.style.left = Math.max(0, pt.clientX - ox) + 'px';
-    panel.style.top = Math.max(0, pt.clientY - oy) + 'px';
+    panel.style.left = Math.max(0, e.clientX - ox) + 'px';
+    panel.style.top = Math.max(0, e.clientY - oy) + 'px';
+    panel.style.bottom = 'auto';
     panel.style.right = 'auto';
   }
-  function stopDrag() {
+  function stop() {
     document.removeEventListener('mousemove', drag);
-    document.removeEventListener('mouseup', stopDrag);
-    document.removeEventListener('touchmove', drag);
-    document.removeEventListener('touchend', stopDrag);
+    document.removeEventListener('mouseup', stop);
   }
+
+  // Mobile drawer
+  makeDrawer(handle, panel, {openClass: 'drawer-open'});
 })();
+
+// Detail panel mobile drawer
+(function() {
+  var panel = document.getElementById('detail-panel');
+  var handle = document.getElementById('detail-drag');
+  makeDrawer(handle, panel, {
+    onDismiss: function() { unpinNode(); }
+  });
+})();
+
+
+// Reset inline styles when crossing mobile/desktop boundary
+window.matchMedia('(max-width:800px)').addEventListener('change', function() {
+  var sp = document.getElementById('slider-panel');
+  sp.style.transform = ''; sp.style.top = ''; sp.style.left = '';
+  sp.style.right = ''; sp.style.bottom = '';
+  sp.classList.remove('drawer-open');
+  var dp = document.getElementById('detail-panel');
+  dp.style.transform = '';
+});
 
 // Model selector
 document.getElementById('model-select').addEventListener('change', function() {
