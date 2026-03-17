@@ -361,8 +361,7 @@ def get_theme_order():
     m = re.search(r"var THEMES\s*=\s*\{(.*?)\};", html, re.DOTALL)
     if not m:
         raise RuntimeError("Could not find THEMES definition in research-graph.html")
-    # 'algorithms' is too generic to be a useful semantic axis — exclude it
-    return [t for t in re.findall(r"(\w+)\s*:\s*\{", m.group(1)) if t != "algorithms"]
+    return re.findall(r"(\w+)\s*:\s*\{", m.group(1))
 
 
 def parse_node_themes():
