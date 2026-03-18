@@ -114,7 +114,7 @@
   venue_url: https://neurips.cc/virtual/2025/loc/san-diego/poster/115467
   venue_full: Advances in Neural Information Processing Systems
   type: inproceedings
-  themes: [generation]
+  themes: [generation, autodiff]
   links:
     url: https://arxiv.org/abs/2504.10637
     arXiv: https://arxiv.org/abs/2504.10637
@@ -576,7 +576,7 @@
   venue_full: Transactions of the Association for Computational Linguistics
   type: article
   equal_contribution: [0, 1]
-  themes: [parsing, dp]
+  themes: [parsing, dp, autodiff]
   links:
     url: https://doi.org/10.1162/tacl_a_00391
     arXiv: https://arxiv.org/abs/2008.12988
@@ -817,7 +817,7 @@
   venue_full: Proceedings of the Conference on Empirical Methods in Natural Language Processing
   type: inproceedings
   equal_contribution: [0, 1]
-  themes: [parsing, automata, ml, dp]
+  themes: [parsing, automata, ml, dp, autodiff]
   links:
     url: https://aclanthology.org/D16-1206/
     code: http://github.com/timvieira/vocrf
