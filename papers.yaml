@@ -327,7 +327,7 @@
   venue_url: "#"
   venue_full: Johns Hopkins University
   type: phdthesis
-  themes: [dp, parsing]
+  themes: [dp, parsing, logic-programming]
   links:
     url: https://arxiv.org/abs/2603.13242
     video: https://youtu.be/SUOvgaxFxP4
@@ -504,7 +504,7 @@
   venue: Manuscript 2021
   venue_full: Manuscript
   type: misc
-  themes: [dp, parsing]
+  themes: [dp, parsing, logic-programming]
   links:
     url: https://arxiv.org/abs/2512.23665
     arXiv: https://arxiv.org/abs/2512.23665
@@ -520,7 +520,7 @@
   venue_url: https://2021.emnlp.org/
   venue_full: Findings of the Association for Computational Linguistics
   type: inproceedings
-  themes: [dp]
+  themes: [dp, logic-programming]
   links:
     url: https://aclanthology.org/2021.findings-emnlp.322/
     arXiv: https://arxiv.org/abs/2109.06966
@@ -707,7 +707,7 @@
   venue_url: https://wrla2020.webs.upv.es/
   venue_full: International Workshop on Rewriting Logic and its Applications
   type: inproceedings
-  themes: [dp]
+  themes: [dp, logic-programming]
   links:
     url: https://arxiv.org/abs/2010.10503
     code: https://github.com/matthewfl/dyna-R
@@ -773,7 +773,7 @@
   venue_url: https://sites.google.com/view/mapl2017/home
   venue_full: Proceedings of the ACM SIGPLAN Workshop on Machine Learning and Programming Languages
   type: inproceedings
-  themes: [dp]
+  themes: [dp, logic-programming]
   links:
     url: https://timvieira.github.io/doc/2017-mapl-dyna.pdf
     slides: https://timvieira.github.io/doc/2017-mapl-dyna-slides.pptx

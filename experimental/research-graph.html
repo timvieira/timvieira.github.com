@@ -316,6 +316,7 @@ var THEMES={
   autodiff:{label:'Gradients',color:'#6a4a3a'},
   numerical:{label:'Numerical Methods',color:'#5a7a8a'},
   ml:{label:'Machine Learning',color:'#5a8a6a'},
+  'logic-programming':{label:'Logic Programming',color:'#4a7a9a'},
 };
 
 var papers=[
@@ -331,7 +332,7 @@ var papers=[
   {id:'vieira-etal-2025-tokens-chars',title:'From Language Models over Tokens to Language Models over Characters',authors:'Vieira, LeBrun, Giulianelli, Gastaldi, DuSell, Terilla, O\'Donnell, Cotterell',venue:'ICML 2025',year:2025,url:'https://arxiv.org/abs/2412.03719',themes:["tokenization", "dp"],links:{"arXiv": "https://arxiv.org/abs/2412.03719", "code": "https://github.com/genlm/genlm-bytes", "openreview": "https://openreview.net/forum?id=sQS0roNQZR", "other": [{"label": "PMLR", "url": "https://proceedings.mlr.press/v267/vieira25a.html"}, {"label": "ICML page", "url": "https://icml.cc/virtual/2025/poster/43839"}]}},
   {id:'giulianelli-etal-2024-psycho-tokenization',title:'On the Proper Treatment of Tokenization in Psycholinguistics',authors:'Giulianelli, Malagutti, Gastaldi, DuSell, Vieira, Cotterell',venue:'EMNLP 2024',year:2024,url:'https://arxiv.org/abs/2410.02691',themes:["tokenization"],links:{"arXiv": "https://arxiv.org/abs/2410.02691", "code": "https://github.com/rycolab/psycho-toke", "other": [{"label": "ACL Anthology", "url": "https://aclanthology.org/2024.emnlp-main.1032/"}]}},
   {id:'amini-etal-2024-odpo',title:'Direct Preference Optimization with an Offset',authors:'Amini, Vieira, Cotterell',venue:'Findings of ACL 2024',year:2024,url:'https://arxiv.org/abs/2402.10571',themes:["alignment"],links:{"arXiv": "https://arxiv.org/abs/2402.10571", "code": "https://github.com/rycolab/odpo", "openreview": "https://openreview.net/forum?id=GSiTfZFWBs"}},
-  {id:'vieira-2023-dissertation',title:'Automating the Analysis and Improvement of Dynamic Programming Algorithms with Applications to Natural Language Processing',authors:'Vieira',venue:'PhD Dissertation 2023',year:2023,url:'https://arxiv.org/abs/2603.13242',themes:["dp", "parsing"],links:{"code": "https://github.com/timvieira/dyna-pi", "slides": "https://docs.google.com/presentation/d/10LTArMtqI3nc0xnBkq_m7b7Qk312PL4Vb_26q6fA6QU/edit?usp=sharing", "video": "https://youtu.be/SUOvgaxFxP4", "other": [{"label": "library", "url": "https://jscholarship.library.jhu.edu/items/f78cc5e6-9dba-451f-b45c-6a390a255355"}]}},
+  {id:'vieira-2023-dissertation',title:'Automating the Analysis and Improvement of Dynamic Programming Algorithms with Applications to Natural Language Processing',authors:'Vieira',venue:'PhD Dissertation 2023',year:2023,url:'https://arxiv.org/abs/2603.13242',themes:["dp", "parsing", "logic-programming"],links:{"code": "https://github.com/timvieira/dyna-pi", "slides": "https://docs.google.com/presentation/d/10LTArMtqI3nc0xnBkq_m7b7Qk312PL4Vb_26q6fA6QU/edit?usp=sharing", "video": "https://youtu.be/SUOvgaxFxP4", "other": [{"label": "library", "url": "https://jscholarship.library.jhu.edu/items/f78cc5e6-9dba-451f-b45c-6a390a255355"}]}},
   {id:'opedal-etal-2023-left-corner',title:'An Exploration of Left-Corner Transformations',authors:'Opedal, Tsipidi, Pimentel, Cotterell, Vieira',venue:'EMNLP 2023',year:2023,url:'https://arxiv.org/abs/2311.16258',themes:["parsing"],links:{"arXiv": "https://arxiv.org/abs/2311.16258", "code": "https://github.com/rycolab/left-corner"}},
   {id:'butoi-etal-2023-tag',title:'Efficient Algorithms for Recognizing Weighted Tree-Adjoining Languages',authors:'Butoi, Vieira, Cotterell, Chiang',venue:'EMNLP 2023',year:2023,url:'http://arxiv.org/abs/2310.15276',themes:["parsing", "automata", "dp"],links:{"arXiv": "http://arxiv.org/abs/2310.15276"}},
   {id:'opedal-etal-2023-earley',title:'Efficient Semiring-Weighted Earley Parsing',authors:'Opedal, Zmigrod, Vieira, Cotterell, Eisner',venue:'ACL 2023',year:2023,url:'https://arxiv.org/abs/2307.02982',themes:["parsing", "dp"],links:{"arXiv": "https://arxiv.org/abs/2307.02982", "code": "https://github.com/rycolab/earleys-algo", "video": "https://www.cs.jhu.edu/~jason/papers/opedal+al.acl23.mp4", "poster": "https://www.cs.jhu.edu/~jason/papers/opedal+al.acl23.poster.pdf"}},
@@ -340,8 +341,8 @@ var papers=[
   {id:'butoi-etal-2022-wpda',title:'Algorithms for Weighted Pushdown Automata',authors:'Butoi, DuSell, Vieira, Cotterell, Chiang',venue:'EMNLP 2022',year:2022,url:'https://arxiv.org/abs/2210.06884',themes:["automata", "dp"],links:{"arXiv": "https://arxiv.org/abs/2210.06884", "code": "https://github.com/rycolab/wpda"}},
   {id:'svete-etal-2022-failure-arcs',title:'Algorithms for Weighted Finite-State Automata with Failure Arcs',authors:'Svete, Dayan, Cotterell, Vieira, Eisner',venue:'EMNLP 2022',year:2022,url:'https://arxiv.org/abs/2301.06862',themes:["automata"],links:{"arXiv": "https://arxiv.org/abs/2301.06862", "code": "https://github.com/rycolab/failure-backward"}},
   {id:'zmigrod-etal-2022-exact',title:'Exact Paired-Permutation Testing for Structured Test Statistics',authors:'Zmigrod, Vieira, Cotterell',venue:'NAACL 2022',year:2022,url:'https://arxiv.org/abs/2205.01416',themes:["dp"],links:{"arXiv": "https://arxiv.org/abs/2205.01416", "code": "https://github.com/rycolab/paired-perm-test", "video": "https://youtu.be/kRyKkAdonmY"}},
-  {id:'vieira-etal-2021-automate-dp',title:'Automating the Analysis of Parsing Algorithms (and other Dynamic Programs)',authors:'Vieira, Cotterell, Eisner',venue:'Manuscript 2021',year:2021,url:'https://arxiv.org/abs/2512.23665',themes:["dp", "parsing"],links:{"arXiv": "https://arxiv.org/abs/2512.23665"}},
-  {id:'vieira-etal-2021-searching',title:'Searching for More Efficient Dynamic Programs',authors:'Vieira, Cotterell, Eisner',venue:'Findings of EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.06966',themes:["dp"],links:{"arXiv": "https://arxiv.org/abs/2109.06966", "slides": "https://docs.google.com/presentation/d/1K3qWo0eC8xwOpugxG8ZWfLyLHXg1ch-Q-6b32-Z2Gpc/edit?usp=sharing", "video": "https://underline.io/lecture/38281-searching-for-more-efficient-dynamic-programs"}},
+  {id:'vieira-etal-2021-automate-dp',title:'Automating the Analysis of Parsing Algorithms (and other Dynamic Programs)',authors:'Vieira, Cotterell, Eisner',venue:'Manuscript 2021',year:2021,url:'https://arxiv.org/abs/2512.23665',themes:["dp", "parsing", "logic-programming"],links:{"arXiv": "https://arxiv.org/abs/2512.23665"}},
+  {id:'vieira-etal-2021-searching',title:'Searching for More Efficient Dynamic Programs',authors:'Vieira, Cotterell, Eisner',venue:'Findings of EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.06966',themes:["dp", "logic-programming"],links:{"arXiv": "https://arxiv.org/abs/2109.06966", "slides": "https://docs.google.com/presentation/d/1K3qWo0eC8xwOpugxG8ZWfLyLHXg1ch-Q-6b32-Z2Gpc/edit?usp=sharing", "video": "https://underline.io/lecture/38281-searching-for-more-efficient-dynamic-programs"}},
   {id:'meister-etal-2021-conditional',title:'Conditional Poisson Stochastic Beam Search',authors:'Meister, Amini, Vieira, Cotterell',venue:'EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.11034',themes:["beam", "sampling"],links:{"arXiv": "https://arxiv.org/abs/2109.11034", "code": "https://github.com/rycolab/cpsbs", "video": "https://aclanthology.org/2021.emnlp-main.52.mp4"}},
   {id:'zmigrod-etal-2021-sampling',title:'Efficient Sampling of Dependency Structures',authors:'Zmigrod, Vieira, Cotterell',venue:'EMNLP 2021',year:2021,url:'https://arxiv.org/abs/2109.06521',themes:["sampling"],links:{"arXiv": "https://arxiv.org/abs/2109.06521", "code": "https://github.com/rycolab/treesample", "video": "https://aclanthology.org/2021.emnlp-main.824.mp4"}},
   {id:'zmigrod-etal-2021-efficient',title:'Efficient Computation of Expectations under Spanning Tree Distributions',authors:'Zmigrod, Vieira, Cotterell',venue:'TACL 2021',year:2021,url:'https://arxiv.org/abs/2008.12988',themes:["parsing", "dp"],links:{"arXiv": "https://arxiv.org/abs/2008.12988", "code": "https://github.com/rycolab/tree_expectations", "video": "https://aclanthology.org/2021.tacl-1.41.mp4"}},
@@ -350,10 +351,10 @@ var papers=[
   {id:'meister-etal-2020-beam-answer',title:'If Beam Search is the Answer, What was the Question?',authors:'Meister, Vieira, Cotterell',venue:'EMNLP 2020',year:2020,url:'https://arxiv.org/abs/2010.02650',themes:["beam"],links:{"arXiv": "https://arxiv.org/abs/2010.02650", "code": "https://github.com/rycolab/uid-decoding", "video": "https://slideslive.com/38938891/if-beam-search-is-the-answer-what-was-the-question"}},
   {id:'zmigrod-etal-2020-please',title:'Please Mind the Root: Decoding Arborescences for Dependency Parsing',authors:'Zmigrod, Vieira, Cotterell',venue:'EMNLP 2020',year:2020,url:'https://arxiv.org/abs/2010.02550',themes:["parsing", "dp"],links:{"arXiv": "https://arxiv.org/abs/2010.02550", "code": "https://github.com/rycolab/spanningtrees", "video": "https://slideslive.com/38939014/please-mind-the-root-decoding-arborescences-for-dependency-parsing"}},
   {id:'meister-etal-2020-best-first',title:'Best-First Beam Search',authors:'Meister, Vieira, Cotterell',venue:'TACL 2020',year:2020,url:'https://arxiv.org/abs/2007.03909',themes:["beam"],links:{"arXiv": "https://arxiv.org/abs/2007.03909", "code": "https://github.com/rycolab/bfbs", "slides": "https://drive.google.com/file/d/1RJoeh4vpAkGyGqUZtqTHfwJys-wxl8z_/view?usp=sharing"}},
-  {id:'francislandau-etal-2020-wrla',title:'Evaluation of Logic Programs with Built-Ins and Aggregation: A Calculus for Bag Relations',authors:'Francis-Landau, Vieira, Eisner',venue:'WRLA 2020',year:2020,url:'https://arxiv.org/abs/2010.10503',themes:["dp"],links:{"code": "https://github.com/matthewfl/dyna-R"}},
+  {id:'francislandau-etal-2020-wrla',title:'Evaluation of Logic Programs with Built-Ins and Aggregation: A Calculus for Bag Relations',authors:'Francis-Landau, Vieira, Eisner',venue:'WRLA 2020',year:2020,url:'https://arxiv.org/abs/2010.10503',themes:["dp", "logic-programming"],links:{"code": "https://github.com/matthewfl/dyna-R"}},
   {id:'white-etal-2020-universal',title:'The Universal Decompositional Semantics Dataset and Decomp Toolkit',authors:'White, Stengel-Eskin, Vashishtha, Govindarajan, Reisinger, Vieira, Sakaguchi, Zhang, Ferraro, Rudinger, Rawlins, Durme',venue:'LREC 2020',year:2020,url:'https://arxiv.org/abs/1909.13851',themes:["semantics"],links:{"arXiv": "https://arxiv.org/abs/1909.13851", "code": "http://decomp.io/"}},
   {id:'vieira-etal-2018-failure',title:'Forward-Backward with Failure Arcs: Faster Inference for Variable-Order Conditional Random Fields',authors:'Vieira, Cotterell, Eisner',venue:'arXiv 2018',year:2018,url:'https://timvieira.github.io/doc/2018-draft-vocrf2.pdf',themes:["automata", "parsing", "ml", "dp"],links:{"code": "https://github.com/timvieira/vocrf"}},
-  {id:'vieira-etal-2017-dyna',title:'Dyna: Toward a Self-Optimizing Declarative Language for Machine Learning Applications',authors:'Vieira, Francis-Landau, Filardo, Khorasani, Eisner',venue:'MAPL 2017',year:2017,url:'https://timvieira.github.io/doc/2017-mapl-dyna.pdf',themes:["dp"],links:{"slides": "https://timvieira.github.io/doc/2017-mapl-dyna-slides.pptx", "video": "https://www.youtube.com/watch?v=8ixPuuQVNh8"}},
+  {id:'vieira-etal-2017-dyna',title:'Dyna: Toward a Self-Optimizing Declarative Language for Machine Learning Applications',authors:'Vieira, Francis-Landau, Filardo, Khorasani, Eisner',venue:'MAPL 2017',year:2017,url:'https://timvieira.github.io/doc/2017-mapl-dyna.pdf',themes:["dp", "logic-programming"],links:{"slides": "https://timvieira.github.io/doc/2017-mapl-dyna-slides.pptx", "video": "https://www.youtube.com/watch?v=8ixPuuQVNh8"}},
   {id:'vieira-etal-2017-learning-to-prune',title:'Learning to Prune: Exploring the Frontier of Fast and Accurate Parsing',authors:'Vieira, Eisner',venue:'TACL 2017',year:2017,url:'https://doi.org/10.1162/tacl_a_00060',themes:["parsing", "dp"],links:{"code": "http://github.com/timvieira/learning-to-prune", "slides": "https://timvieira.github.io/doc/2017-tacl-pruning-slides.pptx", "video": "https://vimeo.com/234953773"}},
   {id:'vieira-etal-2016-speed',title:'Speed-Accuracy Tradeoffs in Tagging with Variable-Order CRFs and Structured Sparsity',authors:'Vieira, Cotterell, Eisner',venue:'EMNLP 2016',year:2016,url:'https://aclanthology.org/D16-1206/',themes:["parsing", "automata", "ml", "dp"],links:{"code": "http://github.com/timvieira/vocrf", "poster": "https://timvieira.github.io/doc/2016-emnlp-vocrf-poster.pdf"}},
   {id:'white-etal-2016-universal',title:'Universal Decompositional Semantics on Universal Dependencies',authors:'White, Reisinger, Sakaguchi, Vieira, Zhang, Rudinger, Rawlins, Durme',venue:'EMNLP 2016',year:2016,url:'https://aclanthology.org/D16-1177/',themes:["semantics"],links:{"code": "http://github.com/hltcoe/PredPatt", "other": [{"label": "website", "url": "http://decomp.net/"}]}},
@@ -1135,12 +1136,23 @@ function renderCards(){
     }
     meta+='</div>';
 
-    // Theme tags
-    var themes='<div class="card-themes">';
+    // Theme tags (clickable)
+    var themesEl=document.createElement('div');
+    themesEl.className='card-themes';
     n.themes.forEach(function(t){
-      if(THEMES[t])themes+='<span class="card-theme-tag" style="background:'+THEMES[t].color+'">'+THEMES[t].label+'</span>';
+      if(!THEMES[t])return;
+      var tag=document.createElement('span');
+      tag.className='card-theme-tag';
+      tag.style.background=THEMES[t].color;
+      tag.style.cursor='pointer';
+      tag.textContent=THEMES[t].label;
+      tag.addEventListener('click',function(e){
+        e.stopPropagation();
+        cardThemeFilter=cardThemeFilter===t?null:t;
+        renderCards();
+      });
+      themesEl.appendChild(tag);
     });
-    themes+='</div>';
 
     // Links — render all available link types from papers.yaml
     var links='<div class="card-links">';
@@ -1174,7 +1186,9 @@ function renderCards(){
     }
     links+='</div>';
 
-    card.innerHTML=head+title+authors+meta+themes+links;
+    card.innerHTML=head+title+authors+meta;
+    card.appendChild(themesEl);
+    card.insertAdjacentHTML('beforeend',links);
     gridEl.appendChild(card);
   });
 }

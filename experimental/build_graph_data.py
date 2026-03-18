@@ -131,7 +131,8 @@ def validate_themes(papers, blogs):
     if not m:
         print("WARNING: Could not find THEMES definition in HTML, skipping validation")
         return True
-    defined = set(re.findall(r"(\w+)\s*:\s*\{", m.group(1)))
+    defined = set(re.findall(r"""(?:'([\w-]+)'|"([\w-]+)"|(\w+))\s*:\s*\{""", m.group(1)))
+    defined = {next(g for g in groups if g) for groups in defined}
 
     used = set()
     for item in papers + blogs:
