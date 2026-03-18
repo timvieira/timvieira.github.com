@@ -52,48 +52,9 @@ Each theme has a human-readable label and a fixed color:
 
 ### Shape, color, and size
 
-<svg width="520" height="120" xmlns="http://www.w3.org/2000/svg" style="background:#faf9f7;border-radius:6px">
-  <!-- Paper examples (small → large) -->
-  <text x="80" y="16" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle">Papers (circle)</text>
-  <circle cx="30" cy="55" r="4" fill="#3a5a8c" fill-opacity="0.75" stroke="#3a5a8c" stroke-width="0.5"/>
-  <text x="30" y="57" font-family="Source Code Pro,monospace" font-size="4" fill="#fff" text-anchor="middle" dominant-baseline="middle">'09</text>
-  <text x="30" y="68" font-family="Crimson Pro,serif" font-size="7" fill="#3a5a8c" fill-opacity="0.55" text-anchor="middle">oldest</text>
-  <circle cx="80" cy="55" r="8" fill="#8c4a3a" fill-opacity="0.75" stroke="#8c4a3a" stroke-width="0.5"/>
-  <text x="80" y="57" font-family="Source Code Pro,monospace" font-size="5" fill="#fff" text-anchor="middle" dominant-baseline="middle">'17</text>
-  <text x="80" y="72" font-family="Crimson Pro,serif" font-size="7" fill="#8c4a3a" fill-opacity="0.55" text-anchor="middle">mid</text>
-  <circle cx="140" cy="55" r="12" fill="#6a8a52" fill-opacity="0.75" stroke="#6a8a52" stroke-width="0.5"/>
-  <text x="140" y="57" font-family="Source Code Pro,monospace" font-size="7" fill="#fff" text-anchor="middle" dominant-baseline="middle">'25</text>
-  <text x="140" y="76" font-family="Crimson Pro,serif" font-size="7" fill="#6a8a52" fill-opacity="0.55" text-anchor="middle">newest</text>
-  <!-- Blog examples (small → large) -->
-  <text x="280" y="16" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle">Blogs (rounded rect)</text>
-  <rect x="226" y="51" width="8" height="8" rx="3" ry="3" fill="#7a5a8a" fill-opacity="0.65" stroke="#7a5a8a" stroke-width="0.5"/>
-  <text x="230" y="57" font-family="Source Code Pro,monospace" font-size="4" fill="#fff" text-anchor="middle" dominant-baseline="middle">'09</text>
-  <text x="230" y="68" font-family="Crimson Pro,serif" font-size="7" fill="#7a5a8a" fill-opacity="0.55" text-anchor="middle" font-style="italic">oldest</text>
-  <rect x="268" y="49" width="12" height="12" rx="3" ry="3" fill="#b06030" fill-opacity="0.65" stroke="#b06030" stroke-width="0.5"/>
-  <text x="274" y="57" font-family="Source Code Pro,monospace" font-size="5" fill="#fff" text-anchor="middle" dominant-baseline="middle">'17</text>
-  <text x="274" y="70" font-family="Crimson Pro,serif" font-size="7" fill="#b06030" fill-opacity="0.55" text-anchor="middle" font-style="italic">mid</text>
-  <rect x="318" y="46" width="18" height="18" rx="3" ry="3" fill="#5a6a7a" fill-opacity="0.65" stroke="#5a6a7a" stroke-width="0.5"/>
-  <text x="327" y="57" font-family="Source Code Pro,monospace" font-size="6" fill="#fff" text-anchor="middle" dominant-baseline="middle">'25</text>
-  <text x="327" y="74" font-family="Crimson Pro,serif" font-size="7" fill="#5a6a7a" fill-opacity="0.55" text-anchor="middle" font-style="italic">newest</text>
-  <!-- Award example -->
-  <text x="440" y="16" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle">Award winner</text>
-  <circle cx="440" cy="55" r="18" stroke="#9a7b3c" stroke-width="1.5" stroke-dasharray="3,2" stroke-opacity="0.6" fill="none"/>
-  <circle cx="440" cy="55" r="15" fill="#3a5a8c" fill-opacity="0.75" stroke="#3a5a8c" stroke-width="0.5"/>
-  <text x="440" y="57" font-family="Source Code Pro,monospace" font-size="9" fill="#fff" text-anchor="middle" dominant-baseline="middle">'23</text>
-  <text x="440" y="82" font-family="Crimson Pro,serif" font-size="7" fill="#3a5a8c" fill-opacity="0.55" text-anchor="middle">Best paper…</text>
-  <!-- Size legend -->
-  <text x="260" y="108" font-family="sans-serif" font-size="9" fill="#999" text-anchor="middle">← older / smaller          newer / larger →</text>
-</svg>
-
-The fill color is the node's **primary theme** (first entry in `themes`).
-Papers use `fill-opacity: 0.75`, blogs `0.65`.
-
-**Radius formula:** `r = base + progress × scale + award_bonus`
-
-- `progress = (year − 2009) / (2025 − 2009)`
-- Papers: `base = 4`, `scale = 8` → radius **4–12**
-- Blogs: `base = 3`, `scale = 6` → radius **3–9**
-- `award_bonus = 3` if award, else `0`
+All nodes have a uniform radius of **9 px**. The fill color is the node's
+**primary theme** (first entry in `themes`). Papers use `fill-opacity: 0.75`,
+blogs `0.65`. Award winners get a dashed gold ring (`#9a7b3c`) around the node.
 
 **Labels:** Year label (Source Code Pro, white, centered) + title label below
 (Crimson Pro, 8 px papers / 7.5 px italic blogs, theme color at 55% opacity).
@@ -108,15 +69,10 @@ are computed as follows.
 ### Strength
 
 ```
-year_boost = 1.5   if |Δyear| ≤ 1
-             1.1   if |Δyear| ≤ 2
-             0.7   if |Δyear| ≤ 4
-             0.35  otherwise
-
 kind_factor = 1.0  if same kind (both papers or both blogs)
               0.7  if cross-type (paper ↔ blog)
 
-strength = |shared_themes| × year_boost × kind_factor
+strength = |shared_themes| × kind_factor
 ```
 
 An edge is only created if `strength` meets a threshold:
@@ -124,9 +80,8 @@ An edge is only created if `strength` meets a threshold:
 - Same-kind edges: `strength ≥ 0.4`
 - Cross-type edges: `strength ≥ 0.55`
 
-This means temporally close items sharing multiple themes are connected most
-strongly, while distant items with only one shared theme may have no edge at
-all.
+Any two nodes sharing at least one theme will be connected (1 × 1.0 = 1.0 ≥ 0.4
+for same-kind; 1 × 0.7 = 0.7 ≥ 0.55 for cross-type).
 
 ### Visual attributes
 

@@ -415,9 +415,8 @@ for(var i=0;i<N;i++)for(var j=i+1;j<N;j++){
   var a=allNodes[i],b=allNodes[j];
   var shared=a.themes.filter(function(t){return b.themes.indexOf(t)>=0;});
   if(!shared.length)continue;
-  var sameKind=a.kind===b.kind,yd=Math.abs(a.year-b.year);
-  var yb=yd<=1?1.5:yd<=2?1.1:yd<=4?0.7:0.35;
-  var str=shared.length*yb*(sameKind?1.0:0.7);
+  var sameKind=a.kind===b.kind;
+  var str=shared.length*(sameKind?1.0:0.7);
   if(str>=(sameKind?0.4:0.55))
     edges.push({source:a.id,target:b.id,shared:shared,strength:str,crossType:!sameKind});
 }
@@ -429,7 +428,7 @@ var g=svg.append('g');
 var zoomBehavior=d3.zoom().scaleExtent([0.2,5]).on('zoom',function(e){g.attr('transform',e.transform);});
 svg.call(zoomBehavior);
 
-function nodeR(d){var r=(d.year-2009)/(2025-2009);return(d.kind==='paper'?4:3)+r*(d.kind==='paper'?8:6)+(d.award?3:0);}
+function nodeR(d){return 9;}
 function nodeColor(d){return THEMES[d.themes[0]].color;}
 
 var zoneLeft=g.append('text').attr('class','zone-label').attr('x',W*0.22).attr('y',H*0.12).attr('text-anchor','middle').text('PUBLICATIONS');
