@@ -3,7 +3,7 @@
 Compute semantic embeddings from full document content (paper PDFs + blog text),
 then compute theme projections for the research-graph visualization.
 
-    pip install sentence-transformers pymupdf requests einops
+    pip install sentence-transformers pymupdf requests
     python precompute_embeddings.py [--model MODEL_KEY]
 
 Supported models:

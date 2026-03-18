@@ -7,7 +7,7 @@ Compute sentence-transformer embeddings for paper/blog content, project onto the
 
 1. Install dependencies:
    ```
-   pip install sentence-transformers pymupdf requests einops
+   pip install sentence-transformers pymupdf requests
    ```
 
 2. Run `precompute_embeddings.py` — it automatically injects MODEL_DATA (theme projections) into `research-graph.html` for all 3 embedding models.
