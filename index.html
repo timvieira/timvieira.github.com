@@ -15,6 +15,9 @@
     <style>
       body {
           font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+          text-align: justify;
+          hyphens: auto;
+          -webkit-hyphens: auto;
       }
       h1,h2,h3{
         font-weight: bold;
@@ -53,6 +56,37 @@
       #bunchoflinks a:first-child {
         margin-left: 0;
       }
+      .trajectory {
+        list-style: none;
+        padding-left: 50px;
+        padding-right: 15px;
+      }
+      .trajectory li {
+        position: relative;
+        margin-bottom: 10px;
+        padding-left: 0px;
+      }
+      .trajectory li::before {
+        content: '';
+        position: absolute;
+        left: -46px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background-size: 40px;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.25;
+        transition: opacity 0.3s ease;
+      }
+      .trajectory li:hover::before {
+        opacity: 1;
+      }
+      .trajectory li.traj-eth::before { background-image: url('img/logos/eth.png'); }
+      .trajectory li.traj-jhu::before { background-image: url('img/logos/jhu.png'); background-size: 28px; }
+      .trajectory li.traj-umass::before { background-image: url('img/logos/umass.png'); background-size: 26px; }
+      .trajectory li.traj-uiuc::before { background-image: url('img/logos/uiuc.png'); background-size: 20px; }
       .explore-link { text-decoration: none !important; }
       .explore-link .graph-icon circle { transition: fill 0.3s ease; }
       @keyframes colorCycleWord {
@@ -110,31 +144,24 @@
             </p>
 
             <p>
-              My recent work applies probabilistic inference, dynamic
-              programming, and formal language theory to language models,
-              making them more controllable and programmable. More broadly,
-              I have worked on dynamic programming, structured prediction, automatic
-              differentiation, sampling methods, optimization, beam search,
+              My current work focuses on making language models more
+              controllable and programmable using probabilistic inference
+              techniques. My broader interests include
+              dynamic programming, natural language processing, structured
+              prediction, automatic
+              differentiation, sampling methods, sampling without replacement, optimization, beam search,
               the Gumbel trick, context-free grammars, semirings, automata
-              theory, logic programming, and reinforcement learning.
+              theory, logic programming, and reinforcement learning. I publish
+              on many of these topics and explore them in a more tutorial
+              style on my blog, <a href="blog/">Graduate Descent</a>.
             </p>
 
-            <p>
-              I am a postdoctoral researcher working (remotely from NYC)
-              with <a href="http://rycolab.io">Ryan Cotterell</a> at ETH
-              Zürich. I did my PhD
-              with <a href="http://cs.jhu.edu/~jason">Jason Eisner</a> at
-              Johns Hopkins, where I
-              developed <a href="https://github.com/timvieira/dyna-pi">dyna-pi</a>,
-              a system for automatically analyzing and improving dynamic
-              programming algorithms. Before that, I worked
-              with <a href="http://www.cs.umass.edu/~mccallum/">Andrew
-              McCallum</a> on <a href="http://rexa.info">Rexa</a>
-              and <a href="http://factorie.cs.umass.edu/">Factorie</a>, and
-              with <a href="https://www.cis.upenn.edu/~danroth/">Dan Roth</a>
-              on Textual Entailment, at the University of Illinois
-              Urbana-Champaign.
-            </p>
+            <ul class="trajectory">
+              <li class="traj-eth">Consulting research scientist with <a href="http://rycolab.io">Ryan Cotterell</a> at ETH Zürich (remote from NYC).</li>
+              <li class="traj-jhu">PhD with <a href="http://cs.jhu.edu/~jason">Jason Eisner</a> at Johns Hopkins. Developed <a href="https://github.com/timvieira/dyna-pi"><code>dyna-pi</code></a>, a system for automatically analyzing and improving dynamic programming algorithms.</li>
+              <li class="traj-umass">Research programmer with <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a> at UMass. Worked on Rexa (a research paper search engine) and <a href="http://factorie.cs.umass.edu/">Factorie</a> (a probabilistic programming framework).</li>
+              <li class="traj-uiuc">BS in computer science (minor in mathematics) at UIUC. Research with <a href="https://www.cis.upenn.edu/~danroth/">Dan Roth</a> on textual entailment.</li>
+            </ul>
 
         </div>
 
@@ -145,8 +172,7 @@
           probably <a href="https://www.instagram.com/p/BCmaClQTQO4/?taken-by=tim.vieira">climbing
           things</a>, <a href="https://www.youtube.com/watch?v=fMwk8XgqCc8">walking
           around on my hands</a>, or hanging out with
-          <a href="http://dirichlet.net">Hanna Wallach</a>, our adorable dog
-          <a href="https://www.instagram.com/maia.the.pomsky/">Maia</a>, and our newest family member.
+          <a href="http://dirichlet.net">Hanna Wallach</a>, our <a href="https://www.instagram.com/maia.the.pomsky/">adorable dog</a>, and our newest family member.
           <br/>
           <br/>
 
@@ -1074,7 +1100,7 @@
            <li style="">
               <div class="pub">
                 <a class="pub-title" href="https://timvieira.github.io/doc/2009-tac-entailment.pdf">
-                  Relation Alignment for Textual Entailment Recognition
+                  Relation Alignment for textual entailment Recognition
                 </a>
                 <span class="pub-author">
                   Mark Sammons,
