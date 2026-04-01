@@ -1191,6 +1191,32 @@ function renderCards(){
     gridEl.appendChild(card);
   });
 }
+
+// URL hash support: #theme=dp&mode=cards
+(function(){
+  var params={};
+  location.hash.replace(/^#/,'').split('&').forEach(function(p){
+    var kv=p.split('=');if(kv.length===2)params[kv[0]]=decodeURIComponent(kv[1]);
+  });
+  if(params.theme&&THEMES[params.theme]){
+    var mode=params.mode||'cards';
+    // Switch mode
+    var btn=document.querySelector('.mode-btn[data-mode="'+mode+'"]');
+    if(btn)btn.click();
+    // Apply theme filter
+    if(mode==='cards'){
+      cardThemeFilter=params.theme;
+      renderCards();
+    }else{
+      // For graph modes, trigger the legend click
+      var legendItem=document.querySelector('.legend-item[data-theme="'+params.theme+'"]');
+      if(legendItem)legendItem.click();
+    }
+  }else if(params.mode){
+    var btn=document.querySelector('.mode-btn[data-mode="'+params.mode+'"]');
+    if(btn)btn.click();
+  }
+})();
 </script>
 </body>
 </html>

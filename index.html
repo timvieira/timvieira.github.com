@@ -27,8 +27,12 @@
         text-decoration: none;
       }
       #bunchoflinks a span.link-text,
-      #bunchoflinks .explore-link .explore-text {
-        position: relative;
+      #bunchoflinks .explore-link .explore-text,
+      #interests a {
+        text-decoration: none;
+      }
+      #interests a:hover {
+        text-decoration: underline;
       }
       #bunchoflinks a span.link-text::before,
       #bunchoflinks .explore-link .explore-text::before {
@@ -137,21 +141,27 @@
 
             <p>
               I am a computer scientist driven by an allergy to inefficiency
-              and a love of elegant solutions to tough problems. I lean
-              theoretical. Finding the right foundations is harder upfront but
-              leads to solutions that are simpler, more general, and free of
-              hacks.
+              and a love of elegant solutions to tough problems. I believe
+              that finding the right theoretical foundations is harder upfront
+              but leads to solutions that are more general, more
+              interpretable, and longer-lasting.
             </p>
 
             <p>
               My current work focuses on making language models more
               controllable and programmable using probabilistic inference
               techniques. My broader interests include
-              dynamic programming, natural language processing, structured
-              prediction, automatic
-              differentiation, sampling methods, sampling without replacement, optimization, beam search,
-              the Gumbel trick, context-free grammars, semirings, automata
-              theory, logic programming, and reinforcement learning. I publish
+              <a href="experimental/research-graph.html#theme=dp&amp;mode=cards">dynamic programming</a>,
+              <a href="experimental/research-graph.html#theme=tokenization&amp;mode=cards">tokenization</a>,
+              <a href="experimental/research-graph.html#theme=parsing&amp;mode=cards">structured prediction</a>,
+              <a href="experimental/research-graph.html#theme=autodiff&amp;mode=cards">automatic differentiation</a>,
+              <a href="experimental/research-graph.html#theme=sampling&amp;mode=cards">sampling methods</a>,
+              <a href="experimental/research-graph.html#theme=swor&amp;mode=cards">sampling without replacement</a>,
+              <a href="experimental/research-graph.html#theme=beam&amp;mode=cards">beam search</a>,
+              the <a href="experimental/research-graph.html#theme=gumbel&amp;mode=cards">Gumbel trick</a>,
+              <a href="experimental/research-graph.html#theme=automata&amp;mode=cards">formal language theory</a>,
+              <a href="experimental/research-graph.html#theme=logic-programming&amp;mode=cards">logic programming</a>,
+              and <a href="experimental/research-graph.html#theme=alignment&amp;mode=cards">reinforcement learning</a>. I publish
               on many of these topics and explore them in a more tutorial
               style on my blog, <a href="blog/">Graduate Descent</a>.
             </p>
