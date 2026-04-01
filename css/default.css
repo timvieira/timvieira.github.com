@@ -117,7 +117,7 @@ h2 {
   }
 
   #name-container a:hover {
-      text-decoration: underline;
+      text-decoration: none;
   }
 
   #name {
