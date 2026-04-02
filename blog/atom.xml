@@ -4,7 +4,14 @@
   <link href="https://timvieira.github.io/blog/" rel="alternate"/>
   <link href="https://timvieira.github.io/blog/atom.xml" rel="self"/>
   <id>https://timvieira.github.io/blog/</id>
-  <updated>2026-03-13T00:00:00Z</updated>
+  <updated>2026-03-31T00:00:00Z</updated>
+  <entry>
+    <title>The Wobbly Table Theorem</title>
+    <link href="https://timvieira.github.io/blog/the-wobbly-table-theorem/" rel="alternate"/>
+    <id>https://timvieira.github.io/blog/the-wobbly-table-theorem/</id>
+    <updated>2026-03-31T00:00:00Z</updated>
+    <author><name>Tim Vieira</name></author>
+  </entry>
   <entry>
     <title>Interactive KL Divergence Fitting</title>
     <link href="https://timvieira.github.io/blog/interactive-kl-divergence-fitting/" rel="alternate"/>
@@ -136,13 +143,6 @@
     <link href="https://timvieira.github.io/blog/evaluating-fx-is-as-fast-as-fx/" rel="alternate"/>
     <id>https://timvieira.github.io/blog/evaluating-fx-is-as-fast-as-fx/</id>
     <updated>2016-09-25T00:00:00Z</updated>
-    <author><name>Tim Vieira</name></author>
-  </entry>
-  <entry>
-    <title>Fast Sigmoid Sampling</title>
-    <link href="https://timvieira.github.io/blog/fast-sigmoid-sampling/" rel="alternate"/>
-    <id>https://timvieira.github.io/blog/fast-sigmoid-sampling/</id>
-    <updated>2016-07-04T00:00:00Z</updated>
     <author><name>Tim Vieira</name></author>
   </entry>
 </feed>
