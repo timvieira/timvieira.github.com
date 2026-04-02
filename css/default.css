@@ -9,7 +9,7 @@ html {
   width: 100%;
   height: 100%;
   line-height: 1.25em;
-  background-color: #f9f9f9;
+  background-color: #f6f1ea;
 //  font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
 //  background-image: url("/img/squirt.png");
 //  background-repeat: no-repeat;
@@ -78,9 +78,9 @@ a:hover{
 
 #interests, #fun, #name-container, #publications, #mugshot, #blogbox {
     background-color: rgba(255, 255, 255, 0.7);
-    -moz-box-shadow: 2px 4px 14px rgba(0,0,0,.18), -1px -1px 0 rgba(0,0,0,.04);
-    -webkit-box-shadow: 2px 4px 14px rgba(0,0,0,.18), -1px -1px 0 rgba(0,0,0,.04);
-    box-shadow: 2px 4px 14px rgba(0,0,0,.18), -1px -1px 0 rgba(0,0,0,.04);
+    -moz-box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
+    -webkit-box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
+    box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
 }
 
 h1, h2, h3, h4 {
