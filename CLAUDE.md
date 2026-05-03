@@ -5,8 +5,10 @@
 Regenerate all dependent files:
 
 ```
-python build.py                              # -> cv/cv.bib, generated_index.html
-cd experimental && python build_graph_data.py # -> experimental/research-graph.html
+python build.py                                  # -> cv/cv.bib, generated_index.html
+cp generated_index.html index.html               # promote regenerated publications list
+cd experimental && python build_graph_data.py    # -> experimental/research-graph.html
+python precompute_embeddings.py                  # -> semantic embeddings injected into research-graph.html
 ```
 
 ## After changing `experimental/research-graph.html`

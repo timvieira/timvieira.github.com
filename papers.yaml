@@ -30,6 +30,63 @@
 #   bibtex:     - extra BibTeX-only fields (doi, pages, volume, isbn, etc.)
 # -------------------------------------------------
 
+- id: emara-etal-2026-smc-speculative
+  title: "Faster {LLM} Inference via Sequential {Monte} {Carlo}"
+  authors:
+    - Yahya Emara
+    - Mauricio Barba da Costa
+    - Chi-Chih Chang
+    - Cameron Freer
+    - Tim Vieira
+    - Ryan Cotterell
+    - Mohamed S. Abdelfattah
+  year: 2026
+  venue: Preprint
+  venue_full: Preprint
+  type: misc
+  themes: [generation, sampling]
+  links:
+    url: https://arxiv.org/abs/2604.15672
+    arXiv: https://arxiv.org/abs/2604.15672
+    code: https://github.com/abdelfattah-lab/smcsd
+
+- id: kiegeland-etal-2026-surprisal-units
+  title: "On the Proper Treatment of Units in Surprisal Theory"
+  authors:
+    - Samuel Kiegeland
+    - Vésteinn Snæbjarnarson
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2026
+  venue: ACL 2026
+  venue_url: https://2026.aclweb.org/
+  venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [tokenization]
+  links:
+    url: https://arxiv.org/abs/2604.28147
+    arXiv: https://arxiv.org/abs/2604.28147
+    code: https://github.com/samuki/units-surprisal
+
+- id: pasti-etal-2026-prefix-parsing
+  title: "Prefix Parsing is Just Parsing"
+  authors:
+    - Clemente Pasti
+    - Andreas Opedal
+    - Timothy J. O'Donnell
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2026
+  venue: ACL 2026
+  venue_url: https://2026.aclweb.org/
+  venue_full: Proceedings of the Annual Meeting of the Association for Computational Linguistics
+  type: inproceedings
+  themes: [parsing, generation, autodiff]
+  links:
+    url: https://arxiv.org/abs/2604.21191
+    arXiv: https://arxiv.org/abs/2604.21191
+    code: https://github.com/genlm/prefix-acl-26
+
 - id: chan-etal-2025-smc-ensembling
   title: "Ensembling Language Models with Sequential {Monte} {Carlo}"
   authors:

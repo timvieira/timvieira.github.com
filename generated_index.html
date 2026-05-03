@@ -15,10 +15,100 @@
     <style>
       body {
           font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+          text-align: justify;
+          hyphens: auto;
+          -webkit-hyphens: auto;
       }
       h1,h2,h3{
         font-weight: bold;
       }
+      #bunchoflinks a {
+        margin: 0;
+        text-decoration: none;
+      }
+      #bunchoflinks a span.link-text,
+      #bunchoflinks .explore-link .explore-text,
+      #interests a {
+        text-decoration: none;
+      }
+      #interests a:hover {
+        text-decoration: underline;
+      }
+      #bunchoflinks a span.link-text::before,
+      #bunchoflinks .explore-link .explore-text::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 1px;
+        background: currentColor;
+        transition: width 0.3s ease, left 0.3s ease;
+      }
+      #bunchoflinks a:hover span.link-text::before,
+      #bunchoflinks .explore-link:hover .explore-text::before {
+        left: 0;
+        width: 100%;
+      }
+      #bunchoflinks a:not(:last-child)::after {
+        content: '\00b7';
+        margin-left: 0.1em;
+        color: #999;
+        text-decoration: none;
+        display: inline-block;
+      }
+      #bunchoflinks a:first-child {
+        margin-left: 0;
+      }
+      .trajectory {
+        list-style: none;
+        padding-left: 50px;
+        padding-right: 15px;
+      }
+      .trajectory li {
+        position: relative;
+        margin-bottom: 10px;
+        padding-left: 0px;
+      }
+      .trajectory li::before {
+        content: '';
+        position: absolute;
+        left: -46px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background-size: 40px;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.25;
+        transition: opacity 0.3s ease;
+      }
+      .trajectory li:hover::before {
+        opacity: 1;
+      }
+      .trajectory li.traj-eth::before { background-image: url('img/logos/eth.png'); }
+      .trajectory li.traj-jhu::before { background-image: url('img/logos/jhu.png'); background-size: 28px; }
+      .trajectory li.traj-umass::before { background-image: url('img/logos/umass.png'); background-size: 26px; }
+      .trajectory li.traj-uiuc::before { background-image: url('img/logos/uiuc.png'); background-size: 20px; }
+      .explore-link { text-decoration: none !important; }
+      .explore-link .graph-icon circle { transition: fill 0.3s ease; }
+      @keyframes colorCycleWord {
+        0%,100% { color: #3a5a8c; }
+        16% { color: #8c4a3a; }
+        33% { color: #6a8a52; }
+        50% { color: #b06030; }
+        66% { color: #7a5a8a; }
+        83% { color: #3a7a7a; }
+      }
+      @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+      .explore-link:hover .explore-text { animation: colorCycleWord 6s ease-in-out infinite; }
+      .explore-link:hover .graph-icon { animation: breathe 1.5s ease-in-out infinite; }
+      .explore-link:hover .n1 { fill: #3a5a8c; }
+      .explore-link:hover .n2 { fill: #8c4a3a; }
+      .explore-link:hover .n3 { fill: #6a8a52; }
+      .explore-link:hover .n4 { fill: #b06030; }
+      .explore-link:hover .n5 { fill: #7a5a8a; }
     </style>
 
   </head>
@@ -33,11 +123,13 @@
           <div id="name-links">
             <h1 id="name">Tim Vieira</h1>
             <div id="bunchoflinks">
-              <a id="blog" href="blog/">Blog</a>
-              | <a id="github" href="http://github.com/timvieira">Github</a>
-              | <a id="twitter" href="http://twitter.com/xtimv">Twitter</a>
-              | <a id="linkedin" href="https://www.linkedin.com/in/tim-vieira-608b0396/">LinkedIn</a>
-              | <a id="instagram" href="https://www.instagram.com/tim.vieira/">Instagram</a>
+              <a id="blog" href="blog/"><span class="link-text">Blog</span></a>
+              <a id="github" href="http://github.com/timvieira"><span class="link-text">Github</span></a>
+              <a id="scholar" href="https://scholar.google.com/citations?user=Avtv7FkAAAAJ&hl=en"><span class="link-text">Scholar</span></a>
+              <a id="twitter" href="http://twitter.com/xtimv"><span class="link-text">X</span></a>
+              <a id="linkedin" href="https://www.linkedin.com/in/tim-vieira-608b0396/"><span class="link-text">LinkedIn</span></a>
+              <a id="instagram" href="https://www.instagram.com/tim.vieira/"><span class="link-text">Instagram</span></a>
+              <a id="explore" href="experimental/research-graph.html" class="explore-link"><span class="explore-text">Explore</span> <svg class="graph-icon" width="18" height="16" viewBox="0 0 18 16" style="vertical-align: middle; position: relative; top: -1px;"><line x1="3" y1="4" x2="9" y2="2" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><line x1="9" y1="2" x2="15" y2="5" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><line x1="3" y1="4" x2="6" y2="10" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><line x1="9" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><line x1="15" y1="5" x2="12" y2="12" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><line x1="6" y1="10" x2="12" y2="12" stroke="currentColor" stroke-width="0.9" opacity="0.35"/><circle class="n1" cx="3" cy="4" r="2.0" fill="currentColor" stroke="none"/><circle class="n2" cx="9" cy="2" r="1.2" fill="currentColor" stroke="none"/><circle class="n3" cx="15" cy="5" r="1.7" fill="currentColor" stroke="none"/><circle class="n4" cx="6" cy="10" r="1.0" fill="currentColor" stroke="none"/><circle class="n5" cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></a>
             </div>
           </div>
         </div>
@@ -48,18 +140,42 @@
             <h2>About</h2>
 
             <p>
-              I develop algorithms for tough problems&mdash;tending toward
-              applications in natural language processing and programming
-              languages.  I am a postdoctoral researcher working (remotely from
-              NYC) with <a href="http://rycolab.io">Ryan Cotterell</a> at ETH
-              Zürich.  I did my PhD with <a href="http://cs.jhu.edu/~jason">Jason
-              Eisner</a> at Johns Hopkins University. I've also worked with
-              <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a>
-              on <a href="http://rexa.info">Rexa</a>
-              and <a href="http://factorie.cs.umass.edu/">Factorie</a>; <a href="https://www.cis.upenn.edu/~danroth/">Dan
-              Roth</a> on Textual Entailment. I did my undergraduate degree at
-              the University of Illinois Urbana-Champaign.
+              I am a computer scientist driven by an allergy to inefficiency
+              and a love of elegant solutions to tough problems. I believe
+              that investing in the right theoretical foundations leads to
+              solutions that are more general, more interpretable, and
+              longer-lasting.
             </p>
+
+            <p>
+              My current work focuses on making language models more
+              controllable and programmable using probabilistic inference
+              techniques. My broader interests include
+              <a href="experimental/research-graph.html#theme=dp&amp;mode=cards">dynamic programming</a>,
+              <a href="experimental/research-graph.html#theme=tokenization&amp;mode=cards">tokenization</a>,
+              <a href="experimental/research-graph.html#theme=parsing&amp;mode=cards">structured prediction</a>,
+              <a href="experimental/research-graph.html#theme=autodiff&amp;mode=cards">automatic differentiation</a>,
+              <a href="experimental/research-graph.html#theme=sampling&amp;mode=cards">sampling methods</a>,
+              <a href="experimental/research-graph.html#theme=swor&amp;mode=cards">sampling without replacement</a>,
+              <a href="experimental/research-graph.html#theme=beam&amp;mode=cards">beam search</a>,
+              the <a href="experimental/research-graph.html#theme=gumbel&amp;mode=cards">Gumbel trick</a>,
+              <a href="experimental/research-graph.html#theme=automata&amp;mode=cards">formal language theory</a>,
+              <a href="experimental/research-graph.html#theme=logic-programming&amp;mode=cards">logic programming</a>,
+              and <a href="experimental/research-graph.html#theme=alignment&amp;mode=cards">reinforcement learning</a>. I publish
+              on many of these topics and explore them in a more tutorial
+              style on my blog, <a href="blog/">Graduate Descent</a>.
+            </p>
+
+            <p>My path has taken me through several institutions, where
+              I've had the privilege of working with great collaborators and
+              mentors:</p>
+
+            <ul class="trajectory">
+              <li class="traj-eth">Consulting research scientist with <a href="http://rycolab.io">Ryan Cotterell</a> at ETH Zürich (remote from NYC).</li>
+              <li class="traj-jhu">PhD with <a href="http://cs.jhu.edu/~jason">Jason Eisner</a> at Johns Hopkins. Developed <a href="https://github.com/timvieira/dyna-pi"><code>dyna-pi</code></a>, a system for automatically analyzing and improving dynamic programming algorithms.</li>
+              <li class="traj-umass">Research programmer with <a href="http://www.cs.umass.edu/~mccallum/">Andrew McCallum</a> at UMass. Worked on Rexa (a research paper search engine) and <a href="http://factorie.cs.umass.edu/">Factorie</a> (a probabilistic programming framework).</li>
+              <li class="traj-uiuc">BS in computer science (minor in mathematics) at UIUC. Research with <a href="https://www.cis.upenn.edu/~danroth/">Dan Roth</a> on textual entailment.</li>
+            </ul>
 
         </div>
 
@@ -70,8 +186,7 @@
           probably <a href="https://www.instagram.com/p/BCmaClQTQO4/?taken-by=tim.vieira">climbing
           things</a>, <a href="https://www.youtube.com/watch?v=fMwk8XgqCc8">walking
           around on my hands</a>, or hanging out with
-          <a href="http://dirichlet.net">Hanna Wallach</a>, our adorable dog
-          <a href="https://www.instagram.com/maia.the.pomsky/">Maia</a>, and our newest family member.
+          <a href="http://dirichlet.net">Hanna Wallach</a>, our <a href="https://www.instagram.com/maia.the.pomsky/">adorable dog</a>, and our newest family member.
           <br/>
           <br/>
 
@@ -158,18 +273,12 @@
           <h2>Blog</h2>
 
           Technical blog: <a href="blog/">Graduate Descent</a>.
-          Twitter: <a href="http://twitter.com/xtimv">@xtimv</a>.
 
         </div>
         <div id="publications" class="box">
 
           <h2>Publications</h2>
 
-          <div style="padding-bottom: 10px;">
-            <a href="https://scholar.google.com/citations?user=Avtv7FkAAAAJ&hl=en">
-              Google Scholar profile
-            </a>
-          </div>
 
           <ul>
 
@@ -186,6 +295,67 @@
            
 
            
+
+           <li style="">
+              <div class="pub">
+                <a class="pub-title" href="https://arxiv.org/abs/2604.15672">
+                  Faster LLM Inference via Sequential Monte Carlo
+                </a>
+                <span class="pub-author">
+                  Yahya Emara,
+                  Mauricio Barba da Costa,
+                  Chi-Chih Chang,
+                  Cameron Freer,
+                  Tim Vieira,
+                  Ryan Cotterell,
+                  Mohamed S. Abdelfattah
+                </span>
+                <a class="pub-venue" href="">Preprint</a>
+              </div>
+              <div class="pub-extras">
+                <a class="extra arXiv" href="https://arxiv.org/abs/2604.15672">arXiv</a>
+                <a class="extra code" href="https://github.com/abdelfattah-lab/smcsd">code</a>
+              </div>
+           </li>
+
+           <li style="">
+              <div class="pub">
+                <a class="pub-title" href="https://arxiv.org/abs/2604.28147">
+                  On the Proper Treatment of Units in Surprisal Theory
+                </a>
+                <span class="pub-author">
+                  Samuel Kiegeland,
+                  Vésteinn Snæbjarnarson,
+                  Tim Vieira,
+                  Ryan Cotterell
+                </span>
+                <a class="pub-venue" href="https://2026.aclweb.org/">ACL 2026</a>
+              </div>
+              <div class="pub-extras">
+                <a class="extra arXiv" href="https://arxiv.org/abs/2604.28147">arXiv</a>
+                <a class="extra code" href="https://github.com/samuki/units-surprisal">code</a>
+              </div>
+           </li>
+
+           <li style="">
+              <div class="pub">
+                <a class="pub-title" href="https://arxiv.org/abs/2604.21191">
+                  Prefix Parsing is Just Parsing
+                </a>
+                <span class="pub-author">
+                  Clemente Pasti,
+                  Andreas Opedal,
+                  Timothy J. O'Donnell,
+                  Ryan Cotterell,
+                  Tim Vieira
+                </span>
+                <a class="pub-venue" href="https://2026.aclweb.org/">ACL 2026</a>
+              </div>
+              <div class="pub-extras">
+                <a class="extra arXiv" href="https://arxiv.org/abs/2604.21191">arXiv</a>
+                <a class="extra code" href="https://github.com/genlm/prefix-acl-26">code</a>
+              </div>
+           </li>
 
            <li style="">
               <div class="pub">
