@@ -30,6 +30,56 @@
 #   bibtex:     - extra BibTeX-only fields (doi, pages, volume, isbn, etc.)
 # -------------------------------------------------
 
+- id: depradacorral-etal-2026-diverse-sampling
+  title: "A Model of Diverse Sampling from Language Models"
+  authors:
+    - Manuel de Prada Corral
+    - Yahya Emara
+    - Timothy J. O'Donnell
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2026
+  venue: NeurIPS 2026
+  venue_url: https://neurips.cc/virtual/2026/poster/151475
+  venue_full: Advances in Neural Information Processing Systems
+  type: inproceedings
+  themes: [generation, sampling]
+  links:
+    url: https://neurips.cc/virtual/2026/poster/151475
+
+- id: re-etal-2026-great-expectations
+  title: "Estimating Great Expectations Under Autoregressive Language Models with Potentials"
+  authors:
+    - Francesco I. Re
+    - Shubhangi Ghosh
+    - Tim Vieira
+    - Ryan Cotterell
+  year: 2026
+  venue: Preprint
+  venue_full: Preprint
+  type: misc
+  themes: [sampling]
+  links:
+    url: https://arxiv.org/abs/2610.11399
+    arXiv: https://arxiv.org/abs/2610.11399
+
+- id: snaebjarnarson-etal-2026-stochastic-tlm
+  title: "Stochastic Estimation of Transduced Language Models"
+  authors:
+    - Vésteinn Snæbjarnarson
+    - Samuel Kiegeland
+    - Manuel de Prada Corral
+    - Ryan Cotterell
+    - Tim Vieira
+  year: 2026
+  venue: Preprint
+  venue_full: Preprint
+  type: misc
+  themes: [automata, sampling, beam, tokenization]
+  links:
+    url: https://arxiv.org/abs/2608.27428
+    arXiv: https://arxiv.org/abs/2608.27428
+
 - id: emara-etal-2026-smc-speculative
   title: "Faster {LLM} Inference via Sequential {Monte} {Carlo}"
   authors:
@@ -98,10 +148,11 @@
     - Timothy J. O'Donnell
     - Ryan Cotterell
     - Tim Vieira
-  year: 2025
-  venue: Preprint
-  venue_full: Preprint
-  type: misc
+  year: 2026
+  venue: NeurIPS 2026
+  venue_url: https://neurips.cc/virtual/2026/poster/148212
+  venue_full: Advances in Neural Information Processing Systems
+  type: inproceedings
   themes: [generation, sampling]
   links:
     url: https://arxiv.org/abs/2603.05432

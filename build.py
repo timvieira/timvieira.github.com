@@ -33,6 +33,11 @@ def bibtex_author_format(authors):
             split = len(tokens) - 1
             while split > 1 and tokens[split - 1] in SURNAME_PREFIXES:
                 split -= 1
+            # BibTeX convention: a lowercase particle starts the surname,
+            # e.g. "Manuel de Prada Corral" -> last="de Prada Corral"
+            lower = [i for i in range(1, len(tokens) - 1) if tokens[i][0].islower()]
+            if lower:
+                split = lower[0]
             last = " ".join(tokens[split:])
             first = " ".join(tokens[:split])
             parts.append(f"{last}, {first}")
@@ -194,10 +199,12 @@ def generate_index_html(papers, template_path):
 
     # Find the <ul> inside <div id="publications"> and replace its contents
     # Pattern: everything between the first <ul> after "publications" and its </ul>
+    # Whitespace around the list items is dropped (not captured), so that
+    # rebuilding from a previously generated index.html doesn't add blank lines.
     pattern = re.compile(
-        r'(<div id="publications".*?<ul>\s*)'   # prefix up to and including <ul>
+        r'(<div id="publications".*?<ul>)\s*'   # prefix up to and including <ul>
         r'(.*?)'                                  # existing list items
-        r'(\s*</ul>)',                            # closing </ul>
+        r'\s*(</ul>)',                            # closing </ul>
         re.DOTALL
     )
 
