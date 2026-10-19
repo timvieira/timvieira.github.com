@@ -119,7 +119,19 @@ The visualization offers five layout modes. All graph modes use a D3 force
 simulation (`d3.forceSimulation`) with `velocityDecay = 0.55` and
 `alphaDecay = 0.015`.
 
-### 1. Force-directed (default)
+### 1. Semantic (MDS + sliders) — default
+
+The page opens in this mode, and its button comes first in the mode switcher.
+The subtitle reads "nearby items are about similar things · sliders reshape
+the map", and the slider panel opens with it. On phones the panel is a
+collapsed drawer, and the legend moves up to sit above it.
+A URL hash such as `#mode=force` opens a different mode instead.
+
+The most complex mode. Items are positioned via **classical multidimensional
+scaling (MDS)** on a weighted feature space derived from sentence-transformer
+embeddings. See the dedicated section below.
+
+### 2. Force-directed
 
 A standard force-directed layout with edges active:
 
@@ -135,7 +147,7 @@ A standard force-directed layout with edges active:
 A vertical dashed barrier line separates the paper and blog zones. Zone labels
 ("PUBLICATIONS" / "BLOG POSTS") are shown at reduced opacity.
 
-### 2. Timeline
+### 3. Timeline
 
 Nodes are positioned by year along the x-axis. No link forces.
 
@@ -148,7 +160,7 @@ Nodes are positioned by year along the x-axis. No link forces.
 
 Year labels and dashed vertical gridlines are drawn for odd years 2009–2025.
 
-### 3. Theme clusters
+### 4. Theme clusters
 
 Nodes cluster around their primary theme's grid position. No link forces.
 
@@ -168,12 +180,6 @@ y = H / (rows + 1) × (row + 1) + 20
 | Collision   | Radius `r + 4`                                   |
 
 Theme names are displayed as labels above each cluster center.
-
-### 4. Semantic (MDS + sliders)
-
-The most complex mode. Items are positioned via **classical multidimensional
-scaling (MDS)** on a weighted feature space derived from sentence-transformer
-embeddings. See the dedicated section below.
 
 ### 5. Cards
 

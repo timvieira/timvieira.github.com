@@ -164,6 +164,7 @@
       z-index:60;transition:transform 0.3s ease-out;}
     .slider-panel.visible{display:block;transform:translateY(calc(100% - 2.5rem));}
     .slider-panel.drawer-open{transform:translateY(0) !important;}
+    .slider-panel.visible ~ .legend{bottom:3rem;}  /* keep legend above the collapsed drawer */
     .slider-panel-drag{padding:0.4rem 0 0.15rem;}
     .slider-panel-drag span{width:40px;height:4px;}
   }
@@ -225,17 +226,17 @@
   </nav>
 </div>
 <div class="modes">
-  <button class="mode-btn active" data-mode="force">Force</button>
+  <button class="mode-btn active" data-mode="semantic">Semantic</button>
+  <button class="mode-btn" data-mode="force">Force</button>
   <button class="mode-btn" data-mode="timeline">Timeline</button>
   <button class="mode-btn" data-mode="theme">Theme</button>
-  <button class="mode-btn" data-mode="semantic">Semantic</button>
   <button class="mode-btn" data-mode="cards">Cards</button>
 </div>
 <div class="card-wall" id="card-wall">
   <div class="card-filters" id="card-filters"></div>
   <div class="card-grid" id="card-grid"></div>
 </div>
-<div class="mode-desc" id="mode-desc">force-directed layout · shared themes attract</div>
+<div class="mode-desc" id="mode-desc">nearby items are about similar things · sliders reshape the map</div>
 <div class="slider-panel" id="slider-panel">
   <div class="slider-panel-drag" id="panel-drag"><span></span></div>
   <div style="display:flex;justify-content:space-between;align-items:baseline;">
@@ -640,7 +641,7 @@ Object.keys(THEMES).forEach(function(key){var theme=THEMES[key];if(!allNodes.som
 // Simulation + layout modes
 // ═══════════════════════════════════════════════
 var simulation=d3.forceSimulation(allNodes).velocityDecay(0.55).alphaDecay(0.015);
-var currentMode='force';
+var currentMode='semantic';
 
 function showZones(on){zoneLeft.transition().duration(800).style('opacity',on?0.45:0);zoneRight.transition().duration(800).style('opacity',on?0.45:0);barrierLine.transition().duration(800).attr('stroke-opacity',on?0.06:0);}
 
@@ -1052,10 +1053,10 @@ function updateSemanticLayout() {
   simulation.alpha(0.3).restart();
 }
 
-applyForceMode();
+applySemanticMode();
 simulation.on('tick',function(){link.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;}).attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});node.attr('transform',function(d){return'translate('+d.x+','+d.y+')';});});
 
-var MODE_DESCS={force:'force-directed · shared themes attract · papers left, blog right',timeline:'positioned by year · papers above, blog below',theme:'clustered by primary research theme',semantic:'semantic feature embeddings · interactive MDS layout',cards:'filterable card grid · click to open'};
+var MODE_DESCS={force:'force-directed · shared themes attract · papers left, blog right',timeline:'positioned by year · papers above, blog below',theme:'clustered by primary research theme',semantic:'nearby items are about similar things · sliders reshape the map',cards:'filterable card grid · click to open'};
 
 document.querySelectorAll('.mode-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
