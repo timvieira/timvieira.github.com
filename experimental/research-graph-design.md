@@ -193,14 +193,20 @@ sliders, causing the layout to smoothly reconfigure.
 
 ### Embedding models
 
-Three pre-computed sentence-transformer models are available (selectable in the
-Advanced panel):
+Two pre-computed embeddings are available (selectable in the Advanced panel).
+Both use the same model and differ only in how much of each document it reads:
 
-| Key       | Model                  | Max tokens |
-|-----------|------------------------|------------|
-| `nomic`   | nomic-embed-text-v1.5  | 8192       |
-| `bge`     | bge-small-en-v1.5      | 512        |
-| `minilm`  | all-MiniLM-L6-v2       | 256        |
+| Key         | Model                  | Max tokens | Notes   |
+|-------------|------------------------|------------|---------|
+| `qwen3`     | Qwen3-Embedding-0.6B   | 2048       | default |
+| `qwen3-512` | Qwen3-Embedding-0.6B   | 512        |         |
+
+Qwen3 was chosen (Oct 2026) by checking how well each candidate model ranks
+items that share a theme tag above items that don't (mean average precision,
+87 items). Qwen3 at 2048 tokens scored 0.67, against 0.57 for all-MiniLM-L6-v2,
+0.56 for bge-base-en-v1.5 and 0.53 for nomic-embed-text-v1.5, the previous
+models. nomic had been run at 8192 tokens without its rotary scaling setting,
+beyond its 2048-token training length; cut to 2048 tokens it scored 0.61.
 
 For each model, the build step (`precompute_embeddings.py`) projects every
 item's embedding onto a set of **theme concept axes** plus **PCA residual

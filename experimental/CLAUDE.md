@@ -10,7 +10,7 @@ Compute sentence-transformer embeddings for paper/blog content, project onto the
    pip install sentence-transformers pymupdf requests
    ```
 
-2. Run `precompute_embeddings.py` — it automatically injects MODEL_DATA (theme projections) into `research-graph.html` for all 3 embedding models.
+2. Run `precompute_embeddings.py` — it automatically injects MODEL_DATA (theme projections) into `research-graph.html` for each embedding model in `MODELS` (currently Qwen3-Embedding-0.6B at 2048 and 512 tokens).
 
 ## Validation
 Open `research-graph.html` in a browser. Click the "Semantic" button in the mode switcher. Nodes should animate to positions where semantically similar titles cluster together.

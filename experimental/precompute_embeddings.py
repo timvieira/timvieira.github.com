@@ -7,9 +7,8 @@ then compute theme projections for the research-graph visualization.
     python precompute_embeddings.py [--model MODEL_KEY]
 
 Supported models:
-    nomic    nomic-ai/nomic-embed-text-v1.5  (8K context, default)
-    bge      BAAI/bge-base-en-v1.5           (512 tokens)
-    minilm   all-MiniLM-L6-v2                (256 tokens, fast)
+    qwen3      Qwen/Qwen3-Embedding-0.6B  (first 2048 tokens, default)
+    qwen3-512  Qwen/Qwen3-Embedding-0.6B  (first 512 tokens)
 """
 
 import argparse, json, re, time
@@ -34,21 +33,20 @@ CACHE_DIR.mkdir(exist_ok=True)
 # ---------------------------------------------------------------------------
 # Model registry
 # ---------------------------------------------------------------------------
+# Embeddings are cached per key in .content_cache/embeddings_{key}.npz.
+# Delete that file after changing a model's settings, or stale embeddings are reused.
 MODELS = {
-    "nomic": {
-        "name": "nomic-ai/nomic-embed-text-v1.5",
-        "trust_remote_code": True,
-        "prefix": "search_document: ",  # nomic convention
+    "qwen3": {
+        "name": "Qwen/Qwen3-Embedding-0.6B",
+        "trust_remote_code": False,
+        "prefix": "",            # documents take no instruction prefix
+        "max_seq_length": 2048,
     },
-    "bge": {
-        "name": "BAAI/bge-base-en-v1.5",
+    "qwen3-512": {
+        "name": "Qwen/Qwen3-Embedding-0.6B",
         "trust_remote_code": False,
         "prefix": "",
-    },
-    "minilm": {
-        "name": "all-MiniLM-L6-v2",
-        "trust_remote_code": False,
-        "prefix": "",
+        "max_seq_length": 512,
     },
 }
 
@@ -336,11 +334,13 @@ def get_embeddings(model_key, texts):
         print(f"[{model_key}] Loading {model_info['name']}...")
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer(model_info["name"], trust_remote_code=model_info["trust_remote_code"])
+        model.max_seq_length = model_info["max_seq_length"]
 
         prefix = model_info["prefix"]
         encode_texts = [prefix + texts[i] for i in uncached]
         print(f"[{model_key}] Encoding {len(encode_texts)} documents...")
-        new_embeds = model.encode(encode_texts, show_progress_bar=True)
+        # Small batches: long inputs make attention memory grow quickly on CPU.
+        new_embeds = model.encode(encode_texts, batch_size=4, show_progress_bar=True)
         for idx, emb in zip(uncached, new_embeds):
             cached[item_keys[idx]] = emb
 
