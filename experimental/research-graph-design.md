@@ -45,6 +45,7 @@ Each theme has a human-readable label and a fixed color:
 | `numerical`    | Numerical Methods       | <span style="background-color:#5a7a8a;color:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">#5a7a8a</span> |
 | `ml`           | Machine Learning        | <span style="background-color:#5a8a6a;color:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">#5a8a6a</span> |
 | `logic-programming` | Logic Programming | <span style="background-color:#4a7a9a;color:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">#4a7a9a</span> |
+| `rl`           | Reinforcement Learning  | <span style="background-color:#a04870;color:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">#a04870</span> |
 
 ---
 
