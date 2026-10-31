@@ -231,7 +231,7 @@
   venue_url: https://neurips.cc/virtual/2025/loc/san-diego/poster/115467
   venue_full: Advances in Neural Information Processing Systems
   type: inproceedings
-  themes: [generation, autodiff]
+  themes: [generation, autodiff, rl]
   links:
     url: https://arxiv.org/abs/2504.10637
     arXiv: https://arxiv.org/abs/2504.10637
