@@ -1,6 +1,6 @@
-/* ------------- GENERAL ------------- */
+/* ------------- General ------------- */
 
-*, html, body{
+* {
   margin: 0;
   padding: 0;
 }
@@ -10,82 +10,20 @@ html {
   height: 100%;
   line-height: 1.25em;
   background-color: #f6f1ea;
-//  font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
-//  background-image: url("/img/squirt.png");
-//  background-repeat: no-repeat;
-//  background-position: right bottom; /*Positioning*/
-//  background-position: center; /*Positioning*/
-//  background-attachment: fixed;
-//  background-size: contain; /* Resize the background image to cover the entire container */
 }
 
 body {
-  color: #444;
-  font-size: 15px;
   height: 100%;
   color: #333;
+  font-size: 15px;
+  font-family: 'EB Garamond', "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif;
+  text-align: justify;
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }
 
-p {
-  margin-bottom: 10px;
-}
-
-li {
-  display: block;  /* no bullets on my line-items */
-}
-
-#publications li {
-  margin: 0;
-  padding: 0;
-  margin-bottom: 15px;
-}
-
-ul {
-  margin: 0;
-}
-
-a,
-a:link,
-a:visited {
-    color: #444;
-}
-
-a:hover{
-    /*color: #73AD21;*/
-    text-decoration: none;
-}
-
-.clearfix:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-
-/* ------- */
-
-#column-1 {
-    width: 420px;
-    float: right;
-}
-
-#column-2 {
-  width: 470px;
-  float: left;
-  margin-left: 15px;
-}
-
-#interests, #fun, #name-container, #publications, #mugshot, #blogbox {
-    background-color: rgba(255, 255, 255, 0.7);
-    -moz-box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
-    -webkit-box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
-    box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
-}
-
-h1, h2, h3, h4 {
-  font-weight: normal;
-  text-decoration: none;
+h1, h2, h3 {
+  font-weight: bold;
 }
 
 h1 {
@@ -97,10 +35,48 @@ h2 {
   margin: 5px 0 10px 0;
 }
 
+p {
+  margin-bottom: 10px;
+}
+
+li {
+  display: block;  /* no bullets */
+}
+
+a,
+a:link,
+a:visited {
+  color: #444;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+.clearfix:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+/* ------------- Layout ------------- */
+
 #container {
-  margin: 0 auto 0 auto;
   width: 915px;
-  margin-top: 15px;
+  margin: 15px auto 0 auto;
+}
+
+#column-1 {
+  width: 420px;
+  float: right;
+}
+
+#column-2 {
+  width: 470px;
+  float: left;
+  margin-left: 15px;
 }
 
 .box {
@@ -108,103 +84,194 @@ h2 {
   margin-bottom: 12px;
 }
 
-#name-container {
-  padding-top: 20px;
-  font-size: 20px;
+#interests, #fun, #name-container, #publications, #mugshot, #blogbox {
+  background-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 2px 4px 14px rgba(0,0,0,.12), -1px -1px 0 rgba(0,0,0,.03);
 }
-
-  #name-container a {
-      text-decoration: none;
-  }
-
-  #name-container a:hover {
-      text-decoration: none;
-  }
-
-  #name {
-  }
-
-#mugshot {}
-  #mugshot img {
-      width: 100%;
-  }
-
-  #about {
-  }
-
-  #bunchoflinks {
-    padding: 18px 0 5px 0;
-    font-size: 0.82em;
-  }
-
-
-.project {
-
-}
-
-  .project h3 {
-     margin-bottom: 5px;
-   }
-
-  .project div {
-      width: 190px;
-      height: 125px;
-      float:  left;
-      margin: 0 0 5px 0;
-      max-height: 135px;
-      overflow: hidden;
-  }
-
-  .project img {
-      width: 100%;
-  }
-
-  .project .thumbnail {
-
-    padding: 5px;
-
-  }
 
 #footer {
   clear: both;
 }
 
-.extra {
-    background-color: #999;
-    color: #fff !important;
-    text-decoration: none;
-    border-radius: 6px;
-    padding: 1px 5px 2px 5px;
-    margin-top: 10px;
+/* ------------- Header: name, photo, links ------------- */
+
+#name-container {
+  padding-top: 20px;
+  font-size: 20px;
 }
 
-.extra:hover {
-    background-color: #73AD21 !important;
+#name-container a {
+  text-decoration: none;
 }
 
-.pub-extras {
-    margin-top: 5px;
+#mugshot img {
+  width: 100%;
 }
-.pub-author { display: block; }
-.pub-title {}
-.pub-venue {
-    text-decoration: none;
-    font-style: italic;
-}
-.pub-award {
-    text-decoration: none;
-    font-weight: bold;
-}
-
 
 #mug-inline {
   display: none;
 }
 
-img {
-//  -webkit-filter: grayscale(65%); /* Safari 6.0 - 9.0 */
-//  filter: grayscale(65%);
+#bunchoflinks {
+  padding: 18px 0 5px 0;
+  font-size: 0.82em;
 }
+
+#bunchoflinks a {
+  margin: 0;
+  text-decoration: none;
+}
+
+#bunchoflinks a:not(:last-child)::after {
+  content: '\00b7';
+  margin-left: 0.1em;
+  color: #999;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Underline that grows from the center on hover */
+#bunchoflinks a span.link-text::before,
+#bunchoflinks .explore-link .explore-text::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+#bunchoflinks a:hover span.link-text::before,
+#bunchoflinks .explore-link:hover .explore-text::before {
+  left: 0;
+  width: 100%;
+}
+
+/* "Explore" link to the research graph */
+.explore-link { text-decoration: none !important; }
+.explore-link .graph-icon circle { transition: fill 0.3s ease; }
+
+@keyframes colorCycleWord {
+  0%,100% { color: #3a5a8c; }
+  16% { color: #8c4a3a; }
+  33% { color: #6a8a52; }
+  50% { color: #b06030; }
+  66% { color: #7a5a8a; }
+  83% { color: #3a7a7a; }
+}
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+.explore-link:hover .explore-text { animation: colorCycleWord 6s ease-in-out infinite; }
+.explore-link:hover .graph-icon { animation: breathe 1.5s ease-in-out infinite; }
+.explore-link:hover .n1 { fill: #3a5a8c; }
+.explore-link:hover .n2 { fill: #8c4a3a; }
+.explore-link:hover .n3 { fill: #6a8a52; }
+.explore-link:hover .n4 { fill: #b06030; }
+.explore-link:hover .n5 { fill: #7a5a8a; }
+
+/* ------------- Interests and trajectory ------------- */
+
+#interests a {
+  text-decoration: none;
+}
+
+#interests a:hover {
+  text-decoration: underline;
+}
+
+.trajectory {
+  list-style: none;
+  padding-left: 50px;
+  padding-right: 15px;
+}
+
+.trajectory li {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 0px;
+}
+
+/* Institution logos, faded until hover */
+.trajectory li::before {
+  content: '';
+  position: absolute;
+  left: -46px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background-size: 40px;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.25;
+  transition: opacity 0.3s ease;
+}
+
+.trajectory li:hover::before {
+  opacity: 1;
+}
+
+.trajectory li.traj-eth::before { background-image: url('../img/logos/eth.png'); }
+.trajectory li.traj-jhu::before { background-image: url('../img/logos/jhu.png'); background-size: 28px; }
+.trajectory li.traj-umass::before { background-image: url('../img/logos/umass.png'); background-size: 26px; }
+.trajectory li.traj-uiuc::before { background-image: url('../img/logos/uiuc.png'); background-size: 20px; }
+
+/* ------------- Fun (project thumbnails) ------------- */
+
+.project h3 {
+  margin-bottom: 5px;
+}
+
+.project div {
+  width: 190px;
+  height: 125px;
+  float: left;
+  margin: 0 0 5px 0;
+  max-height: 135px;
+  overflow: hidden;
+}
+
+.project img {
+  width: 100%;
+}
+
+.project .thumbnail {
+  padding: 5px;
+}
+
+/* ------------- Publications ------------- */
+
+#publications li {
+  margin-bottom: 15px;
+}
+
+.pub-author { display: block; }
+
+.pub-venue {
+  text-decoration: none;
+  font-style: italic;
+}
+
+.pub-extras {
+  margin-top: 5px;
+}
+
+.extra {
+  background-color: #999;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 1px 5px 2px 5px;
+  margin-top: 10px;
+}
+
+.extra:hover {
+  background-color: #73AD21 !important;
+}
+
+/* ------------- Narrow screens: single column ------------- */
 
 @media (max-width: 960px) {
   #container {
@@ -217,9 +284,9 @@ img {
   #column-1, #column-2 {
     display: contents;
   }
-  #name-container { order: 1; }
   #mugshot { display: none; }
   #name-container {
+    order: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
