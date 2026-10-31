@@ -215,6 +215,11 @@ items that share a theme tag above items that don't (mean average precision,
 models. nomic had been run at 8192 tokens without its rotary scaling setting,
 beyond its 2048-token training length; cut to 2048 tokens it scored 0.61.
 
+Each item is embedded from its full text: the paper PDF (first ~3000 words),
+the blog post's Markdown or notebook, or, for posts that live on their own
+page (`external_url`), that page's text. The Build site GitHub Actions workflow
+recomputes the embeddings whenever `papers.yaml` or `blog_posts.yaml` changes.
+
 For each model, the build step (`precompute_embeddings.py`) projects every
 item's embedding onto a set of **theme concept axes** plus **PCA residual
 dimensions**, producing a matrix `THEME_PROJECTIONS[i][j]` — the projection of

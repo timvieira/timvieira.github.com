@@ -1,0 +1,110 @@
+# Rebuild the generated files (publications list, cv.bib, research graph and its
+# semantic embeddings) whenever their sources change, and commit them to master.
+# The site itself is still served by GitHub Pages straight from master.
+name: Build site
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - papers.yaml
+      - blog_posts.yaml
+      - build.py
+      - experimental/build_graph_data.py
+      - experimental/precompute_embeddings.py
+      - experimental/research-graph.html
+      - .github/workflows/build-site.yml
+  schedule:
+    - cron: "17 14 * * 1"   # Mondays: catch new blog posts missing from blog_posts.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: build-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check out blog posts
+        uses: actions/checkout@v7
+        with:
+          repository: timvieira/blog
+          path: _blog
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: experimental/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r experimental/requirements.txt
+
+      # Downloaded PDFs, fetched pages, finished embeddings and the model itself.
+      # Saved under a new key each run (see "Save cache") so the cache rolls forward.
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            experimental/.content_cache
+            ~/.cache/huggingface
+          key: embeddings-${{ github.run_id }}
+          restore-keys: embeddings-
+
+      - name: Build publications list and cv.bib
+        run: |
+          python build.py
+          cp generated_index.html index.html
+          python test_build.py
+
+      - name: Build research graph and embeddings
+        working-directory: experimental
+        env:
+          BLOG_CONTENT: ${{ github.workspace }}/_blog/content
+        run: |
+          python build_graph_data.py
+          python precompute_embeddings.py
+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            experimental/.content_cache
+            ~/.cache/huggingface
+          key: embeddings-${{ github.run_id }}
+
+      - name: Commit generated files
+        id: commit
+        run: |
+          git add index.html generated_index.html experimental/research-graph.html
+          if git diff --cached --quiet; then
+            echo "No changes to generated files."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Rebuild generated files" -m "Built by the Build site workflow from ${GITHUB_SHA::7}."
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # Pushes made by this workflow may not start a Pages build on their own.
+      - name: Request a GitHub Pages build
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
+
+      # Last, so a missing post is flagged without holding back the rest of the build.
+      - name: Check for blog posts missing from blog_posts.yaml
+        run: python experimental/check_blog_posts.py _blog/content

@@ -220,6 +220,7 @@ if __name__ == "__main__":
     out_dir = Path(__file__).parent
 
     bib_path = out_dir / "cv" / "cv.bib"
+    bib_path.parent.mkdir(exist_ok=True)
     bib_content = generate_bibtex(papers)
     bib_path.write_text(bib_content)
     print(f"Wrote {len(papers)} entries to {bib_path}")

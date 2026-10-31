@@ -1,6 +1,27 @@
 # Blog posts for research graph visualization
 # Fields: id, title, year, tags, url, themes
 
+- id: b-conditional-poisson-26
+  title: "Conditional Poisson Sampling"
+  year: 2026
+  tags: [notebook, sampling, algorithms, sampling-without-replacement]
+  url: https://timvieira.github.io/conditional-poisson-sampling/
+  themes: [swor, sampling]
+
+- id: b-wobbly-table-26
+  title: "The Wobbly Table Theorem"
+  year: 2026
+  tags: [math, visualization, interactive]
+  url: https://timvieira.github.io/table-theorem/
+  themes: [numerical]
+
+- id: b-kl-fitting-26
+  title: "Interactive KL Divergence Fitting"
+  year: 2026
+  tags: [statistics, machine-learning, probability, interactive]
+  url: https://timvieira.github.io/blog/interactive-kl-divergence-fitting/
+  themes: [ml, optimization]
+
 - id: b-rank-one-21
   title: "Fast rank-one updates to matrix inverse?"
   year: 2021

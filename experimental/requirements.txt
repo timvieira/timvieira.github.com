@@ -1,1 +1,6 @@
+# For precompute_embeddings.py. In CI, a CPU-only torch is installed first.
 sentence-transformers
+pymupdf
+requests
+pyyaml
+numpy

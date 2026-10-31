@@ -3,15 +3,17 @@
 Compute semantic embeddings from full document content (paper PDFs + blog text),
 then compute theme projections for the research-graph visualization.
 
-    pip install sentence-transformers pymupdf requests
+    pip install -r requirements.txt
     python precompute_embeddings.py [--model MODEL_KEY]
+
+Blog posts are read from $BLOG_CONTENT (the blog repo's content/ folder).
 
 Supported models:
     qwen3      Qwen/Qwen3-Embedding-0.6B  (first 2048 tokens, default)
     qwen3-512  Qwen/Qwen3-Embedding-0.6B  (first 512 tokens)
 """
 
-import argparse, json, re, time
+import argparse, hashlib, json, os, re, time
 from pathlib import Path
 
 import numpy as np
@@ -26,14 +28,15 @@ SITE_ROOT = SCRIPT_DIR.parent                         # timvieira.github.com/
 PAPERS_YAML = SITE_ROOT / "papers.yaml"
 DOC_DIR = SITE_ROOT / "doc"
 HTML_PATH = SCRIPT_DIR / "research-graph.html"
-BLOG_CONTENT = Path("/home/timv/projects/blog/main/content")
+BLOG_CONTENT = Path(os.environ.get("BLOG_CONTENT", "/home/timv/projects/blog/main/content"))
 CACHE_DIR = SCRIPT_DIR / ".content_cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Model registry
 # ---------------------------------------------------------------------------
-# Embeddings are cached per key in .content_cache/embeddings_{key}.npz.
+# Embeddings are cached per model in .content_cache/embeddings_{key}.npz, keyed by
+# item and a hash of its text, so an item is re-encoded whenever its text changes.
 # Delete that file after changing a model's settings, or stale embeddings are reused.
 MODELS = {
     "qwen3": {
@@ -199,27 +202,40 @@ def get_paper_content(item, papers_by_id):
 # ---------------------------------------------------------------------------
 # Blog content extraction
 # ---------------------------------------------------------------------------
+# blog_posts.yaml titles that differ from the post's own title
+TITLE_ALIASES = {
+    "the restart acceleration trick":
+        "the restart acceleration trick: a cure for the heavy tail of wasted time",
+    "evaluating nabla f(x) is as fast as f(x)":
+        "evaluating \u2207f(x) is as fast as f(x)",
+    "gradient-based hyperparameter optimization":
+        "gradient-based hyperparameter optimization and the implicit function theorem",
+    "multiclass logistic regression and crfs are the same thing":
+        "multiclass logistic regression and conditional random fields are the same thing",
+}
+
+
+def read_frontmatter(md_file):
+    """Return the post's metadata (the `key: value` lines before the first blank line)."""
+    meta = {}
+    with open(md_file) as f:
+        for line in f:
+            if not line.strip():
+                break
+            key, sep, value = line.partition(":")
+            if sep:
+                meta[key.strip().lower()] = value.strip()
+    return meta
+
+
 def build_blog_title_map():
     """Build a case-insensitive title → file path map from blog .md frontmatter."""
     title_to_file = {}
     for md_file in BLOG_CONTENT.glob("*.md"):
-        with open(md_file) as f:
-            for line in f:
-                if line.startswith("title:"):
-                    title = line[len("title:"):].strip()
-                    title_to_file[title.lower()] = md_file
-                    break
+        title = read_frontmatter(md_file).get("title")
+        if title:
+            title_to_file[title.lower()] = md_file
 
-    TITLE_ALIASES = {
-        "the restart acceleration trick":
-            "the restart acceleration trick: a cure for the heavy tail of wasted time",
-        "evaluating nabla f(x) is as fast as f(x)":
-            "evaluating \u2207f(x) is as fast as f(x)",
-        "gradient-based hyperparameter optimization":
-            "gradient-based hyperparameter optimization and the implicit function theorem",
-        "multiclass logistic regression and crfs are the same thing":
-            "multiclass logistic regression and conditional random fields are the same thing",
-    }
     for alias, canonical in TITLE_ALIASES.items():
         if canonical in title_to_file:
             title_to_file[alias] = title_to_file[canonical]
@@ -248,6 +264,10 @@ def get_blog_content(item, title_map):
         print(f"  WARNING: no blog source for '{title}', using title only")
         return title
 
+    external_url = read_frontmatter(md_file).get("external_url")
+    if external_url:
+        return get_external_page_content(item, external_url)
+
     with open(md_file) as f:
         content = f.read()
 
@@ -271,10 +291,30 @@ def get_blog_content(item, title_map):
     return clean_text(body)
 
 
+def get_external_page_content(item, url):
+    """Text of a post that lives on its own page (blog posts with external_url)."""
+    slug = re.sub(r"\W+", "-", item["title"].lower()).strip("-")
+    cache_file = CACHE_DIR / f"blog-{slug}.txt"
+    if cache_file.exists() and cache_file.read_text().strip():
+        return cache_file.read_text()
+    print(f"  Fetching {url} ...")
+    try:
+        resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"  WARNING: fetch failed: {e}")
+        return item["title"]
+    words = clean_text(resp.text).split()
+    text = " ".join(words[:3000])
+    cache_file.write_text(text)
+    return text
+
+
 # ---------------------------------------------------------------------------
 # Text cleaning
 # ---------------------------------------------------------------------------
 def clean_text(text):
+    text = re.sub(r'<(script|style)\b.*?</\1>', ' ', text, flags=re.S | re.I)
     text = re.sub(r'<[^>]+>', ' ', text)
     text = re.sub(r'\\(?:textbf|textit|emph|text|mathrm|mathbf|mathcal)\{([^}]*)\}', r'\1', text)
     text = re.sub(r'\\[a-zA-Z]+', ' ', text)
@@ -320,7 +360,8 @@ def get_embeddings(model_key, texts):
     """Load or compute embeddings for the given model. Returns (79, D) array."""
     model_info = MODELS[model_key]
     cache_file = CACHE_DIR / f"embeddings_{model_key}.npz"
-    item_keys = [it.get("yaml_id", it["title"]) for it in ITEMS]
+    item_keys = [f'{it.get("yaml_id", it["title"])}#{hashlib.sha1(t.encode()).hexdigest()[:12]}'
+                 for it, t in zip(ITEMS, texts)]
 
     cached = {}
     if cache_file.exists():
@@ -344,7 +385,7 @@ def get_embeddings(model_key, texts):
         for idx, emb in zip(uncached, new_embeds):
             cached[item_keys[idx]] = emb
 
-        np.savez(cache_file, **cached)
+        np.savez(cache_file, **{k: cached[k] for k in item_keys})  # drop stale entries
         print(f"[{model_key}] Saved {len(cached)} embeddings to cache.")
     else:
         print(f"[{model_key}] All {len(item_keys)} embeddings loaded from cache.")
@@ -501,21 +542,9 @@ def main():
 
     model_keys = [args.model] if args.model else list(MODELS.keys())
 
-    # Extract content (shared across models)
-    # Check if any model needs encoding
-    item_keys = [it.get("yaml_id", it["title"]) for it in ITEMS]
-    need_content = False
-    for mk in model_keys:
-        cache_file = CACHE_DIR / f"embeddings_{mk}.npz"
-        if cache_file.exists():
-            data = np.load(cache_file)
-            cached_keys = set(data.files)
-            if all(k in cached_keys for k in item_keys):
-                continue
-        need_content = True
-        break
-
-    texts = extract_all_content() if need_content else [it["title"] for it in ITEMS]
+    # Extract content (shared across models). Downloads are cached, so this is
+    # quick after the first run; failed downloads are retried on the next run.
+    texts = extract_all_content()
 
     model_results = {}
     for mk in model_keys:
