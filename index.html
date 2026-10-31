@@ -1155,71 +1155,22 @@
 
     </div>
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"
-integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-crossorigin="anonymous"></script>
-
-<script type="text/javascript">
-
-$(function() {
-  $('#lowrider-1').hover(function() {
-    $(this).attr('src', 'img/lowrider1.gif');
-  }, function() {
-    $(this).attr('src', 'img/fifth-avenue.jpg');
-  });
+<script>
+// Swap a still image for an animated GIF while the mouse is over it.
+// [element to hover, image to swap, GIF on hover, still image otherwise]
+[
+  ['movement-div', 'movement',    'img/double-kong.gif', 'img/climb-kneepit.png'],
+  ['derby-div',    'derby',       'img/derby-pwnd.gif',  'img/rambo-v-cider.jpg'],
+  ['snakeboard',   'snakeboard',  'img/table-bail.gif',  'img/skate-and-break/TIM_bonertobs180.jpg'],
+  ['lowrider-1',   'lowrider-1',  'img/lowrider1.gif',   'img/fifth-avenue.jpg'],
+  ['lowrider-2',   'lowrider-2',  'img/spinnerz.gif',    'img/rimz0rz.jpg'],
+].forEach(function([hoverId, imgId, gif, still]) {
+  var target = document.getElementById(hoverId);
+  var img = document.getElementById(imgId);
+  target.addEventListener('mouseenter', function() { img.src = gif; });
+  target.addEventListener('mouseleave', function() { img.src = still; });
+  new Image().src = gif;  // preload
 });
-
-$(function() {
-  $('#snakeboard').hover(function() {
-    $(this).attr('src', 'img/table-bail.gif');
-    //$(this).attr('src', 'img/rail.gif');
-  }, function() {
-    $(this).attr('src', 'img/skate-and-break/bonertobs180.jpg');
-  });
-});
-
-$(function() {
-  $('#movement-div').hover(function() {
-    //$("#movement").attr('src', 'img/dyno.gif');
-    $("#movement").attr('src', 'img/double-kong.gif');
-  }, function() {
-    $("#movement").attr('src', 'img/climb-kneepit.png');
-  });
-});
-
-$(function() {
-  $('#derby-div').hover(function() {
-    $('#derby').attr('src', 'img/derby-pwnd.gif');
-  }, function() {
-    $('#derby').attr('src', 'img/rambo-v-cider.jpg');
-  });
-});
-
-$(function() {
-  $('#lowrider-2').hover(function() {
-    $(this).attr('src', 'img/spinnerz.gif');
-  }, function() {
-    $(this).attr('src', 'img/rimz0rz.jpg');
-  });
-});
-
-function preload(imgs) {
-  return $(imgs).each(function(){
-    var img = new Image();
-    img.src = this;
-  });
-}
-
-preload([
-    'img/derby-pwnd.gif',
-    'img/double-kong.gif',
-    'img/rail.gif',
-    'img/dyno.gif',
-    'img/table-bail.gif',
-    'img/lowrider1.gif',
-    'img/spinnerz.gif',
-]);
-
 </script>
 
 
