@@ -1,6 +1,13 @@
 # Blog posts for research graph visualization
 # Fields: id, title, year, tags, url, themes
 
+- id: b-testing-randomized-26
+  title: "Ideas for Testing Randomized Algorithms"
+  year: 2026
+  tags: [testing, sampling, algorithms, monte-carlo, program-tracing]
+  url: https://timvieira.github.io/testing-randomized-algorithms/
+  themes: [sampling, swor]
+
 - id: b-conditional-poisson-26
   title: "Conditional Poisson Sampling"
   year: 2026
