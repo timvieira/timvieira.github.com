@@ -1,6 +1,13 @@
 # Blog posts for research graph visualization
 # Fields: id, title, year, tags, url, themes
 
+- id: b-sampling-with-replacement-26
+  title: "Better Sampling with Replacement"
+  year: 2026
+  tags: [notebook, sampling, importance-sampling, statistics, variance-reduction]
+  url: https://timvieira.github.io/blog/better-sampling-with-replacement/
+  themes: [sampling]
+
 - id: b-testing-randomized-26
   title: "Ideas for Testing Randomized Algorithms"
   year: 2026
