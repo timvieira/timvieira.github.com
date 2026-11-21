@@ -45,7 +45,9 @@
   type: inproceedings
   themes: [generation, sampling]
   links:
-    url: https://neurips.cc/virtual/2026/poster/151475
+    url: https://arxiv.org/abs/2611.25003
+    arXiv: https://arxiv.org/abs/2611.25003
+    code: https://github.com/rycolab/pool-dpp
 
 - id: re-etal-2026-great-expectations
   title: "Estimating Great Expectations Under Autoregressive Language Models with Potentials"
